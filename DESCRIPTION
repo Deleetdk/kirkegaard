@@ -1,0 +1,8 @@
+Package: kirkegaard
+Title: Personal package for Emil O. W. Kirkegaard with various functions
+Version: 0.0.0.9000
+Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
+Description: Contains various useful functions I have written
+Depends: R (>= 3.2.0)
+License: GPL
+LazyData: true
