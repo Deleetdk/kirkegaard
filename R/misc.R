@@ -88,26 +88,49 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
   return(new) #return as matrix
 }
 
-#Inserts newlines into strings every N interval
-#Useful for some plotting functions that result in text on top of each other
+
 #' Insert newlines into text every nth character.
 #'
-#' Returns a character vector with newlines every nth character.
-#' @param text a character vector to interspace with newlines.
-#' @param interval how often to insert the newline?
-#' @keywords combine, matrix, data.frame, upper, lower
+#' Returns a character string with newlines every nth character. See also add_newlines(). 
+#' @param x A character string.
+#' @param interval How often the newlines are added.
+#' @keywords string, newline, label, text
 #' @export
 #' @examples
-#' split_text()
-split_text = function(text, interval){
-  #length of str
-  string.length = nchar(text)
-  #split by N char intervals
-  split.starts = seq(1,string.length,interval)
-  split.ends = c(split.starts[-1]-1,nchar(text))
-  #split it
-  text = substring(text, split.starts, split.ends)
-  #put it back together with newlines
-  text = paste0(text, collapse = "\n")
-  return(text)
+#' new_lines_adder()
+new_lines_adder = function(x, interval) {
+  #add spaces after /
+  x = str_replace_all(x, "/", "/ ")
+  #split at spaces
+  x.split = strsplit(x, " ")[[1]]
+  # get length of snippets, add one for space
+  lens <- nchar(x.split) + 1
+  # now the trick: split the text into lines with
+  # length of at most interval + 1 (including the spaces)
+  lines <- cumsum(lens) %/% (interval + 1)
+  # construct the lines
+  x.lines <- tapply(x.split, lines, function(line)
+    paste0(paste(line, collapse=" "), "\n"), simplify = TRUE)
+  # put everything into a single string
+  result <- paste(x.lines, collapse="")
+  #remove spaces we added after /
+  result = str_replace_all(result, "/ ", "/")
+  return(result)
+}
+
+#' Insert newlines into text every nth character.
+#'
+#' Returns a character string with newlines every nth character. Works for character vectors too.
+#' @param x A character string or vector.
+#' @keywords string, newline, label, text
+#' @export
+#' @examples
+#' add_newlines()
+  # make sure, x is a character array   
+  x = as.character(x)
+  #determine number of groups
+  groups = length(x)
+  # apply splitter to each
+  t = sapply(x, FUN = new_lines_adder, interval = round(total.length/groups), USE.NAMES=FALSE)
+  return(t)
 }
