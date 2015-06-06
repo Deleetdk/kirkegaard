@@ -122,10 +122,12 @@ new_lines_adder = function(x, interval) {
 #'
 #' Returns a character string with newlines every nth character. Works for character vectors too.
 #' @param x A character string or vector.
+#' @param total.length The total length of each line of text. Defaults to 95 (suitable for ggplot2).
 #' @keywords string, newline, label, text
 #' @export
 #' @examples
 #' add_newlines()
+add_newlines = function(x, total.length = 95) {
   # make sure, x is a character array   
   x = as.character(x)
   #determine number of groups
