@@ -69,12 +69,13 @@ which_min2 = function(x) {
 #' combine_upperlower()
 combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
   #detect wrong input
-  if (!is.matrix(.lower.tri) & !is.data.frame(.lower.tri)) {
+  if (!is.matrix(.upper.tri) & !is.data.frame(.upper.tri)) {
     stop("First parameter was not a matrix or data.frame.")
   }
   if (!is.matrix(.lower.tri) & !is.data.frame(.lower.tri)) {
     stop("Second parameter was not a matrix or data.frame.")
   }
+  
   #inpute types
   both.df = is.data.frame(.lower.tri) & is.data.frame(.upper.tri) #are both df?
   #convert
