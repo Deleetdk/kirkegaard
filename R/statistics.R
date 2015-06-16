@@ -32,6 +32,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   names(temp.loadings) = rownames(loadings) #set names again
   loadings = temp.loadings #back to normal name
   DF = data.frame(loadings, cors) #DF
+  rownames(DF) = rownames(loadings)
   
   #reverse
   if (reverse) {
@@ -51,12 +52,6 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   cor = round(cor(DF)[1,2],2) #get correlation, rounded
   
   #make title text
-  if (!is.null(main)) {
-    if (is.na(main)) {
-      main = paste0(mcv.method,nrow(DF)," indicators, r=",cor)
-    }
-  }
-  
   #text object location
   if (text.location=="tl") {
     x = .02
@@ -105,7 +100,6 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
     #geom_smooth(method=lm, se=FALSE, color="darkorange") + #this sometimes fails (?)
     xlab(xlab) +
     ylab(ylab) +
-    ggtitle(main) +
     annotation_custom(text_object) +
     geom_abline(intercept=coefs[1], slope=coefs[2], color="darkorange")
 
@@ -194,6 +188,7 @@ plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
 plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) {
   #dependecy
   library("plotflow")
+  library("stringr")
 
   fa.num = length(fa.objects) #number of fas
   fa.names = str_c("fa.", 1:fa.num)
@@ -355,7 +350,7 @@ FA_residuals = function(data) {
   #for each indicator
   for (indicator in colnames(data)) {
     formula = str_c(indicator," ~ factor.scores") #the regression formula as string
-    model = lm(formula, data2) #regress
+    model = lm(formula, data2, na.action = "na.exclude") #regress
     resids = residuals(model) #extract residuals for this indicator
     resids.table[,indicator] = resids #set into resids df
   }
