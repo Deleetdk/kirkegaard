@@ -32,14 +32,13 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   names(temp.loadings) = rownames(loadings) #set names again
   loadings = temp.loadings #back to normal name
   DF = data.frame(loadings, cors) #DF
-  rownames(DF) = rownames(loadings)
-  
+
   #reverse
   if (reverse) {
     for (idx in 1:nrow(DF)) {
-      if (DF[idx,1] < 0){ #if loading <0
-        DF[idx,] = DF[idx,]*-1 #reverse
-        rownames(DF)[idx] = paste0(rownames(DF)[idx],"_r")
+      if (DF[idx, 1] < 0){ #if loading <0
+        DF[idx, ] = DF[idx, ] * -1 #reverse
+        rownames(DF)[idx] = paste0(rownames(DF)[idx], "_r")
       }
     }
   }
@@ -49,29 +48,28 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   else {mcv.method = "Jensen method without reversing\n"}
   
   #correlation
-  cor = round(cor(DF)[1,2],2) #get correlation, rounded
+  cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
   
-  #make title text
   #text object location
-  if (text.location=="tl") {
+  if (text.location == "tl") {
     x = .02
     y = .98
     hjust = 0
     vjust = 1
   }
-  if (text.location=="tr") {
+  if (text.location == "tr") {
     x = .98
     y = .98
     hjust = 1
     vjust = 1
   }
-  if (text.location=="bl") {
+  if (text.location == "bl") {
     x = .02
     y = .02
     hjust = 0
     vjust = -.1
   }
-  if (text.location=="br") {
+  if (text.location == "br") {
     x = .98
     y = .02
     hjust = 1
@@ -80,12 +78,12 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   
   #text
   text = paste0(mcv.method,
-                "r=",cor, " (orange line)",
-                "\nn=",nrow(DF))
+                "r=", cor, " (orange line)",
+                "\nn=", nrow(DF))
   
   #text object
-  text_object = grobTree(textGrob(text, x=x,  y=y, hjust = hjust, vjust = vjust),
-                         gp=gpar(fontsize=11))
+  text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
+                         gp = gpar(fontsize = 11))
   
   #regression line
   model = lm(cors ~ loadings, DF)
@@ -93,16 +91,16 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   
   #plot
   DF$rnames = rownames(DF)
-  
-  g = ggplot(data=DF, aes(x=loadings, y=cors)) +
-    geom_point() +
-    geom_text(aes(label=rnames), alpha=.7, size=3, vjust=1) +
-    #geom_smooth(method=lm, se=FALSE, color="darkorange") + #this sometimes fails (?)
-    xlab(xlab) +
-    ylab(ylab) +
-    annotation_custom(text_object) +
-    geom_abline(intercept=coefs[1], slope=coefs[2], color="darkorange")
 
+  g = ggplot(data = DF, aes(x = loadings, y = cors)) +
+    geom_point() +
+    geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1) +
+    #geom_smooth(method=lm, se=FALSE, color="darkorange") + #this sometimes fails (?)
+    xlab("Loadings") +
+    ylab("Correlation with criteria variable") +
+    annotation_custom(text_object) +
+    geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
+  
   return(g)
 }
 
