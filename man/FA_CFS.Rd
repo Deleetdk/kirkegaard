@@ -2,7 +2,7 @@
 % Please edit documentation in R/statistics.R
 \name{FA_CFS}
 \alias{FA_CFS}
-\title{Calculates the effect of removing a case on size of the first factor, for each case.}
+\title{Returns a numerical vector of the change in the size of the first factor by removing that case.}
 \usage{
 FA_CFS(data, sort = T)
 }

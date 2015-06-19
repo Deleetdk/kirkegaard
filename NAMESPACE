@@ -2,6 +2,7 @@
 
 export(FA_CFS)
 export(FA_MAR)
+export(FA_all_methods)
 export(FA_residuals)
 export(Jensen_plot)
 export(add_newlines)

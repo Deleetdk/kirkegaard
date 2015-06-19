@@ -42,14 +42,14 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
       }
     }
   }
-  
+
   #method text
   if (reverse) {mcv.method = "Jensen method with reversing\n"}
   else {mcv.method = "Jensen method without reversing\n"}
-  
+
   #correlation
   cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
-  
+
   #text object location
   if (text.location == "tl") {
     x = .02
@@ -75,20 +75,20 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
     hjust = 1
     vjust = -.1
   }
-  
+
   #text
   text = paste0(mcv.method,
                 "r=", cor, " (orange line)",
                 "\nn=", nrow(DF))
-  
+
   #text object
   text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
                          gp = gpar(fontsize = 11))
-  
+
   #regression line
   model = lm(cors ~ loadings, DF)
   coefs = coef(model)
-  
+
   #plot
   DF$rnames = rownames(DF)
 
@@ -100,7 +100,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
     ylab("Correlation with criteria variable") +
     annotation_custom(text_object) +
     geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
-  
+
   return(g)
 }
 
@@ -125,11 +125,11 @@ plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
     loadings = as.vector(fa.object$loadings)
     reverse = ""
   }
-  
+
   #indicator names
   indicators = dimnames(fa.object$loadings)[[1]]
   DF = data.frame(loadings, indicators)
-  
+
   #text object location
   if (text.location=="tl") {
     x = .02
@@ -155,15 +155,15 @@ plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
     hjust = 1
     vjust = -.1
   }
-  
+
   #text
   var.pct = round(mean(fa.object$communality),3) #the proportion of variance accounted for
   text = paste0("proportion of variance explained ",var.pct,reverse)
-  
+
   #text object
   text_object = grobTree(textGrob(text, x=x,  y=y, hjust = hjust, vjust = vjust),
                          gp=gpar(fontsize=11))
-  
+
   g = ggplot(reorder_by(indicators, ~ loadings, DF), aes(loadings, indicators)) +
     geom_point() +
     annotation_custom(text_object) +
@@ -190,12 +190,12 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
 
   fa.num = length(fa.objects) #number of fas
   fa.names = str_c("fa.", 1:fa.num)
-  
+
   #check if fa.objects is a list
   if (!is.list(fa.objects)) {
     stop("fa.objects parameter is not a list.")
   }
-  
+
   #check if there is no list (i.e. if user just gave one fa object)
   if (class(fa.objects) %in% c("psych", "fa")) {
     fa.objects = list(fa.objects)
@@ -203,7 +203,7 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
     fa.num = length(fa.objects) #number of fas
     fa.names = str_c("fa.", 1:fa.num)
   }
-  
+
   #check if labels have the right length
   if (length(fa.labels) == 1) {
       if (is.na(fa.labels)) {
@@ -212,14 +212,14 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
   } else if (length(fa.labels) != fa.num) {
     stop("Factor analysis labels length is not identical to number of analyses.")
   }
-  
+
   #make reverse vector if not given
   if (is.na(all(reverse.vector))) {
     reverse.vector = rep(1, fa.num)
   } else if (length(reverse.vector) != fa.num) {
     stop("Length of reversing vector does not match number of factor analyses.")
   }
-  
+
   #merge into df
   d = data.frame() #to merge into
   for (fa.idx in 1:fa.num) { #loop over fa objects
@@ -228,10 +228,10 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
     loads = as.data.frame(as.vector(loads))
     rownames(loads) = rnames
     colnames(loads) = fa.names[fa.idx]
-    
+
     d = merge_datasets(d, loads, 1)
   }
-  
+
   #reshape to long form
   d2 = reshape(d,
                varying = 1:fa.num,
@@ -240,7 +240,7 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
   d2$time = as.factor(d2$time)
   d2$id = as.factor(d2$id)
   colnames(d2)[2] = "fa"
-  
+
   #plot
   g = ggplot(reorder_by(id, ~ fa, d2), aes(x=id, y=fa, color=time, group=time)) +
     geom_point(position=position_dodge(width = .5)) +
@@ -248,14 +248,14 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
     scale_color_discrete(name="Analysis",
                          labels=fa.labels) +
     coord_flip()
-  
+
   return(g)
 }
 
 
 
 # Correlates all variables, finds the pair with the highest correlation, and removes one of them using the specified method.
-#' Remove the n most redundant variables from a data.frame. 
+#' Remove the n most redundant variables from a data.frame.
 #'
 #' Removes the n top variables that highly correlated with another variable so as to avoid problems in analysis.
 #' @param df a data.frame.
@@ -276,26 +276,26 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   if (!remove.method %in% c("c","l", "r", "f", "s")) { #conversative, liberal or random, first or second
   stop(paste0("Third parameter was neither identifable as conversative, liberal or random. It was: ", remove.method))
   }
-  
+
   old.names = colnames(df) #save old variable names
-  
+
   for (drop.num in 1:num.to.remove) {
   print(paste0("Dropping variable number ",drop.num))
   names = colnames(df) #current names
-  
+
     #correlations
     cors = as.data.frame(cor(df, use="pair")) #correlations
     #remove diagnonal 0's
     for (idx in 1:nrow(cors)) {
-      cors[idx,idx] = NA 
+      cors[idx,idx] = NA
     }
-    
+
     #dropping
     max.idx = which_max2(cors) #indexes of max value (first one if multiple identical)
     topvars = paste(rownames(cors)[max.idx[1]], "and", rownames(cors)[max.idx[2]]) #names of top correlated variables
     r = round(cors[max.idx[1],max.idx[2]],3)
     print(paste0("Most correlated vars are ", topvars, " r=", r)) #print info
-    
+
     #first
     if (remove.method.1=="f") {
       df[,max.idx[2]] = NULL #remove the second var
@@ -312,7 +312,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
       else {
         df[,max.idx[2]] = NULL #remove the first var
       }
-      
+
     }
   }
   #Which variables were dropped?
@@ -320,7 +320,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   dropped.names = setdiff(old.names, new.names)
   print("Dropped the following variables:")
   print(dropped.names)
-  
+
   #return reduced df
   return(df)
 }
@@ -344,7 +344,7 @@ FA_residuals = function(data) {
   resids.table = data.frame(matrix(nrow=nrow(data), ncol=ncol(data))) #make df for resids
   colnames(resids.table) = colnames(data) #set names
   rownames(resids.table) = rownames(data) #
-  
+
   #for each indicator
   for (indicator in colnames(data)) {
     formula = str_c(indicator," ~ factor.scores") #the regression formula as string
@@ -366,25 +366,24 @@ FA_residuals = function(data) {
 #' FA_MAR()
 FA_MAR = function(data, sort = T) {
   resids = FA_residuals(data)
-  
+
   #mean absolute residuals
   mean.abs.resid = apply(resids, 1, function(x) {
       return(mean(abs(x)))
     }
     )
-  
+
   #sort?
   if (sort) {
     mean.abs.resid = sort(mean.abs.resid, decreasing=T)
   }
-  
+
   #return
   return(mean.abs.resid)
 }
 
 ## For finding problematic cases in FA
 # Runs FA on a dataset without a case, for each case. Returns var% for subset analyses and difference to all cases.
-#' Calculates the effect of removing a case on size of the first factor, for each case.
 #'
 #' Returns a numerical vector of the change in the size of the first factor by removing that case.
 #' @param data a data.frame.
@@ -397,13 +396,13 @@ FA_CFS = function(data, sort = T) {
   #initial
   prop.vars = as.data.frame(matrix(nrow=nrow(data)+1, ncol=2)) #for results
   colnames(prop.vars) = c("Prop.var%", "IPV")
-  
+
   #all cases
   fa = fa(data) #factor analyze
   prop.var = round(mean(fa$communality),3) #the proportion of variance accounted for
   prop.vars[nrow(prop.vars),] = c(prop.var, 0) #insert
   rownames(prop.vars)[[nrow(prop.vars)]] = "All cases"
-  
+
   #for each case
   for (case in 1:nrow(data)) {
     data2 = data[-case,] #get subset without that case
@@ -417,15 +416,83 @@ FA_CFS = function(data, sort = T) {
       prop.vars[case,] = c(NA, NA) #insert NAs
     }
     )
-    
+
     rownames(prop.vars)[case] = rownames(data)[case] #set rowname
   }
-  
+
   #sort?
   if (sort) {
     prop.vars = prop.vars[order(prop.vars[,2], decreasing=T),]
   }
-  
+
   return(prop.vars)
 }
 
+#' Factor analyze with all methods
+#'
+#'
+#' Runs factor analysis on a dataset with all 30 possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
+#' @param DF A data.frame to extract factors from.
+#' @param ... Parameters to fa().
+#' @param skip_methods A character vector of methods to skip. Defaults to none.
+#' @keywords psychometrics, factor analysis
+#' @export
+#' @examples
+#' FA_all_methods()
+FA_all_methods = function(DF, ..., skip_methods = "") {
+  #libs
+  library(stringr)
+  library(psych)
+
+  #settings
+  score.methods = c("regression", "Thurstone", "tenBerge", "Anderson", "Bartlett")
+  extraction.methods = c("minres", "wls", "gls", "pa", "ml", "minchi")
+  #all combitations of above: choose 1 of 5, choose 1 of 6
+  perms = as.matrix(expand.grid(1:length(score.methods), 1:length(extraction.methods)))
+
+  scores = data.frame(matrix(nrow = nrow(DF), ncol = 0))
+  loadings = data.frame(matrix(nrow = ncol(DF), ncol = 0))
+  #main loop
+  for (row in 1:nrow(perms)) {
+    #combination name
+    score_meth_num = perms[row, 1]
+    score_meth_name = score.methods[score_meth_num]
+    extract_meth_num = perms[row, 2]
+    extract_meth_name = extraction.methods[extract_meth_num]
+    name = str_c(score_meth_name, "_", extract_meth_name)
+    print(str_c(row, " out of ", nrow(perms), " - ", name))
+
+    #skip methods
+    if (!skip_methods == "") {
+      if (any(str_detect(name, skip_methods))) {
+        print(str_c("Skipping method: ", name))
+        next
+      }
+    }
+
+    #analyze
+    err = tryCatch({
+      .fa = fa(DF, fm = extract_meth_name, scores = score_meth_name)
+    },
+    error = function(e) {
+      scores[, name] = NA
+      loadings[, name] = NA
+    }
+    )
+    #skip on error
+    if ("error" %in% class(err)) next
+
+    #skip on Heywood case
+    if (any(as.vector(.fa$loadings) > 1 | as.vector(.fa$loadings) < -1)) {
+      print(str_c("Heywood case found for ", name))
+      next
+    }
+
+    #save
+    scores[, name] = as.vector(.fa$scores)
+    loadings[, extract_meth_name] = as.vector(.fa$loadings)
+  }
+
+  return(list(scores = scores,
+              loadings = loadings))
+}
