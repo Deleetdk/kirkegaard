@@ -4,8 +4,8 @@
 \alias{lm_beta_matrix}
 \title{Matrix of beta coefficients of all simple linear models.}
 \usage{
-lm_beta_matrix(dependent, predictors, data, standardized = TRUE,
-  .weights = NA)
+lm_beta_matrix(dependent, predictors, data, standardized = T, .weights = NA,
+  return_models = "b")
 }
 \arguments{
 \item{dependent}{a string with the name of the dependent variable.}

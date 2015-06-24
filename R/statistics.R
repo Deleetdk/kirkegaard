@@ -274,28 +274,31 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   }
   remove.method.1 = substr(remove.method, 1,1) #get first char
   if (!remove.method %in% c("c","l", "r", "f", "s")) { #conversative, liberal or random, first or second
-  stop(paste0("Third parameter was neither identifable as conversative, liberal or random. It was: ", remove.method))
+    stop(paste0("Third parameter was neither identifable as conversative, liberal or random. It was: ", remove.method))
   }
-
+  
   old.names = colnames(df) #save old variable names
-
+  
   for (drop.num in 1:num.to.remove) {
-  print(paste0("Dropping variable number ",drop.num))
-  names = colnames(df) #current names
-
+    print(paste0("Dropping variable number ",drop.num))
+    names = colnames(df) #current names
+    
     #correlations
     cors = as.data.frame(cor(df, use="pair")) #correlations
-    #remove diagnonal 0's
+    #remove diagnonal 1's
     for (idx in 1:nrow(cors)) {
       cors[idx,idx] = NA
     }
-
+    #absolute values because we don't care if cor is .99 or -.99
+    cors.abs = abs(cors)
+    
     #dropping
-    max.idx = which_max2(cors) #indexes of max value (first one if multiple identical)
+    max.idx = which_max2(cors.abs) #indexes of max value (first one if multiple identical)
+    
     topvars = paste(rownames(cors)[max.idx[1]], "and", rownames(cors)[max.idx[2]]) #names of top correlated variables
     r = round(cors[max.idx[1],max.idx[2]],3)
     print(paste0("Most correlated vars are ", topvars, " r=", r)) #print info
-
+    
     #first
     if (remove.method.1=="f") {
       df[,max.idx[2]] = NULL #remove the second var
@@ -312,7 +315,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
       else {
         df[,max.idx[2]] = NULL #remove the first var
       }
-
+      
     }
   }
   #Which variables were dropped?
@@ -320,7 +323,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   dropped.names = setdiff(old.names, new.names)
   print("Dropped the following variables:")
   print(dropped.names)
-
+  
   #return reduced df
   return(df)
 }
