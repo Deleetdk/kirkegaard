@@ -443,13 +443,13 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
   #libs
   library(stringr)
   library(psych)
-
+  
   #settings
   score.methods = c("regression", "Thurstone", "tenBerge", "Anderson", "Bartlett")
   extraction.methods = c("minres", "wls", "gls", "pa", "ml", "minchi")
   #all combitations of above: choose 1 of 5, choose 1 of 6
   perms = as.matrix(expand.grid(1:length(score.methods), 1:length(extraction.methods)))
-
+  
   scores = data.frame(matrix(nrow = nrow(DF), ncol = 0))
   loadings = data.frame(matrix(nrow = ncol(DF), ncol = 0))
   #main loop
@@ -461,7 +461,7 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
     extract_meth_name = extraction.methods[extract_meth_num]
     name = str_c(score_meth_name, "_", extract_meth_name)
     print(str_c(row, " out of ", nrow(perms), " - ", name))
-
+    
     #skip methods
     if (!skip_methods == "") {
       if (any(str_detect(name, skip_methods))) {
@@ -469,7 +469,7 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
         next
       }
     }
-
+    
     #analyze
     err = tryCatch({
       .fa = fa(DF, fm = extract_meth_name, scores = score_meth_name)
@@ -477,22 +477,28 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
     error = function(e) {
       scores[, name] = NA
       loadings[, name] = NA
+      return("error")
     }
     )
     #skip on error
-    if ("error" %in% class(err)) next
-
+    if (is.character(err)) {
+      print(str_c("Skipping ", name, " due to extraction error"))
+      next
+    }
+    
     #skip on Heywood case
     if (any(as.vector(.fa$loadings) > 1 | as.vector(.fa$loadings) < -1)) {
       print(str_c("Heywood case found for ", name))
       next
     }
-
+    
     #save
+    print(str_c("Saving results from ", name))
     scores[, name] = as.vector(.fa$scores)
     loadings[, extract_meth_name] = as.vector(.fa$loadings)
   }
-
+  
   return(list(scores = scores,
               loadings = loadings))
 }
+

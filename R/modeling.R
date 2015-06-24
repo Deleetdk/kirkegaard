@@ -12,13 +12,18 @@
 #' @export
 #' @examples
 #' lm_beta_matrix()
-lm_beta_matrix = function(dependent, predictors, data, standardized=TRUE, .weights=NA) {
+lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights=NA, return_models = "b") {
   #find all the combinations
   library(gtools) #for combinations()
   library("QuantPsyc") #for lm.beta()
   library(stringr) #for str_c()
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
+  
+  #standardize?
+  if (standardized == T) { 
+    data = as.data.frame(scale(data)) 
+  }
   
   sets = list() #list of all combinations
   for (num.choose in 1:num.inde) { #loop over numbers of variables to choose
@@ -51,6 +56,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized=TRUE, .weigh
   
   #run each model
   betas = data.frame(matrix(ncol = num.inde+1, nrow = length(models))) #DF for betas
+  model.fits = list()
   #number of cols is the predictors +1 because the last is R2 adj.
   colnames(betas) = c(predictors, "r2.adj.") #colnames
   for (model.idx in 1:length(models)) { #loop over the index of each model
@@ -59,13 +65,10 @@ lm_beta_matrix = function(dependent, predictors, data, standardized=TRUE, .weigh
           
     #fit model and extract betas
     lm.fit = lm(models[model.idx], data, weights = .weights) #fit the model
-    if (standardized==FALSE) {
-      lm.fit.betas = lm.fit$coefficients[-1] #get betas, remove intercept
-    }
-    if (standardized==TRUE) {
-      lm.fit.betas = lm.beta(lm.fit)[-length(lm.beta(lm.fit))] #get betas, standardized
-    }
-    #print(lm.fit.betas)
+    model.fits[[model.idx]] = lm.fit
+
+    #get betas, remove intercept
+    lm.fit.betas = lm.fit$coefficients[-1]
     
     #insert data
     for (beta.idx in 1:length(lm.fit.betas)) { #loop over each beta
@@ -82,6 +85,18 @@ lm_beta_matrix = function(dependent, predictors, data, standardized=TRUE, .weigh
     #insert r2 adj.
     betas[model.idx,"r2.adj."] = r.sq
   }
+  
+  if (str_sub(return_models, 1, 1) == "a") {
+    return(list(beta_matrix = betas,
+                all_models = model.fits))
+  }
+  
+  if (str_sub(return_models, 1, 1) == "b") {
+    best_idx = which.max(unlist(betas["r2.adj."]))
+    return(list(beta_matrix = betas,
+                best_model = model.fits[[best_idx]]))
+  }
+  
   return(betas)
 }
 
@@ -152,6 +167,8 @@ residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.varss = T
 lm_CI = function(fitted.model, level = .95, round = 2) {
   sum.model = summary(fitted.model) #summary
   df = df = sum.model$df[2] #degrees of freedom
+  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared)
+  names(model_effect_size) = c("R2", "R2 adj.")
   coefs = sum.model$coef[-1,1:2, drop=F] #coefs without intercept
   coefs = as.data.frame(coefs) #conver to dataframe
   colnames(coefs) = c("Beta", "SE") #rename
@@ -159,6 +176,7 @@ lm_CI = function(fitted.model, level = .95, round = 2) {
   coefs$CI.lower = coefs[,1] - multiplier*coefs[,2] #lower
   coefs$CI.upper = coefs[,1] + multiplier*coefs[,2] #upper
   coefs = round(coefs, round) #round to desired digit
-  return(coefs)
+  return(list(coefs = coefs,
+              effect_size = model_effect_size))
 }
 
