@@ -244,7 +244,7 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
   #plot
   g = ggplot(reorder_by(id, ~ fa, d2), aes(x=id, y=fa, color=time, group=time)) +
     geom_point(position=position_dodge(width = .5)) +
-    xlab("Loading") + ylab("Indicator") +
+    ylab("Loading") + xlab("Indicator") +
     scale_color_discrete(name="Analysis",
                          labels=fa.labels) +
     coord_flip()

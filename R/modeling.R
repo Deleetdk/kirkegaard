@@ -105,23 +105,23 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 #' Residualized data.frame.
 #'
 #' Returns a residualized data.frame given a set of variables to partial out.
-#' @param data a data.frame or matrix.
-#' @param resid.vars a character vector of the variables to partial out.
-#' @param exclude.resid.varss whether to residualize the residualize variables. Defaults to true.
-#' @param return.resid.vars whether to include the residualize variables in the returned data.frame. Defaults to true.
-#' @param print.models whether to print the lm models used in the process. Defaults to true.
+#' @param data A data.frame or matrix.
+#' @param resid.vars A character vector of the variables to partial out.
+#' @param exclude.resid.vars Whether to exclude the residualization variables from residualization. Defaults to true.
+#' @param return.resid.vars Whether to include the residualization variables in the returned data.frame. Defaults to true.
+#' @param print.models Wether to print the lm models used in the process. Defaults to true.
 #' @keywords modeling, residualize, partialing
 #' @export
 #' @examples
 #' residualize_DF()
-residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.varss = T, return.resid.vars = T, print.models = T) {
+residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.vars = T, return.resid.vars = T, print.models = T) {
   #the residuals function
   lm_f = function(x) {
-    x = residuals(lm(data=data, formula= update(x ~ 0, paste0("~",resid.vars))))
+    x = residuals(lm(data = data, formula = update(x ~ 0, paste0("~",resid.vars)), na.action = na.exclude))
   }
   
   #calculate residuals
-  if (exclude.resid.varss) {
+  if (exclude.resid.vars) {
     resid = data.frame(matrix(nrow=nrow(data),ncol=ncol(data))) #make empty df same size as data
     colnames(resid) = colnames(data) #get colnames
     
@@ -130,15 +130,15 @@ residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.varss = T
         f = str_c(colname, " ~ ", paste0(resid.vars))
         if (print.models) print(f)
         
-        resid[,colname] = residuals(lm(data = data, formula = f))
+        resid[,colname] = residuals(lm(data = data, formula = f, na.action = na.exclude))
       }
       if (colname %in% resid.vars) { #if colname IS an indepedent, get originals
         resid[,colname] = data[,colname]
       }
     }
   }
-    else {
-    resid = data.frame(apply(data,2,lm_f)) #get residuals from everything including independents
+  else {
+    resid = data.frame(apply(data, 2, lm_f)) #get residuals from everything including independents
   }
   
   #this adds the suffix, if desired

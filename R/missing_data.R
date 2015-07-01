@@ -38,7 +38,7 @@ miss_table = function(x){
 #' @examples
 #' plot_miss()
 plot_miss = function(df, percent=T) {
-  m = miss.case(df)
+  m = miss_case(df)
   d = data.frame(number.of.NA = m)
   max.miss = max(m)
   min.miss = min(m)
