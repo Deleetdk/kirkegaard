@@ -4,19 +4,19 @@
 \alias{residualize_DF}
 \title{Residualized data.frame.}
 \usage{
-residualize_DF(data, resid.vars, suffix = "", exclude.resid.varss = T,
+residualize_DF(data, resid.vars, suffix = "", exclude.resid.vars = T,
   return.resid.vars = T, print.models = T)
 }
 \arguments{
-\item{data}{a data.frame or matrix.}
+\item{data}{A data.frame or matrix.}
 
-\item{resid.vars}{a character vector of the variables to partial out.}
+\item{resid.vars}{A character vector of the variables to partial out.}
 
-\item{exclude.resid.varss}{whether to residualize the residualize variables. Defaults to true.}
+\item{exclude.resid.vars}{Whether to exclude the residualization variables from residualization. Defaults to true.}
 
-\item{return.resid.vars}{whether to include the residualize variables in the returned data.frame. Defaults to true.}
+\item{return.resid.vars}{Whether to include the residualization variables in the returned data.frame. Defaults to true.}
 
-\item{print.models}{whether to print the lm models used in the process. Defaults to true.}
+\item{print.models}{Wether to print the lm models used in the process. Defaults to true.}
 }
 \description{
 Returns a residualized data.frame given a set of variables to partial out.
