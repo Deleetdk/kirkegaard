@@ -276,13 +276,13 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   if (!remove.method %in% c("c","l", "r", "f", "s")) { #conversative, liberal or random, first or second
     stop(paste0("Third parameter was neither identifable as conversative, liberal or random. It was: ", remove.method))
   }
-  
+
   old.names = colnames(df) #save old variable names
-  
+
   for (drop.num in 1:num.to.remove) {
     print(paste0("Dropping variable number ",drop.num))
     names = colnames(df) #current names
-    
+
     #correlations
     cors = as.data.frame(cor(df, use="pair")) #correlations
     #remove diagnonal 1's
@@ -291,14 +291,14 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
     }
     #absolute values because we don't care if cor is .99 or -.99
     cors.abs = abs(cors)
-    
+
     #dropping
     max.idx = which_max2(cors.abs) #indexes of max value (first one if multiple identical)
-    
+
     topvars = paste(rownames(cors)[max.idx[1]], "and", rownames(cors)[max.idx[2]]) #names of top correlated variables
     r = round(cors[max.idx[1],max.idx[2]],3)
     print(paste0("Most correlated vars are ", topvars, " r=", r)) #print info
-    
+
     #first
     if (remove.method.1=="f") {
       df[,max.idx[2]] = NULL #remove the second var
@@ -315,7 +315,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
       else {
         df[,max.idx[2]] = NULL #remove the first var
       }
-      
+
     }
   }
   #Which variables were dropped?
@@ -323,7 +323,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   dropped.names = setdiff(old.names, new.names)
   print("Dropped the following variables:")
   print(dropped.names)
-  
+
   #return reduced df
   return(df)
 }
@@ -389,23 +389,24 @@ FA_MAR = function(data, sort = T) {
 # Runs FA on a dataset without a case, for each case. Returns var% for subset analyses and difference to all cases.
 #'
 #' Returns a numerical vector of the change in the size of the first factor by removing that case.
-#' @param data a data.frame.
-#' @param sort whether to sort the results or not. Defaults to true.
+#' @param data A data.frame.
+#' @param sort Whether to sort the results or not. Defaults to true.
+#' @param include_full_sample Whether to include the 'case' with the full sample. Defaults to true.
 #' @keywords psychometrics, psychology, latent variable, factor analysis
 #' @export
 #' @examples
 #' FA_CFS()
-FA_CFS = function(data, sort = T) {
+FA_CFS = function(data, sort = T, include_full_sample = T) {
   #initial
   prop.vars = as.data.frame(matrix(nrow=nrow(data)+1, ncol=2)) #for results
   colnames(prop.vars) = c("Prop.var%", "IPV")
-
+  
   #all cases
   fa = fa(data) #factor analyze
   prop.var = round(mean(fa$communality),3) #the proportion of variance accounted for
   prop.vars[nrow(prop.vars),] = c(prop.var, 0) #insert
   rownames(prop.vars)[[nrow(prop.vars)]] = "All cases"
-
+  
   #for each case
   for (case in 1:nrow(data)) {
     data2 = data[-case,] #get subset without that case
@@ -419,15 +420,20 @@ FA_CFS = function(data, sort = T) {
       prop.vars[case,] = c(NA, NA) #insert NAs
     }
     )
-
+    
     rownames(prop.vars)[case] = rownames(data)[case] #set rowname
   }
-
+  
   #sort?
   if (sort) {
     prop.vars = prop.vars[order(prop.vars[,2], decreasing=T),]
   }
-
+  
+  #full sample?
+  if(!include_full_sample) {
+    prop.vars = prop.vars[1:nrow(data), ]
+  }
+  
   return(prop.vars)
 }
 
@@ -446,13 +452,13 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
   #libs
   library(stringr)
   library(psych)
-  
+
   #settings
   score.methods = c("regression", "Thurstone", "tenBerge", "Anderson", "Bartlett")
   extraction.methods = c("minres", "wls", "gls", "pa", "ml", "minchi")
   #all combitations of above: choose 1 of 5, choose 1 of 6
   perms = as.matrix(expand.grid(1:length(score.methods), 1:length(extraction.methods)))
-  
+
   scores = data.frame(matrix(nrow = nrow(DF), ncol = 0))
   loadings = data.frame(matrix(nrow = ncol(DF), ncol = 0))
   #main loop
@@ -464,7 +470,7 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
     extract_meth_name = extraction.methods[extract_meth_num]
     name = str_c(score_meth_name, "_", extract_meth_name)
     print(str_c(row, " out of ", nrow(perms), " - ", name))
-    
+
     #skip methods
     if (!skip_methods == "") {
       if (any(str_detect(name, skip_methods))) {
@@ -472,7 +478,7 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
         next
       }
     }
-    
+
     #analyze
     err = tryCatch({
       .fa = fa(DF, fm = extract_meth_name, scores = score_meth_name)
@@ -488,19 +494,19 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
       print(str_c("Skipping ", name, " due to extraction error"))
       next
     }
-    
+
     #skip on Heywood case
     if (any(as.vector(.fa$loadings) > 1 | as.vector(.fa$loadings) < -1)) {
       print(str_c("Heywood case found for ", name))
       next
     }
-    
+
     #save
     print(str_c("Saving results from ", name))
     scores[, name] = as.vector(.fa$scores)
     loadings[, extract_meth_name] = as.vector(.fa$loadings)
   }
-  
+
   return(list(scores = scores,
               loadings = loadings))
 }
@@ -518,15 +524,15 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
 FA_rank_fa = function(x, ...) {
   #lib
   require(psych)
-  
+
   #rank matrix
   rank_data = apply(x, 2, rank)
   rank_data = as.data.frame(rank_data)
   rownames(rank_data) = rownames(x)
-  
+
   #fa
   rank_fa = fa(rank_data, ...)
-  
+
   return(rank_fa)
 }
 
@@ -535,6 +541,7 @@ FA_rank_fa = function(x, ...) {
 #'
 #' Returns a correlation matrix with robust correlations. These are derived from either rlm() [MASS] or lmrob() [robustbase].
 #' @param x A data.frame to correlate.
+#' @param x method Which robust method to use. Options are "lmrob" [robustbase] or "rlm" [MASS]. Defaults to the first.
 #' @keywords psychometrics, robust, correlation, matrix
 #' @export
 #' @examples
@@ -542,50 +549,50 @@ FA_rank_fa = function(x, ...) {
 FA_robust_cormatrix = function(x, method = "lmrob") {
   #lib
   require(gtools)
-  
+
   #std dataset
   x.std = as.data.frame(scale(x))
-  
+
   #combinations
   combos = combinations(ncol(x), 2)
-  
+
   #df for results
   r_mat = as.data.frame(matrix(nrow = ncol(x), ncol = ncol(x)))
   rownames(r_mat) = colnames(r_mat) =  colnames(x)
-  
+
   #fit each model
   for (row_idx in 1:nrow(combos)) {
     pred = colnames(x)[combos[row_idx, 1]]
     outcome = colnames(x)[combos[row_idx, 2]]
-    
+
     #create models
     model = str_c(outcome, " ~ ", pred)
     model2 = str_c(pred, " ~ ", outcome)
-    
+
     #fit models
     if (method == "lmrob") {
       require(robustbase)
       r_fit = lmrob(as.formula(model), x.std)
       r_fit2 = lmrob(as.formula(model2), x.std)
     }
-    
+
     if (method == "rlm") {
       require(MASS)
       r_fit = rlm(as.formula(model), x.std)
       r_fit2 = rlm(as.formula(model2), x.std)
     }
-    
+
     #take mean
     r_mean_coef = (coef(r_fit)[2] + coef(r_fit2))[2] / 2
-    
+
     #save result
     r_mat[outcome, pred] = r_mean_coef
 
   }
-  
+
   #make complete matrix
   r_mat = combine_upperlower(t(r_mat), r_mat, .diag = 1)
-  
+
   return(r_mat)
 }
 
@@ -602,10 +609,10 @@ FA_robust_cormatrix = function(x, method = "lmrob") {
 FA_robust_fa = function(x, ..., .method = "lmrob") {
   #get robust matrix
   r_mat = FA_robust_cormatrix(x, method = .method)
-  
+
   #fa
-  r_fa = fa(r_mat)
-  
+  r_fa = fa(r_mat, ...)
+
   return(r_fa)
 }
 
@@ -624,68 +631,68 @@ FA_robust_fa = function(x, ..., .method = "lmrob") {
 #' FA_robust_cormatrix()
 FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
   library(plyr)
-  
+
   #initial fa
   full_fa = fa(x, ...)
-  
+
   #loadings object
   loadings = data.frame(matrix(ncol = ncol(x), nrow = nrow(x) + 1))
   rownames(loadings) = c(rownames(x), "Full data")
   colnames(loadings) = colnames(x)
-  
+
   #insert loadings from full dataset
   loadings[nrow(loadings), ] = loadings(full_fa)
-  
+
   #try each subset
   for (row_idx in 1:nrow(x)) {
     #subset data
     data_subset = x[-row_idx, ]
-    
+
     #fa
     subset_fa = fa(data_subset, ...)
-    
+
     #get loadings
     subset_loadings = loadings(subset_fa)
-    
+
     #insert
     loadings[row_idx, ] = subset_loadings
   }
 
-  
+
   #absolute change in loadings by case
   AC = adply(loadings, 1, function(k) {
     return(k - loadings[nrow(loadings), ])
   })
-  
+
   #absolute value
   AC = abs(AC)
-  
+
   #sensible rownames
   rownames(AC) = rownames(loadings)
-  
+
   #mean value by subset
   MeCAFL = apply(AC, 1, mean)
-  
+
   #max change by subset
   MaCAFL = apply(AC, 1, max)
-  
+
   #list
   r = data.frame(mean_change = MeCAFL,
                  max_change = MaCAFL)
-  
+
   #sort?
   if (sort == 1) {
     r = r[order(r[1], decreasing = T), ]
   }
-  
+
   if (sort == 2) {
     r = r[order(r[2], decreasing = T), ]
   }
-  
+
   #full sample?
   if (!include_full_sample) {
     r = r[-nrow(r), ]
   }
-  
+
   return(r)
 }
