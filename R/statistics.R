@@ -529,6 +529,7 @@ FA_rank_fa = function(x, ...) {
   rank_data = apply(x, 2, rank)
   rank_data = as.data.frame(rank_data)
   rownames(rank_data) = rownames(x)
+  colnames(rank_data) = colnames(x)
 
   #fa
   rank_fa = fa(rank_data, ...)

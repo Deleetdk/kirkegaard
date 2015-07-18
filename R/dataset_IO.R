@@ -102,8 +102,8 @@ read_mega = function(filename){
 #' @examples
 #' write_mega()
 write_mega = function(object, filename){
-  datafile = cbind(ID=rownames(datafile),datafile) #adds an ID column with the rownames
-  return(write.table(datafile, file=filename, #filename
+  datafile = cbind(ID=rownames(object), object) #adds an ID column with the rownames
+  return(write.table(datafile, file = filename, #filename
             sep=";", #use tabs to separate
             na="", #no data is empty cell
             row.names = FALSE)) #add rownames
