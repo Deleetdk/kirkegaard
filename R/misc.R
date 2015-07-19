@@ -137,3 +137,44 @@ add_newlines = function(x, total.length = 95) {
   t = sapply(x, FUN = new_lines_adder, interval = round(total.length/groups), USE.NAMES=FALSE)
   return(t)
 }
+
+
+#' Standardize data.frame
+#'
+#' Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
+#' @param df A data.frame or matrix.
+#' @param exclude A character vector of variables to exclude from the process.
+#' @keywords standardize, data.frame, z-score
+#' @export
+#' @examples
+#' std_df()
+std_df = function(df, exclude = "") {
+  library(stringr)
+  
+  for (col_idx in 1:ncol(df)) {
+    
+    #skip if in exclusion vector
+    if (colnames(df)[col_idx] %in% exclude) {
+      next
+    }
+    
+    #skip if factor
+    if (class(unlist(df[col_idx])) == "factor") {
+      s = str_c("Skipped ", colnames(df)[col_idx], " because it is a factor.")
+      print(s)
+      next
+    }
+
+    #skip if character
+    if (class(unlist(df[col_idx])) == "character") {
+      s = str_c("Skipped ", colnames(df)[col_idx], " because it is a character vector.")
+      print(s)
+      next
+    }
+    
+    #otherwise standardize
+    df[col_idx] = scale(df[col_idx])
+  }
+  
+  return(df)
+}

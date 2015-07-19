@@ -1,8 +1,8 @@
 Package: kirkegaard
-Title: Personal package for Emil O. W. Kirkegaard with various functions
-Version: 0.0.0.9000
+Title: kirkegaard
+Version: 1.01
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
-Description: Contains various useful functions I have written
+Description: This is a personal package containing various useful functions that I have written or found elsewhere. It serves primarily as an easy way for me to use my own functions across projects.
 Depends: R (>= 3.2.0)
 License: GPL
 LazyData: true
