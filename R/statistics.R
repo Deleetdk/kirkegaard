@@ -267,53 +267,55 @@ plot_loadings_multi = function(fa.objects, fa.labels = NA, reverse.vector = NA) 
 #' remove_redundant_vars()
 remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   if (!is.data.frame(df)) {
-    warning(paste0("First parameter is not a data frame. Instead it is ", class(df)))
+    stop(paste0("First parameter is not a data frame. Instead it is ", class(df)))
   }
   if (!is.numeric(num.to.remove)) {
     stop(paste0("Second parameter is not numeric. Instead is ", class(num.to.remove)))
   }
   remove.method.1 = substr(remove.method, 1,1) #get first char
-  if (!remove.method %in% c("c","l", "r", "f", "s")) { #conversative, liberal or random, first or second
-    stop(paste0("Third parameter was neither identifable as conversative, liberal or random. It was: ", remove.method))
+  if (!remove.method %in% c("f", "s", "r")) { #conversative, liberal or random, first or second
+    stop(paste0("Third parameter was neither identifable as first, second or random. It was: ", remove.method))
   }
 
   old.names = colnames(df) #save old variable names
 
   for (drop.num in 1:num.to.remove) {
-    print(paste0("Dropping variable number ",drop.num))
+    print(paste0("Dropping variable number ", drop.num))
     names = colnames(df) #current names
 
     #correlations
-    cors = as.data.frame(cor(df, use="pair")) #correlations
+    cors = as.data.frame(cor(df, use="pair"))
+    
     #remove diagnonal 1's
     for (idx in 1:nrow(cors)) {
-      cors[idx,idx] = NA
+      cors[idx, idx] = NA
     }
+
     #absolute values because we don't care if cor is .99 or -.99
     cors.abs = abs(cors)
 
     #dropping
     max.idx = which_max2(cors.abs) #indexes of max value (first one if multiple identical)
 
-    topvars = paste(rownames(cors)[max.idx[1]], "and", rownames(cors)[max.idx[2]]) #names of top correlated variables
-    r = round(cors[max.idx[1],max.idx[2]],3)
+    topvars = paste(rownames(cors)[max.idx[2]], "and", rownames(cors)[max.idx[1]]) #names of top correlated variables
+    r = round(cors[max.idx[1], max.idx[2]], 3)
     print(paste0("Most correlated vars are ", topvars, " r=", r)) #print info
 
     #first
-    if (remove.method.1=="f") {
-      df[,max.idx[2]] = NULL #remove the second var
+    if (remove.method.1 == "f") {
+      df[, max.idx[2]] = NULL #remove the second var
     }
     #second
-    if (remove.method.1=="s") {
-      df[,max.idx[1]] = NULL #remove the second var
+    if (remove.method.1 == "s") {
+      df[, max.idx[1]] = NULL #remove the second var
     }
     #random
-    if (remove.method.1=="r") {
-      if (rnorm(1)>0){
-        df[,max.idx[1]] = NULL #remove the second var
+    if (remove.method.1 == "r") {
+      if (rnorm(1) > 0){
+        df[, max.idx[1]] = NULL #remove the second var
       }
       else {
-        df[,max.idx[2]] = NULL #remove the first var
+        df[, max.idx[2]] = NULL #remove the first var
       }
 
     }

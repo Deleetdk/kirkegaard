@@ -154,7 +154,7 @@ residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
   return(resid)
 }
 
-#' Convenient summary of a lm() model with confidence intervals.
+#' Convenient summary of an lm() model with confidence intervals.
 #'
 #' Returns beta coefficients and confidence intervals from a fitted lm() model.
 #' @param fitted.model the fitted model to summarize.
@@ -180,3 +180,41 @@ lm_CI = function(fitted.model, level = .95, round = 2) {
               effect_size = model_effect_size))
 }
 
+
+
+#' Get R2 and R2 adj. for each model.
+#'
+#' Returns a data.frame with each models R2 and R2 adj.
+#' @param model_list A list of model fits e.g. from lm().
+#' @keywords model, fit
+#' @export
+#' @examples
+#' lm_get_fits()
+lm_get_fits = function(model_list) {
+  d = as.data.frame(matrix(nrow = length(model_list), ncol = 2))
+  colnames(d) = c("R2", "R2_adj")
+  
+  for (idx in 1:length(model_list)) {
+    mod = model_list[[idx]]
+    s = summary(mod)
+    d[idx, "R2"] = s$r.squared
+    d[idx, "R2_adj"] = s$adj.r.squared
+  }
+  
+  return(d)
+}
+
+
+
+#' Find the best model by R2 adj. value.
+#'
+#' Returns the index of the model with the highest R2 adj. value.
+#' @param model_list A list of model fits e.g. from lm().
+#' @keywords model, fit, R2 adj., best
+#' @export
+#' @examples
+#' lm_best()
+lm_best = function(model_list) {
+  fit_df = lm_get_fits(model_list)[2]
+  return(which_max2(fit_df)[1])
+}
