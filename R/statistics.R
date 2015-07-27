@@ -699,3 +699,28 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 
   return(r)
 }
+
+
+#' Semi-partial correlation with weights
+#'
+#'
+#' Returns the semi-partial correlation. Weights may be used.
+#' @param x A numeric vector to correlate with y.
+#' @param y A numeric vector to correlate with x after partialing out z.
+#' @param z A numeric vector to partial out of y.
+#' @param weights A numeric vector of weights to use. If none given, will return unweighted results.
+#' @keywords psychometrics, partial, semi-partial, correlation, weights
+#' @export
+#' @examples
+#' semi_par()
+semi_par = function(x, y, z, weights = NA) {
+  library(weights)
+  if (is.na(weights[1])) {
+    weights = rep(1, length(x))
+  }
+
+  y_res = resid(lm(y ~ z, weights = weights))
+  r_sp = wtd.cor(x, y_res, weight = weights)
+  r = wtd.cor(x, y, weight = weights)
+  return(list(normal = r, semi_partial = r_sp))
+}

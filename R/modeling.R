@@ -157,15 +157,15 @@ residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 #' Convenient summary of an lm() model with confidence intervals.
 #'
 #' Returns beta coefficients and confidence intervals from a fitted lm() model.
-#' @param fitted.model the fitted model to summarize.
-#' @param level the level of confidence to use. Defaults to .95 (95%).
+#' @param fitted_model the fitted model to summarize.
+#' @param level the level of confidence to use. Defaults to .95 (95\%).
 #' @param round at which digit to round the numbers. Defaults to 2.
 #' @keywords modeling, summary, model
 #' @export
 #' @examples
 #' lm_CI()
-lm_CI = function(fitted.model, level = .95, round = 2) {
-  sum.model = summary(fitted.model) #summary
+lm_CI = function(fitted_model, level = .95, round = 2) {
+  sum.model = summary(fitted_model) #summary
   df = df = sum.model$df[2] #degrees of freedom
   model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared)
   names(model_effect_size) = c("R2", "R2 adj.")

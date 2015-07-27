@@ -128,3 +128,28 @@ output_sorted_var = function(df, var, filename) {
   colnames(s3) = c("Rank", var)
   write.csv(s3, file.name, fileEncoding = "UTF-8") #save
 }
+
+
+#' Abbreviate country and regional names to ISO-3.
+#'
+#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself. 
+#' @param names A character vector of the full names of countries and regions.
+#' @keywords abbreviate, names, shorten; ISO
+#' @export
+#' @examples
+#' as_abbrev()
+as_abbrev = function(names){
+  #get dictionary
+  codes = read.csv("countrycodes.csv", sep=";", row.names=1, encoding = "UTF-8")
+  #set class
+  codes[ , 1] = as.character(codes[ , 1])
+  #loop thru and get abbrevs
+  abbrevs = character()
+  for (name in names){
+    abbrevs = c(abbrevs, codes[name, ])
+    if (is.na(codes[name, ])){
+      print(paste(name, "is missing"))
+    }
+  }
+  return(abbrevs)
+}

@@ -2,14 +2,14 @@
 % Please edit documentation in R/modeling.R
 \name{lm_CI}
 \alias{lm_CI}
-\title{Convenient summary of a lm() model with confidence intervals.}
+\title{Convenient summary of an lm() model with confidence intervals.}
 \usage{
-lm_CI(fitted.model, level = 0.95, round = 2)
+lm_CI(fitted_model, level = 0.95, round = 2)
 }
 \arguments{
-\item{fitted.model}{the fitted model to summarize.}
+\item{fitted_model}{the fitted model to summarize.}
 
-\item{level}{the level of confidence to use. Defaults to .95 (95%).}
+\item{level}{the level of confidence to use. Defaults to .95 (95\%).}
 
 \item{round}{at which digit to round the numbers. Defaults to 2.}
 }
