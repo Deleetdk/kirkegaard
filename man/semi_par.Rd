@@ -4,7 +4,7 @@
 \alias{semi_par}
 \title{Semi-partial correlation with weights}
 \usage{
-semi_par(x, y, z, weights = NA)
+semi_par(x, y, z, weights = NA, complete_cases = T)
 }
 \arguments{
 \item{x}{A numeric vector to correlate with y.}
