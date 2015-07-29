@@ -13,16 +13,17 @@
 #' @examples
 #' lm_beta_matrix()
 lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights=NA, return_models = "b") {
-  #find all the combinations
   library(gtools) #for combinations()
   library("QuantPsyc") #for lm.beta()
   library(stringr) #for str_c()
+
+  #find all the combinations
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
   
   #standardize?
   if (standardized == T) { 
-    data = as.data.frame(scale(data)) 
+    data = std_df(data)
   }
   
   sets = list() #list of all combinations

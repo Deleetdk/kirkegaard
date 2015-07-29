@@ -10,7 +10,7 @@
 #' @export
 #' @examples
 #' merge_datasets()
-merge_datasets = function (DF1, DF2, main=0, time=F){
+merge_datasets = function (DF1, DF2, main=1, time=F){
   #time if desired
   if (time) {time1 = proc.time()} #start timer
   
@@ -138,11 +138,15 @@ output_sorted_var = function(df, var, filename) {
 #' @export
 #' @examples
 #' as_abbrev()
-as_abbrev = function(names){
+as_abbrev = function(names, georgia = "country"){
   #get dictionary
-  codes = read.csv("countrycodes.csv", sep=";", row.names=1, encoding = "UTF-8")
-  #set class
-  codes[ , 1] = as.character(codes[ , 1])
+  codes = read.csv("countrycodes.csv", sep=";", row.names=1, encoding = "UTF-8", stringsAsFactors = F)
+  
+  #Georgia as state or country?
+  if (substr(georgia, 1, 1) == "s") {
+    codes["Georgia", ] = "USA_GA"
+  }
+  
   #loop thru and get abbrevs
   abbrevs = character()
   for (name in names){
@@ -152,4 +156,17 @@ as_abbrev = function(names){
     }
   }
   return(abbrevs)
+}
+
+
+#' Write object to clipboard
+#'
+#' A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
+#' @param x An matrix or data.frame, or something similar.
+#' @keywords write, output, export, clipboard
+#' @export
+#' @examples
+#' write_clipboard()
+write_clipboard = function(x) {
+  write.table(x, "clipboard", sep = "\t", na = "")
 }

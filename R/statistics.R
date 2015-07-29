@@ -713,14 +713,27 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' @export
 #' @examples
 #' semi_par()
-semi_par = function(x, y, z, weights = NA) {
+semi_par = function(x, y, z, weights = NA, complete_cases = T) {
   library(weights)
   if (is.na(weights[1])) {
     weights = rep(1, length(x))
   }
 
-  y_res = resid(lm(y ~ z, weights = weights))
-  r_sp = wtd.cor(x, y_res, weight = weights)
-  r = wtd.cor(x, y, weight = weights)
-  return(list(normal = r, semi_partial = r_sp))
+  #data.frame
+  df = data.frame(x = x,
+  	              y = y,
+  	              z = z,
+  	              weights = weights)
+
+  #complete cases only
+  if (complete_cases) {
+  	  df = df[complete.cases(df), ]
+  }
+
+  #model
+  df$y_res = resid(lm(y ~ z, weights = weights, data = df))
+  r_sp = wtd.cor(df$x, df$y_res, weight = weights)
+  r = wtd.cor(df$x, df$y, weight = weights)
+  return(list(normal = r,
+  	          semi_partial = r_sp))
 }

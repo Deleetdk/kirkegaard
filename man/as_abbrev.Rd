@@ -4,7 +4,7 @@
 \alias{as_abbrev}
 \title{Abbreviate country and regional names to ISO-3.}
 \usage{
-as_abbrev(names)
+as_abbrev(names, georgia = "country")
 }
 \arguments{
 \item{names}{A character vector of the full names of countries and regions.}

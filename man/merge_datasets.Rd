@@ -4,7 +4,7 @@
 \alias{merge_datasets}
 \title{Dataset merger function}
 \usage{
-merge_datasets(DF1, DF2, main = 0, time = F)
+merge_datasets(DF1, DF2, main = 1, time = F)
 }
 \arguments{
 \item{DF1}{the first data.frame}
