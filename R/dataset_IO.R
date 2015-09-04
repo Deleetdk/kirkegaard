@@ -163,10 +163,12 @@ as_abbrev = function(names, georgia = "country"){
 #'
 #' A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
 #' @param x An matrix or data.frame, or something similar.
+#' @param x A number of digits to round the data to.
 #' @keywords write, output, export, clipboard
 #' @export
 #' @examples
 #' write_clipboard()
-write_clipboard = function(x) {
+write_clipboard = function(x, digits = 3) {
+  x = round_df(x, digits)
   write.table(x, "clipboard", sep = "\t", na = "")
 }

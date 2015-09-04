@@ -4,10 +4,12 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x)
+write_clipboard(x, digits = 3)
 }
 \arguments{
 \item{x}{An matrix or data.frame, or something similar.}
+
+\item{x}{A number of digits to round the data to.}
 }
 \description{
 A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.

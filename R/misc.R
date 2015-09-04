@@ -13,7 +13,7 @@
 #' which_max2()
 which_max2 = function(x) {
   #check class
-  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) { 
+  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
     stop(paste0("x was not numeric, data frame or matrix, but instead ", class(x)))
   }
   if (is.matrix(x)) {
@@ -39,7 +39,7 @@ which_max2 = function(x) {
 #' which_min2()
 which_min2 = function(x) {
   #check class
-  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) { 
+  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
     stop(paste0("x was not numeric, data frame or matrix, but instead ",class(x)))
   }
   if (is.matrix(x)) {
@@ -75,7 +75,7 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
   if (!is.matrix(.lower.tri) & !is.data.frame(.lower.tri)) {
     stop("Second parameter was not a matrix or data.frame.")
   }
-  
+
   #inpute types
   both.df = is.data.frame(.lower.tri) & is.data.frame(.upper.tri) #are both df?
   #convert
@@ -92,7 +92,7 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
 
 #' Insert newlines into text every nth character.
 #'
-#' Returns a character string with newlines every nth character. See also add_newlines(). 
+#' Returns a character string with newlines every nth character. See also add_newlines().
 #' @param x A character string.
 #' @param interval How often the newlines are added.
 #' @keywords string, newline, label, text
@@ -129,7 +129,7 @@ new_lines_adder = function(x, interval) {
 #' @examples
 #' add_newlines()
 add_newlines = function(x, total.length = 95) {
-  # make sure, x is a character array   
+  # make sure, x is a character array
   x = as.character(x)
   #determine number of groups
   groups = length(x)
@@ -150,14 +150,14 @@ add_newlines = function(x, total.length = 95) {
 #' std_df()
 std_df = function(df, exclude = "") {
   library(stringr)
-  
+
   for (col_idx in 1:ncol(df)) {
-    
+
     #skip if in exclusion vector
     if (colnames(df)[col_idx] %in% exclude) {
       next
     }
-    
+
     #skip if factor
     if (class(unlist(df[col_idx])) == "factor") {
       s = str_c("Skipped ", colnames(df)[col_idx], " because it is a factor.")
@@ -171,12 +171,44 @@ std_df = function(df, exclude = "") {
       print(s)
       next
     }
-    
+
     #otherwise standardize
     df[col_idx] = scale(df[col_idx])
   }
-  
+
   return(df)
 }
 
 
+#' Round numeric variables of a data frame.
+#'
+#' Returns a data.frame where numeric variables have been rounded to the desired number of digits.
+#' @param df A data.frame or matrix.
+#' @param digits The number of digits to round to.
+#' @keywords round, data.frame
+#' @export
+#' @examples
+#' round_df()
+round_df = function(df, digits=3) {
+  df = as.data.frame(df) #convert to df
+  for (idx in seq_along(df)) {
+    num = is.numeric(df[ , idx, drop = T]) #have to drop to get the variable not a df
+    if (num) {
+      df[idx] = round(df[idx], digits)
+    }
+  }
+
+  return(df)
+}
+
+#' Convert a data.frame to a numeric matrix, including factors.
+#'
+#' Returns a numeric matrix.
+#' @param df A data.frame.
+#' @keywords data.frame, numeric, factor, convert
+#' @export
+#' @examples
+#' as_num_matrix()
+as_num_matrix = function(df) {
+  return(as.matrix(as.data.frame(lapply(df, as.numeric))))
+}

@@ -27,7 +27,12 @@ rcorr2 = function(x, ...) {
 #' @export
 #' @examples
 #' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
+Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl", var_names = TRUE){
+  #libs
+  library(ggplot2)
+  library(grid)
+
+  #initial
   temp.loadings = as.numeric(loadings) #conver to vector
   names(temp.loadings) = rownames(loadings) #set names again
   loadings = temp.loadings #back to normal name
@@ -44,8 +49,8 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
   }
 
   #method text
-  if (reverse) {mcv.method = "Jensen method with reversing\n"}
-  else {mcv.method = "Jensen method without reversing\n"}
+  if (reverse) {mcv.method = "Jensen's method with reversing\n"}
+  else {mcv.method = "Jensen's method without reversing\n"}
 
   #correlation
   cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
@@ -94,12 +99,13 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
 
   g = ggplot(data = DF, aes(x = loadings, y = cors)) +
     geom_point() +
-    geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1) +
-    #geom_smooth(method=lm, se=FALSE, color="darkorange") + #this sometimes fails (?)
     xlab("Loadings") +
     ylab("Correlation with criteria variable") +
     annotation_custom(text_object) +
     geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
+
+  #add var_names if desired
+  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1)
 
   return(g)
 }
@@ -117,6 +123,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl"){
 #' plot_loadings()
 plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
   library("plotflow") #needed for reordering the variables
+  library("grid") #for grob
   if (reverse) {
     loadings = as.vector(fa.object$loadings)*-1
     reverse = "\nIndicators reversed"
@@ -285,7 +292,7 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
 
     #correlations
     cors = as.data.frame(cor(df, use="pair"))
-    
+
     #remove diagnonal 1's
     for (idx in 1:nrow(cors)) {
       cors[idx, idx] = NA
@@ -402,13 +409,13 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
   #initial
   prop.vars = as.data.frame(matrix(nrow=nrow(data)+1, ncol=2)) #for results
   colnames(prop.vars) = c("Prop.var%", "IPV")
-  
+
   #all cases
   fa = fa(data) #factor analyze
   prop.var = round(mean(fa$communality),3) #the proportion of variance accounted for
   prop.vars[nrow(prop.vars),] = c(prop.var, 0) #insert
   rownames(prop.vars)[[nrow(prop.vars)]] = "All cases"
-  
+
   #for each case
   for (case in 1:nrow(data)) {
     data2 = data[-case,] #get subset without that case
@@ -422,20 +429,20 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
       prop.vars[case,] = c(NA, NA) #insert NAs
     }
     )
-    
+
     rownames(prop.vars)[case] = rownames(data)[case] #set rowname
   }
-  
+
   #sort?
   if (sort) {
     prop.vars = prop.vars[order(prop.vars[,2], decreasing=T),]
   }
-  
+
   #full sample?
   if(!include_full_sample) {
     prop.vars = prop.vars[1:nrow(data), ]
   }
-  
+
   return(prop.vars)
 }
 
@@ -715,25 +722,99 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' semi_par()
 semi_par = function(x, y, z, weights = NA, complete_cases = T) {
   library(weights)
-  if (is.na(weights[1])) {
-    weights = rep(1, length(x))
+
+  #if no weights, set to vector of 1's
+  if (length(weights) == 1) {
+    if (is.na(weights)) {
+      weights = rep(1, length(x))
+    }
   }
 
   #data.frame
-  df = data.frame(x = x,
-  	              y = y,
-  	              z = z,
-  	              weights = weights)
+  df = data.frame(x = as.vector(x), #we vectorize the input because otherwise may get strange
+                  y = as.vector(y), #results when input is a df or matrix
+                  z = as.vector(z),
+                  w = as.vector(weights))
 
   #complete cases only
   if (complete_cases) {
-  	  df = df[complete.cases(df), ]
+    df = df[complete.cases(df), ]
   }
 
   #model
-  df$y_res = resid(lm(y ~ z, weights = weights, data = df))
-  r_sp = wtd.cor(df$x, df$y_res, weight = weights)
-  r = wtd.cor(df$x, df$y, weight = weights)
+  df$y_res = resid(lm(y ~ z, weights = w, data = df))
+  r_sp = wtd.cor(df$x, df$y_res, weight = df$w)
+  r = wtd.cor(df$x, df$y, weight = df$w)
   return(list(normal = r,
-  	          semi_partial = r_sp))
+              semi_partial = r_sp))
 }
+
+
+#' Semi-partial correlation with weights
+#'
+#'
+#' Returns a table of semi-partial correlations where a dependent variable has first been regressed on the primary predictor variable, and then correlated with each of the secondary predictors in turn.
+#' @param df A data frame with the variables.
+#' @param dependent A string with the name of the dependent variable.
+#' @param primary A string with the name of the primary predictor variable.
+#' @param secondaries A character vector with the names of the secondary predictor variables.
+#' @param weights A string with the name of the variable to use for weights.
+#' @param standardize Whether to standardize the data frame before running results. The weights variable will not be standardized.
+#' @keywords psychometrics, partial, semi-partial, correlation, weights
+#' @export
+#' @examples
+#' semi_par_serial()
+semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, standardize=T) {
+  library(weights) #for weighted correlations
+  library(stringr) #strings
+
+  #subset and deal with lack of weights
+  if (is.na(weights)) {
+    weights = "weights_var"
+    df[weights] = rep(1, nrow(df))
+    df = subset(df, select = c(dependent, primary, secondaries, weights))
+  } else {
+    df["weights_var"] = df[weights] #move the weights var to another name
+    weights = "weights_var"
+    df = subset(df, select = c(dependent, primary, secondaries, weights))
+  }
+
+  #complete cases only
+  df = na.omit(df)
+
+  #standardize
+  if (standardize) df = std_df(df, exclude = weights)
+
+  #primary
+  r_prim = round(wtd.cor(df[, dependent], df[, primary], weight = df[, weights]), 2)
+  message(str_c("Correlation of the primary variable with the dependent is ", r_prim[1]))
+
+  #make results object
+  results = data.frame(matrix(nrow = length(secondaries), ncol = 2))
+  rownames(results) = secondaries
+  colnames(results) = c("Orig. cor", "Semi-partial cor")
+  #loop over each secondary
+  for (sec_idx in seq_along(secondaries)) {
+
+    #the current secondary var
+    tmp_secondary = secondaries[sec_idx]
+
+    #make the model
+    tmp_model = str_c(dependent, " ~ ", primary)
+
+    #regress
+    df$tmp_resids = resid(lm(as.formula(tmp_model), weights = df[, weights], data = df))
+
+    #secondary original
+    r_sec = wtd.cor(df[, dependent], df[, tmp_secondary], weight = df[, weights])[1]
+
+    #semi-partial
+    r_sec_sp = wtd.cor(df$tmp_resids, df[, tmp_secondary], weight = df[, weights])[1]
+
+    #save
+    results[sec_idx, ] = c(r_sec, r_sec_sp)
+  }
+
+  return(results)
+}
+

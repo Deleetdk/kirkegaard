@@ -8,15 +8,15 @@ lm_beta_matrix(dependent, predictors, data, standardized = T, .weights = NA,
   return_models = "b")
 }
 \arguments{
-\item{dependent}{a string with the name of the dependent variable.}
+\item{dependent}{A string with the name of the dependent variable.}
 
-\item{predictors}{a vector of strings with the predictor variables.}
+\item{predictors}{A character vector with the predictor variables.}
 
-\item{data}{a data.frame with the variables.}
+\item{data}{A data.frame with the variables.}
 
-\item{standardized}{whether to standardize the results. Defaults to true.}
+\item{standardized}{Whether to standardize the results. Defaults to true.}
 
-\item{.weights}{weights to use. Leave blank not to use weights.}
+\item{.weights}{Weights to use. Leave blank not to use weights.}
 }
 \description{
 Returns a data.frame with beta coefficients for all possible simple (without interactions) linear models given a set of predictor variables and a dependent variable.
@@ -25,7 +25,7 @@ Returns a data.frame with beta coefficients for all possible simple (without int
 lm_beta_matrix()
 }
 \keyword{automatic}
-\keyword{linear}
-\keyword{lm}
-\keyword{modeling}
+\keyword{linear,}
+\keyword{lm,}
+\keyword{modeling,}
 

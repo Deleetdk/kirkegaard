@@ -4,7 +4,8 @@
 \alias{Jensen_plot}
 \title{Jensen method (method of correlated vectors) plot}
 \usage{
-Jensen_plot(loadings, cors, reverse = TRUE, text.location = "tl")
+Jensen_plot(loadings, cors, reverse = TRUE, text.location = "tl",
+  var_names = TRUE)
 }
 \arguments{
 \item{loadings}{a vector of factor loadings.}
