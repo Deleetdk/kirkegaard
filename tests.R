@@ -107,3 +107,37 @@ stopifnot({
 })
 
 
+
+# FA_residuals ------------------------------------------------------------
+t = FA_residuals(swiss)
+stopifnot({
+  dim(t) == c(47, 6)
+  class(t) == "data.frame"
+})
+
+# FA_MAR ------------------------------------------------------------------
+t = FA_MAR(swiss, scores = "Bartlett")
+t2 = FA_MAR(swiss)
+stopifnot({
+  dim(t) == c(47, 1)
+  class(t) == "data.frame"
+  t != t2
+})
+
+
+# FA_mixedness ------------------------------------------------------------
+t = FA_mixedness(swiss)
+stopifnot({
+  dim(t) == c(47, 4)
+  class(t) == "data.frame"
+})
+
+
+
+# FA_splitsample_repeat ---------------------------------------------------------------------
+library(psych)
+t = FA_splitsample_repeat(ability, runs = 10)
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(10, 1)
+})

@@ -212,3 +212,45 @@ round_df = function(df, digits=3) {
 as_num_matrix = function(df) {
   return(as.matrix(as.data.frame(lapply(df, as.numeric))))
 }
+
+#' Get every subset of the data where one case is missing.
+#'
+#' Return a list of data.frames.
+#' @param df A data.frame.
+#' @keywords data.frame, subset
+#' @export
+#' @examples
+#' get_each_subset_minus_1()
+get_each_subset_minus_1 = function(df){
+  return_list = list()
+  for (case in 1:nrow(df)){
+    return_list[[case]] = df[-case, ] #save subset
+  }
+
+  return_list
+}
+
+
+#' Cut into bins and get proportions
+#'
+#' Cuts a vector into a specified number of equal sized bins and calculations the proportion of datapoints in each bin. Returns a data.frame.
+#' @param x A numeric vector.
+#' @param breaks_ The number of bins to use.
+#' @keywords cut, bins, proportion, table
+#' @export
+#' @examples
+#' get_prop_table()
+get_prop_table = function(x, breaks_=20){
+  library(magrittr)
+  library(plyr)
+  x_prop_table = cut(x, 20) %>% table(.) %>% prop.table %>% data.frame
+  colnames(x_prop_table) = c("interval", "density")
+  intervals = x_prop_table$interval %>% as.character
+  fetch_numbers = str_extract_all(intervals, "\\d\\.\\d*")
+  x_prop_table$means = laply(fetch_numbers, function(x) {
+    x %>% as.numeric %>% mean
+  })
+  return(x_prop_table)
+}
+
+

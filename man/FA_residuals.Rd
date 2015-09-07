@@ -4,7 +4,7 @@
 \alias{FA_residuals}
 \title{Find residuals on case-level basis for all indicators in a factor analysis.}
 \usage{
-FA_residuals(data)
+FA_residuals(data, ...)
 }
 \arguments{
 \item{data}{a data.frame.}

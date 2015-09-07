@@ -346,12 +346,13 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
 #' @export
 #' @examples
 #' FA_residuals()
-FA_residuals = function(data) {
+FA_residuals = function(data, ...) {
   library(stringr)
+  library(psych)
   #initial
-  data = as.data.frame(scale(data)) #standardize
-  fa = fa(data) #factor analyze
-  factor.scores = as.vector(fa$scores) #get scores
+  data = std_df(data) #standardize
+  fa = fa(data, ...) #factor analyze
+  factor.scores = as.numeric(fa$scores) #get scores
   data2 = data; data2$factor.scores = factor.scores #insert scores into copy
   resids.table = data.frame(matrix(nrow=nrow(data), ncol=ncol(data))) #make df for resids
   colnames(resids.table) = colnames(data) #set names
@@ -359,11 +360,12 @@ FA_residuals = function(data) {
 
   #for each indicator
   for (indicator in colnames(data)) {
-    formula = str_c(indicator," ~ factor.scores") #the regression formula as string
+    formula = str_c(indicator, " ~ factor.scores") #the regression formula as string
     model = lm(formula, data2, na.action = "na.exclude") #regress
     resids = residuals(model) #extract residuals for this indicator
-    resids.table[,indicator] = resids #set into resids df
+    resids.table[, indicator] = resids #set into resids df
   }
+
   return(resids.table) #return resids
 }
 
@@ -376,8 +378,8 @@ FA_residuals = function(data) {
 #' @export
 #' @examples
 #' FA_MAR()
-FA_MAR = function(data, sort = T) {
-  resids = FA_residuals(data)
+FA_MAR = function(data, sort = T, ...) {
+  resids = FA_residuals(data, ...)
 
   #mean absolute residuals
   mean.abs.resid = apply(resids, 1, function(x) {
@@ -391,7 +393,7 @@ FA_MAR = function(data, sort = T) {
   }
 
   #return
-  return(mean.abs.resid)
+  return(data.frame(MAR = mean.abs.resid))
 }
 
 ## For finding problematic cases in FA
@@ -412,7 +414,7 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
 
   #all cases
   fa = fa(data) #factor analyze
-  prop.var = round(mean(fa$communality),3) #the proportion of variance accounted for
+  prop.var = mean(fa$communality) #the proportion of variance accounted for
   prop.vars[nrow(prop.vars),] = c(prop.var, 0) #insert
   rownames(prop.vars)[[nrow(prop.vars)]] = "All cases"
 
@@ -519,6 +521,82 @@ FA_all_methods = function(DF, ..., skip_methods = "") {
   return(list(scores = scores,
               loadings = loadings))
 }
+
+
+#' Calculate mixedness metrics
+#'
+#' Returns 4 metrics that attempt to identify cases that are structural outliers/mixed in theor structure.
+#'
+#' @details
+#' MAR, mean absolute residuals. Measures the how well indicator scores can be prediced from the factor scores.
+#'
+#' CFS, change in factor size. Measures how much the factor size changes with direction.
+#'
+#' ACFS, absolute change in factor size. Measures how much the factor size changes without direction.
+#'
+#' MeanALC, mean absolute loading change. Measures how much loadings are affected in general.
+#'
+#' MaxALC, max absolute loading change. Measures the maximal loading change.
+#' @param df A data.frame to calculate mixedness metrics for.
+#' @param ... Parameters to fa().
+#' @keywords psychometrics, factor analysis, mixedness, outlier
+#' @export
+#' @examples
+#' FA_mixedness()
+FA_mixedness = function(df, ...){
+  library(psych)
+  library(plyr)
+  library(magrittr)
+
+  #for results
+  return_df = data.frame(matrix(nrow=nrow(df), ncol=0))
+
+  #mean abs. resids
+  return_df$MAR = FA_MAR(df, sort = F, ...) %>% unlist %>% as.vector
+
+  #all cases
+  fa = fa(df, ...) #factor analyze
+  prop_var_full = mean(fa$communality)
+  loads_full = as.numeric(fa$loadings)
+
+  #get subsets
+  each_subset = get_each_subset_minus_1(df)
+
+  #perform fa on each
+  each_fa = lapply(each_subset, fa, ...)
+
+  #get propVars from each fa
+  each_propVar = ldply(each_fa, function(x) {
+    return(as.numeric(mean(x$communality)))
+  })
+
+  #change in factor size
+  return_df$CFS = (each_propVar - prop_var_full) %>% unlist %>% as.vector
+
+  #absolute change in factor size
+  return_df$ACFS = abs(return_df$CFS)
+
+  #get the loadings from each fa
+  each_loadingset = ldply(each_fa, function(x) {
+    return(as.numeric(x$loadings))
+  })
+
+  #change in loadings
+  each_loadingset_change = each_loadingset %>% t %>% - loads_full %>% t
+
+  #mean abs loading change
+  return_df$MeanALC = each_loadingset_change %>% abs %>% apply(., 1, mean)
+
+  #max abs loading change
+  return_df$MaxALC = each_loadingset_change %>% abs %>% apply(., 1, max)
+
+  #rownames
+  rownames(return_df) = rownames(df)
+
+  return(return_df)
+}
+
+
 
 #' Rank order factor analysis
 #'
@@ -818,3 +896,63 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
   return(results)
 }
 
+
+#' Repeated splithalf reliability with factor analysis
+#'
+#' Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
+#' @param df A data.frame with variables.
+#' @param var A string of the name of the variable to use.
+#' @keywords ggplot2, plot, density, histogram
+#' @export
+#' @examples
+#' FA_splitsample_repeat()
+FA_splitsample_repeat = function(df, runs = 100, save_scores = F, ...){
+  library(psych)
+  library(stringr)
+
+  #input test
+  if (!class(df) %in% c("data.frame", "matrix")) stop("df was not a data.frame or matrix")
+  df = as.data.frame(df)
+
+  #missing values?
+  if (any(is.na(df))) warning("cases with missing values were removed")
+  df = na.omit(df)
+
+  #results
+  results_scores = list()
+
+  #loop
+  for (run in 1:runs){
+    message(str_c("run ", run, " of ", runs))
+
+    #reorder df
+    df = sample(df) #reorder at random
+
+    #how to split
+    split_at = ceiling(ncol(df)/2)
+    df1_i = 1:split_at
+    df2_i = (split_at+1):ncol(df)
+
+    #split
+    df1 = df[df1_i]
+    df2 = df[df2_i]
+
+    #fa
+    df1_fa = fa(df1, ...)
+    df2_fa = fa(df2, ...)
+
+    #scores
+    scores = data.frame(fa1 = as.vector(df1_fa$scores),
+                        fa2 = as.vector(df2_fa$scores))
+
+    #what to save
+    if (save_scores) results_scores[[run]] = scores
+    else results_scores[[run]] = cor(scores)[1, 2]
+  }
+
+  #simplify to vector if just saving correlations
+  if(!save_scores) results_scores = data.frame(r = unlist(results_scores))
+
+  #return
+  return(results_scores)
+}

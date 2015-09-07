@@ -4,7 +4,7 @@
 \alias{FA_MAR}
 \title{Calculates the mean absolute residual at the case-level.}
 \usage{
-FA_MAR(data, sort = T)
+FA_MAR(data, sort = T, ...)
 }
 \arguments{
 \item{data}{a data.frame.}
