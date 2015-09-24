@@ -141,3 +141,81 @@ stopifnot({
   class(t) == "data.frame"
   dim(t) == c(10, 1)
 })
+
+
+# GG_scatter --------------------------------------------------------------
+stopifnot({
+  t = GG_scatter(mpg, "hwy", "cty")
+  class(t) == c("gg", "ggplot")
+})
+
+
+# FA_congruence_mat -------------------------------------------------------
+stopifnot({
+  t = FA_all_methods(iris[-5], skip_methods = "pa")$loadings
+  t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
+  t = FA_congruence_matrix(t)
+  t2 = FA_congruence_matrix(t2)
+  class(t) == "matrix"
+  class(t2) == "matrix"
+  dim(t) == c(3, 3)
+  dim(t2) == c(4, 4)
+})
+
+
+# Jensens_method ----------------------------------------------------------
+library(psych)
+t = fa(bfi[1:25])
+t2 = Jensens_method(t, bfi, "gender");t2
+stopifnot({
+  class(t2) == c("gg", "ggplot")
+})
+
+
+
+# get_spherical_dists -----------------------------------------------------
+y = data.frame(lat = c(1:3, 5:7, 9:11),
+               lon = c(seq(10, 90, 10)))
+t = get_spherical_dists(y)
+stopifnot({
+  class(t) == "numeric"
+  length(t) == 36
+})
+
+
+# get_pairwise_means ------------------------------------------------------
+t = get_pairwise_means(1:3)
+t2 = get_pairwise_means(1:3, weight_method = "arith")
+t3 = get_pairwise_means(1:3, weight_method = "geo")
+
+stopifnot({
+  3 == length(t)
+  3 == length(t2)
+  3 == length(t3)
+  t[2] == 1.5
+  t2[2] == 2
+  t3[2] == sqrt(3)
+})
+
+
+# get_distances -----------------------------------------------------------
+library(fields)
+d = as.data.frame(fields::ozone)
+t = get_distances(d, lat_var = "lon.lat.lat", lon_var = "lon.lat.lon")
+stopifnot({
+  nrow(t) == 190
+  ncol(t) == 4
+  colnames(t)[4] == "spatial"
+})
+
+
+
+# cor_matrix_weights ------------------------------------------------------
+library(datasets)
+t = cor_matrix_weights(as.data.frame(state.x77), weight_var = "Population")
+stopifnot({
+  dim(t) == c(7, 7)
+  is.na(diag(t))
+  t[upper.tri(t)] != t[lower.tri(t)]
+})
+

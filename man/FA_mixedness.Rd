@@ -12,7 +12,7 @@ FA_mixedness(df, ...)
 \item{...}{Parameters to fa().}
 }
 \description{
-Returns 4 metrics that attempt to identity cases that are structural outliers/mixed in theor structure.
+Returns 4 metrics that attempt to identify cases that are structural outliers/mixed in theor structure.
 }
 \details{
 MAR, mean absolute residuals. Measures the how well indicator scores can be prediced from the factor scores.

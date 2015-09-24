@@ -581,6 +581,10 @@ FA_mixedness = function(df, ...){
     return(as.numeric(x$loadings))
   })
 
+  #check and fix for reversed factors
+  reversed = apply(each_loadingset, 1, function(x) {cor(x, loads_full)}) < 0
+  each_loadingset[which(reversed), ] = each_loadingset[which(reversed), ] * -1
+
   #change in loadings
   each_loadingset_change = each_loadingset %>% t %>% - loads_full %>% t
 
@@ -955,4 +959,111 @@ FA_splitsample_repeat = function(df, runs = 100, save_scores = F, ...){
 
   #return
   return(results_scores)
+}
+
+
+#' Calculate congruence coefficient matrix.
+#'
+#' Takes an input either a list of factor analysis objects from fa() (psych package) or a data.frame/matrix of loadings. Returns a matrix of congruence coefficients. These are calculated using factor.congruence() from psych package.
+#' @param x A list of factor analysis objects from fa() or a data.frame/matrix of factor loadings.
+#' @keywords factor, congruence, matrix
+#' @export
+#' @examples
+#' FA_congruence_matrix()
+FA_congruence_matrix = function(x) {
+  library(psych)
+
+  #right input type?
+  if (!class(x) %in% c("list", "data.frame", "matrix")) stop("Input was not a list, data.frame or matrix!")
+
+  #if input is a list of fa's
+  if (class(x) == "list") {
+    #are they all factor analysis objects?
+    if (all(unlist(lapply(x, function(x) class(x) == c("psych", "fa"))))) {
+      #get loadings
+      all_loadings = lapply(x, function(x) as.matrix(x$loadings))
+
+      return(factor.congruence(all_loadings)) #return congruence matrix
+
+    } else {
+      stop("Input was a list of something other than factor analysis objects!")
+    }
+  }
+
+  #not a list
+  library(plyr)
+  alply(x, 2, as.matrix) %>% factor.congruence %>% return
+  #split by column, into a list of matrices, calls the congruence function and returns
+}
+
+
+#' Scatter plot of Jensens method.
+#'
+#' Takes a factor analysis, data.frame and name of the criteria variable as inputs and returns a ggplot2 scatter plot with Jensen's method applied.
+#' @param fa A factor analysis object from fa().
+#' @param df A data.frame that contains all the variables.
+#' @param criteria A character string of the name of the criteria variable.
+#' @param reverse_factor Whether to reverse the factor first.
+#' @param loading_reversing Whether to use loading reversing to avoid inflated results. Defaults to TRUE.
+#' @param text_pos Which corner to put the text in. Defaults to "tl". Other options: tr, bl, br.
+#' @keywords factor analysis, Jensen, method of correlated vectors
+#' @export
+#' @examples
+#' Jensens_method()
+Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos = "tl") {
+  #get loadings
+  fa_loadings = as.numeric(fa$loadings)
+
+  #reverse factor is desired
+  if (reverse_factor) fa_loadings = fa_loadings * -1
+
+  #get indicator names
+  indicator_names = rownames(fa$loadings)
+  indicator_num = length(indicator_names)
+
+  #make new df
+  df2 = df[c(indicator_names, criteria)]
+
+  #correlate
+  df2_cors = cor(df2, use = "p")
+
+  #criteria x indicator cor vector
+  criteria_indi_cor = df2_cors[1:indicator_num, (indicator_num+1)]
+
+  #call plotter
+  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text.location = text_pos)
+
+  #return ggplot object
+  return(g)
+}
+
+
+#' Calculate a correlation matrix with and without weights.
+#'
+#' Inputs a data.frame and a set of weights. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
+#' @param df A data.frame.
+#' @param weight_var A character string of the name of the weights variable.
+#' @keywords correlation, matrix, weights
+#' @export
+#' @examples
+#' cor_matrix_weights()
+cor_matrix_weights = function(df, weight_var) {
+  library(weights)
+  #for weights
+
+  #extract weights
+  tmp_weights = df[weight_var]
+
+  #remove weights var
+  df[weight_var] = NULL
+
+  #get cors
+  r = wtd.cors(df)
+  r_wt = wtd.cors(df, weight = tmp_weights)
+
+  #combine
+  r_combined = combine_upperlower(r, r_wt)
+
+  #return
+  return(r_combined)
 }
