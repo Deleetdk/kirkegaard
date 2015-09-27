@@ -1,3 +1,9 @@
+#turn on warnings again
+options(warn=0)
+
+#suppres warnings and messages
+options(warn=-1)
+
 # merge_datasets ----------------------------------------------------------
 #some data to merge
 d1 = iris[1:75,] #split in two
@@ -174,12 +180,37 @@ stopifnot({
 
 
 # get_spherical_dists -----------------------------------------------------
-y = data.frame(lat = c(1:3, 5:7, 9:11),
-               lon = c(seq(10, 90, 10)))
-t = get_spherical_dists(y)
+set.seed(1)
+t = data.frame(lat = runif(5, 0, 90),
+               lon = runif(5, -180, 180))
+t1 = get_spherical_dists(t)
+t2 = get_spherical_dists(t, output = "matrix")
 stopifnot({
-  class(t) == "numeric"
-  length(t) == 36
+  #test vector
+  class(t1) == "numeric"
+  length(t1) == 10
+
+  #test matrix
+  class(t2) == "matrix"
+  dim(t2) == c(5, 5)
+})
+
+
+
+# get_euclidean_dists -----------------------------------------------------
+set.seed(1)
+t = data.frame(lat = runif(5, 1, 100),
+               lon = runif(5, 1, 100))
+t1 = get_euclidean_dists(t)
+t2 = get_euclidean_dists(t, output = "matrix")
+stopifnot({
+  #test vector
+  class(t1) == "numeric"
+  length(t1) == 10
+
+  #test matrix
+  class(t2) == "matrix"
+  dim(t2) == c(5, 5)
 })
 
 
@@ -217,5 +248,89 @@ stopifnot({
   dim(t) == c(7, 7)
   is.na(diag(t))
   t[upper.tri(t)] != t[lower.tri(t)]
+})
+
+
+# find_neighbors ----------------------------------------------------------
+n=50
+set.seed(1)
+t = data.frame(x = runif(n, 1, 100),
+               y = runif(n, 1, 100))
+t = find_neighbors(t, distance_method = "eucl")
+stopifnot({
+  length(t) == 50
+  class(t) == "list"
+  all(sapply(t, function(x) length(x)==3)) #all elements 3 long?
+})
+
+n=50
+set.seed(1)
+t = data.frame(lat = runif(n, -90, 90),
+               lon = runif(n, -180, 180))
+t = find_neighbors(t, distance_method = "spherical")
+stopifnot({
+  length(t) == 50
+  class(t) == "list"
+  all(sapply(t, function(x) length(x)==3)) #all elements 3 long?
+})
+
+
+# add_SAC & Morans_I & Morans_I_multi & knsn_reg------------------------------------------------
+n=500
+set.seed(1)
+t0 = data.frame(x = runif(n, 1, 100),
+                y = runif(n, 1, 100),
+                outcome = rnorm(n),
+                test = rep(1:2, n/2))
+t1 = add_SAC(t0, iter = 10, vars = c("outcome", "test"), lat_var = "x", lon_var = "y", distance_method = "euclidean")
+
+stopifnot({
+  class(t0) == class(t1)
+  dim(t0) == dim(t1)
+})
+
+I0 = get_Morans_I(t0, "outcome", "x", "y", "euclidean")
+I1 = get_Morans_I(t1, "outcome", "x", "y", "euclidean")
+
+stopifnot({
+  I1$observed > I0$observed
+  class(I0) == class(I1)
+})
+
+I0 = get_Morans_I_multi(t0, "outcome", "x", "y", "euclidean")
+I1 = get_Morans_I_multi(t1, "outcome", "x", "y", "euclidean")
+
+stopifnot({
+  I1 > I0
+  class(I0) == class(I1)
+})
+
+#test correlations
+knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "cor")
+knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "cor")
+
+stopifnot({
+  knsn_3_0 < knsn_3_1
+})
+
+#test scores
+knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "scores")
+knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "scores")
+
+stopifnot({
+  nrow(knsn_3_0) == nrow(knsn_3_0)
+  nrow(knsn_3_0) == nrow(t0)
+  class(knsn_3_0) == "numeric"
+})
+
+#test resids
+knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "resids")
+knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "resids")
+
+stopifnot({
+  class(knsn_3_0) == "numeric"
+  class(knsn_3_1) == "numeric"
+  length(knsn_3_0) == nrow(t0)
+  length(knsn_3_1) == nrow(t0)
 })
 

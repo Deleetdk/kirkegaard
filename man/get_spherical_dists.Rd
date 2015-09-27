@@ -4,7 +4,8 @@
 \alias{get_spherical_dists}
 \title{Calculate pairwise spherical distances for all pairs.}
 \usage{
-get_spherical_dists(df, lat_var = "lat", lon_var = "lon")
+get_spherical_dists(df, lat_var = "lat", lon_var = "lon",
+  output = "vector", remove_diag = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -12,9 +13,11 @@ get_spherical_dists(df, lat_var = "lat", lon_var = "lon")
 \item{lat_var}{A numeric vector with the latitudes.}
 
 \item{lon_var}{A numeric vector with the longitudes.}
+
+\item{output}{A character vector stating which output form is desired. Can be either vector or matrix. Vector results in a vector of all the unique combinations of distances, which is n*(n-1)/2, where n is the number of cases. Matrix results in the full distance matrix with every permutation including diagonals, which are always 0.}
 }
 \description{
-Returns a vector with the pairwise spherical distances for all pairs.
+Returns a vector with the pairwise spherical distances for all pairs. The calculation method used is "great circle method" using distCosine() from package geosphere.
 }
 \examples{
 get_spherical_dists()

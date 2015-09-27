@@ -4,17 +4,18 @@
 \alias{get_distances}
 \title{Calculate pairwise distances for all pairs for all variables in a data.frame.}
 \usage{
-get_distances(df, lat_var = "lat", lon_var = "lon", weights_var = "",
+get_distances(df, lat_var = "lat", lon_var = "lon",
+  distance_method = "spherical", weights_var = "",
   weight_method = "harmonic")
 }
 \arguments{
 \item{df}{A data.frame with variables.}
 
-\item{lat_var}{A numeric vector with the latitudes. Defaults to "lat".}
+\item{lat_var}{A string with the name of the variable which has the latitude data. Defaults to "lat".}
 
-\item{lon_var}{A numeric vector with the longitudes. Defaults to "lon".}
+\item{lon_var}{A string with the name of the variable which has the longitude data. Defaults to "lon".}
 
-\item{weights_var}{A numeric vector with the weights.}
+\item{weights_var}{A string with the name of the variable which has the weight data.}
 
 \item{weight_method}{A character string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.}
 }
