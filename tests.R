@@ -275,7 +275,7 @@ stopifnot({
 })
 
 
-# add_SAC & Morans_I & Morans_I_multi & knsn_reg------------------------------------------------
+# add_SAC & Morans_I & Morans_I_multi & knsn_reg & get_SAC_measures ----------------------------
 n=500
 set.seed(1)
 t0 = data.frame(x = runif(n, 1, 100),
@@ -334,3 +334,9 @@ stopifnot({
   length(knsn_3_1) == nrow(t0)
 })
 
+t = get_SAC_measures(df = t1, vars = c("outcome", "test"), lat_var = "x", lon_var = "y", distance_method = "euclidean", k = 3:5)
+
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(2, 6)
+})

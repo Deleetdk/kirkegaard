@@ -398,6 +398,7 @@ get_Morans_I_multi = function(df, vars, lat_var = "lat", lon_var = "lon", distan
 
   #spherical
   if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
+  #euclidean
   if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
 
   # invert the matrix
@@ -562,3 +563,51 @@ knsn_reg = function(df, dependent, k = 3, lat_var = "lat", lon_var = "lon", weig
 }
 
 
+#' Calculate multiple spatial autocorrelation measures.
+#'
+#' Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
+#' @param df A data.frame with variables.
+#' @param vars A character vector with the names of the variables for which SAC measures should be calculated.
+#' @param lat_var A string with the name of the variable which has the latitude/east-west data.
+#' @param lon_var A string with the name of the variable which has the longitude/north-south data.
+#' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param k A vector of k values to use for knsnr. Defaults to 3.
+#' @param weights_var A string with the name of the variable which has the case weights. Optional.
+#' @param weight_method A string with the weighing method to use. Defaults to harmonic.
+#' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
+#' @export
+#' @examples
+#' get_SAC_measures()
+get_SAC_measures = function(df, vars, lat_var = "lat", lon_var = "lon", distance_method = "spherical", k = 3, weights_var="", weight_method="harmonic") {
+  #weights
+  if (weights_var=="") df$weights___ = rep(1, nrow(df)) #if none, use 1's
+
+  #data.frame for results
+  df_ret = data.frame(matrix(nrow=length(vars), ncol=0)) #df for storing results
+  rownames(df_ret) = vars
+
+  #subset
+  df = df[c(vars, lat_var, lon_var, "weights___")]
+  df = na.omit(df) #remove missing
+
+  #Moran's I
+  morans = get_Morans_I_multi(df=df, vars=vars, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
+  df_ret$Morans_I = morans
+
+  #correlation of distances
+  df_dist = get_distances(df=df, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
+
+  cd = cor(df_dist)["spatial", vars]
+  df_ret$cd = cd
+  df_ret$cd_sqrt = cd %>% sqrt
+
+  #knsnr
+  for (k_ in k) {
+    for (var in vars) {
+      knsnr = knsn_reg(df=df, dependent=var, k=k_, lat_var = lat_var, lon_var=lon_var, weights_var = weights_var, distance_method = distance_method, output = "cor")
+      df_ret[var, str_c("knsn_", k_)] = knsnr
+    }
+  }
+
+  return(df_ret)
+}

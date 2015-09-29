@@ -1,8 +1,5 @@
 #libs
 
-rm(list = ls())
-library(pacman)
-p_unload("all")
 library(pacman)
 p_load(devtools, roxygen2)
 
