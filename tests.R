@@ -340,3 +340,20 @@ stopifnot({
   class(t) == "data.frame"
   dim(t) == c(2, 6)
 })
+
+
+# remove_redundant_vars & remove_redundant_vars2 ----------------------------------------------
+t = remove_redundant_vars(longley, 3)
+
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(16, 4)
+})
+
+t = remove_redundant_vars2(longley, .9)
+
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(16, 3)
+})
+

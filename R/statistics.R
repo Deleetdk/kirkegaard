@@ -337,6 +337,83 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
   return(df)
 }
 
+# Remove redundant variables
+#
+#' Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.
+#' @param df A data.frame with numeric variables.
+#' @param threshold A threshold above which intercorrelations are removed. Defaults to .9.
+#' @param cor_method The correlation method to use. Parameter is fed to cor(). Defaults to pearson.
+#' @keywords psychometrics, latent variable, factor analysis, redundant, variable
+#' @export
+#' @examples
+#' remove_redundant_vars()
+remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson") {
+  #Check input
+  if (!is.data.frame(df)) {
+    stop(paste0("First parameter is not a data frame. Instead it is ", class(df)))
+  }
+  if (!is.numeric(threshold)) {
+    stop(paste0("Second parameter is not numeric. Instead is ", class(num.to.remove)))
+  }
+
+  #Old variable names
+  old_names = colnames(df) #save old variable names
+
+  #remove data in diag and top
+  m = cor(df, use = "p", method = cor_method)
+
+  #to long form
+  m_long = cbind(expand.grid(rownames(m), colnames(m), stringsAsFactors = F),
+                 r = as.vector(m),
+                 abs_r = as.vector(m) %>% abs,
+                 keep = upper.tri(m) %>% as.vector)
+
+  #remove self-correlations and duplicates
+  m_long = m_long[m_long$keep, ]
+
+  #sort by abs r
+  m_long = m_long[order(m_long$abs_r, decreasing = T), ]
+
+  #subset
+  m_long = m_long[1:3]
+
+  #over threshold message
+  m_long_threshold = m_long[m_long$r >= threshold | m_long$r <= -threshold, ]
+  if(nrow(m_long_threshold) != 0) {
+    message("The following variable pairs had stornger intercorrelations than |", threshold, "|:")
+    round_df(m_long_threshold) %>% print #round the print
+  } else {
+    message("No variables needed to be excluded.")
+    return(df)
+  }
+
+  #exclude variables
+  #one cannot just remove the ones in the Var2 col because this can result in variables being removed despite them not correlating >threshold with any variable
+  vars_to_exclude = character() #for the varnames
+  while(T) {
+    #exit loop if done
+    if (nrow(m_long_threshold) == 0) break
+
+    #add top var in Var2 to the exclusion vector and remove top row
+    vars_to_exclude = c(vars_to_exclude, m_long_threshold$Var2[1])
+    m_long_threshold = m_long_threshold[-1, ]
+
+    #remove rows that contain any variable from the exclusion vector
+    exclude_rows = m_long_threshold$Var1 %in% vars_to_exclude | m_long_threshold$Var2 %in% vars_to_exclude
+    m_long_threshold = m_long_threshold[!exclude_rows, ]
+  }
+
+  #exclude variables
+  message(str_c("The following variables were excluded:"))
+  message(str_c(vars_to_exclude, collapse = ", "))
+  df = df[!colnames(df) %in% vars_to_exclude]
+
+  #return reduced df
+  return(df)
+}
+
+
+
 
 #' Find residuals on case-level basis for all indicators in a factor analysis.
 #'
