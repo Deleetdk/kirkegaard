@@ -232,13 +232,12 @@ stopifnot({
 # get_distances -----------------------------------------------------------
 library(fields)
 d = as.data.frame(fields::ozone)
-t = get_distances(d, lat_var = "lon.lat.lat", lon_var = "lon.lat.lon")
+t = get_distances(d, lat_var = "lon.lat.lat", lon_var = "lon.lat.lon", distance_method = "spherical", auto_detect_dist_method = F)
 stopifnot({
   nrow(t) == 190
   ncol(t) == 4
   colnames(t)[4] == "spatial"
 })
-
 
 
 # cor_matrix_weights ------------------------------------------------------
@@ -282,23 +281,23 @@ t0 = data.frame(x = runif(n, 1, 100),
                 y = runif(n, 1, 100),
                 outcome = rnorm(n),
                 test = rep(1:2, n/2))
-t1 = add_SAC(t0, iter = 10, vars = c("outcome", "test"), lat_var = "x", lon_var = "y", distance_method = "euclidean")
+t1 = add_SAC(t0, iter = 10, vars = c("outcome", "test"))
 
 stopifnot({
   class(t0) == class(t1)
   dim(t0) == dim(t1)
 })
 
-I0 = get_Morans_I(t0, "outcome", "x", "y", "euclidean")
-I1 = get_Morans_I(t1, "outcome", "x", "y", "euclidean")
+I0 = get_Morans_I(t0, "outcome")
+I1 = get_Morans_I(t1, "outcome")
 
 stopifnot({
   I1$observed > I0$observed
   class(I0) == class(I1)
 })
 
-I0 = get_Morans_I_multi(t0, "outcome", "x", "y", "euclidean")
-I1 = get_Morans_I_multi(t1, "outcome", "x", "y", "euclidean")
+I0 = get_Morans_I_multi(t0, "outcome")
+I1 = get_Morans_I_multi(t1, "outcome")
 
 stopifnot({
   I1 > I0
@@ -306,16 +305,16 @@ stopifnot({
 })
 
 #test correlations
-knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "cor")
-knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "cor")
+knsn_3_0 = knsn_reg(t0, "outcome", output = "cor")
+knsn_3_1 = knsn_reg(t1, "outcome", output = "cor")
 
 stopifnot({
   knsn_3_0 < knsn_3_1
 })
 
 #test scores
-knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "scores")
-knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "scores")
+knsn_3_0 = knsn_reg(t0, "outcome", output = "scores")
+knsn_3_1 = knsn_reg(t1, "outcome", output = "scores")
 
 stopifnot({
   nrow(knsn_3_0) == nrow(knsn_3_0)
@@ -324,8 +323,8 @@ stopifnot({
 })
 
 #test resids
-knsn_3_0 = knsn_reg(t0, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "resids")
-knsn_3_1 = knsn_reg(t1, "outcome", lat_var = "x", lon_var = "y", distance_method = "euclidean", output = "resids")
+knsn_3_0 = knsn_reg(t0, "outcome", output = "resids")
+knsn_3_1 = knsn_reg(t1, "outcome", output = "resids")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -334,12 +333,23 @@ stopifnot({
   length(knsn_3_1) == nrow(t0)
 })
 
-t = get_SAC_measures(df = t1, vars = c("outcome", "test"), lat_var = "x", lon_var = "y", distance_method = "euclidean", k = 3:5)
+t = get_SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5)
 
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(2, 6)
 })
+
+#test using user-inputted dist
+set.seed(1)
+dists = dist(t1$y) %>% as.matrix
+t = get_SAC_measures(t1, dists = dists, vars = c("outcome", "test"), k = 3:5);t
+
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(2, 6)
+})
+
 
 
 # remove_redundant_vars & remove_redundant_vars2 ----------------------------------------------

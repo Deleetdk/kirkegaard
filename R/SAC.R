@@ -181,17 +181,27 @@ get_pairwise_means = function(x, weight_method = "harmonic") {
 #' @param lon_var A string with the name of the variable which has the longitude data. Defaults to "lon".
 #' @param weights_var A string with the name of the variable which has the weight data.
 #' @param weight_method A character string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, weights
 #' @export
 #' @examples
 #' get_distances()
-get_distances = function(df, lat_var = "lat", lon_var = "lon", distance_method = "spherical", weights_var = "", weight_method = "harmonic") {
-  #purpose is to input a data.frame and then automatically get the distances back for every combination of cases, both for standard variables and for spatial variables (latitude, longitude)
+get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_var = "", weight_method = "harmonic", auto_detect_dist_method=T) {
+  library(plyr) #for llply
+  library(stringr) #for str_detect
+  library(gtools) #for combinations
+
+  #autodetect distance method
+  if (!missing("dists")) auto_detect_dist_method=F
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
   #coerce to df
   df = as.data.frame(df)
-
-  #distances
-  if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
 
   #is weights var there?
   if (!weights_var %in% colnames(df) & weights_var != "") stop("Weights variable isn't in the data.frame!")
@@ -200,35 +210,33 @@ get_distances = function(df, lat_var = "lat", lon_var = "lon", distance_method =
   if (any(is.na(df))) message("Warning, data.frame contained cases with missing values. These cases were excluded!")
   df = na.omit(df)
 
-  library(plyr)
-  #for llply
+  #check sizes after NA removal
+  if(!missing("dists")) if(!any(dim(dists) == nrow(df))) stop("Data.frame and distance matrix do not match in size! This can happen if there is missing data.")
 
-  library(stringr)
-  #for str_detect
+  #calcualte distances if needed
+  if (missing("dists")) {
+    #are there any spatial variables?
+    if (lat_var %in% colnames(df) & lon_var %in% colnames(df)) {
+      #check method
+      if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
 
-  library(gtools)
-  #for combinations
+      #subset latlon vars
+      df_latlon = df[c(lat_var, lon_var)]
 
-  #geo dist
-  geo = F
+      #spherical
+      if (distance_method == "spherical") df_latlon_dist = get_spherical_dists(df_latlon, lat_var=lat_var, lon_var=lon_var, output = "vector")
 
-  #are there any spatial variables?
-  if (lat_var %in% colnames(df) & lon_var %in% colnames(df)) {
-    #subset latlon vars
-    df_latlon = df[c(lat_var, lon_var)]
+      #euclidean
+      if (distance_method == "euclidean") df_latlon_dist = get_euclidean_dists(df_latlon, output = "vector")
 
-    #spherical
-    if (distance_method == "spherical") df_latlon_dist = get_spherical_dists(df_latlon, lat_var, lon_var, output = "vector")
+      #remove latlon from main df
+      df[lat_var] = NULL
+      df[lon_var] = NULL
 
-    #euclidean
-    if (distance_method == "euclidean") df_latlon_dist = get_euclidean_dists(df_latlon, output = "vector")
-
-    #remove latlon from main df
-    df[lat_var] = NULL
-    df[lon_var] = NULL
-
-    geo = T
+      geo = T
+    }
   }
+
 
   #weights?
   if (weights_var != "") {
@@ -244,7 +252,8 @@ get_distances = function(df, lat_var = "lat", lon_var = "lon", distance_method =
   df_dist = as.data.frame(llply(df, function(x) dist(x) %>% as.vector))
 
   #add spatial dists if they exist
-  if (geo) df_dist["spatial"] = df_latlon_dist
+  if (exists("geo")) df_dist["spatial"] = df_latlon_dist
+  if (!missing("dists")) df_dist["spatial"] = dists[lower.tri(dists)] %>% as.vector
 
   #add weights if they exist
   if (weights_var != "") df_dist["weight"] = df_pair_weights
@@ -262,14 +271,25 @@ get_distances = function(df, lat_var = "lat", lon_var = "lon", distance_method =
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean.
 #' @param lat_var A numeric vector with the latitudes.
 #' @param lon_var A numeric vector with the longitudes.
+#' @param dists A distance matrix.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, neighbors, knn
 #' @export
 #' @examples
 #' find_neighbors()
-find_neighbors = function(df, k=3, distance_method = "spherical", lat_var = "lat", lon_var = "lon") {
+find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, auto_detect_dist_method=T) {
   #libs
   library(plyr)
   library(rmngb)
+
+  #autodetect distance method
+  if(!missing("dists")) auto_detect_dist_method=F
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
 
   #which method?
   distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
@@ -290,21 +310,22 @@ find_neighbors = function(df, k=3, distance_method = "spherical", lat_var = "lat
   #check that k < n
   if (k >= nrow(df)) stop("k must be smaller than number of cases!")
 
-  #calculate distances
-  distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
-  if (length(distance_method) == 0) stop("Distance method unrecognized!")
 
-  #spherical
-  if (distance_method == "spherical") {
-    dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
-    #Order matters for spherical dists. We want matrix output.
+  #calculate distances if they were not given.
+  if (missing("dists")) {
+    #spherical
+    if (distance_method == "spherical") {
+      dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
+      #Order matters for spherical dists. We want matrix output.
+    }
+
+    #euclidean
+    if (distance_method == "euclidean") {
+      dists = get_euclidean_dists(df, output = "matrix")
+      #Order is irrelevant for euc. dists. We want matrix output.
+    }
   }
 
-  #euclidean
-  if (distance_method == "euclidean") {
-    dists = get_euclidean_dists(df, output = "matrix")
-    #Order is irrelevant for euc. dists. We want matrix output.
-  }
 
   #remove diag
   diag(dists) = NA
@@ -334,16 +355,25 @@ find_neighbors = function(df, k=3, distance_method = "spherical", lat_var = "lat
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I
 #' @export
 #' @examples
 #' get_Morans_I()
-get_Morans_I = function(df, var, lat_var = "lat", lon_var = "lon", distance_method = "spherical") {
+get_Morans_I = function(df, var, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
   library(geosphere)
   library(ape)
   library(magrittr)
+
+  #autodetect distance method
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
 
   #subset to the needed variables
   df = df[c(var, lat_var, lon_var)]
@@ -376,11 +406,12 @@ get_Morans_I = function(df, var, lat_var = "lat", lon_var = "lon", distance_meth
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
 #' @export
 #' @examples
 #' get_Morans_I_multi()
-get_Morans_I_multi = function(df, vars, lat_var = "lat", lon_var = "lon", distance_method = "spherical") {
+get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
   library(geosphere)
@@ -388,18 +419,31 @@ get_Morans_I_multi = function(df, vars, lat_var = "lat", lon_var = "lon", distan
   library(plyr)
   library(magrittr)
 
-  #subset
-  df = df[c(vars, lat_var, lon_var)]
+  #autodetect distance method
+  if(!missing("dists")) auto_detect_dist_method=F
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
+  #subset % NA
+  if(missing("dists")) {
+    df = df[c(vars, lat_var, lon_var)]
+  }
   df = na.omit(df) #remove missing
 
-  #distances
-  distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
-  if (length(distance_method) == 0) stop("Distance method unrecognized!")
+  #calculate distances if not given
+  if (missing("dists")) {
+    #check method
+    if (length(distance_method) == 0) stop("Distance method unrecognized!")
 
-  #spherical
-  if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
-  #euclidean
-  if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+    #spherical
+    if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
+    #euclidean
+    if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+  }
 
   # invert the matrix
   dists_inv = 1/dists
@@ -431,21 +475,33 @@ get_Morans_I_multi = function(df, vars, lat_var = "lat", lon_var = "lon", distan
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
 #' @param verbose Adds messages with the progress.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, simulation
 #' @export
 #' @examples
 #' add_SAC()
-add_SAC = function(df, vars, k=3, iter=1, weight=1/3, lat_var="lat", lon_var="lon", distance_method = "spherical", verbose = F){
+add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, distance_method, verbose = F, auto_detect_dist_method=T){
   #libs
   library(plyr)
   library(stringr)
 
+  #autodetect distance method
+  if (!missing("dists")) auto_detect_dist_method=F
+  if (auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
   #subset & NA
-  df = df[c(vars, lat_var, lon_var)]
+  if (missing("dists")) df = df[c(vars, lat_var, lon_var)]
   df = na.omit(df) #no NA
 
   #find neighbors
-  neighbors = find_neighbors(df[c(lat_var, lon_var)], k = k, distance_method = distance_method, lat_var = lat_var, lon_var = lon_var)
+  if (missing("dists")) {neighbors = find_neighbors(df[c(lat_var, lon_var)], k=k, distance_method=distance_method, lat_var=lat_var, lon_var=lon_var)} else
+  {neighbors = find_neighbors(df[c(lat_var, lon_var)], k=k, dists=dists)}
+
 
   #for each iteration
   for (i in 1:iter) {
@@ -484,20 +540,30 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, lat_var="lat", lon_var="lo
 #' @param df A data.frame with variables.
 #' @param dependent A string with the name of the dependent variable.
 #' @param k The number of neighbors taken into account. Defaults to 3.
-#' @param weight The weight to assign the value from the neighbors in each iteration.
+#' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param weights_var A string with the name of the variable that contains case weights.
-#' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
-#' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, simulation
+#' @param distance_method Which geometric system to use to calculate distances. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param outout Which type of output to return. Can be (predicted) scores, cor or resids. Defaults to scores.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
+#' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn
 #' @export
 #' @examples
 #' knsn_reg()
-knsn_reg = function(df, dependent, k = 3, lat_var = "lat", lon_var = "lon", weights_var = "", distance_method = "spherical", output = "scores") {
+knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
   library(fields) #for rdist
 
+  #autodetect distance method
+  if(!missing("dists")) auto_detect_dist_method=F
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
   #options
-  if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
   if (!output %in% c("scores", "cor", "resids")) stop("Desired output unrecognized!")
 
   #keep orig names and length
@@ -515,17 +581,31 @@ knsn_reg = function(df, dependent, k = 3, lat_var = "lat", lon_var = "lon", weig
     df$weights___ = df[[weights_var]] #use chosen var
   }
 
-  #subset
-  df = df[c(dependent, lat_var, lon_var, "weights___")]
+  #subset data
+  #this depends on whether the dists are given are not.
+  if (missing("dists")) {df = df[c(dependent, lat_var, lon_var, "weights___")]}
+  else {df = df[c(dependent, "weights___")]}
   df = na.omit(df) #remove missing
+
+  #check if dists and df match in size
+  if (!missing("dists")) {
+    if (!all(nrow(df) == dim(dists))) stop("Size of the distance matrix does not match the data.frame's number of cases. This could be due to missing values.")
+  }
 
   #check k
   if (!k < nrow(df)) stop("k must be smaller than the number of complete cases!")
 
   #distances
   #spherical
-  if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
-  if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+  if (missing("dists")) {
+    #check method
+    if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
+
+    #calculate
+    if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
+    if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+  }
+
 
   #object for results
   y_hat = numeric()
@@ -574,11 +654,21 @@ knsn_reg = function(df, dependent, k = 3, lat_var = "lat", lon_var = "lon", weig
 #' @param k A vector of k values to use for knsnr. Defaults to 3.
 #' @param weights_var A string with the name of the variable which has the case weights. Optional.
 #' @param weight_method A string with the weighing method to use. Defaults to harmonic.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
 #' @export
 #' @examples
 #' get_SAC_measures()
-get_SAC_measures = function(df, vars, lat_var = "lat", lon_var = "lon", distance_method = "spherical", k = 3, weights_var="", weight_method="harmonic") {
+get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
+  if (!missing("dists")) auto_detect_dist_method=F
+  #autodetect distance method
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
   #weights
   if (weights_var=="") df$weights___ = rep(1, nrow(df)) #if none, use 1's
 
@@ -587,15 +677,17 @@ get_SAC_measures = function(df, vars, lat_var = "lat", lon_var = "lon", distance
   rownames(df_ret) = vars
 
   #subset
-  df = df[c(vars, lat_var, lon_var, "weights___")]
+  if (missing("dists")) {
+    df = df[c(vars, lat_var, lon_var, "weights___")]
+  }
   df = na.omit(df) #remove missing
 
   #Moran's I
-  morans = get_Morans_I_multi(df=df, vars=vars, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
+  morans = get_Morans_I_multi(df=df, vars=vars, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
   df_ret$Morans_I = morans
 
   #correlation of distances
-  df_dist = get_distances(df=df, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
+  df_dist = get_distances(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
 
   cd = cor(df_dist)["spatial", vars]
   df_ret$cd = cd
@@ -604,10 +696,33 @@ get_SAC_measures = function(df, vars, lat_var = "lat", lon_var = "lon", distance
   #knsnr
   for (k_ in k) {
     for (var in vars) {
-      knsnr = knsn_reg(df=df, dependent=var, k=k_, lat_var = lat_var, lon_var=lon_var, weights_var = weights_var, distance_method = distance_method, output = "cor")
+      knsnr = knsn_reg(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
       df_ret[var, str_c("knsn_", k_)] = knsnr
     }
   }
 
   return(df_ret)
+}
+
+#Helper function to detect which distance method should be used. NOt meant for end-users.
+distance_method_detector = function(df) {
+  #autodetect distance method
+
+  #spherical
+  if (c("lat", "lon") %in% colnames(df)) {
+    distance_method = "spherical"
+    lat_var = "lat"
+    lon_var = "lon"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  #euclidean
+  if (c("x", "y") %in% colnames(df)) {
+    distance_method = "euclidean"
+    lat_var = "x"
+    lon_var = "y"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  stop("Could not detect the distance method!")
 }
