@@ -65,13 +65,13 @@ plot_kmeans = function(df, clusters, runs, standardize=T) {
 #' @param df A data.frame with variables.
 #' @param x_var X variable string.
 #' @param y_var Y variable string.
-#' @param text_pos Where to put the text. Defaults to top right ("tl"). Other options: tr, bl, br.
+#' @param text_pos Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names Whether to add case names or not. Defaults to true. Row names are used for case names.
 #' @keywords ggplot2, plot, scatter
 #' @export
 #' @examples
 #' GG_scatter()
-GG_scatter = function(df, x_var, y_var, text_pos = "tl", case_names = T) {
+GG_scatter = function(df, x_var, y_var, text_pos, case_names = T) {
   library(ggplot2)
   library(grid)
 
@@ -85,6 +85,11 @@ GG_scatter = function(df, x_var, y_var, text_pos = "tl", case_names = T) {
   ## text
   #correlation
   cor = round(cor(df, use = "p")[1, 2], 2) #get correlation, rounded
+
+  #auto detect text position
+  if (missing(text_pos)) {
+    if (cor>0) text_pos = "tl" else text_pos = "tr"
+  }
 
   #text object location
   if (text_pos == "tl") {

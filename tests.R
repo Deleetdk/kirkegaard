@@ -380,3 +380,8 @@ stopifnot({
   dim(t) == c(16, 3)
 })
 
+
+# GG_scatter --------------------------------------------------------------
+g = GG_scatter(longley, "Unemployed", "Armed.Forces")
+g = GG_scatter(longley, "Unemployed", "GNP")
+
