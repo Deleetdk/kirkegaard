@@ -199,8 +199,8 @@ stopifnot({
 
 # get_euclidean_dists -----------------------------------------------------
 set.seed(1)
-t = data.frame(lat = runif(5, 1, 100),
-               lon = runif(5, 1, 100))
+t = data.frame(x = runif(5, 1, 100),
+               y = runif(5, 1, 100))
 t1 = get_euclidean_dists(t)
 t2 = get_euclidean_dists(t, output = "matrix")
 stopifnot({
@@ -231,14 +231,39 @@ stopifnot({
 
 # get_distances -----------------------------------------------------------
 library(fields)
+
+#with spherical variables
 d = as.data.frame(fields::ozone)
 t = get_distances(d, lat_var = "lon.lat.lat", lon_var = "lon.lat.lon", distance_method = "spherical", auto_detect_dist_method = F)
+
 stopifnot({
   nrow(t) == 190
   ncol(t) == 4
   colnames(t)[4] == "spatial"
 })
 
+#with euclidean variables
+d = data.frame(x = runif(5, 1, 100),
+               y = runif(5, 1, 100))
+t = get_distances(d)
+
+stopifnot({
+  #test vector
+  class(t) == "data.frame"
+  nrow(t) == 10
+})
+
+#no spatial variables at all
+d = data.frame(abc = runif(5, 1, 100),
+               def = runif(5, 1, 100))
+t = get_distances(d)
+
+stopifnot({
+  #test vector
+  class(t) == "data.frame"
+  nrow(t) == 10
+  ncol(t) == 2
+})
 
 # cor_matrix_weights ------------------------------------------------------
 library(datasets)
@@ -381,7 +406,11 @@ stopifnot({
 })
 
 
-# GG_scatter --------------------------------------------------------------
-g = GG_scatter(longley, "Unemployed", "Armed.Forces")
-g = GG_scatter(longley, "Unemployed", "GNP")
+# GG_scatter &  Jensens_method --------------------------------------------------------------
+g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
+g = GG_scatter(longley, "Unemployed", "GNP");g
+library(psych)
+fa = fa(swiss[-c(3, 5)])
+Jensens_method(fa, swiss, "Examination", reverse_factor = T)
+Jensens_method(fa, swiss, "Examination", reverse_factor = F)
 

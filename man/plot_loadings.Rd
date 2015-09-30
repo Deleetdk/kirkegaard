@@ -4,14 +4,14 @@
 \alias{plot_loadings}
 \title{Plot factor loadings.}
 \usage{
-plot_loadings(fa.object, reverse = F, text.location = "tl")
+plot_loadings(fa.object, reverse = F, text_pos = "tl")
 }
 \arguments{
 \item{fa.object}{a factor analysis object from the fa() function from the psych package.}
 
 \item{reverse}{whether to reverse all loadings. Default to false.}
 
-\item{text.location}{which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".}
+\item{text_pos}{which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".}
 }
 \description{
 Returns a ggplot2 plot with sorted loadings and numerical results in a corner. Supports reversing of the factor is reversed.

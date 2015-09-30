@@ -22,20 +22,20 @@ rcorr2 = function(x, ...) {
 #' @param loadings a vector of factor loadings.
 #' @param loadings a vector of correlations of the indicators with the criteria variable.
 #' @param reverse whether to reverse indicators with negative loadings. Default to true.
-#' @param text.location which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
+#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
 #' @keywords psychometrics psychology latent variable
 #' @export
 #' @examples
 #' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl", var_names = TRUE){
+Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE){
   #libs
   library(ggplot2)
   library(grid)
 
   #initial
-  temp.loadings = as.numeric(loadings) #conver to vector
-  names(temp.loadings) = rownames(loadings) #set names again
-  loadings = temp.loadings #back to normal name
+  temp_loadings = as.numeric(loadings) #conver to vector
+  names(temp_loadings) = rownames(loadings) #set names again
+  loadings = temp_loadings #back to normal name
   DF = data.frame(loadings, cors) #DF
 
   #reverse
@@ -49,32 +49,37 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl", var
   }
 
   #method text
-  if (reverse) {mcv.method = "Jensen's method with reversing\n"}
-  else {mcv.method = "Jensen's method without reversing\n"}
+  if (reverse) {method_text = "Jensen's method with reversing\n"}
+  else {method_text = "Jensen's method without reversing\n"}
 
   #correlation
   cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
 
+  #auto detect text position
+  if (missing(text_pos)) {
+    if (cor>0) text_pos = "tl" else text_pos = "tr"
+  }
+
   #text object location
-  if (text.location == "tl") {
+  if (text_pos == "tl") {
     x = .02
     y = .98
     hjust = 0
     vjust = 1
   }
-  if (text.location == "tr") {
+  if (text_pos == "tr") {
     x = .98
     y = .98
     hjust = 1
     vjust = 1
   }
-  if (text.location == "bl") {
+  if (text_pos == "bl") {
     x = .02
     y = .02
     hjust = 0
     vjust = -.1
   }
-  if (text.location == "br") {
+  if (text_pos == "br") {
     x = .98
     y = .02
     hjust = 1
@@ -82,7 +87,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl", var
   }
 
   #text
-  text = paste0(mcv.method,
+  text = paste0(method_text,
                 "r=", cor, " (orange line)",
                 "\nn=", nrow(DF))
 
@@ -116,12 +121,12 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text.location = "tl", var
 #' Returns a ggplot2 plot with sorted loadings and numerical results in a corner. Supports reversing of the factor is reversed.
 #' @param fa.object a factor analysis object from the fa() function from the psych package.
 #' @param reverse whether to reverse all loadings. Default to false.
-#' @param text.location which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
+#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
 #' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
 #' @export
 #' @examples
 #' plot_loadings()
-plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
+plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
   library("plotflow") #needed for reordering the variables
   library("grid") #for grob
   if (reverse) {
@@ -138,25 +143,25 @@ plot_loadings = function(fa.object, reverse = F, text.location = "tl") {
   DF = data.frame(loadings, indicators)
 
   #text object location
-  if (text.location=="tl") {
+  if (text_pos=="tl") {
     x = .02
     y = .98
     hjust = 0
     vjust = 1
   }
-  if (text.location=="tr") {
+  if (text_pos=="tr") {
     x = .98
     y = .98
     hjust = 1
     vjust = 1
   }
-  if (text.location=="bl") {
+  if (text_pos=="bl") {
     x = .02
     y = .02
     hjust = 0
     vjust = -.1
   }
-  if (text.location=="br") {
+  if (text_pos=="br") {
     x = .98
     y = .02
     hjust = 1
@@ -946,7 +951,6 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
 
   #primary
   r_prim = round(wtd.cor(df[, dependent], df[, primary], weight = df[, weights]), 2)
-  message(str_c("Correlation of the primary variable with the dependent is ", r_prim[1]))
 
   #make results object
   results = data.frame(matrix(nrow = length(secondaries), ncol = 2))
@@ -1087,7 +1091,7 @@ FA_congruence_matrix = function(x) {
 #' @export
 #' @examples
 #' Jensens_method()
-Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos = "tl") {
+Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos) {
   #get loadings
   fa_loadings = as.numeric(fa$loadings)
 
@@ -1108,7 +1112,7 @@ Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversin
   criteria_indi_cor = df2_cors[1:indicator_num, (indicator_num+1)]
 
   #call plotter
-  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text.location = text_pos)
+  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text_pos = text_pos)
 
   #return ggplot object
   return(g)

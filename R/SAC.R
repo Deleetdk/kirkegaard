@@ -196,10 +196,19 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   #autodetect distance method
   if (!missing("dists")) auto_detect_dist_method=F
   if(auto_detect_dist_method) {
-    auto = distance_method_detector(df)
-    distance_method = auto[1]
-    lat_var = auto[2]
-    lon_var = auto[3]
+    #spherical
+    if (all(c("lat", "lon") %in% colnames(df))) {
+      distance_method = "spherical"
+      lat_var = "lat"
+      lon_var = "lon"
+    }
+
+    #euclidean
+    if (all(c("x", "y") %in% colnames(df))) {
+      distance_method = "euclidean"
+      lat_var = "x"
+      lon_var = "y"
+    }
   }
 
   #coerce to df
@@ -216,27 +225,26 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   if(!missing("dists")) if(!any(dim(dists) == nrow(df))) stop("Data.frame and distance matrix do not match in size! This can happen if there is missing data.")
 
   #calcualte distances if needed
-  if (missing("dists")) {
-    #are there any spatial variables?
-    if (lat_var %in% colnames(df) & lon_var %in% colnames(df)) {
-      #check method
-      if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
+  #needed if dists not given AND no spatial vars present
+  if (missing("dists") & !missing("lat_var") & !missing("lon_var")) {
+    #check method
+    if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
 
-      #subset latlon vars
-      df_latlon = df[c(lat_var, lon_var)]
+    #subset latlon vars
+    df_latlon = df[c(lat_var, lon_var)]
 
-      #spherical
-      if (distance_method == "spherical") df_latlon_dist = get_spherical_dists(df_latlon, lat_var=lat_var, lon_var=lon_var, output = "vector")
+    #spherical
+    if (distance_method == "spherical") df_latlon_dist = get_spherical_dists(df_latlon, lat_var=lat_var, lon_var=lon_var, output = "vector")
 
-      #euclidean
-      if (distance_method == "euclidean") df_latlon_dist = get_euclidean_dists(df_latlon, output = "vector")
+    #euclidean
+    if (distance_method == "euclidean") df_latlon_dist = get_euclidean_dists(df_latlon, output = "vector")
 
-      #remove latlon from main df
-      df[lat_var] = NULL
-      df[lon_var] = NULL
+    #remove latlon from main df
+    df[lat_var] = NULL
+    df[lon_var] = NULL
 
-      geo = T
-    }
+    geo = T
+
   }
 
 
@@ -251,7 +259,12 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   }
 
   #get absolute differences for all other variables
-  df_dist = as.data.frame(llply(df, function(x) dist(x) %>% as.vector))
+  if (ncol(df) != 0) {
+    df_dist = as.data.frame(llply(df, function(x) dist(x) %>% as.vector))} else { #unless they are none
+    df_dist = data.frame(matrix(nrow = choose(nrow(df), 2), ncol=0))
+    #in which case we make an empty df to merge dists with
+  }
+
 
   #add spatial dists if they exist
   if (exists("geo")) df_dist["spatial"] = df_latlon_dist

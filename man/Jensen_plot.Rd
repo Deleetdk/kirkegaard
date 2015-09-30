@@ -4,15 +4,14 @@
 \alias{Jensen_plot}
 \title{Jensen method (method of correlated vectors) plot}
 \usage{
-Jensen_plot(loadings, cors, reverse = TRUE, text.location = "tl",
-  var_names = TRUE)
+Jensen_plot(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE)
 }
 \arguments{
 \item{loadings}{a vector of factor loadings.}
 
 \item{reverse}{whether to reverse indicators with negative loadings. Default to true.}
 
-\item{text.location}{which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".}
+\item{text_pos}{which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".}
 
 \item{loadings}{a vector of correlations of the indicators with the criteria variable.}
 }
