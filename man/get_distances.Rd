@@ -4,12 +4,13 @@
 \alias{get_distances}
 \title{Calculate pairwise distances for all pairs for all variables in a data.frame.}
 \usage{
-get_distances(df, lat_var = "lat", lon_var = "lon",
-  distance_method = "spherical", weights_var = "",
-  weight_method = "harmonic")
+get_distances(df, dists, lat_var, lon_var, distance_method, weights_var = "",
+  weight_method = "harmonic", auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
+
+\item{dists}{A matrix of distances between cases.}
 
 \item{lat_var}{A string with the name of the variable which has the latitude data. Defaults to "lat".}
 
@@ -18,9 +19,12 @@ get_distances(df, lat_var = "lat", lon_var = "lon",
 \item{weights_var}{A string with the name of the variable which has the weight data.}
 
 \item{weight_method}{A character string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.}
+
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
 }
 \description{
 Inputs a data.frame and outputs a data.frame with distances between all possible case pairs for each variable. One can specify that a pair of variables are spherical coordinates which are then treated in a special fashion using get_spherical_dists(). One can also specify a variable that is weights and for which a suitable mean will be calculated.
+The function requires either that it is given a distance matrix or that it can find variables to calculate distances with.
 }
 \examples{
 get_distances()

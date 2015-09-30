@@ -4,11 +4,13 @@
 \alias{find_neighbors}
 \title{Find k neighbor cases using spherical or euclidean geometry.}
 \usage{
-find_neighbors(df, k = 3, distance_method = "spherical", lat_var = "lat",
-  lon_var = "lon")
+find_neighbors(df, dists, k = 3, distance_method, lat_var, lon_var,
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
+
+\item{dists}{A matrix of distances between cases.}
 
 \item{k}{Number of neighbors to find for each case. Must be smaller than number of cases. Defaults to 3.}
 
@@ -17,6 +19,10 @@ find_neighbors(df, k = 3, distance_method = "spherical", lat_var = "lat",
 \item{lat_var}{A numeric vector with the latitudes.}
 
 \item{lon_var}{A numeric vector with the longitudes.}
+
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
+
+\item{dists}{A distance matrix.}
 }
 \description{
 Return a list of numeric vectors. Each vector contains the k nearest neighbors to the case. When using spherical geometry, you must give names of the variables. Euclidean geometry will use all variables. Cases with missing values are removed from the data.frame.

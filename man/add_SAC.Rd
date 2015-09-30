@@ -4,8 +4,8 @@
 \alias{add_SAC}
 \title{Add spatial autocorrelation to a variable.}
 \usage{
-add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, lat_var = "lat",
-  lon_var = "lon", distance_method = "spherical", verbose = F)
+add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, dists, lat_var, lon_var,
+  distance_method, verbose = F, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -16,6 +16,8 @@ add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, lat_var = "lat",
 
 \item{weight}{The weight to assign the value from the neighbors in each iteration.}
 
+\item{dists}{A matrix of distances between cases.}
+
 \item{lat_var}{A string with the name of the variable which has the latitude data.}
 
 \item{lon_var}{A string with the name of the variable which has the longitude data.}
@@ -23,6 +25,8 @@ add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, lat_var = "lat",
 \item{distance_method}{Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
 
 \item{verbose}{Adds messages with the progress.}
+
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
 
 \item{var}{A string with the name of the variable in which SAC should be added.}
 }

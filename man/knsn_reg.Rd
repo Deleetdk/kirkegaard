@@ -4,8 +4,8 @@
 \alias{knsn_reg}
 \title{Perform k nearest spatial neighbor regression.}
 \usage{
-knsn_reg(df, dependent, k = 3, lat_var = "lat", lon_var = "lon",
-  weights_var = "", distance_method = "spherical", output = "scores")
+knsn_reg(df, dependent, k = 3, dists, lat_var, lon_var, weights_var = "",
+  distance_method, output = "scores", auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -14,15 +14,19 @@ knsn_reg(df, dependent, k = 3, lat_var = "lat", lon_var = "lon",
 
 \item{k}{The number of neighbors taken into account. Defaults to 3.}
 
+\item{dists}{A matrix of distances between cases.}
+
 \item{lat_var}{A string with the name of the variable which has the latitude data.}
 
 \item{lon_var}{A string with the name of the variable which has the longitude data.}
 
 \item{weights_var}{A string with the name of the variable that contains case weights.}
 
-\item{distance_method}{Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
+\item{distance_method}{Which geometric system to use to calculate distances. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
 
-\item{weight}{The weight to assign the value from the neighbors in each iteration.}
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
+
+\item{outout}{Which type of output to return. Can be (predicted) scores, cor or resids. Defaults to scores.}
 }
 \description{
 Predict the value of cases on the basis of values of nearby cases. A useful measure of spatial autocorrelation. Returns a data.frame. Keeps rownames.
@@ -33,9 +37,8 @@ knsn_reg()
 \keyword{autocorrelation,}
 \keyword{distance,}
 \keyword{knn,}
-\keyword{knsn,}
+\keyword{knsn}
 \keyword{latitude,}
 \keyword{longitude,}
-\keyword{simulation}
 \keyword{spatial}
 

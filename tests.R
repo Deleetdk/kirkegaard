@@ -340,17 +340,30 @@ stopifnot({
   dim(t) == c(2, 6)
 })
 
-#test using user-inputted dist
+## #test using user-inputted dists
 set.seed(1)
-dists = dist(t1$y) %>% as.matrix
-t = get_SAC_measures(t1, dists = dists, vars = c("outcome", "test"), k = 3:5);t
+dists_y = dist(t1$y) %>% as.matrix
+dists_x = dist(t1$x) %>% as.matrix
+t_x = get_SAC_measures(t1, dists = dists_x, vars = c("outcome", "test"), k = 3:5);t_x
+t_y = get_SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5);t_y
 
 stopifnot({
-  class(t) == "data.frame"
-  dim(t) == c(2, 6)
+  class(t_x) == "data.frame"
+  dim(t_x) == c(2, 6)
+  all(t_x != t_y, na.rm = T) # they should not be identical
 })
 
+#test outcome options
+t = knsn_reg(t1, "outcome", dists=dists_y, output = "scores")
+t_cor = knsn_reg(t1, "outcome", dists=dists_y, output = "cor")
+t_resids = knsn_reg(t1, "outcome", dists=dists_y, output = "resids")
 
+#test other functions
+t_xy = find_neighbors(df = t0)
+t_x = find_neighbors(dists = dists_x)
+
+t1_xy = add_SAC(t0, vars = "outcome")
+t1_x = add_SAC(t0, vars = "outcome", dists = dists_x)
 
 # remove_redundant_vars & remove_redundant_vars2 ----------------------------------------------
 t = remove_redundant_vars(longley, 3)

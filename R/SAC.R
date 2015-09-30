@@ -176,7 +176,9 @@ get_pairwise_means = function(x, weight_method = "harmonic") {
 #' Calculate pairwise distances for all pairs for all variables in a data.frame.
 #'
 #' Inputs a data.frame and outputs a data.frame with distances between all possible case pairs for each variable. One can specify that a pair of variables are spherical coordinates which are then treated in a special fashion using get_spherical_dists(). One can also specify a variable that is weights and for which a suitable mean will be calculated.
+#' The function requires either that it is given a distance matrix or that it can find variables to calculate distances with.
 #' @param df A data.frame with variables.
+#' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude data. Defaults to "lat".
 #' @param lon_var A string with the name of the variable which has the longitude data. Defaults to "lon".
 #' @param weights_var A string with the name of the variable which has the weight data.
@@ -267,6 +269,7 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
 #'
 #' Return a list of numeric vectors. Each vector contains the k nearest neighbors to the case. When using spherical geometry, you must give names of the variables. Euclidean geometry will use all variables. Cases with missing values are removed from the data.frame.
 #' @param df A data.frame with variables.
+#' @param dists A matrix of distances between cases.
 #' @param k Number of neighbors to find for each case. Must be smaller than number of cases. Defaults to 3.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean.
 #' @param lat_var A numeric vector with the latitudes.
@@ -277,7 +280,7 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
 #' @export
 #' @examples
 #' find_neighbors()
-find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, auto_detect_dist_method=T) {
+find_neighbors = function(df, dists, k=3, distance_method, lat_var, lon_var, auto_detect_dist_method=T) {
   #libs
   library(plyr)
   library(rmngb)
@@ -291,28 +294,26 @@ find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, aut
     lon_var = auto[3]
   }
 
-  #which method?
-  distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
-  if (length(distance_method) == 0) stop("Distance method unrecognized!")
-
-  #subset
-  if(distance_method == "spherical") {
-    #subset & NA
-    df = df[c(lat_var, lon_var)]
-    df = na.omit(df) #no NA
-  }
-
-  if(distance_method == "euclidean") {
-    #subset & NA
-    df = na.omit(df) #no NA
-  }
-
-  #check that k < n
-  if (k >= nrow(df)) stop("k must be smaller than number of cases!")
-
-
-  #calculate distances if they were not given.
+  #calculate distances
   if (missing("dists")) {
+    distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
+    if (length(distance_method) == 0) stop("Distance method unrecognized!")
+
+    #subset
+    if(distance_method == "spherical") {
+      #subset & NA
+      df = df[c(lat_var, lon_var)]
+      df = na.omit(df) #no NA
+    }
+
+    if(distance_method == "euclidean") {
+      #subset & NA
+      df = na.omit(df) #no NA
+    }
+
+    #check that k < n
+    if (k >= nrow(df)) stop("k must be smaller than number of cases!")
+
     #spherical
     if (distance_method == "spherical") {
       dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
@@ -326,11 +327,9 @@ find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, aut
     }
   }
 
-
   #remove diag
   diag(dists) = NA
   #otherwise they would always be the 1st neighbor
-
 
   #find k neighbors for each case
   neighbors = alply(dists, 1, function(x) {
@@ -341,17 +340,20 @@ find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, aut
 
   #fix attributes
   neighbors = rmAttr(neighbors)
-  names(neighbors) = rownames(df)
+
+  #add names
+  names(neighbors) = rownames(dists)
 
   return(neighbors)
 }
 
 
-#' Calculate Moran's I using spherical or euclidean geomtry.
+#' Calculate Moran's I.
 #'
 #' Returns Moran's I coefficient and related NHST statistics. Excludes cases with missing data.
 #' @param df A data.frame with variables.
 #' @param var A string with the name of the variable for which Moran's I should be calculated.
+#' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
@@ -360,7 +362,7 @@ find_neighbors = function(df, k=3, dists, distance_method, lat_var, lon_var, aut
 #' @export
 #' @examples
 #' get_Morans_I()
-get_Morans_I = function(df, var, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
+get_Morans_I = function(df, var, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
   library(geosphere)
@@ -368,6 +370,7 @@ get_Morans_I = function(df, var, lat_var, lon_var, distance_method, auto_detect_
   library(magrittr)
 
   #autodetect distance method
+  if(!missing("dists")) auto_detect_dist_method=F
   if(auto_detect_dist_method) {
     auto = distance_method_detector(df)
     distance_method = auto[1]
@@ -376,16 +379,18 @@ get_Morans_I = function(df, var, lat_var, lon_var, distance_method, auto_detect_
   }
 
   #subset to the needed variables
-  df = df[c(var, lat_var, lon_var)]
+  if(missing("dists")) df = df[c(var, lat_var, lon_var)]
   df = na.omit(df) #remove cases with missing
 
   #distances
-  distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
-  if (length(distance_method) == 0) stop("Distance method unrecognized!")
+  if (missing("dists")) {
+    distance_method = agrep(distance_method, c("spherical", "euclidean"), value = T) #which method?
+    if (length(distance_method) == 0) stop("Distance method unrecognized!")
 
-  #spherical
-  if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
-  if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+    #spherical
+    if (distance_method == "spherical") dists = get_spherical_dists(df, lat_var, lon_var, output = "matrix")
+    if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+  }
 
   # invert the matrix
   dists_inv = 1/dists
@@ -398,11 +403,12 @@ get_Morans_I = function(df, var, lat_var, lon_var, distance_method, auto_detect_
 }
 
 
-#' Calculate multiple Moran's I's using spherical or euclidean geomtry. It's a wrapper function for get_Morans_I().
+#' Calculate multiple Moran's I's. It's a wrapper function for get_Morans_I().
 #'
 #' Returns a numeric vector with Moran's I coefficients.
 #' @param df A data.frame with variables.
 #' @param vars A character vector with the names of the variables for which Moran's I should be calculated.
+#' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
@@ -470,6 +476,7 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
 #' @param var A string with the name of the variable in which SAC should be added.
 #' @param k The number of neighbors taken into account. Defaults to 3.
 #' @param iter The number of iterations. Defaults to 1.
+#' @param dists A matrix of distances between cases.
 #' @param weight The weight to assign the value from the neighbors in each iteration.
 #' @param lat_var A string with the name of the variable which has the latitude data.
 #' @param lon_var A string with the name of the variable which has the longitude data.
@@ -481,6 +488,7 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
 #' @examples
 #' add_SAC()
 add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, distance_method, verbose = F, auto_detect_dist_method=T){
+
   #libs
   library(plyr)
   library(stringr)
@@ -648,6 +656,7 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
 #' Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
 #' @param df A data.frame with variables.
 #' @param vars A character vector with the names of the variables for which SAC measures should be calculated.
+#' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude/east-west data.
 #' @param lon_var A string with the name of the variable which has the longitude/north-south data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
@@ -660,8 +669,9 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
 #' @examples
 #' get_SAC_measures()
 get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
-  if (!missing("dists")) auto_detect_dist_method=F
+
   #autodetect distance method
+  if (!missing("dists")) auto_detect_dist_method=F
   if(auto_detect_dist_method) {
     auto = distance_method_detector(df)
     distance_method = auto[1]

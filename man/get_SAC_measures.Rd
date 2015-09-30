@@ -4,14 +4,16 @@
 \alias{get_SAC_measures}
 \title{Calculate multiple spatial autocorrelation measures.}
 \usage{
-get_SAC_measures(df, vars, lat_var = "lat", lon_var = "lon",
-  distance_method = "spherical", k = 3, weights_var = "",
-  weight_method = "harmonic")
+get_SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
+  weights_var = "", weight_method = "harmonic",
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
 
 \item{vars}{A character vector with the names of the variables for which SAC measures should be calculated.}
+
+\item{dists}{A matrix of distances between cases.}
 
 \item{lat_var}{A string with the name of the variable which has the latitude/east-west data.}
 
@@ -24,6 +26,8 @@ get_SAC_measures(df, vars, lat_var = "lat", lon_var = "lon",
 \item{weights_var}{A string with the name of the variable which has the case weights. Optional.}
 
 \item{weight_method}{A string with the weighing method to use. Defaults to harmonic.}
+
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
 }
 \description{
 Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
