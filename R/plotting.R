@@ -141,3 +141,157 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T) {
   return(g)
 }
 
+
+#' Plot factor loadings.
+#'
+#' Returns a ggplot2 plot with sorted loadings and numerical results in a corner. Supports reversing of the factor is reversed.
+#' @param fa.object a factor analysis object from the fa() function from the psych package.
+#' @param reverse whether to reverse all loadings. Default to false.
+#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
+#' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
+#' @export
+#' @examples
+#' plot_loadings()
+plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
+  library("plotflow") #needed for reordering the variables
+  library("grid") #for grob
+  if (reverse) {
+    loadings = as.vector(fa.object$loadings)*-1
+    reverse = "\nIndicators reversed"
+  }
+  else {
+    loadings = as.vector(fa.object$loadings)
+    reverse = ""
+  }
+
+  #indicator names
+  indicators = dimnames(fa.object$loadings)[[1]]
+  DF = data.frame(loadings, indicators)
+
+  #text object location
+  if (text_pos=="tl") {
+    x = .02
+    y = .98
+    hjust = 0
+    vjust = 1
+  }
+  if (text_pos=="tr") {
+    x = .98
+    y = .98
+    hjust = 1
+    vjust = 1
+  }
+  if (text_pos=="bl") {
+    x = .02
+    y = .02
+    hjust = 0
+    vjust = -.1
+  }
+  if (text_pos=="br") {
+    x = .98
+    y = .02
+    hjust = 1
+    vjust = -.1
+  }
+
+  #text
+  var.pct = round(mean(fa.object$communality),3) #the proportion of variance accounted for
+  text = paste0("proportion of variance explained ",var.pct,reverse)
+
+  #text object
+  text_object = grobTree(textGrob(text, x=x,  y=y, hjust = hjust, vjust = vjust),
+                         gp=gpar(fontsize=11))
+
+  g = ggplot(reorder_by(indicators, ~ loadings, DF), aes(loadings, indicators)) +
+    geom_point() +
+    annotation_custom(text_object) +
+    xlab("loadings") + ylab("indicators")
+
+  return(g)
+}
+
+
+#' Plot multiple factor loadings in one plot.
+#'
+#' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
+#' @param fa_objects a list of factor analyses objects from the fa() function from the psych package.
+#' @param fa_labels a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..
+#' @param reverse.vector a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
+#' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
+#' @export
+#' @examples
+#' plot_loadings_multi()
+plot_loadings_multi = function(fa_objects, fa_labels, reverse_vector = NA) {
+  #dependecy
+  library("plotflow")
+  library("stringr")
+
+  fa_num = length(fa_objects) #number of fas
+  fa_names = str_c("fa.", 1:fa_num) #use these names for the code
+
+
+  #check if fa_objects is a list
+  if (!is.list(fa_objects)) {
+    stop("fa_objects parameter is not a list.")
+  }
+
+  #check if there is no list (i.e. if user just gave one fa object)
+  if (class(fa_objects) %in% c("psych", "fa")) {
+    fa_objects = list(fa_objects)
+    #must rerun these
+    fa_num = length(fa_objects) #number of fas
+    fa_names = str_c("fa.", 1:fa_num)
+  }
+
+  #labels
+  if (missing("fa_labels")) { #labels not given
+    if (!is.null(names(fa_objects))) {
+      fa_labels = names(fa_objects) #use names from list if they are present
+    } else {
+      fa_labels = fa_names
+    }
+  }
+
+  #check labels length
+  if (length(fa_labels) != fa_num) {
+    stop("Factor analysis labels length is not identical to number of analyses.")
+  }
+
+  #make reverse vector if not given
+  if (is.na(all(reverse_vector))) {
+    reverse_vector = rep(1, fa_num)
+  } else if (length(reverse_vector) != fa_num) {
+    stop("Length of reversing vector does not match number of factor analyses.")
+  }
+
+  #merge into df
+  d = data.frame() #to merge into
+  for (fa.idx in 1:fa_num) { #loop over fa objects
+    loads = fa_objects[[fa.idx]]$loadings*reverse_vector[fa.idx]
+    rnames = rownames(loads)
+    loads = as.data.frame(as.vector(loads))
+    rownames(loads) = rnames
+    colnames(loads) = fa_names[fa.idx]
+
+    d = merge_datasets(d, loads, 1)
+  }
+
+  #reshape to long form
+  d2 = reshape(d,
+               varying = 1:fa_num,
+               direction="long",
+               ids = rownames(d))
+  d2$time = as.factor(d2$time)
+  d2$id = as.factor(d2$id)
+  colnames(d2)[2] = "fa"
+
+  #plot
+  g = ggplot(reorder_by(id, ~ fa, d2), aes(x=id, y=fa, color=time, group=time)) +
+    geom_point(position=position_dodge(width = .5)) +
+    ylab("Loading") + xlab("Indicator") +
+    scale_color_discrete(name="Analysis",
+                         labels=fa_labels) +
+    coord_flip()
+
+  return(g)
+}

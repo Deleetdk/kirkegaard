@@ -173,7 +173,7 @@ std_df = function(df, exclude = "") {
     }
 
     #otherwise standardize
-    df[col_idx] = scale(df[col_idx])
+    df[col_idx] = scale(df[col_idx]) %>% as.vector
   }
 
   return(df)
