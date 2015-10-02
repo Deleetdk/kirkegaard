@@ -26,6 +26,16 @@ stopifnot({
 })
 
 
+# rank_df -----------------------------------------------------------------
+t = data.frame(letters = letters[1:10],
+               norm = rnorm(10),
+               unif = runif(10))
+stopifnot({
+  class(t) == "data.frame"
+  dim(t) == c(10, 3)
+})
+
+
 # write_clipboard ---------------------------------------------------------
 write_clipboard(iris, 0)
 stopifnot({

@@ -201,6 +201,26 @@ round_df = function(df, digits=3) {
   return(df)
 }
 
+
+#' Rank numeric variables of a data frame.
+#'
+#' Returns a data.frame where numeric variables have been converted to their ranks.
+#' @param df A data.frame.
+#' @param ... Other parameters for rank().
+#' @keywords rank, data.frame
+#' @export
+#' @examples
+#' rank_df()
+rank_df = function(df, ...) {
+  #for each column
+  lapply(df, function(x) {
+    #check what class it is, if numeric, then rank, otherwise, leave it as it is
+    if (class(x) == "numeric") rank(x, ...) else return(x)
+  }) %>% as.data.frame #transform into df again
+}
+
+
+
 #' Convert a data.frame to a numeric matrix, including factors.
 #'
 #' Returns a numeric matrix.
