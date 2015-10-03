@@ -732,7 +732,7 @@ distance_method_detector = function(df) {
   #autodetect distance method
 
   #spherical
-  if (c("lat", "lon") %in% colnames(df)) {
+  if (all(c("lat", "lon")) %in% colnames(df)) {
     distance_method = "spherical"
     lat_var = "lat"
     lon_var = "lon"
@@ -740,7 +740,7 @@ distance_method_detector = function(df) {
   }
 
   #euclidean
-  if (c("x", "y") %in% colnames(df)) {
+  if (all(c("x", "y")) %in% colnames(df)) {
     distance_method = "euclidean"
     lat_var = "x"
     lon_var = "y"
