@@ -976,22 +976,32 @@ Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversin
 
 #' Calculate a correlation matrix with and without weights.
 #'
-#' Inputs a data.frame and a set of weights. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
+#' Inputs a data.frame and a set of weights. The weights can be given either as the name of the variable to use for weights or as a numeric vector. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
 #' @param df A data.frame.
-#' @param weight_var A character string of the name of the weights variable.
+#' @param weight_var A character vector of the name of the weights variable.
+#' @param weights A numeric vector of the weights to use.
 #' @keywords correlation, matrix, weights
 #' @export
 #' @examples
 #' cor_matrix_weights()
-cor_matrix_weights = function(df, weight_var) {
+cor_matrix_weights = function(df, weight_var, weights) {
   library(weights)
   #for weights
 
-  #extract weights
-  tmp_weights = df[weight_var]
+  #if weights are in the data.frame
+  if (!missing("weight_var")) {
+    #extract weights
+    tmp_weights = df[weight_var]
 
-  #remove weights var
-  df[weight_var] = NULL
+    #remove weights var
+    df[weight_var] = NULL
+  }
+
+  #reassign
+  tmp_weights = weights %>% as.vector
+
+  #check lengths
+  if (length(tmp_weights) != nrow(df)) stop("Lengths of weights vector and data.frame don't match!")
 
   #get cors
   r = wtd.cors(df)
