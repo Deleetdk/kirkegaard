@@ -991,21 +991,18 @@ cor_matrix_weights = function(df, weight_var, weights) {
   #if weights are in the data.frame
   if (!missing("weight_var")) {
     #extract weights
-    tmp_weights = df[weight_var]
+    weights = df[[weight_var]]
 
     #remove weights var
     df[weight_var] = NULL
   }
 
-  #reassign
-  tmp_weights = weights %>% as.vector
-
   #check lengths
-  if (length(tmp_weights) != nrow(df)) stop("Lengths of weights vector and data.frame don't match!")
+  if (length(weights) != nrow(df)) stop("Lengths of weights vector and data.frame don't match!")
 
   #get cors
   r = wtd.cors(df)
-  r_wt = wtd.cors(df, weight = tmp_weights)
+  r_wt = wtd.cors(df, weight = weights)
 
   #combine
   r_combined = combine_upperlower(r, r_wt)

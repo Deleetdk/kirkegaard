@@ -4,15 +4,17 @@
 \alias{cor_matrix_weights}
 \title{Calculate a correlation matrix with and without weights.}
 \usage{
-cor_matrix_weights(df, weight_var)
+cor_matrix_weights(df, weight_var, weights)
 }
 \arguments{
 \item{df}{A data.frame.}
 
-\item{weight_var}{A character string of the name of the weights variable.}
+\item{weight_var}{A character vector of the name of the weights variable.}
+
+\item{weights}{A numeric vector of the weights to use.}
 }
 \description{
-Inputs a data.frame and a set of weights. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
+Inputs a data.frame and a set of weights. The weights can be given either as the name of the variable to use for weights or as a numeric vector. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
 }
 \examples{
 cor_matrix_weights()
