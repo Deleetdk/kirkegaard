@@ -632,6 +632,8 @@ knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, we
     if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
   }
 
+  #remove diagonal values
+  diag(dists) = NA
 
   #object for results
   y_hat = numeric()

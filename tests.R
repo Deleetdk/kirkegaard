@@ -385,7 +385,7 @@ stopifnot({
   dim(t) == c(2, 6)
 })
 
-## #test using user-inputted dists
+##test using user-inputted dists
 set.seed(1)
 dists_y = dist(t1$y) %>% as.matrix
 dists_x = dist(t1$x) %>% as.matrix
