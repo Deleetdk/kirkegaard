@@ -368,6 +368,16 @@ stopifnot({
   length(knsn_3_1) == nrow(t0)
 })
 
+#test resids_cor
+knsn_3_0 = knsn_reg(t0, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_1 = knsn_reg(t1, "outcome", predictor = "test", output = "resids_cor")
+
+stopifnot({
+  class(knsn_3_0) == "numeric"
+  class(knsn_3_1) == "numeric"
+})
+
+#sac measures
 t = get_SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5)
 
 stopifnot({
@@ -423,4 +433,40 @@ library(psych)
 fa = fa(swiss[-c(3, 5)])
 Jensens_method(fa, swiss, "Examination", reverse_factor = T)
 Jensens_method(fa, swiss, "Examination", reverse_factor = F)
+
+
+# MAT_ --------------------------------------------------------------------
+#tests whether the original size of the matrix can be correctly determined
+
+stopifnot({
+  #without diags
+  MAT_find_size(0) == 1
+  MAT_find_size(1) == 2
+  MAT_find_size(3) == 3
+  MAT_find_size(6) == 4
+  MAT_find_size(10) == 5
+
+  #with diags
+  MAT_find_size(1, T) == 1
+  MAT_find_size(3, T) == 2
+  MAT_find_size(6, T) == 3
+  MAT_find_size(10, T) == 4
+  MAT_find_size(15, T) == 5
+})
+
+## reconstruct a matrix
+set.seed(1)
+t = dist(sample(100, 5)) %>% as.matrix #make a symmetric matrix
+t_l = t[lower.tri(t)]     #extract halves with and without diagonals
+t_l2 = t[lower.tri(t, T)]
+t_u = t[upper.tri(t)]
+t_u2 = t[upper.tri(t, T)]
+
+#check if it works
+stopifnot({
+  all(MAT_vector2full(t_l) == t)             #lower without diagonals
+  all(MAT_vector2full(t_l2, diag = T) == t)  #lower with diagonals
+  all(MAT_vector2full(t_u, byrow = T) == t)            #upper without diagonals
+  all(MAT_vector2full(t_u2, diag = T, byrow = T) == t) #upper with diagonals
+})
 

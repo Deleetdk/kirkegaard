@@ -4,13 +4,16 @@
 \alias{knsn_reg}
 \title{Perform k nearest spatial neighbor regression.}
 \usage{
-knsn_reg(df, dependent, k = 3, dists, lat_var, lon_var, weights_var = "",
-  distance_method, output = "scores", auto_detect_dist_method = T)
+knsn_reg(df, dependent, predictor, k = 3, dists, lat_var, lon_var,
+  weights_var = "", distance_method, output = "scores",
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
 
 \item{dependent}{A string with the name of the dependent variable.}
+
+\item{predictor}{A string with the name of the predictor variable. Only used for resids_cor output.}
 
 \item{k}{The number of neighbors taken into account. Defaults to 3.}
 

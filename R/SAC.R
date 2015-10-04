@@ -560,6 +560,7 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' Predict the value of cases on the basis of values of nearby cases. A useful measure of spatial autocorrelation. Returns a data.frame. Keeps rownames.
 #' @param df A data.frame with variables.
 #' @param dependent A string with the name of the dependent variable.
+#' @param predictor A string with the name of the predictor variable. Only used for resids_cor output.
 #' @param k The number of neighbors taken into account. Defaults to 3.
 #' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude data.
@@ -572,8 +573,9 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @export
 #' @examples
 #' knsn_reg()
-knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
+knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
   library(fields) #for rdist
+  library(stringr) #for str_c
 
   #autodetect distance method
   if(!missing("dists")) auto_detect_dist_method=F
@@ -585,7 +587,7 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
   }
 
   #options
-  if (!output %in% c("scores", "cor", "resids")) stop("Desired output unrecognized!")
+  if (!output %in% c("scores", "cor", "resids", "resids_cor")) stop("Desired output unrecognized!")
 
   #keep orig names and length
   orig_names = rownames(df)
@@ -603,9 +605,12 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
   }
 
   #subset data
-  #this depends on whether the dists are given are not.
-  if (missing("dists")) {df = df[c(dependent, lat_var, lon_var, "weights___")]}
-  else {df = df[c(dependent, "weights___")]}
+  #this depends on whether the dists are given are not
+  if (missing("dists") & missing("predictor")) {
+    df = df[c(dependent, lat_var, lon_var, "weights___")]
+  } else if (missing("dists") & !missing("predictor")) {
+    df = df[c(dependent, predictor, lat_var, lon_var, "weights___")]
+  } else {df = df[c(dependent, "weights___")]}
   df = na.omit(df) #remove missing
 
   #check if dists and df match in size
@@ -660,7 +665,52 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
     fit = lm(model, df_return, weights = weights___, na.action = na.exclude)
     return(resid(fit))
   }
+  if (output == "resids_cor") {
+    cor(df_return[["y_hat"]], df[[predictor]]) %>% return
+  }
+}
 
+
+#' K nearest spatial neighbor residuals-residuals correlations.
+#'
+#' Removes SAC in each variable using knsnr and then correlates them with each other. Returns a correlation matrix.
+#' @param df A data.frame with variables.
+#' @param variables A character vector of variable names that should be correlated, each corrected for SAC.
+#' @param k The number of neighbors taken into account. Defaults to 3.
+#' @param dists A matrix of distances between cases.
+#' @param lat_var A string with the name of the variable which has the latitude data.
+#' @param lon_var A string with the name of the variable which has the longitude data.
+#' @param weights_var A string with the name of the variable that contains case weights.
+#' @param distance_method Which geometric system to use to calculate distances. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
+#' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, residuals
+#' @export
+#' @examples
+#' SAC_knsn_reg_rr()
+SAC_knsn_reg_rr = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
+
+  #autodetect distance method
+  if(!missing("dists")) auto_detect_dist_method=F
+  if(auto_detect_dist_method) {
+    auto = distance_method_detector(df)
+    distance_method = auto[1]
+    lat_var = auto[2]
+    lon_var = auto[3]
+  }
+
+  #subset
+  df = df[c(variables, lat_var, lon_var)]
+
+  #check for NA
+  if (anyNA(df)) stop("Missing data in df. Remove/impute and try again.")
+
+  #for results
+  d_return = data.frame(matrix(nrow=nrow(df), ncol=0))
+  for (var in variables) {
+    #get the residuals for that variable and save
+    d_return[var] = knsn_reg(df=df, dependent=var, k=k, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output="resids", auto_detect_dist_method=auto_detect_dist_method)
+  }
+  cor(d_return) %>% return
 }
 
 
@@ -682,6 +732,7 @@ knsn_reg = function(df, dependent, k = 3, dists, lat_var, lon_var, weights_var =
 #' @examples
 #' get_SAC_measures()
 get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
+  library(stringr)
 
   #autodetect distance method
   if (!missing("dists")) auto_detect_dist_method=F
