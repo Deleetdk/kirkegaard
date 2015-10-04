@@ -727,12 +727,21 @@ get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, 
   return(df_ret)
 }
 
-#Helper function to detect which distance method should be used. NOt meant for end-users.
+
+
+#' Autodetect distance method based on variable names.
+#'
+#' Returns a vector of the autodetected values or raises an error if it fails.
+#' @param df A data.frame with variables.
+#' @keywords latitude, longitude, distance
+#' @export
+#' @examples
+#' get_SAC_measures()
 distance_method_detector = function(df) {
   #autodetect distance method
 
   #spherical
-  if (all(c("lat", "lon")) %in% colnames(df)) {
+  if (all(c("lat", "lon") %in% colnames(df))) {
     distance_method = "spherical"
     lat_var = "lat"
     lon_var = "lon"
@@ -740,7 +749,7 @@ distance_method_detector = function(df) {
   }
 
   #euclidean
-  if (all(c("x", "y")) %in% colnames(df)) {
+  if (all(c("x", "y") %in% colnames(df))) {
     distance_method = "euclidean"
     lat_var = "x"
     lon_var = "y"

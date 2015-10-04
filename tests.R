@@ -290,7 +290,7 @@ n=50
 set.seed(1)
 t = data.frame(x = runif(n, 1, 100),
                y = runif(n, 1, 100))
-t = find_neighbors(t, distance_method = "eucl")
+t = find_neighbors(t)
 stopifnot({
   length(t) == 50
   class(t) == "list"
@@ -301,7 +301,7 @@ n=50
 set.seed(1)
 t = data.frame(lat = runif(n, -90, 90),
                lon = runif(n, -180, 180))
-t = find_neighbors(t, distance_method = "spherical")
+t = find_neighbors(t)
 stopifnot({
   length(t) == 50
   class(t) == "list"
