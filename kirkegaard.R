@@ -14,5 +14,5 @@ install("kirkegaard")
 #load
 library(kirkegaard)
 
-#run the tests
-#cannot use run using source() because the clipboard must be used to test one function
+#make datasets
+source("kirkegaard/R/datasets.R")

@@ -843,6 +843,118 @@ get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, 
 
 
 
+#' Perform spatial local regression.
+#'
+#' Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
+#' @param df A data.frame with variables.
+#' @param dependent A character vector with the name with the name of the dependent variable.
+#' @param predictors A character vector with the names of the predictor variables.
+#' @param k The number of neighbors to use in the regressions. Defaults to 3.
+#' @param dists A matrix of distances between cases.
+#' @param lat_var A string with the name of the variable which has the latitude/east-west data.
+#' @param lon_var A string with the name of the variable which has the longitude/north-south data.
+#' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+
+#' @param weights_method A string with the name of the weights method to use. Defaults to "inverse", i.e. weighing cases by their inverse distance to the case being considered. Can also be "none".
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
+#' @keywords spatial autocorrelation, regression, spatial local regression, local regression
+#' @export
+#' @examples
+#' SAC_slr()
+SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse") {
+  library(stringr)
+  #check input
+  if (missing("df")) stop("df input missing!")
+  if (missing("dependent")) stop("Dependent variable not given!")
+  if (missing("predictors")) stop("Dependent variable not given!")
+  if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  N_cases = nrow(df)
+
+  #check spatial input
+  check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
+
+  #if no spatial info
+  if(check_results$setting == "na") {
+    stop("No spatial information detected!")
+  }
+
+  #coords
+  if(check_results$setting == "coords") {
+    distance_method = check_results$distance_method
+    lat_var = check_results$lat_var
+    lon_var = check_results$lon_var
+
+    #get distances
+    dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var = lat_var, lon_var = lon_var, distance_method = distance_method)[[1]]
+  }
+
+  #find neighbors
+  neighbor_list = find_neighbors(df=df, dists=dists, k=k, distance_method=distance_method, lat_var=lat_var, lon_var=lon_var)
+
+  #get their distances
+  neighbor_dists = llply(1:length(neighbor_list), function(x) {
+    tmp_neighbors = neighbor_list[[x]]
+    tmp_dists = dists[x, tmp_neighbors]
+    tmp_dists
+  })
+
+  #for storing output
+  betas = data.frame(matrix(nrow = N_cases, ncol = length(predictors)))
+  colnames(betas) = predictors
+
+  #loop over cases
+  for (case in 1:nrow(df)) {
+    #neighbors
+    case_neighbors = neighbor_list[[case]]
+
+    #subset
+    df_sub = df[c(case_neighbors), ]
+
+    #standardize
+    df_sub_std = std_df(df_sub)
+
+    #check if NAs were created
+    #this happens if sd=0 and gives mysterious errors
+    if (anyNA(df_sub_std)) {
+      warn_na = T
+      next
+    }
+
+    #make model
+    model = str_c(dependent, " ~ ", str_c(predictors, collapse = " + "))
+
+    #which weights?
+    if (weights_method == "none") {
+      df_sub_std$weights__ = rep(1, length(case_neighbors)) #fill with 1's
+    } else if (weights_method == "inverse") {
+      case_neighbor_dists = neighbor_dists[[case]]
+      df_sub_std$weights__ = 1/case_neighbor_dists
+    } else {
+      stop("weights_method not recognized!")
+    }
+
+    #fit
+    fit = lm(model, df_sub_std, weights = weights__)
+
+    #save betas
+    betas[case, ] = coef(fit)[-1]
+  }
+
+  if (exists("warn_na")) warning("Some localities had no variance in one or more variables. These clusters were skipped. This is odd, so you should investigate.")
+
+
+  #output form
+  if (output == "mean") {
+    mean_beta = apply(betas, 2, mean)
+    return(mean_beta)
+  }
+
+  if(output == "vector") {
+    return(betas)
+  }
+}
+
+
 #' Autodetect distance method based on variable names.
 #'
 #' Returns a vector of the autodetected values or raises an error if it fails.

@@ -1,9 +1,3 @@
-#turn on warnings again
-options(warn=0)
-
-#suppres warnings and messages
-options(warn=-1)
-
 # merge_datasets ----------------------------------------------------------
 #some data to merge
 d1 = iris[1:75,] #split in two
@@ -12,9 +6,20 @@ t = merge_datasets(d1, d2) #merge into one
 stopifnot(all(iris == t)) #they should be equal again
 
 
-# FA_all_methods ----------------------------------------------------------
-t = cor(FA_all_methods(iris[-5], skip_methods = "pa")$scores)
-stopifnot(dim(t)==c(12, 12))
+# FA_all_methods & FA_congruence_mat --------------------------------------------------------
+t = FA_all_methods(iris[-5], skip_methods = "pa")
+
+# FA_congruence_mat -------------------------------------------------------
+stopifnot({
+  dim(cor(t$scores))==c(12, 12)
+  t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
+  t = FA_congruence_matrix(t$loadings)
+  t2 = FA_congruence_matrix(t2)
+  class(t) == "matrix"
+  class(t2) == "matrix"
+  dim(t) == c(3, 3)
+  dim(t2) == c(4, 4)
+})
 
 
 # std_df ------------------------------------------------------------------
@@ -166,17 +171,7 @@ stopifnot({
 })
 
 
-# FA_congruence_mat -------------------------------------------------------
-stopifnot({
-  t = FA_all_methods(iris[-5], skip_methods = "pa")$loadings
-  t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
-  t = FA_congruence_matrix(t)
-  t2 = FA_congruence_matrix(t2)
-  class(t) == "matrix"
-  class(t2) == "matrix"
-  dim(t) == c(3, 3)
-  dim(t2) == c(4, 4)
-})
+
 
 
 # Jensens_method ----------------------------------------------------------
@@ -419,6 +414,21 @@ t_x = find_neighbors(dists = dists_x)
 
 t1_xy = add_SAC(t0, vars = "outcome")
 t1_x = add_SAC(t0, vars = "outcome", dists = dists_x)
+
+
+
+# SAC_slr -----------------------------------------------------------------
+#example from "Some methods for analyzing and correcting for spatial autocorrelation"
+r_num = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3)
+r_num2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3)
+r_vec = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
+r_vec2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
+
+stopifnot({
+  r_num2 > r_num
+  nrow(r_vec) == nrow(r_vec2)
+  nrow(r_vec) == nrow(d_ex5)
+})
 
 # remove_redundant_vars & remove_redundant_vars2 ----------------------------------------------
 t = remove_redundant_vars(longley, 3)
