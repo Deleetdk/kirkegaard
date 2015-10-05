@@ -193,6 +193,11 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   library(stringr) #for str_detect
   library(gtools) #for combinations
 
+  #check input
+  if (missing("df")) stop("df input missing!")
+  if (!missing("dists") & !missing("lat_var") & !missing("lon_var")) stop("Both dists and spatial variables given. Either give dists alone, spatial variables alone, or autodetect spatial variables.")
+  if (anyNA(df)) stop("Missing values present. Remove and try again.")
+
   #autodetect distance method
   if (!missing("dists")) auto_detect_dist_method=F
   if(auto_detect_dist_method) {
@@ -217,9 +222,9 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   #is weights var there?
   if (!weights_var %in% colnames(df) & weights_var != "") stop("Weights variable isn't in the data.frame!")
 
-  #remove missing data
-  if (any(is.na(df))) message("Warning, data.frame contained cases with missing values. These cases were excluded!")
-  df = na.omit(df)
+  #missing data
+  if (any(is.na(df))) stop("Warning, data.frame contained cases with missing values. These cases were excluded!")
+
 
   #check sizes after NA removal
   if(!missing("dists")) if(!any(dim(dists) == nrow(df))) stop("Data.frame and distance matrix do not match in size! This can happen if there is missing data.")
@@ -275,6 +280,62 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
 
   #return
   return(df_dist)
+}
+
+
+#' Calculate distance matrices for all variables in a data.frame.
+#'
+#' Inputs a data.frame and outputs a list with distance matrices. One can specify that a pair of variables are spherical coordinates which are then treated in a special fashion using get_spherical_dists().
+#' The function requires either that it is given a distance matrix or that it can find variables to calculate distances with.
+#' This is a sister function to get_distances(), which outputs vectors.
+#' @param df A data.frame with variables.
+#' @param dists A matrix of distances between cases.
+#' @param lat_var A string with the name of the variable which has the latitude data. Defaults to "lat".
+#' @param lon_var A string with the name of the variable which has the longitude data. Defaults to "lon".
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
+#' @keywords spatial autocorrelation, latitude, longitude, distance, matrix
+#' @export
+#' @examples
+#' get_distances_mat()
+get_distances_mat = function(df, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
+
+  #check input
+  if (missing("df")) stop("df input missing!")
+  if (anyNA(df)) stop("Missing values present. Remove and try again.")
+
+  #check input
+  check_input = check_spatial_input(df=df, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
+
+  #if spatial vars present
+  if (check_input$setting == "coords") {
+    #set vars
+    lat_var = check_input$lat_var
+    lon_var = check_input$lon_var
+    distance_method = check_input$distance_method
+
+    #check method
+    if (!distance_method %in% c("spherical", "euclidean")) stop("Distance method unrecognized!")
+
+    #spherical
+    if (distance_method == "spherical") dists_spatial = get_spherical_dists(df, lat_var=lat_var, lon_var=lon_var, output = "matrix")
+
+    #euclidean
+    if (distance_method == "euclidean") dists_spatial = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
+
+    #remove spatial from df
+    df = df[!colnames(df) %in% c(lat_var, lon_var)]
+  }
+
+  #get absolute differences for all other variables
+  library(plyr)
+  dists_list = llply(df, function(x) {
+    dist(x) %>% as.matrix
+  })
+
+  #add spatial if exists
+  if (check_input$setting == "coords") dists_list[["spatial"]] = dists_spatial
+
+  return(dists_list)
 }
 
 
@@ -765,7 +826,7 @@ get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, 
   #correlation of distances
   df_dist = get_distances(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
 
-  cd = cor(df_dist)["spatial", vars]
+  cd = suppressWarnings(cor(df_dist)["spatial", vars])
   df_ret$cd = cd
   df_ret$cd_sqrt = cd %>% sqrt
 

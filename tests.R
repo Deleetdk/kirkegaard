@@ -244,36 +244,46 @@ library(fields)
 
 #with spherical variables
 d = as.data.frame(fields::ozone)
-t = get_distances(d, lat_var = "lon.lat.lat", lon_var = "lon.lat.lon", distance_method = "spherical", auto_detect_dist_method = F)
+t = get_distances(d, lat_var="lon.lat.lat", lon_var="lon.lat.lon", distance_method="spherical", auto_detect_dist_method=F)
+t_m = get_distances_mat(df=d, lat_var="lon.lat.lat", lon_var="lon.lat.lon", distance_method="spherical", auto_detect_dist_method=F)
 
 stopifnot({
   nrow(t) == 190
   ncol(t) == 4
   colnames(t)[4] == "spatial"
+  class(t_m) == "list"
+  "spatial" %in% names(t_m)
 })
 
 #with euclidean variables
 d = data.frame(x = runif(5, 1, 100),
                y = runif(5, 1, 100))
 t = get_distances(d)
+t_m = get_distances_mat(d)
 
 stopifnot({
   #test vector
   class(t) == "data.frame"
   nrow(t) == 10
+  class(t_m) == "list"
+  "spatial" %in% names(t_m)
 })
 
 #no spatial variables at all
 d = data.frame(abc = runif(5, 1, 100),
                def = runif(5, 1, 100))
 t = get_distances(d)
+t_m = get_distances_mat(d)
 
 stopifnot({
   #test vector
   class(t) == "data.frame"
   nrow(t) == 10
   ncol(t) == 2
+  class(t_m) == "list"
+  !"spatial" %in% names(t_m)
 })
+
 
 # cor_matrix_weights ------------------------------------------------------
 library(datasets)
