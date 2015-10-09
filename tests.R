@@ -1,3 +1,6 @@
+#make datasets
+source("kirkegaard/R/datasets.R")
+
 # merge_datasets ----------------------------------------------------------
 #some data to merge
 d1 = iris[1:75,] #split in two
@@ -498,4 +501,7 @@ g = GG_denhist(Boston, "rm")
 stopifnot({
   all(class(g) == c("gg", "ggplot"))
 })
+
+
+# plot_loadings_multi -----------------------------------------------------
 

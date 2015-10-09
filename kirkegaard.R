@@ -13,6 +13,3 @@ install("kirkegaard")
 
 #load
 library(kirkegaard)
-
-#make datasets
-source("kirkegaard/R/datasets.R")

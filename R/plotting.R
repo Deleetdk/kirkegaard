@@ -67,24 +67,28 @@ plot_kmeans = function(df, clusters, runs, standardize=T) {
 #' @param y_var Y variable string.
 #' @param text_pos Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names Whether to add case names or not. Defaults to true. Row names are used for case names.
+#' @param CI Confidence interval. Defaults to .95. Set to NULL to disable.
 #' @keywords ggplot2, plot, scatter
 #' @export
 #' @examples
 #' GG_scatter()
-GG_scatter = function(df, x_var, y_var, text_pos, case_names = T) {
+GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95) {
   library(ggplot2)
   library(grid)
+  library(psychometric)
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
   if (!y_var %in% colnames(df)) stop("Y variable not found in data.frame!")
 
-  #subset
+  #subset + remove NA
   df = na.omit(df[c(x_var, y_var)])
 
   ## text
-  #correlation
-  cor = round(cor(df, use = "p")[1, 2], 2) #get correlation, rounded
+  #correlation + CI
+  cor = cor(df)[1, 2] #get correlation
+  cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
+
 
   #auto detect text position
   if (missing(text_pos)) {
@@ -118,8 +122,14 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T) {
   }
 
   #text
-  text = paste0("r=", cor, " (orange line)",
-                "\nn=", nrow(df))
+  if (!is.null(CI)) {
+    text = paste0("r=", cor %>% round(2), " [CI", CI*100,": ", cor_CI[1] %>% round(2), " ", cor_CI[2] %>% round(2), "] (orange line)",
+                  "\nn=", nrow(df))
+  } else {
+    text = paste0("r=", cor %>% round(2), " (orange line)",
+                  "\nn=", nrow(df))
+  }
+
 
   #labels
   df$label = rownames(df)
@@ -258,7 +268,7 @@ plot_loadings_multi = function(fa_objects, fa_labels, reverse_vector = NA) {
   }
 
   #make reverse vector if not given
-  if (is.na(all(reverse_vector))) {
+  if (all(is.na(reverse_vector))) {
     reverse_vector = rep(1, fa_num)
   } else if (length(reverse_vector) != fa_num) {
     stop("Length of reversing vector does not match number of factor analyses.")
