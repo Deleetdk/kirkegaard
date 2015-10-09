@@ -14,7 +14,7 @@ GG_denhist = function(df, var) {
     geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                    colour="black", fill="white") +
     geom_density(alpha=.2, fill="#FF6666") +  # Overlay with transparent density plot
-    geom_vline(aes(xintercept=mean(r, na.rm=T)),   # Ignore NA values for mean
+    geom_vline(aes_string(xintercept=mean(df[[var]], na.rm=T)),   # Ignore NA values for mean
                color="red", linetype="dashed", size=1)
 
   return(g)

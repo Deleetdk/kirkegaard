@@ -490,3 +490,12 @@ stopifnot({
   all(MAT_vector2full(t_u2, diag = T, byrow = T) == t) #upper with diagonals
 })
 
+
+# GG_denhist --------------------------------------------------------------
+library(MASS)
+g = GG_denhist(Boston, "rm")
+
+stopifnot({
+  all(class(g) == c("gg", "ggplot"))
+})
+
