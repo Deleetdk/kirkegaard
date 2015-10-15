@@ -915,7 +915,7 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
 
     #check if NAs were created
     #this happens if sd=0 and gives mysterious errors
-    if (anyNA(df_sub_std)) {
+    if (anyNA(df_sub_std[c(dependent, predictors)])) {
       warn_na = T
       next
     }
