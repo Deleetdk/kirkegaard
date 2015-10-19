@@ -317,7 +317,7 @@ stopifnot({
 })
 
 
-# add_SAC & Morans_I & Morans_I_multi & knsn_reg & get_SAC_measures ----------------------------
+# add_SAC & Morans_I & Morans_I_multi & SAC_knsn_reg & SAC_measures ----------------------------
 n=500
 set.seed(1)
 t0 = data.frame(x = runif(n, 1, 100),
@@ -348,16 +348,16 @@ stopifnot({
 })
 
 #test correlations
-knsn_3_0 = knsn_reg(t0, "outcome", output = "cor")
-knsn_3_1 = knsn_reg(t1, "outcome", output = "cor")
+knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "cor")
+knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "cor")
 
 stopifnot({
   knsn_3_0 < knsn_3_1
 })
 
 #test scores
-knsn_3_0 = knsn_reg(t0, "outcome", output = "scores")
-knsn_3_1 = knsn_reg(t1, "outcome", output = "scores")
+knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "scores")
+knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "scores")
 
 stopifnot({
   nrow(knsn_3_0) == nrow(knsn_3_0)
@@ -366,8 +366,8 @@ stopifnot({
 })
 
 #test resids
-knsn_3_0 = knsn_reg(t0, "outcome", output = "resids")
-knsn_3_1 = knsn_reg(t1, "outcome", output = "resids")
+knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "resids")
+knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "resids")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -377,8 +377,8 @@ stopifnot({
 })
 
 #test resids_cor
-knsn_3_0 = knsn_reg(t0, "outcome", predictor = "test", output = "resids_cor")
-knsn_3_1 = knsn_reg(t1, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_0 = SAC_knsn_reg(t0, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_1 = SAC_knsn_reg(t1, "outcome", predictor = "test", output = "resids_cor")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -386,7 +386,7 @@ stopifnot({
 })
 
 #sac measures
-t = get_SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5)
+t = SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5)
 
 stopifnot({
   class(t) == "data.frame"
@@ -397,8 +397,8 @@ stopifnot({
 set.seed(1)
 dists_y = dist(t1$y) %>% as.matrix
 dists_x = dist(t1$x) %>% as.matrix
-t_x = get_SAC_measures(t1, dists = dists_x, vars = c("outcome", "test"), k = 3:5);t_x
-t_y = get_SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5);t_y
+t_x = SAC_measures(t1, dists = dists_x, vars = c("outcome", "test"), k = 3:5);t_x
+t_y = SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5);t_y
 
 stopifnot({
   class(t_x) == "data.frame"
@@ -407,9 +407,9 @@ stopifnot({
 })
 
 #test outcome options
-t = knsn_reg(t1, "outcome", dists=dists_y, output = "scores")
-t_cor = knsn_reg(t1, "outcome", dists=dists_y, output = "cor")
-t_resids = knsn_reg(t1, "outcome", dists=dists_y, output = "resids")
+t = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "scores")
+t_cor = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "cor")
+t_resids = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "resids")
 
 #test other functions
 t_xy = find_neighbors(df = t0)

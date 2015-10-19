@@ -609,8 +609,8 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn
 #' @export
 #' @examples
-#' knsn_reg()
-knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
+#' SAC_knsn_reg()
+SAC_knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
   library(fields) #for rdist
   library(stringr) #for str_c
   # browser()
@@ -711,7 +711,7 @@ knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, we
 }
 
 
-#' K nearest spatial neighbor residuals-residuals correlations.
+#' K nearest spatial neighbor partial correlations.
 #'
 #' Removes SAC in each variable using knsnr and then correlates them with each other. Returns a correlation matrix.
 #' @param df A data.frame with variables.
@@ -726,31 +726,39 @@ knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, we
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, residuals
 #' @export
 #' @examples
-#' SAC_knsn_reg_rr()
-SAC_knsn_reg_rr = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
+#' SAC_SAC_knsn_reg_partial()
+SAC_SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
 
-  #autodetect distance method
-  if(!missing("dists")) auto_detect_dist_method=F
-  if(auto_detect_dist_method) {
-    auto = distance_method_detector(df)
-    distance_method = auto[1]
-    lat_var = auto[2]
-    lon_var = auto[3]
+  #check input
+  if (missing("df")) stop("df input missing!")
+  if (missing("variables")) stop("No variables given!")
+  if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+
+  #check spatial input
+  check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
+
+  #if no spatial info
+  if(check_results$setting == "na") {
+    stop("No spatial information detected!")
   }
 
-  #subset
-  df = df[c(variables, lat_var, lon_var)]
+  #coords
+  if(check_results$setting == "coords") {
+    distance_method = check_results$distance_method
+    lat_var = check_results$lat_var
+    lon_var = check_results$lon_var
 
-  #check for NA
-  if (anyNA(df)) stop("Missing data in df. Remove/impute and try again.")
+    #get distances
+    dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)[[1]]
+  }
 
   #for results
   d_return = data.frame(matrix(nrow=nrow(df), ncol=0))
   for (var in variables) {
     #get the residuals for that variable and save
-    d_return[var] = knsn_reg(df=df, dependent=var, k=k, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output="resids", auto_detect_dist_method=auto_detect_dist_method)
+    d_return[var] = SAC_knsn_reg(df=df, dependent=var, k=k, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output="resids", auto_detect_dist_method=auto_detect_dist_method)
   }
-  cor(d_return) %>% return
+  cor(d_return, use = "p") %>% return
 }
 
 
@@ -770,8 +778,8 @@ SAC_knsn_reg_rr = function(df, variables, k = 3, dists, lat_var, lon_var, weight
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
 #' @export
 #' @examples
-#' get_SAC_measures()
-get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
+#' SAC_measures()
+SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
   library(stringr)
 
   #autodetect distance method
@@ -810,7 +818,7 @@ get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, 
   #knsnr
   for (k_ in k) {
     for (var in vars) {
-      knsnr = knsn_reg(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
+      knsnr = SAC_knsn_reg(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
       df_ret[var, str_c("knsn_", k_)] = knsnr
     }
   }
@@ -840,12 +848,12 @@ get_SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, 
 #' SAC_slr()
 SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse") {
   library(stringr)
+
   #check input
   if (missing("df")) stop("df input missing!")
   if (missing("dependent")) stop("Dependent variable not given!")
   if (missing("predictors")) stop("Dependent variable not given!")
   if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
-  N_cases = nrow(df)
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
@@ -876,7 +884,7 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
   })
 
   #for storing output
-  betas = data.frame(matrix(nrow = N_cases, ncol = length(predictors)))
+  betas = data.frame(matrix(nrow = nrow(df), ncol = length(predictors)))
   colnames(betas) = predictors
 
   #loop over cases
@@ -922,44 +930,15 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
 
   #output form
   if (output == "mean") {
-    mean_beta = apply(betas, 2, mean)
+    mean_beta = apply(betas, 2, mean, na.rm=T)
+    #if all values were NA
+    if (sum(is.na(betas)) == nrow(betas)) return(NaN)
     return(mean_beta)
   }
 
   if(output == "vector") {
     return(betas)
   }
-}
-
-
-#' Autodetect distance method based on variable names.
-#'
-#' Returns a vector of the autodetected values or raises an error if it fails.
-#' @param df A data.frame with variables.
-#' @keywords latitude, longitude, distance
-#' @export
-#' @examples
-#' get_SAC_measures()
-distance_method_detector = function(df) {
-  #autodetect distance method
-
-  #spherical
-  if (all(c("lat", "lon") %in% colnames(df))) {
-    distance_method = "spherical"
-    lat_var = "lat"
-    lon_var = "lon"
-    return(c(distance_method, lat_var, lon_var))
-  }
-
-  #euclidean
-  if (all(c("x", "y") %in% colnames(df))) {
-    distance_method = "euclidean"
-    lat_var = "x"
-    lon_var = "y"
-    return(c(distance_method, lat_var, lon_var))
-  }
-
-  stop("Could not detect the distance method!")
 }
 
 
@@ -985,12 +964,12 @@ distance_method_detector = function(df) {
 #' SAC_control_all_methods()
 SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", CD_weight_method = "harmonic") {
   library(stringr)
+
   #check input
   if (missing("df")) stop("df input missing!")
   if (missing("dependent")) stop("Dependent variable not given!")
   if (missing("predictor")) stop("Dependent variable not given!")
   if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
-  N_cases = nrow(df)
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
@@ -1014,24 +993,23 @@ SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3
   #get distances if using dists input
   if (check_results$setting == "dists") {
     dists_vec = get_distances(df=df[c(dependent, predictor)], auto_detect_dist_method = F)
+    dists_vec$spatial = dists[lower.tri(dists)]
   }
 
   #for results
   v_res = c(uncontrolled = cor(df[dependent], df[predictor]))
 
   #CD
-  v_res["CD_d_sqrt"] = semi_par(dists_vec[[predictor]], dists_vec[[dependent]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
-  v_res["CD_p_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
-  v_res["CD_b_sqrt"] = MOD_partial(dists_vec, predictor, dependent, "spatial") %>% sqrt
+  v_res["CD_sp_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
   v_res["CD_mr_sqrt"] = lm(str_c(dependent, " ~ ", predictor, " + spatial"), std_df(dists_vec)) %>% coef %>% `[`(2) %>% sqrt
 
   #KNSNR
-  v_res[str_c("KNSNR_d_k", knsn_k)] = knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor")
-  v_res[str_c("KNSNR_p_k", knsn_k)] = knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor")
-  v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_knsn_reg_rr(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists)[1, 2]
+  v_res[str_c("KNSNR_d_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor")
+  v_res[str_c("KNSNR_p_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor")
+  v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists)[1, 2]
 
   #SLR
-  v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method)
+  v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method, dists=dists)
 
   #return
   return(v_res)

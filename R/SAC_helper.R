@@ -62,3 +62,34 @@ check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, aut
                 lon_var=lon_var))
   }
 }
+
+
+#' Autodetect distance method based on variable names.
+#'
+#' Returns a vector of the autodetected values or raises an error if it fails.
+#' @param df A data.frame with variables.
+#' @keywords latitude, longitude, distance
+#' @export
+#' @examples
+#' get_SAC_measures()
+distance_method_detector = function(df) {
+  #autodetect distance method
+
+  #spherical
+  if (all(c("lat", "lon") %in% colnames(df))) {
+    distance_method = "spherical"
+    lat_var = "lat"
+    lon_var = "lon"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  #euclidean
+  if (all(c("x", "y") %in% colnames(df))) {
+    distance_method = "euclidean"
+    lat_var = "x"
+    lon_var = "y"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  stop("Could not detect the distance method!")
+}

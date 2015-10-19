@@ -213,10 +213,12 @@ round_df = function(df, digits=3) {
 #' rank_df()
 rank_df = function(df, ...) {
   #for each column
-  lapply(df, function(x) {
+  df2 = lapply(df, function(x) {
     #check what class it is, if numeric, then rank, otherwise, leave it as it is
     if (class(x) == "numeric") rank(x, ...) else return(x)
   }) %>% as.data.frame #transform into df again
+  rownames(df2) = rownames(df)
+  return(df2)
 }
 
 
