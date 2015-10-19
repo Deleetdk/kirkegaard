@@ -114,3 +114,8 @@ colnames(d_ex12) = c("x", "y")
 d_ex12$predictor = rep(c(rep(0:1, length.out=25), rep(1:0, length.out=25)), length.out=n)
 d_ex12$outcome = rep(0:4, length.out=n)
 cor(d_ex12)
+
+
+
+# megadataset -------------------------------------------------------------
+mega = read.csv("kirkegaard/R/Megadataset_v2.0m.csv")

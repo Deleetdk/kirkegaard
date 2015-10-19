@@ -1010,3 +1010,49 @@ cor_matrix_weights = function(df, weight_var, weights) {
   #return
   return(r_combined)
 }
+
+
+#' Calculate a partial correlation.
+#'
+#' Calculates the partial correlation.
+#' @param df A data.frame.
+#' @param x String with the name of the first variable.
+#' @param y String with the name of the second variable.
+#' @param z String with the name of the control variable.
+#' @param weights String with the name of the weights variable. Can be left out.
+#' @keywords correlation, partial, weights
+#' @export
+#' @examples
+#' MOD_partial()
+MOD_partial = function(df, x, y, z, weights) {
+  library(stringr)
+  library(weights)
+
+  #check input
+  if (missing("df") | missing("x") | missing("y") | missing("z")) stop("df, x, y or z is missing!")
+
+  #make or move weights
+  if (missing("weights")) {
+    df$weights___ = rep(1, nrow(df)) #make unit weights
+  } else {
+    df$weights___ = df[[weights]] #reassign weights var
+  }
+
+  #build models
+  mod1 = str_c(x, " ~ ", str_c(z, collapse = " + "))
+  mod2 = str_c(y, " ~ ", str_c(z, collapse = " + "))
+
+  #fit models
+  fit1 = lm(mod1, data = df, weights = weights___, na.action = na.exclude)
+  fit2 = lm(mod2, data = df, weights = weights___, na.action = na.exclude)
+  #na.exclude is important becus otherwise NA values are removed
+
+  #get residuals
+  resid1 = resid(fit1)
+  resid2 = resid(fit2)
+
+  #correlate
+  r = wtd.cor(resid1, resid2, weight = df$weights___)
+
+  return(r[1])
+}

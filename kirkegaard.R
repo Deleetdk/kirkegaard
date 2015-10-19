@@ -1,5 +1,4 @@
 #libs
-
 library(pacman)
 p_load(devtools, roxygen2)
 

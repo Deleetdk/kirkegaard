@@ -1,5 +1,5 @@
 #make datasets
-source("kirkegaard/R/datasets.R")
+source("kirkegaard/datasets.R")
 
 # merge_datasets ----------------------------------------------------------
 #some data to merge
@@ -503,5 +503,34 @@ stopifnot({
 })
 
 
-# plot_loadings_multi -----------------------------------------------------
+# plot_loadings_multi FA_rank_fa -----------------------------------------------------
+fa_list = list(std = fa(iris[-5]),
+               rank = FA_rank_fa(iris[-5]))
+g = plot_loadings_multi(fa_list)
+
+stopifnot({
+  "gg" %in% class(g)
+})
+
+# SAC_control_all_methods -------------------------------------------------
+t = SAC_control_all_methods(df=d_ex5, dependent = "outcome", predictor = "predictor", knsn_k = 10, slr_k = 3)
+t2 = SAC_control_all_methods(df=d_ex6, dependent = "outcome", predictor = "predictor", knsn_k = 10, slr_k = 3)
+
+stopifnot({
+  all(t2 > t) #those from 6 should be larger
+  class(t) == "numeric" #check classes
+  class(t2) == "numeric"
+  !is.null(names(t)) #check names are present
+  !is.null(names(t2))
+})
+
+
+# MOD_partial -------------------------------------------------------------
+#this is a partial correlation function
+t = MOD_partial(iris, "Sepal.Length", "Sepal.Width", "Petal.Length")
+t = MOD_partial(iris, "Sepal.Width", "Sepal.Length", "Petal.Length")
+
+stopifnot({
+  t == t
+})
 

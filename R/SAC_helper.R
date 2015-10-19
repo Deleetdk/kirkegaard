@@ -13,6 +13,7 @@
 #' @examples
 #' SAC_slr()
 check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, auto_detect_dist_method) {
+  # browser()
   #dists missing?
   if (missing("dists")) no_dists=T
 
@@ -44,7 +45,7 @@ check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, aut
   }
 
   #dists found
-  if (!exists("no_dists") & exists("no_latlon")) {
+  if (!exists("no_dists")) {
     return(list(setting = "dists"))
   }
 
