@@ -7,12 +7,12 @@
 #' @export
 #' @examples
 #' GG_denhist()
-GG_denhist = function(df, var) {
+GG_denhist = function(df, var, binwidth = NULL) {
   library(ggplot2)
 
   g = ggplot(df, aes_string(var)) +
     geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
-                   colour="black", fill="white") +
+                   colour="black", fill="white", binwidth = binwidth) +
     geom_density(alpha=.2, fill="#FF6666") +  # Overlay with transparent density plot
     geom_vline(aes_string(xintercept=mean(df[[var]], na.rm=T)),   # Ignore NA values for mean
                color="red", linetype="dashed", size=1)
