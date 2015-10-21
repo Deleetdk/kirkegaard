@@ -1024,7 +1024,7 @@ cor_matrix_weights = function(df, weight_var, weights) {
 #' @export
 #' @examples
 #' MOD_partial()
-MOD_partial = function(df, x, y, z, weights) {
+MOD_partial = function(df, x, y, z, weights_var) {
   library(stringr)
   library(weights)
 
@@ -1032,11 +1032,12 @@ MOD_partial = function(df, x, y, z, weights) {
   if (missing("df") | missing("x") | missing("y") | missing("z")) stop("df, x, y or z is missing!")
 
   #make or move weights
-  if (missing("weights")) {
+  if (missing("weights_var")) {
     df$weights___ = rep(1, nrow(df)) #make unit weights
   } else {
-    df$weights___ = df[[weights]] #reassign weights var
+    df$weights___ = df[[weights_var]] #reassign weights var
   }
+  weights_var = "weights___"
 
   #build models
   mod1 = str_c(x, " ~ ", str_c(z, collapse = " + "))

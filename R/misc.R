@@ -276,3 +276,44 @@ get_prop_table = function(x, breaks_=20){
 }
 
 
+#' Convert convertible columns in a data.frame to numeric.
+#'
+#' Attempts to convert all columns in a data.frame to numeric. If that fails, keeps the original.
+#' @param df A data.frame.
+#' @param stringsAsFactors Whether to convert strings to factors. Default is F.
+#' @param skip_factors Whether to skip factors. Default is T.
+#' @keywords convert, as, numeric, data.frame
+#' @export
+#' @examples
+#' as_num_df()
+as_num_df = function(df, stringsAsFactors = F, skip_factors = T) {
+  #check input
+  if (!is.data.frame(df)) stop("df isn't a data.frame!")
+
+  #save rownames
+  rnames = rownames(df)
+
+  #lapply
+  new_df = lapply(df, function(x) {
+    if (skip_factors) {
+      if (class(x) == "factor") {
+        return(x)
+      }
+    }
+
+    trial = tryCatch({
+      as.numeric(x)
+    },
+    warning = function(w) {
+      w
+    })
+
+    if ("warning" %in% class(trial)) {
+      return(x)
+    } else {
+      return(as.numeric(x))
+    }
+  }) %>% as.data.frame(stringsAsFactors = stringsAsFactors)
+  rownames(new_df) = rnames
+  return(new_df)
+}

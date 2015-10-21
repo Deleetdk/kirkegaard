@@ -534,3 +534,20 @@ stopifnot({
   t == t
 })
 
+
+# as_num_df ---------------------------------------------------------------
+#converts string vectors in a data.frame to numeric ones if possible
+#make iris into a df with strings
+iris_chr = lapply(iris, as.character) %>% as.data.frame(stringsAsFactors = F)
+#change it back to numerics
+t = as_num_df(iris_chr)
+#check that back to factor works
+t2 = as_num_df(iris_chr, stringsAsFactors = T)
+#check that skip factors works
+t3 = as_num_df(iris, skip_factors = F)
+
+stopifnot({
+  all(sapply(t, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
+  all(sapply(t2, class) == c("numeric", "numeric", "numeric", "numeric", "factor"))
+  all(sapply(t3, class) == c("numeric", "numeric", "numeric", "numeric", "numeric"))
+})

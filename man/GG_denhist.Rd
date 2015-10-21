@@ -4,7 +4,7 @@
 \alias{GG_denhist}
 \title{Histogram with an empirical density curve and a vertical line at the mean}
 \usage{
-GG_denhist(df, var)
+GG_denhist(df, var, binwidth = NULL)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

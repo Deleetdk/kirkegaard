@@ -195,7 +195,6 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
 
   #check input
   if (missing("df")) stop("df input missing!")
-  if (!missing("dists") & !missing("lat_var") & !missing("lon_var")) stop("Both dists and spatial variables given. Either give dists alone, spatial variables alone, or autodetect spatial variables.")
   if (anyNA(df)) stop("Missing values present. Remove and try again.")
   if (!weights_var %in% colnames(df) & weights_var != "") stop("Weights variable isn't in the data.frame!")
   #check sizes
@@ -252,7 +251,7 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   if (check_results$setting == "dists") df_dist["spatial"] = dists[lower.tri(dists)] %>% as.vector
 
   #add weights if they exist
-  if (weights_var != "") df_dist["weight"] = df_pair_weights
+  if (weights_var != "") df_dist["weights___"] = df_pair_weights
 
   #return
   return(df_dist)
@@ -726,8 +725,8 @@ SAC_knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, residuals
 #' @export
 #' @examples
-#' SAC_SAC_knsn_reg_partial()
-SAC_SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
+#' SAC_knsn_reg_partial()
+SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
 
   #check input
   if (missing("df")) stop("df input missing!")
@@ -1000,13 +999,15 @@ SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3
   v_res = c(uncontrolled = cor(df[dependent], df[predictor]))
 
   #CD
-  v_res["CD_sp_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
+  v_res["CD_d_sqrt"] = semi_par(dists_vec[[predictor]], dists_vec[[dependent]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
+  v_res["CD_p_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
+  v_res["CD_b_sqrt"] = MOD_partial(dists_vec, predictor, dependent, weights = ) %>% sqrt
   v_res["CD_mr_sqrt"] = lm(str_c(dependent, " ~ ", predictor, " + spatial"), std_df(dists_vec)) %>% coef %>% `[`(2) %>% sqrt
 
   #KNSNR
   v_res[str_c("KNSNR_d_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor")
   v_res[str_c("KNSNR_p_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor")
-  v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists)[1, 2]
+  v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists)[1, 2]
 
   #SLR
   v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method, dists=dists)

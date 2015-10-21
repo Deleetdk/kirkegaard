@@ -4,7 +4,7 @@
 \alias{MOD_partial}
 \title{Calculate a partial correlation.}
 \usage{
-MOD_partial(df, x, y, z, weights)
+MOD_partial(df, x, y, z, weights_var)
 }
 \arguments{
 \item{df}{A data.frame.}
