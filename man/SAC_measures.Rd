@@ -6,7 +6,7 @@
 \usage{
 SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
   weights_var = "", weight_method = "harmonic",
-  auto_detect_dist_method = T)
+  auto_detect_dist_method = T, measures = c("Morans", "CD", "KNSNR"))
 }
 \arguments{
 \item{df}{A data.frame with variables.}

@@ -324,7 +324,9 @@ t0 = data.frame(x = runif(n, 1, 100),
                 y = runif(n, 1, 100),
                 outcome = rnorm(n),
                 test = rep(1:2, n/2))
+t0$weightVar = sample(n, n)
 t1 = add_SAC(t0, iter = 10, vars = c("outcome", "test"))
+t1$weightVar = sample(n, n)
 
 stopifnot({
   class(t0) == class(t1)
@@ -387,10 +389,14 @@ stopifnot({
 
 #sac measures
 t = SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5)
+#with random weights, this is painfully slow!
+t_w = SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5, weights_var = "weightVar")
 
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(2, 6)
+  class(t_w) == "data.frame"
+  dim(t_w) == c(2, 6)
 })
 
 ##test using user-inputted dists
@@ -528,10 +534,10 @@ stopifnot({
 # MOD_partial -------------------------------------------------------------
 #this is a partial correlation function
 t = MOD_partial(iris, "Sepal.Length", "Sepal.Width", "Petal.Length")
-t = MOD_partial(iris, "Sepal.Width", "Sepal.Length", "Petal.Length")
+t2 = MOD_partial(iris, "Sepal.Width", "Sepal.Length", "Petal.Length")
 
 stopifnot({
-  t == t
+  all.equal(t, t2)
 })
 
 

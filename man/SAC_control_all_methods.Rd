@@ -6,7 +6,8 @@
 \usage{
 SAC_control_all_methods(df, dependent, predictor, knsn_k = 3, slr_k = 3,
   dists, lat_var, lon_var, distance_method, auto_detect_dist_method = T,
-  SLR_weights_method = "inverse", CD_weight_method = "harmonic")
+  SLR_weights_method = "inverse", CD_weight_method = "harmonic",
+  weights_var = "", methods_ = c("CD", "KNSNR", "SLR"))
 }
 \arguments{
 \item{df}{A data.frame with variables.}

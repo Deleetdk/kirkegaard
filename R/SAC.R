@@ -117,6 +117,11 @@ get_euclidean_dists = function(df, output = "vector", remove_diag = T) {
 #' @examples
 #' get_pairwise_means()
 get_pairwise_means = function(x, weight_method = "harmonic") {
+  #change option
+  if (options()$expressions < 10000) options(expressions = 10000)
+  #not doing this gives an error
+  #http://stackoverflow.com/questions/22003021/explanation-of-r-optionsexpressions-to-non-computer-scientists
+
   #missing values
   if (any(is.na(x))) stop("Missing values present, aborting!")
 
@@ -196,8 +201,13 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
   #check input
   if (missing("df")) stop("df input missing!")
   if (anyNA(df)) stop("Missing values present. Remove and try again.")
-  if (!weights_var %in% colnames(df) & weights_var != "") stop("Weights variable isn't in the data.frame!")
-  #check sizes
+
+  #weights
+  if (weights_var == "") {
+    df$weights___ = rep(1, nrow(df)) #fill in 1's
+  } else {
+    df$weights___ = df[[weights_var]] #use chosen var
+  }
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
@@ -235,7 +245,11 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
     df = df[!str_detect(colnames(df), weights_var)]
 
     #get case pair weights
-    df_pair_weights = get_pairwise_means(df_weights, weight_method = weight_method)
+    if (sd(unlist(df_weights)) == 0) {
+      df_pair_weights = rep(1, choose(nrow(df), 2))
+    } else {
+      df_pair_weights = get_pairwise_means(df_weights, weight_method = weight_method)
+    }
   }
 
   #get absolute differences for all other variables
@@ -778,7 +792,7 @@ SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, w
 #' @export
 #' @examples
 #' SAC_measures()
-SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T) {
+SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "CD", "KNSNR")) {
   library(stringr)
 
   #autodetect distance method
@@ -791,7 +805,12 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
   }
 
   #weights
-  if (weights_var=="") df$weights___ = rep(1, nrow(df)) #if none, use 1's
+  if (weights_var == "") {
+    df$weights___ = rep(1, nrow(df)) #fill in 1's
+  } else {
+    df$weights___ = df[[weights_var]] #use chosen var
+  }
+  weights_var = "weights___"
 
   #data.frame for results
   df_ret = data.frame(matrix(nrow=length(vars), ncol=0)) #df for storing results
@@ -801,26 +820,33 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
   if (missing("dists")) {
     df = df[c(vars, lat_var, lon_var, "weights___")]
   }
-  df = na.omit(df) #remove missing
 
   #Moran's I
-  morans = get_Morans_I_multi(df=df, vars=vars, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
-  df_ret$Morans_I = morans
+  if ("Morans" %in% measures) {
+    morans = get_Morans_I_multi(df=df, vars=vars, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
+    df_ret$Morans_I = morans
+  }
 
   #correlation of distances
-  df_dist = get_distances(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
+  if ("CD" %in% measures) {
+    df_dist = get_distances(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
 
-  cd = suppressWarnings(cor(df_dist)["spatial", vars])
-  df_ret$cd = cd
-  df_ret$cd_sqrt = cd %>% sqrt
+    cd = suppressWarnings(cor(df_dist)["spatial", vars])
+    df_ret$cd = cd
+    df_ret$cd_sqrt = cd %>% sqrt
+  }
 
-  #knsnr
-  for (k_ in k) {
-    for (var in vars) {
-      knsnr = SAC_knsn_reg(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
-      df_ret[var, str_c("knsn_", k_)] = knsnr
+
+  #KNSNR
+  if ("KNSNR" %in% measures) {
+    for (k_ in k) {
+      for (var in vars) {
+        knsnr = SAC_knsn_reg(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
+        df_ret[var, str_c("knsn_", k_)] = knsnr
+      }
     }
   }
+
 
   return(df_ret)
 }
@@ -961,14 +987,23 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
 #' @export
 #' @examples
 #' SAC_control_all_methods()
-SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", CD_weight_method = "harmonic") {
+SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", CD_weight_method = "harmonic", weights_var="", methods_ = c("CD", "KNSNR", "SLR")) {
   library(stringr)
+
 
   #check input
   if (missing("df")) stop("df input missing!")
   if (missing("dependent")) stop("Dependent variable not given!")
   if (missing("predictor")) stop("Dependent variable not given!")
   if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+
+  #weights
+  if (weights_var == "") {
+    df$weights___ = rep(1, nrow(df)) #fill in 1's
+  } else {
+    df$weights___ = df[[weights_var]] #use chosen var
+  }
+  weights_var = "weights___"
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
@@ -986,31 +1021,42 @@ SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3
 
     #get distances
     dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)[[1]]
-    dists_vec = get_distances(df=df[c(lat_var, lon_var, dependent, predictor)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
+    dists_vec = get_distances(df=df[c(lat_var, lon_var, dependent, predictor, weights_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var = weights_var)
   }
 
   #get distances if using dists input
   if (check_results$setting == "dists") {
-    dists_vec = get_distances(df=df[c(dependent, predictor)], auto_detect_dist_method = F)
+    dists_vec = get_distances(df=df[c(dependent, predictor)], auto_detect_dist_method = F, weights_var = )
     dists_vec$spatial = dists[lower.tri(dists)]
   }
 
   #for results
   v_res = c(uncontrolled = cor(df[dependent], df[predictor]))
 
+
   #CD
-  v_res["CD_d_sqrt"] = semi_par(dists_vec[[predictor]], dists_vec[[dependent]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
-  v_res["CD_p_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]])$semi_partial[1] %>% sqrt
-  v_res["CD_b_sqrt"] = MOD_partial(dists_vec, predictor, dependent, weights = ) %>% sqrt
-  v_res["CD_mr_sqrt"] = lm(str_c(dependent, " ~ ", predictor, " + spatial"), std_df(dists_vec)) %>% coef %>% `[`(2) %>% sqrt
+  if ("CD" %in% methods_) {
+    v_res["CD_d_sqrt"] = semi_par(dists_vec[[predictor]], dists_vec[[dependent]], dists_vec[["spatial"]], weights = dists_vec$weights___)$semi_partial[1] %>% sqrt
+    v_res["CD_p_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]], weights = dists_vec$weights___)$semi_partial[1] %>% sqrt
+    v_res["CD_b_sqrt"] = MOD_partial(dists_vec, x = predictor, y = dependent, z = "spatial", weights_var = weights_var) %>% sqrt
+    dists_vec_std = std_df(dists_vec, exclude = "weights___")
+    v_res["CD_mr_sqrt"] = lm(str_c(dependent, " ~ ", predictor, " + spatial"), dists_vec_std, weights = weights___) %>% coef %>% `[`(2) %>% sqrt
+  }
+
 
   #KNSNR
-  v_res[str_c("KNSNR_d_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor")
-  v_res[str_c("KNSNR_p_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor")
-  v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists)[1, 2]
+  if ("KNSNR" %in% methods_) {
+    v_res[str_c("KNSNR_d_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor", weights_var = "weights___")
+    v_res[str_c("KNSNR_p_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor", weights_var = "weights___")
+    v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists, weights_var = "weights___")[1, 2]
+  }
+
 
   #SLR
-  v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method, dists=dists)
+  if ("SLR" %in% methods_) {
+    v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method, dists=dists)
+  }
+
 
   #return
   return(v_res)
