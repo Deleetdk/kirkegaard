@@ -17,18 +17,13 @@ set.seed(4)
 d_ex5$outcome = rnorm(n) * .73 + scale(d_ex5$SACV) %>% as.vector
 cor(d_ex5)["predictor", "outcome"]
 
-#noise variable
-set.seed(83)
-d_ex5$random = rnorm(n)
-
 # Ex 6 --------------------------------------------------------------------
 #true cause scenario, no clusters
 n=500
 set.seed(2)
 d_ex6 = data.frame(x = runif(n, 1, 100),
                    y = runif(n, 1, 100),
-                   SACV = rnorm(n),
-                   random = rnorm(n))
+                   SACV = rnorm(n))
 
 d_ex6 = add_SAC(d_ex6, iter = 20, k=10, vars = c("SACV"), lat_var = "x", lon_var = "y", distance_method = "euclidean")
 
@@ -38,9 +33,6 @@ set.seed(4)
 d_ex6$outcome = (rnorm(n) + scale(d_ex6$predictor) * .82) %>% as.vector
 cor(d_ex6)["predictor", "outcome"]
 
-#noise variable
-set.seed(83)
-d_ex6$random = rnorm(n)
 
 # Ex 7 --------------------------------------------------------------------
 #this is a variant of ex6, but where SAC is also induced into the other main vars afterwards
@@ -122,8 +114,3 @@ colnames(d_ex12) = c("x", "y")
 d_ex12$predictor = rep(c(rep(0:1, length.out=25), rep(1:0, length.out=25)), length.out=n)
 d_ex12$outcome = rep(0:4, length.out=n)
 cor(d_ex12)
-
-
-
-# megadataset -------------------------------------------------------------
-mega = read.csv("kirkegaard/R/Megadataset_v2.0m.csv")

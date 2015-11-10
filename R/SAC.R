@@ -1,5 +1,103 @@
 ### This has some functions related to spatial autocorrelation analysis
 
+
+
+#' Check for input for spatial data.
+#'
+#' Returns a list with the results of the check. This is generally only used as a helper function for other spatial statistics functions.
+#' @param df A data.frame with variables.
+#' @param dists A matrix of distances between cases.
+#' @param lat_var A string with the name of the variable which has the latitude/east-west data.
+#' @param lon_var A string with the name of the variable which has the longitude/north-south data.
+#' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
+#' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
+#' @export
+#' @examples
+#' check_spatial_input()
+check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, auto_detect_dist_method) {
+
+  #dists missing?
+  if (missing("dists")) no_dists=T
+
+  #dists found
+  if (!exists("no_dists")) {
+    return(list(setting = "dists"))
+  }
+
+  #can spatial be autodetected?
+  if (auto_detect_dist_method) {
+    #spherical
+    if (all(c("lat", "lon") %in% colnames(df))) {
+      distance_method = "spherical"
+      lat_var = "lat"
+      lon_var = "lon"
+    }
+
+    #euclidean
+    if (all(c("x", "y") %in% colnames(df))) {
+      distance_method = "euclidean"
+      lat_var = "x"
+      lon_var = "y"
+    }
+  }
+
+  #both coords missing?
+  if (missing("lat_var") & missing("lon_var")) no_latlon=T
+
+  ##Actions
+
+  #none present
+  if (exists("no_dists") & exists("no_latlon")) {
+    return(list(setting = "na"))
+  }
+
+  #spatial found
+  if (exists("no_dists") & !exists("no_latlon")) {
+    #check if they exist
+    if (!all(c(lat_var, lon_var) %in% colnames(df))) {
+      stop("Spatial variables given were not in the data.frame!")
+    }
+
+    return(list(setting = "coords",
+                distance_method=distance_method,
+                lat_var=lat_var,
+                lon_var=lon_var))
+  }
+}
+
+
+
+#' Autodetect distance method based on variable names.
+#'
+#' Returns a vector of the autodetected values or raises an error if it fails.
+#' @param df A data.frame with variables.
+#' @keywords latitude, longitude, distance
+#' @export
+#' @examples
+#' distance_method_detector()
+distance_method_detector = function(df) {
+  #autodetect distance method
+
+  #spherical
+  if (all(c("lat", "lon") %in% colnames(df))) {
+    distance_method = "spherical"
+    lat_var = "lat"
+    lon_var = "lon"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  #euclidean
+  if (all(c("x", "y") %in% colnames(df))) {
+    distance_method = "euclidean"
+    lat_var = "x"
+    lon_var = "y"
+    return(c(distance_method, lat_var, lon_var))
+  }
+
+  stop("Could not detect the distance method!")
+}
+
+
 #' Calculate pairwise spherical distances for all pairs.
 #'
 #' Returns a vector with the pairwise spherical distances for all pairs. The calculation method used is "great circle method" using distCosine() from package geosphere.
@@ -620,13 +718,14 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @param outout Which type of output to return. Can be (predicted) scores, cor or resids. Defaults to scores.
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn
-#' @export
+#' @export SAC_knsn_reg SAC_knsnr
+#' @aliases SAC_knsn_reg
 #' @examples
-#' SAC_knsn_reg()
-SAC_knsn_reg = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
+#' SAC_knsnr()
+SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
   library(fields) #for rdist
   library(stringr) #for str_c
-  # browser()
+
 
   #check input
   if (missing("df")) stop("df input missing!")
@@ -789,19 +888,24 @@ SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, w
 #' @param weight_method A string with the weighing method to use. Defaults to harmonic.
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
-#' @export
+#' @export get_SAC_measures SAC_measures
+#' @aliases get_SAC_measures
 #' @examples
 #' SAC_measures()
-SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "CD", "KNSNR")) {
+SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "CD", "KNSNR"), CD_convert_NaN_to_zero = T) {
   library(stringr)
 
-  #autodetect distance method
-  if (!missing("dists")) auto_detect_dist_method=F
-  if(auto_detect_dist_method) {
-    auto = distance_method_detector(df)
-    distance_method = auto[1]
-    lat_var = auto[2]
-    lon_var = auto[3]
+  #check spatial input
+  check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
+
+  #coords
+  if(check_results$setting == "coords") {
+    distance_method = check_results$distance_method
+    lat_var = check_results$lat_var
+    lon_var = check_results$lon_var
+
+    #get distances
+    dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var = lat_var, lon_var = lon_var, distance_method = distance_method)[[1]]
   }
 
   #weights
@@ -816,10 +920,6 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
   df_ret = data.frame(matrix(nrow=length(vars), ncol=0)) #df for storing results
   rownames(df_ret) = vars
 
-  #subset
-  if (missing("dists")) {
-    df = df[c(vars, lat_var, lon_var, "weights___")]
-  }
 
   #Moran's I
   if ("Morans" %in% measures) {
@@ -829,11 +929,17 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
 
   #correlation of distances
   if ("CD" %in% measures) {
+
     df_dist = get_distances(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var=weights_var, weight_method=weight_method)
 
     cd = suppressWarnings(cor(df_dist)["spatial", vars])
     df_ret$cd = cd
-    df_ret$cd_sqrt = cd %>% sqrt
+    df_ret$cd_sqrt = suppressWarnings(sqrt(cd))
+
+    #if any values were NaN, convert to 0
+    if (CD_convert_NaN_to_zero) {
+      df_ret[is.na(df_ret)] = 0
+    }
   }
 
 
@@ -847,7 +953,6 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
     }
   }
 
-
   return(df_ret)
 }
 
@@ -855,23 +960,23 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
 
 #' Perform spatial local regression.
 #'
-#' Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
+#' Returns either summary statistics for each predictor or a data.frame with the betas from each local regression.
 #' @param df A data.frame with variables.
 #' @param dependent A character vector with the name of the dependent variable.
 #' @param predictors A character vector with the names of the predictor variables.
 #' @param k The number of neighbors to use in the regressions. Defaults to 3.
+#' @param output Which meta-analysis measure to use. Defaults to trim10, a 10 percent trimmed mean. Other options are: mean, median, and trim followed by any desired number. Can also use 'values' to get the values which returns a data.frame.
 #' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude/east-west data.
 #' @param lon_var A string with the name of the variable which has the longitude/north-south data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
-
 #' @param weights_method A string with the name of the weights method to use. Defaults to "inverse", i.e. weighing cases by their inverse distance to the case being considered. Can also be "none".
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, regression, spatial local regression, local regression
 #' @export
 #' @examples
 #' SAC_slr()
-SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse") {
+SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse", weights_var = "", include_self = F, verbose = T) {
   library(stringr)
 
   #check input
@@ -879,9 +984,20 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
   if (missing("dependent")) stop("Dependent variable not given!")
   if (missing("predictors")) stop("Dependent variable not given!")
   if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  if (include_self) weights_method = "none" #otherwise an error happens!
+  if (missing("output")) output = "trim10" #if not given, use trim 10
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
+
+  #weights
+  if (weights_var == "") {
+    df$weights___ = rep(1, nrow(df)) #fill in 1's
+  } else {
+    df$weights___ = df[[weights_var]] #use chosen var
+  }
+  weights_var = "weights___"
+
 
   #if no spatial info
   if(check_results$setting == "na") {
@@ -898,8 +1014,14 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
     dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var = lat_var, lon_var = lon_var, distance_method = distance_method)[[1]]
   }
 
-  #find neighbors
-  neighbor_list = find_neighbors(df=df, dists=dists, k=k, distance_method=distance_method, lat_var=lat_var, lon_var=lon_var)
+  #find k neighbors
+  if (include_self) {
+    neighbor_list = find_neighbors(df=df, dists=dists, k=k-1, distance_method=distance_method, lat_var=lat_var, lon_var=lon_var)
+    #only finds k-1 neighbors because we want to include the case itself as well
+  } else {
+    neighbor_list = find_neighbors(df=df, dists=dists, k=k, distance_method=distance_method, lat_var=lat_var, lon_var=lon_var)
+  }
+
 
   #get their distances
   neighbor_dists = llply(1:length(neighbor_list), function(x) {
@@ -917,28 +1039,36 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
     #neighbors
     case_neighbors = neighbor_list[[case]]
 
-    #subset
-    df_sub = df[c(case_neighbors), ]
+    #subset the case plus the k nearest neighbors
+    if (include_self) { #include self
+      df_sub = df[c(case, case_neighbors), ]
+    } else { #dont include self
+      df_sub = df[c(case_neighbors), ]
+    }
 
     #standardize
-    df_sub_std = std_df(df_sub)
+    df_sub_std = std_df(df_sub, exclude = "weights___") #exclude weights
 
     #check if NAs were created
     #this happens if sd=0 and gives mysterious errors
     if (anyNA(df_sub_std[c(dependent, predictors)])) {
-      warn_na = T
+      if (verbose) {
+        print("One or more values were NA for this cluster of data.")
+        print(df_sub_std[c(dependent, predictors)])
+      }
       next
     }
 
     #make model
     model = str_c(dependent, " ~ ", str_c(predictors, collapse = " + "))
 
-    #which weights?
+    #which weights? and then fit
+    #this creates a weights vector based both on distance (if desired) and given case weights
     if (weights_method == "none") {
-      df_sub_std$weights__ = rep(1, length(case_neighbors)) #fill with 1's
+      df_sub_std$weights__ = rep(1, nrow(df_sub_std)) * df_sub_std$weights___ #fill with 1's
     } else if (weights_method == "inverse") {
       case_neighbor_dists = neighbor_dists[[case]]
-      df_sub_std$weights__ = 1/case_neighbor_dists
+      df_sub_std$weights__ = 1/case_neighbor_dists * df_sub_std$weights___
     } else {
       stop("weights_method not recognized!")
     }
@@ -950,52 +1080,72 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "mean", dists, lat_v
     betas[case, ] = coef(fit)[-1]
   }
 
-  if (exists("warn_na")) warning("Some localities had no variance in one or more variables. These clusters were skipped. This is odd, so you should investigate.")
 
+  #all values NA?
+  if (sum(!is.na(betas)) == 0) return(NaN)
 
   #output form
   if (output == "mean") {
     mean_beta = apply(betas, 2, mean, na.rm=T)
-    #if all values were NA
-    if (sum(is.na(betas)) == nrow(betas)) return(NaN)
     return(mean_beta)
   }
 
-  if(output == "vector") {
+  if(str_detect(output, "trim")) {
+    tmp_trim_val = str_extract(output, "\\d+") %>% as.numeric %>% `/`(., 100)
+    mean_beta = apply(betas, 2, mean, trim = tmp_trim_val, na.rm=T)
+    return(mean_beta)
+  }
+
+  if(output == "median") {
+    mean_beta = apply(betas, 2, median, na.rm=T)
+    return(mean_beta)
+  }
+
+  if(output == "values" | output == "vector") {
     return(betas)
   }
 }
 
 
 
-#' Perform spatial local regression.
+#' Control for spatial autocorrelation with multiple methods.
 #'
-#' Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
+#' Returns a data.frame with predictors for linear regression with and without controls for SAC.
 #' @param df A data.frame with variables.
 #' @param dependent A character vector with the name of the dependent variable.
-#' @param predictor A character vector with the name of the predictor variable.
+#' @param predictor A character vector with the name of the predictor variables.
 #' @param knsn_k The number of neighbors to use with k nearest spatial regression. Defaults to 3.
 #' @param slr_k The number of neighbors to use with spatial local regression. Defaults to 3.
 #' @param dists A matrix of distances between cases.
 #' @param lat_var A string with the name of the variable which has the latitude/east-west data.
 #' @param lon_var A string with the name of the variable which has the longitude/north-south data.
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
-#' @param SLR_weights_method A string with the name of the weights method to use for spatial local regression. Defaults to "inverse", i.e. weighing cases by their inverse distance to the case being considered. Can also be "none".
-#' @param CD_weight_method A string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
-#' @keywords spatial autocorrelation, regression, spatial local regression, local regression
-#' @export
+#' @param SLR_weights_method A string with the name of the weights method to use for spatial local regression. Defaults to "inverse", i.e. weighing cases by their inverse distance to the case being considered. Can also be "none".
+#' @param SLR_include_self Whether to include the self node or not in SLR. Defaults to F.
+#' @param SLR_central_measure Which central tendency measure to meta-analyze SLR results with. Defaults to trim10, which is a 10 percent trimmed mean. For other options, see help for SAC_slr.
+#' @param CD_weight_method A string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.
+#' @param weights_var A character vector of the name of the weight variable to use. If none given, defaults to equal weights.
+#' @param methods_ Which control methods to use. Options are CD, KNSNR, SLR. Defaults to all of them.
+#' @param standardize Whether to standardize the data to get standardized betas. Defaults to T.
+#' @param control_approach Which control approaches to use. Options are partial and mr. Defaults to partial.
+#' @keywords spatial autocorrelation, regression, control, k nearest spatial neighbor regression, KNSNR, spatial local regression, slr
+#' @export SAC_control SAC_control_all_methods
+#' @aliases SAC_control_all_methods
 #' @examples
-#' SAC_control_all_methods()
-SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", CD_weight_method = "harmonic", weights_var="", methods_ = c("CD", "KNSNR", "SLR")) {
+#' SAC_control()
+SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods_ = c("CD", "KNSNR", "SLR"), standardize = T, control_approach = c("partial")) {
   library(stringr)
 
 
   #check input
   if (missing("df")) stop("df input missing!")
   if (missing("dependent")) stop("Dependent variable not given!")
-  if (missing("predictor")) stop("Dependent variable not given!")
+  if (missing("predictors")) stop("Dependent variable not given!")
   if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  if (!all(control_approach %in% c("partial", "mr"))) {
+    stop("Unrecognized control approaches included!")
+  }
 
   #weights
   if (weights_var == "") {
@@ -1021,43 +1171,132 @@ SAC_control_all_methods = function(df, dependent, predictor, knsn_k=3, slr_k = 3
 
     #get distances
     dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)[[1]]
-    dists_vec = get_distances(df=df[c(lat_var, lon_var, dependent, predictor, weights_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var = weights_var)
+
+    #calculate only if needed
+    if ("CD" %in% methods_) {
+      dists_vec = get_distances(df=df[c(lat_var, lon_var, dependent, predictors, weights_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var = weights_var)
+
+      #standardize?
+      if (standardize) {
+        dists_vec = std_df(dists_vec, exclude = "weights___")
+      }
+    }
   }
 
-  #get distances if using dists input
-  if (check_results$setting == "dists") {
-    dists_vec = get_distances(df=df[c(dependent, predictor)], auto_detect_dist_method = F, weights_var = )
-    dists_vec$spatial = dists[lower.tri(dists)]
+  #add KNSNR predictor scores var
+  #must be done before standardization if that is done
+  if ("KNSNR" %in% methods_) {
+    df$spatial = SAC_knsn_reg(df=df, dependent = dependent, k = knsn_k, output = "scores", weights_var = "weights___")
   }
+
+  #standardize?
+  if (standardize) {
+    df = std_df(df, exclude = "weights___")
+  }
+
 
   #for results
-  v_res = c(uncontrolled = cor(df[dependent], df[predictor]))
+  if ("mr" %in% control_approach) {
+    d_betas = as.data.frame(matrix(nrow = length(predictors)+1, ncol = 0))
+    rownames(d_betas) = c(predictors, "spatial")
+  } else {
+    d_betas = as.data.frame(matrix(nrow = length(predictors), ncol = 0))
+    rownames(d_betas) = c(predictors)
+  }
+
+  #which rows?
+  if ("mr" %in% control_approach) {
+    rows_ = 1:(nrow(d_betas)-1)
+    } else {
+      rows_ = 1:nrow(d_betas)
+  }
+
+
+  #make formulas
+  tmp_form_unc = str_c(dependent, " ~ ", str_c(predictors, collapse = " + "))
+  tmp_form_o = str_c(str_c(dependent, "_res"), " ~ ", str_c(predictors, collapse = " + "))
+  tmp_form_p = str_c(dependent, " ~ ", str_c(str_c(predictors, "_res"), collapse = " + "))
+  tmp_form_b = str_c(str_c(dependent, "_res"), " ~ ", str_c(str_c(predictors, "_res"), collapse = " + "))
+  tmp_form_mr = str_c(dependent, " ~ ", str_c(c(predictors, "spatial"), collapse = " + "))
+
+
+  #uncontrolled results
+  d_betas[rows_, "Uncorrected"] = lm(formula = tmp_form_unc, data = df, weights = weights___) %>% coef %>% `[`(-1)
 
 
   #CD
   if ("CD" %in% methods_) {
-    v_res["CD_d_sqrt"] = semi_par(dists_vec[[predictor]], dists_vec[[dependent]], dists_vec[["spatial"]], weights = dists_vec$weights___)$semi_partial[1] %>% sqrt
-    v_res["CD_p_sqrt"] = semi_par(dists_vec[[dependent]], dists_vec[[predictor]], dists_vec[["spatial"]], weights = dists_vec$weights___)$semi_partial[1] %>% sqrt
-    v_res["CD_b_sqrt"] = MOD_partial(dists_vec, x = predictor, y = dependent, z = "spatial", weights_var = weights_var) %>% sqrt
-    dists_vec_std = std_df(dists_vec, exclude = "weights___")
-    v_res["CD_mr_sqrt"] = lm(str_c(dependent, " ~ ", predictor, " + spatial"), dists_vec_std, weights = weights___) %>% coef %>% `[`(2) %>% sqrt
+    #get distances if using dists input
+    if (check_results$setting == "dists") {
+      dists_vec = get_distances(df=df[c(dependent, predictors)], auto_detect_dist_method = F, weights_var = "weights___")
+      dists_vec$spatial = dists[lower.tri(dists)]
+
+      #standardize?
+      if (standardize) {
+        dists_vec = std_df(dists_vec, exclude = "weights___")
+      }
+    }
+
+    #partials
+    #res. vars
+    dists_vec_res = residualize_DF(dists_vec, "spatial", suffix = "_res", return.resid.vars = F, print.models = F)
+    #merge to create a larger df with variables both in res and normal form
+    dists_vec = cbind(dists_vec, dists_vec_res)
+
+    if ("partial" %in% control_approach) {
+
+      d_betas[rows_, "CD_o"] = lm(tmp_form_o, dists_vec, weights = weights___) %>% coef %>% `[`(-1) %>% sqrt
+
+      d_betas[rows_, "CD_p"] = lm(tmp_form_p, dists_vec, weights = weights___) %>% coef %>% `[`(-1) %>% sqrt
+
+      d_betas[rows_, "CD_b"] = lm(tmp_form_b, dists_vec, weights = weights___) %>% coef %>% `[`(-1) %>% sqrt
+    }
+
+    if ("mr" %in% control_approach) {
+      d_betas["CD_mr"] = lm(tmp_form_mr, dists_vec, weights = weights___) %>% coef %>% `[`(-1) %>% sqrt
+    }
+
   }
 
 
   #KNSNR
   if ("KNSNR" %in% methods_) {
-    v_res[str_c("KNSNR_d_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=dependent, predictor=predictor, k=knsn_k, dists=dists, output = "resids_cor", weights_var = "weights___")
-    v_res[str_c("KNSNR_p_k", knsn_k)] = SAC_knsn_reg(df=df, dependent=predictor, predictor=dependent, k=knsn_k, dists=dists, output = "resids_cor", weights_var = "weights___")
-    v_res[str_c("KNSNR_b_k", knsn_k)] = SAC_knsn_reg_partial(df=df, c(dependent, predictor), k=knsn_k, lat_var=lat_var, lon_var=lon_var, dists=dists, weights_var = "weights___")[1, 2]
+
+    if ("partial" %in% control_approach) {
+      #res. df
+      df_res = lapply(colnames(df), function(x) {
+        SAC_knsn_reg(df=df, dependent=x, k=knsn_k, dists=dists, output = "resids", weights_var = "weights___")
+      }) %>% as.data.frame
+      colnames(df_res) = str_c(colnames(df), "_res") #add identifier to resids version
+      df_tmp = cbind(df, df_res) #merge
+
+      #standardize, if standardized values are desired
+      if (standardize) {
+        df_tmp = std_df(df_tmp, exclude = "weights___")
+      }
+
+      #regress
+      d_betas[rows_, str_c("KNSNR_o_k", knsn_k)] = lm(tmp_form_o, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+
+      d_betas[rows_, str_c("KNSNR_p_k", knsn_k)] = lm(tmp_form_p, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+
+      d_betas[rows_, str_c("KNSNR_b_k", knsn_k)] = lm(tmp_form_b, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+    }
+
+    if ("mr" %in% control_approach) {
+      d_betas[str_c("KNSNR_mr_k", knsn_k)] = lm(tmp_form_mr, df, weights = weights___) %>% coef %>% `[`(-1)
+    }
+
   }
 
 
   #SLR
   if ("SLR" %in% methods_) {
-    v_res[str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictor, k=slr_k, weights_method = SLR_weights_method, dists=dists)
+    d_betas[rows_, str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictors, k=slr_k, weights_method = SLR_weights_method, dists=dists, include_self = SLR_include_self, output = SLR_central_measure)
   }
 
-
   #return
-  return(v_res)
+  return(d_betas)
 }
+
+

@@ -2,11 +2,13 @@
 % Please edit documentation in R/SAC.R
 \name{SAC_measures}
 \alias{SAC_measures}
+\alias{get_SAC_measures}
 \title{Calculate multiple spatial autocorrelation measures.}
 \usage{
 SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
   weights_var = "", weight_method = "harmonic",
-  auto_detect_dist_method = T, measures = c("Morans", "CD", "KNSNR"))
+  auto_detect_dist_method = T, measures = c("Morans", "CD", "KNSNR"),
+  CD_convert_NaN_to_zero = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

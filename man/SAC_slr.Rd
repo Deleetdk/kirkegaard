@@ -4,9 +4,10 @@
 \alias{SAC_slr}
 \title{Perform spatial local regression.}
 \usage{
-SAC_slr(df, dependent, predictors, k = 3, output = "mean", dists, lat_var,
+SAC_slr(df, dependent, predictors, k = 3, output = "trim10", dists, lat_var,
   lon_var, distance_method, auto_detect_dist_method = T,
-  weights_method = "inverse")
+  weights_method = "inverse", weights_var = "", include_self = F,
+  verbose = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -16,6 +17,8 @@ SAC_slr(df, dependent, predictors, k = 3, output = "mean", dists, lat_var,
 \item{predictors}{A character vector with the names of the predictor variables.}
 
 \item{k}{The number of neighbors to use in the regressions. Defaults to 3.}
+
+\item{output}{Which meta-analysis measure to use. Defaults to trim10, a 10 percent trimmed mean. Other options are: mean, median, and trim followed by any desired number. Can also use 'values' to get the values which returns a data.frame.}
 
 \item{dists}{A matrix of distances between cases.}
 
@@ -30,7 +33,7 @@ SAC_slr(df, dependent, predictors, k = 3, output = "mean", dists, lat_var,
 \item{weights_method}{A string with the name of the weights method to use. Defaults to "inverse", i.e. weighing cases by their inverse distance to the case being considered. Can also be "none".}
 }
 \description{
-Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
+Returns either summary statistics for each predictor or a data.frame with the betas from each local regression.
 }
 \examples{
 SAC_slr()

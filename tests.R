@@ -1,6 +1,9 @@
 #make datasets
 source("kirkegaard/datasets.R")
 
+#otherwise get error
+options("expressions" = 10000)
+
 # merge_datasets ----------------------------------------------------------
 #some data to merge
 d1 = iris[1:75,] #split in two
@@ -409,7 +412,7 @@ t_y = SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5);t_
 stopifnot({
   class(t_x) == "data.frame"
   dim(t_x) == c(2, 6)
-  all(t_x != t_y, na.rm = T) # they should not be identical
+  !all(t_x == t_y, na.rm = T) # they should not be identical
 })
 
 #test outcome options
@@ -433,6 +436,12 @@ r_num2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 
 r_vec = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
 r_vec2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
 
+#without the case itself
+r_num_self = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, include_self = T)
+r_num2_self = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, include_self = T)
+r_vec_self = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, output = "vector", include_self = T)
+r_vec2_self = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, output = "vector", include_self = T)
+
 stopifnot({
   r_num2 > r_num
   nrow(r_vec) == nrow(r_vec2)
@@ -453,6 +462,10 @@ stopifnot({
   class(t) == "data.frame"
   dim(t) == c(16, 3)
 })
+
+
+# # SAC_SEVM ----------------------------------------------------------------
+# t = SAC_SEVM(d_ex5, c("predictor", "outcome"))
 
 
 # GG_scatter &  Jensens_method --------------------------------------------------------------
@@ -518,16 +531,34 @@ stopifnot({
   "gg" %in% class(g)
 })
 
-# SAC_control_all_methods -------------------------------------------------
-t = SAC_control_all_methods(df=d_ex5, dependent = "outcome", predictor = "predictor", knsn_k = 10, slr_k = 3)
-t2 = SAC_control_all_methods(df=d_ex6, dependent = "outcome", predictor = "predictor", knsn_k = 10, slr_k = 3)
+# SAC_control -------------------------------------------------
+t = SAC_control(df=d_ex5, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3)
+t2 = SAC_control(df=d_ex6, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3)
+
+#with mr
+t3 = SAC_control(df=d_ex5, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+t4 = SAC_control(df=d_ex6, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+
+#multiple predictors no mr
+t5 = SAC_control(df=d_ex5, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial"))
+#this is just to see if it returns an error
+
+#multiple predictors + mr
+t5 = SAC_control(df=d_ex5, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+t6 = SAC_control(df=d_ex6, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+
 
 stopifnot({
   all(t2 > t) #those from 6 should be larger
-  class(t) == "numeric" #check classes
-  class(t2) == "numeric"
+  class(t) == "data.frame" #check classes
+  class(t2) == "data.frame"
   !is.null(names(t)) #check names are present
   !is.null(names(t2))
+
+  #with mr
+  class(t3) == "data.frame" #check classes
+  class(t4) == "data.frame"
+  all(dim(t3) == dim(t4))
 })
 
 
