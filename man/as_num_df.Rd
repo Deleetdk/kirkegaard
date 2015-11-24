@@ -4,7 +4,7 @@
 \alias{as_num_df}
 \title{Convert convertible columns in a data.frame to numeric.}
 \usage{
-as_num_df(df, stringsAsFactors = F, skip_factors = T)
+as_num_df(df, stringsAsFactors = F, skip_factors = T, remove_commas = T)
 }
 \arguments{
 \item{df}{A data.frame.}
@@ -12,6 +12,8 @@ as_num_df(df, stringsAsFactors = F, skip_factors = T)
 \item{stringsAsFactors}{Whether to convert strings to factors. Default is F.}
 
 \item{skip_factors}{Whether to skip factors. Default is T.}
+
+\item{remove_commas}{Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.}
 }
 \description{
 Attempts to convert all columns in a data.frame to numeric. If that fails, keeps the original.

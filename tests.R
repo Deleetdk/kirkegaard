@@ -95,9 +95,9 @@ stopifnot({
 
 # MOD_repeat_glmnet_cv ----------------------------------------------------
 #using the iris dataset
-t = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 20)
+t = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5)
 stopifnot({
-  dim(t) == c(20, 4)
+  dim(t) == c(5, 4)
   class(t) == "data.frame"
 })
 
@@ -163,10 +163,10 @@ stopifnot({
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = FA_splitsample_repeat(ability, runs = 10)
+t = FA_splitsample_repeat(ability, runs = 5)
 stopifnot({
   class(t) == "data.frame"
-  dim(t) == c(10, 1)
+  dim(t) == c(5, 1)
 })
 
 
@@ -479,7 +479,6 @@ Jensens_method(fa, swiss, "Examination", reverse_factor = F)
 
 # MAT_ --------------------------------------------------------------------
 #tests whether the original size of the matrix can be correctly determined
-
 stopifnot({
   #without diags
   MAT_find_size(0) == 1
@@ -510,6 +509,11 @@ stopifnot({
   all(MAT_vector2full(t_l2, diag = T) == t)  #lower with diagonals
   all(MAT_vector2full(t_u, byrow = T) == t)            #upper without diagonals
   all(MAT_vector2full(t_u2, diag = T, byrow = T) == t) #upper with diagonals
+})
+
+#gets half a matrix and makes it into a full again and back, then compares with the full
+stopifnot({
+  MAT_vector2full(1:3) %>% MAT_get_half() %>% MAT_vector2full() == MAT_vector2full(1:3)
 })
 
 
@@ -582,9 +586,36 @@ t = as_num_df(iris_chr)
 t2 = as_num_df(iris_chr, stringsAsFactors = T)
 #check that skip factors works
 t3 = as_num_df(iris, skip_factors = F)
+#check that it handles NAs
+iris_chr_NA = iris_chr;iris_chr_NA[1, 1] = NA
+t4 = as_num_df(iris_chr_NA)
 
 stopifnot({
   all(sapply(t, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
   all(sapply(t2, class) == c("numeric", "numeric", "numeric", "numeric", "factor"))
   all(sapply(t3, class) == c("numeric", "numeric", "numeric", "numeric", "numeric"))
+  all(sapply(t4, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
+})
+
+
+
+# df_add_delta ------------------------------------------------------------
+#this function adds delta (difference) variables to a df, in a semi-intelligent fashion
+
+#these should work
+t_list = list(df_add_delta(iris, primary_var = 1),
+              df_add_delta(iris, primary_var = "Sepal.Length"),
+              df_add_delta(iris, primary_var = pi),
+              df_add_delta(iris, primary_var = 1, standardize = T))
+
+
+#errors
+e_list = list(try({df_add_delta(iris, primary_var = 1, secondary_vars = 1:4)}, T),
+              try({df_add_delta(iris, primary_var = 0)}, T),
+              try({df_add_delta(iris, primary_var = 1, secondary_vars = 99)}, T),
+              try({df_add_delta(iris, primary_var = 1, secondary_vars = -1:1)}, T))
+
+stopifnot({
+  sapply(t_list, class) == rep("data.frame", length(t_list))
+  sapply(e_list, class) == rep("try-error", length(e_list))
 })

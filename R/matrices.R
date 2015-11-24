@@ -49,3 +49,29 @@ MAT_vector2full = function(x, diag=F, byrow=F) {
   X = X + t(X) - diag(diag(X))
   return(X)
 }
+
+
+#' Get half of a matrix.
+#'
+#' Returns a vector with the values in one half of the matrix. Which half and whether diagonal values are included can be specified.
+#' @param x A matrix or matrix-coercable object.
+#' @param lower Whether to extract the lower half. Defaults to T. If F, then the upper half is extracted.
+#' @param diag Whether the diagonal values should be included or not. Defaults to F.
+#' @keywords matrix, lower, upper, half
+#' @export
+#' @examples
+#' MAT_get_half()
+MAT_get_half = function(x, lower = T, diag = F) {
+  #coerce to matrix
+  x = as.matrix(x)
+
+  #get half
+  if (lower) {
+    x = x[lower.tri(x, diag = diag)]
+  } else {
+    x = x[upper.tri(x, diag = diag)]
+  }
+
+  #return
+  return(x)
+}

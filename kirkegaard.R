@@ -1,6 +1,6 @@
 #libs
 library(pacman)
-p_load(devtools, roxygen2)
+p_load(devtools, roxygen2, stringr)
 
 #make documentation
 try({setwd("./kirkegaard")}) #if this fails, it probably means we are already in the right dir

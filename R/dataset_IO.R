@@ -13,15 +13,15 @@
 merge_datasets = function (DF1, DF2, main=1, time=F){
   #time if desired
   if (time) {time1 = proc.time()} #start timer
-  
+
   #colnames, remove duplicates
   total.colnames = c(colnames(DF1),colnames(DF2))
   total.colnames.unique = unique(total.colnames)
-  
+
   #rownames, remove duplicates
   total.rownames = c(rownames(DF1),rownames(DF2))
   total.rownames.unique = unique(total.rownames)
-  
+
   #combined dataset
   #main setting decides how to combine
   #default is to create a new DF and add everything into it
@@ -41,7 +41,7 @@ merge_datasets = function (DF1, DF2, main=1, time=F){
   if (main==2){ #use second DF as main
 	  DF3 = DF2
   }
-  
+
   if (main!=2){
   	#loop over input dataset 2
   	for (variable in 1:length(colnames(DF2))){ #loop over variables/cols
@@ -132,7 +132,7 @@ output_sorted_var = function(df, var, filename) {
 
 #' Abbreviate country and regional names to ISO-3.
 #'
-#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself. 
+#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
 #' @param names A character vector of the full names of countries and regions.
 #' @keywords abbreviate, names, shorten; ISO
 #' @export
@@ -141,12 +141,12 @@ output_sorted_var = function(df, var, filename) {
 as_abbrev = function(names, georgia = "country"){
   #get dictionary
   codes = read.csv("countrycodes.csv", sep=";", row.names=1, encoding = "UTF-8", stringsAsFactors = F)
-  
+
   #Georgia as state or country?
   if (substr(georgia, 1, 1) == "s") {
     codes["Georgia", ] = "USA_GA"
   }
-  
+
   #loop thru and get abbrevs
   abbrevs = character()
   for (name in names){
@@ -156,6 +156,56 @@ as_abbrev = function(names, georgia = "country"){
     }
   }
   return(abbrevs)
+}
+
+
+#' Abbreviate country and regional names to ISO-3. For megadataset version >=3.
+#'
+#' To enable easier merging of datasets of international and regional data. Data file can be downloaded from https://osf.io/zdcbq/files/
+#' @param x A character vector of the full names of countries and regions to abbreviate.
+#' @param mega Full path to the mega file. This is the .xlsx file you downloaded above.
+#' @param georgia Whether to treat georgia as a country or US state. Defaults to country. Use "state" to use as state.
+#' @param miss_msg Whether to output messages when abbreviations are missing. Defaults to T.
+#' @keywords abbreviate, names, shorten; ISO
+#' @export
+#' @examples
+#' as_abbrev2()
+as_abbrev2 = function(x, mega, georgia = "country", miss_msg = T) {
+  library(XLConnect)
+  library(stringr)
+
+  #load mega
+  wb_mega = XLConnect::loadWorkbook(mega)
+
+  #load the dictionary sheet
+  d_dict = XLConnect::readWorksheet(wb_mega, 3)
+
+  #work around the rownames bug
+  rownames(d_dict) = d_dict$Names
+  d_dict$Names = NULL
+
+  #georgia?
+  #if begins with "s", then use state abbrev, otherwise use country abbrev
+  if (substr(georgia, 1, 1) == "s") {
+    d_dict["Georgia", "ISO3"] = "USA_GA"
+  }
+
+  #translate
+  for (i in seq_along(x)) {
+    #missing?
+    if (is.na(d_dict[x[i], ])) {
+      if (miss_msg) {
+        message(str_c(x[i], " is missing from the dictionary. Add it to the megadataset file and retry."))
+      }
+      next
+    }
+
+    #swap to abbreviation
+    x[i] = d_dict[x[i], ]
+
+  }
+
+  return(x)
 }
 
 
@@ -172,3 +222,4 @@ write_clipboard = function(x, digits = 3) {
   x = round_df(x, digits)
   write.table(x, "clipboard", sep = "\t", na = "")
 }
+

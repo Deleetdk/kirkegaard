@@ -282,38 +282,168 @@ get_prop_table = function(x, breaks_=20){
 #' @param df A data.frame.
 #' @param stringsAsFactors Whether to convert strings to factors. Default is F.
 #' @param skip_factors Whether to skip factors. Default is T.
+#' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.
 #' @keywords convert, as, numeric, data.frame
 #' @export
 #' @examples
 #' as_num_df()
-as_num_df = function(df, stringsAsFactors = F, skip_factors = T) {
-  #check input
-  if (!is.data.frame(df)) stop("df isn't a data.frame!")
+as_num_df = function (df, stringsAsFactors = F, skip_factors = T, remove_commas = T) {
+  #convert to df from whatever
+  df = as.data.frame(df)
 
-  #save rownames
+
+  #check type
+  if (!is.data.frame(df))
+    stop("df isn't a data.frame!")
+
+  #names
   rnames = rownames(df)
 
-  #lapply
+  #commas?
+  if (remove_commas) {
+    df = lapply(df, function(x) {
+      if (str_detect(x, ",") %>% any(., na.rm = T)) { #if commas present
+        return(str_replace_all(x, ",", "")) #replace commas
+      } else { #if not
+        return(x) #return as it was
+      }
+    }) %>% as.data.frame(stringsAsFactors = F)
+  }
+
+  #new df
   new_df = lapply(df, function(x) {
     if (skip_factors) {
       if (class(x) == "factor") {
         return(x)
       }
     }
-
     trial = tryCatch({
       as.numeric(x)
-    },
-    warning = function(w) {
+    }, warning = function(w) {
       w
     })
-
     if ("warning" %in% class(trial)) {
       return(x)
-    } else {
+    }
+    else {
       return(as.numeric(x))
     }
-  }) %>% as.data.frame(stringsAsFactors = stringsAsFactors)
+  }) %>% as.data.frame(stringsAsFactors = stringsAsFactors) #decide whether to make factors
+
+  #set names again
   rownames(new_df) = rnames
+
   return(new_df)
+}
+
+
+#' Add delta columns to a data.frame.
+#'
+#' Adds delta (difference) columns to a data.frame. These are made from one primary variable and a number of secondary variables. Variables can be given either by indices or by name. If no secondary variables are given, all numeric variables are used.
+#' @param df (data.frame) A data.frame.
+#' @param primary_var (character or numeric vector) The primary variable to use.
+#' @param secondary_vars (character or numeric vector) Which secondary variables to use. Defaults to all non-primary variables.
+#' @param prefix (character) The prefix to use on the new variables. Default="delta".
+#' @param sep (character) The separator to use for the new variables. Default="_".
+#' @param subtract_from_primary (boolean) Whether to subtract from the primary variable. Defaults to T. If F, then the primary will be subtracted from the secondaries.
+#' @param standardize (boolean) Whether to standardize the difference scores. Defaults to F.
+#' @keywords date.frame, difference, delta
+#' @export
+#' @examples
+#' df_add_delta()
+df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep = "_", subtract_from_primary = T, standardize = F) {
+  library(stringr)
+  #browser()
+  #checks
+  df = as.data.frame(df)
+  if (missing("primary_var")) stop("Primary var not given!")
+  if (class(df[[primary_var]]) != "numeric") stop("Primary var must be numeric!")
+
+  #non-numeric
+  non_num_vars = sapply(df, is.numeric) %>% `!` %>% names(.)[.]
+  #find the non-numeric variable names
+
+  #convert
+  if (is.double(primary_var)) primary_var = as.integer(primary_var)
+
+  #primary
+  if (is.integer(primary_var)) {
+    if (primary_var < 1) stop("Primary var indice must be a positive, whole number!")
+
+    primary_var = colnames(df)[primary_var]
+  }
+
+  #secondary
+  #if secondaries not given, use all other vars
+  if(missing(secondary_vars)) secondary_vars = setdiff(colnames(df), primary_var) %>% setdiff(non_num_vars)
+
+  #convert
+  if (is.double(secondary_vars)) secondary_vars = as.integer(secondary_vars)
+
+  #if given integers
+  if(is.integer(secondary_vars)) {
+    #checks
+
+    #neither all positive or all negative
+    if (!(all(secondary_vars < 0) | all(secondary_vars > 0))) stop("When using indices for secondary vars, they must all be positive or all negative!")
+
+    #outside of range
+    if (any(secondary_vars > ncol(df))) stop("Secondary var indice outside range!")
+
+    #all positive
+    if (all(secondary_vars > 0)) {
+      secondary_vars = colnames(df)[secondary_vars] #select vars using the indices
+
+      #check if primary is among them
+      if (primary_var %in% secondary_vars) stop("Primary var is among the secondary vars!")
+
+      #check if any are non-numeric
+      if (intersect(secondary_vars, non_num_vars) %>% length != 0) stop("Some secondary vars were non-numeric!")
+    }
+
+    #all negative
+    if (all(secondary_vars < 0)) {
+      #fetch secondary var names
+      secondary_vars = colnames(df)[secondary_vars]
+
+      #remove primary var if among
+      secondary_vars = setdiff(secondary_vars, primary_var) %>%
+        setdiff(., non_num_vars) #remove non-num vars
+    }
+  }
+
+  #add delta vars
+  for (var in secondary_vars) {
+    tmp_delta_name = str_c(prefix, sep, primary_var, sep, var)
+
+    #method
+    if (!standardize) {
+      if (subtract_from_primary) {
+        df[tmp_delta_name] = df[primary_var] - df[var]
+      } else {
+        df[tmp_delta_name] = df[var] - df[primary_var]
+      }
+    } else {
+      if (subtract_from_primary) {
+        df[tmp_delta_name] = (df[primary_var] - df[var]) %>% scale() %>% as.vector
+      } else {
+        df[tmp_delta_name] = (df[var] - df[primary_var]) %>% scale() %>% as.vector
+      }
+    }
+
+  }
+
+  return(df)
+}
+
+
+# round_to_nearest --------------------------------------------------------
+
+
+round_to_nearest <- function(x, round_val, upwards = T) {
+  if(upwards) {  #round up
+    x + (round_val - x %% round_val)
+  } else { #round down
+    x - (x %% round_val)
+  }
 }
