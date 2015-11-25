@@ -1,8 +1,12 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2015.11.23
+Version: 2015.11.25
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
-Description: This is a personal package containing various useful functions that I have written or found elsewhere. It serves primarily as an easy way for me to use my own functions across projects.
-Depends: R (>= 3.2.2)
+Description: This is a personal package containing various useful functions that
+    I have written or found elsewhere. It serves primarily as an easy way for me to
+    use my own functions across projects.
+Depends:
+    R (>= 3.2.2)
 License: GPL
 LazyData: true
+RoxygenNote: 5.0.1

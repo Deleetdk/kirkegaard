@@ -244,14 +244,14 @@ stopifnot({
 library(fields)
 
 #with spherical variables
-d = as.data.frame(fields::ozone)
-t = get_distances(d, lat_var="lon.lat.lat", lon_var="lon.lat.lon", distance_method="spherical", auto_detect_dist_method=F)
-t_m = get_distances_mat(df=d, lat_var="lon.lat.lat", lon_var="lon.lat.lon", distance_method="spherical", auto_detect_dist_method=F)
+d = as.data.frame(ozone)
+t = get_distances(d, distance_method="spherical")
+t_m = get_distances_mat(df=d, distance_method="spherical")
 
 stopifnot({
-  nrow(t) == 190
-  ncol(t) == 4
-  colnames(t)[4] == "spatial"
+  nrow(t) == 820
+  ncol(t) == 3
+  colnames(t)[3] == "spatial"
   class(t_m) == "list"
   "spatial" %in% names(t_m)
 })
@@ -619,3 +619,31 @@ stopifnot({
   sapply(t_list, class) == rep("data.frame", length(t_list))
   sapply(e_list, class) == rep("try-error", length(e_list))
 })
+
+
+
+# df_func ------------------------------------------------------------------------
+
+#tests
+t_list = list(
+  df_func(iris[1:4]),
+  df_func(iris[1], iris[2], iris[3], iris[4]),
+  df_func(iris[1:4], func = median),
+  df_func(iris[1:4], standardize = T),
+  df_func(iris[1:4], standardize = T, func = median),
+  df_func(iris, pattern = "al"),
+  df_func(iris, pattern = "al", func = median, standardize = T)
+)
+
+#errors
+e_list = list(
+  try({df_func(iris)}, T),
+  try({df_func(iris, pattern = "sadaiasd")}, T)
+)
+
+#check
+stopifnot({
+  sapply(t_list, class) == rep("data.frame", length(t_list))
+  sapply(e_list, class) == rep("try-error", length(e_list))
+})
+

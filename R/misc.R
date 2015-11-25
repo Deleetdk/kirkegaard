@@ -437,13 +437,52 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 }
 
 
-# round_to_nearest --------------------------------------------------------
+#' Calculate summary statistics by row from multiple columns in a data.frame.
+#'
+#' Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default. Can also subset columns from a data.frame using regex of the colnames.
+#' @param ... (data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.
+#' @param standardize (boolean) Whether to standardize the data before calculating. Defaults to F.
+#' @param func (function) Which base function to call. Can be mean, median, sd, var and any other suitable function. Default to mean.
+#' @param pattern (string) A pattern to use for finding the columns names.
+#' @param ignore_NA (boolean) Whether to ignore missing data. Defaults to T.
+#' @keywords date.frame, mean, standardize, median, function
+#' @export
+#' @examples
+#' df_func()
+df_func = function(..., standardize = F, func = mean, pattern, ignore_NA = T) {
+  library(stringr)
 
+  #make df
+  tmp_df = data.frame(...)
 
-round_to_nearest <- function(x, round_val, upwards = T) {
-  if(upwards) {  #round up
-    x + (round_val - x %% round_val)
-  } else { #round down
-    x - (x %% round_val)
+  ## if pattern not given
+  if (missing("pattern")) {
+
+    #check for numericness
+    if(!all(sapply(tmp_df, class) == "numeric")) stop("Some variables were not numeric!")
+
+    #standardize?
+    if (standardize) tmp_df = std_df(tmp_df)
+
+    #get results
+    results = apply(tmp_df, 1, function(x) {
+      get("func")(x, na.rm = ignore_NA)
+    })
+
+    return(results)
   }
+
+  ## if pattern given
+
+  #find cols to use
+  cols = str_detect(colnames(tmp_df), pattern)
+
+  #check if any cols were found
+  if (all(!cols)) stop("No columns matched the pattern!")
+
+  #get results by calling simpler function
+  results = df_func(tmp_df[cols], standardize = standardize, func = func, ignore_NA = ignore_NA)
+
+  return(results)
 }
+
