@@ -11,6 +11,11 @@ d2 = iris[76:150,]
 t = merge_datasets(d1, d2) #merge into one
 stopifnot(all(iris == t)) #they should be equal again
 
+#multi version
+stopifnot({
+  iris == merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
+})
+
 
 # FA_all_methods & FA_congruence_mat --------------------------------------------------------
 t = FA_all_methods(iris[-5], skip_methods = "pa")
@@ -66,8 +71,17 @@ stopifnot(lm_best(t) == 4)
 
 
 
-# lm_beta_matrix ----------------------------------------------------------
+# lm_beta_matrix df_addNA ----------------------------------------------------------
 t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3],data = iris,standardized = T)
+stopifnot({
+  length(t) == 2
+  class(t[[2]]) == "lm"
+  class(t[[1]]) == "data.frame"
+  nrow(t[[1]]) == 7
+})
+
+#with missing data
+t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T)
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"

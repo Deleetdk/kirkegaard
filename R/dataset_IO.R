@@ -77,6 +77,23 @@ merge_datasets = function (DF1, DF2, main=1, time=F){
 }
 
 
+#' Dataset merger function for multiple data.frames.
+#'
+#' This is a wrapper for merge_datasets().
+#' @param ... (data.frames) Two or more data.frames to merge.
+#' @keywords merging, combining, datasets, data.frame, multi, wrapper
+#' @export
+#' @examples
+#' merge_datasets_multi()
+merge_datasets_multi = function(..., main=1, time=F) {
+  #wrap with Reduce
+  Reduce(function(x, y) merge_datasets(x, y, main=main, time=time), list(...))
+
+  #debugging, verify that the anonymous function works
+  #(function(x, y) merge_datasets(x, y, main=main, time=time))(iris[1:50, ], iris[51:100, ])
+}
+
+
 #these two functions are wrappers intended to make it easier to work with the megadataset
 
 #' A wrapper for read.csv()

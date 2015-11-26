@@ -19,7 +19,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
-  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.")
+  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "N")
 
   #standardize?
   if (standardized == T) {
@@ -96,6 +96,8 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     r_sq_adj = summary(lm.fit)$adj.r.squared
     betas[model.idx, "r2.adj."] = r_sq_adj
 
+    #sample N
+    betas[model.idx, "N"] = nrow(model.frame(lm.fit))
 
   }
 
@@ -249,29 +251,44 @@ lm_best = function(model_list) {
 #' @param weights_ If weights should be used, a numeric vector of values to use. Defaults to equal weights.
 #' @param standardize Whether to standardize the data beforehand. Defaults to true.
 #' @param runs Number of times to run. Defaults to 100.
-#' @param alpha The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
+#' @param alpha_ The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
+#' @param NA_ignore Whether to remove cases with missing data. Defaults to T.
+#' @param verbose Whether to send messages to the user.
 #' @keywords model, fit, cross-validation, glmnet, repeat
 #' @export
 #' @examples
 #' MOD_repeat_cv_glmnet()
-MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1) {
+MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, verbose = T) {
   #load lib
   library(glmnet)
   library(stringr)
 
-  #standardize
-  temp_df = df
-  if (standardize) temp_df = std_df(temp_df)
-
   #weights
   if (length(weights_) == 1) {
     if (is.na(weights_)) {
-      weights_ = rep(1, nrow(temp_df))
+      df$weights_ = rep(1, nrow(df))
     }
   }
 
-  #fit lasso
+  #subset
+  df = df[c(dependent, predictors, "weights_")]
 
+  #missing data
+  if (NA_ignore) {
+    if (any(is.na(df))) {
+      df = df %>% na.omit()
+      message("Missing data removed.")
+    }
+  }
+
+  #standardize
+  df = df
+  if (standardize) {
+    df = std_df(df, exclude = "weights_")
+    message("Data standardized.")
+  }
+
+  #fit lasso
 
   #save object
   results_df = data.frame(matrix(nrow = runs, ncol = 0))
@@ -281,9 +298,9 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
     message(str_c("Run ", run, " of ", runs))
 
     #fit lasso
-    fit_cv = cv.glmnet(x = as_num_matrix(temp_df[predictors]), #predictor vars matrix
-                       y = as_num_matrix(temp_df[dependent]), #dep var matrix
-                       weights = weights_, #weights
+    fit_cv = cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix
+                       y = as_num_matrix(df[dependent]), #dep var matrix
+                       weights = df$weights_, #weights
                        alpha = alpha_) #type of shrinkage
 
     #fetch coefs and names

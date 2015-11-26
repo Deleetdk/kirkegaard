@@ -5,7 +5,7 @@
 \title{Repeatedly run glmnet.cv()}
 \usage{
 MOD_repeat_cv_glmnet(df, dependent, predictors, weights_ = NA,
-  standardize = T, runs = 100, alpha_ = 1)
+  standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, verbose = T)
 }
 \arguments{
 \item{dependent}{A string of the name of the dependent variable.}
@@ -18,9 +18,13 @@ MOD_repeat_cv_glmnet(df, dependent, predictors, weights_ = NA,
 
 \item{runs}{Number of times to run. Defaults to 100.}
 
-\item{data}{A data frame with the data. Must contain dependent and predictor variables.}
+\item{alpha_}{The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
 
-\item{alpha}{The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
+\item{NA_ignore}{Whether to remove cases with missing data. Defaults to T.}
+
+\item{verbose}{Whether to send messages to the user.}
+
+\item{data}{A data frame with the data. Must contain dependent and predictor variables.}
 }
 \description{
 Returns a data frame of beta coefficients from glmnet.cv() fits.
