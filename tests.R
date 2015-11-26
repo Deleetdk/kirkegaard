@@ -661,3 +661,12 @@ stopifnot({
   sapply(e_list, class) == rep("try-error", length(e_list))
 })
 
+
+# sort_df ---------------------------------------------------------------
+t1 = sort_df(iris, "Sepal.Length")
+t2 = sort_df(iris, "Sepal.Length", decreasing = T)
+
+stopifnot({
+  cor(t1$Sepal.Length, t2$Sepal.Length) < -.9
+})
+

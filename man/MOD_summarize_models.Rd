@@ -4,7 +4,7 @@
 \alias{MOD_summarize_models}
 \title{Summarize model coefficients}
 \usage{
-MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd",
+MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd", "mad",
   "fraction_zeroNA"), include_intercept = F)
 }
 \arguments{

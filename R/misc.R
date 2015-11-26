@@ -510,3 +510,27 @@ df_addNA <-  NAinsert <- function(df, prop = .1){
   )
   return(df)
 }
+
+
+
+# sort_df -----------------------------------------------------------------
+#sort a df according to a variable
+#just a minor edit of the function in reshape package.
+
+#' Sort a data.frame by one or more variables.
+#'
+#' A wrapper for order(). Improved from the version in the reshape package.
+#' @param df (data.frame) A data.frame.
+#' @param vars (strings/integers) variables to use for sorting.
+#' @param decreasing Whether to use decreasing order. Default=F.
+#' @keywords date.frame, missing data, NA, add, simulate
+#' @export
+#' @examples
+#' sort_df()
+sort_df = function (df, vars = names(df), decreasing = F)
+{
+  if (length(vars) == 0 || is.null(vars))
+    return(df)
+  df[do.call("order", list(what = df[, vars, drop = FALSE], decreasing = decreasing)), , drop = FALSE]
+}
+

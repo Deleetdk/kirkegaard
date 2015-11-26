@@ -327,7 +327,7 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
 #' @export
 #' @examples
 #' MOD_summarize_models()
-MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd", "fraction_zeroNA"), include_intercept = F) {
+MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd", "mad", "fraction_zeroNA"), include_intercept = F) {
   #libs
   library(psych)
 
