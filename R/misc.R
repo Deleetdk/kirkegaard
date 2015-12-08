@@ -555,7 +555,7 @@ score_items = function(df, key) {
 
   #score
   df2 = lapply(seq_along(df), function(x) {
-    df[[x]] == key[x] %>% as.numeric
+    df[[x]] == key[x]
   }) %>% as.data.frame
 
   colnames(df2) = colnames(df)
