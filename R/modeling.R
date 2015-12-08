@@ -268,6 +268,9 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
     if (is.na(weights_)) {
       df$weights_ = rep(1, nrow(df))
     }
+  } else {
+    if (length(weights_) != nrow(df)) stop("Length of weights does not match df!")
+    df$weights_ = weights_
   }
 
   #subset

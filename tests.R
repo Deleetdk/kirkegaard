@@ -115,12 +115,15 @@ stopifnot({
   class(t) == "data.frame"
 })
 
+#weights
+t_w = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)))
+
 
 # MOD_summarize_models ----------------------------------------------------
 t2 = MOD_summarize_models(t)
 stopifnot({
   class(t2) == "data.frame"
-  dim(t2) == c(4, 3)
+  dim(t2) == c(5, 3)
 })
 
 
@@ -670,3 +673,14 @@ stopifnot({
   cor(t1$Sepal.Length, t2$Sepal.Length) < -.9
 })
 
+
+# score_items -------------------------------------------------------------
+#scores test items
+library(psych) #data in here
+
+t = score_items(iqitems, rep(1, 16))
+
+stopifnot({
+  dim(t) == c(1525, 16)
+  class(t) == "data.frame"
+})
