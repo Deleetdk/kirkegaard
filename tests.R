@@ -692,7 +692,7 @@ stopifnot({
 l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
-           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .99))
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999))
 
 stopifnot({
   sapply(l_t, function(x) "ggplot" %in% class(x))
@@ -708,3 +708,31 @@ stopifnot({
   percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2) == .79
 })
 
+
+# score_accuracy -------------------------------------------------
+#simulate some data
+n_cases = 1000
+n_countries = 100
+
+#random guesses
+set.seed(2)
+d_randomguesses = matrix(runif(n_cases * n_countries, 0, 100), ncol = n_countries) %>% as.data.frame()
+
+#random true values
+set.seed(1)
+v_criteria = runif(n_countries, 0, 100)
+
+#with missing values
+d_randomguesses_na = df_addNA(d_randomguesses)
+
+#score
+t = score_accuracy(d_randomguesses, v_criteria, methods = "all")
+t2 = score_accuracy(d_randomguesses_na, v_criteria, methods = "all")
+
+#tests
+stopifnot({
+  dim(t) == dim(t2)
+  class(t) == "data.frame"
+  class(t2) == "data.frame"
+  !all(cor(t) == cor(t2, use = "p"))
+})

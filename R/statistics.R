@@ -1091,3 +1091,62 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2) {
 
   return(v_res)
 }
+
+
+
+#' Score accuracy of estimates.
+#'
+#' Calculates accuracy measures from a data.frame of estimates using a vector of criteria values.
+#' @param df (numeric data.frame) A data.frame with estimates. Rows must be cases.
+#' @param criteria (numeric vector) A vector of criteria values to score estimates against.
+#' @param methods (character vector) Which measures to return. Defaults to c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"). Use "all" to get all.
+#' @keywords score, estimates, accuracy
+#' @export
+#' @examples
+#' score_accuracy()
+score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs")) {
+
+  #NAs
+  if (any(is.na(df))) message("Note: some data were missing. This function uses pairwise complete cases.")
+
+  #make df for results
+  df = as.data.frame(df)
+  criteria = unlist(criteria) %>% as.vector
+  d_res = data.frame(matrix(nrow = nrow(df), ncol = 0))
+
+
+  #Pearson r
+  d_res$pearson_r = sapply(1:nrow(df), function(x) {
+    cor(criteria, df[x, ] %>% unlist, use = "p")
+  })
+
+
+  #rank-order r
+  d_res$rank_r = sapply(1:nrow(df), function(x) {
+    cor(criteria, df[x, ] %>% unlist, method = "spearman", use = "p")
+  })
+
+
+  #delta (discrepancy) error
+  d_deltas = (t(df) - criteria) %>% t %>% as.data.frame
+  d_res$mean_abs_delta = apply(d_deltas, 1, function(x) {
+    mean(abs(x), na.rm = T)
+  })
+
+
+  #dispersion error
+  d_res$sd = apply(df, 1, sd, na.rm = T) #sd of each persons estimates
+  d_res$sd_error = d_res$sd - sd(criteria, na.rm = T)
+  d_res$sd_error_abs = d_res$sd_error %>% abs
+
+
+  #elevation error
+  d_res$mean_elevation = apply(df, 1, mean, na.rm = T)
+  d_res$mean_elevation_error = d_res$mean_elevation - mean(criteria, na.rm = T)
+  d_res$mean_elevation_error_abs = abs(d_res$mean_elevation_error)
+
+  #subset and return
+  if ("all" %in% methods) return(d_res)
+
+  return(d_res[methods])
+}
