@@ -305,3 +305,52 @@ plot_loadings_multi = function(fa_objects, fa_labels, reverse_vector = NA) {
 
   return(g)
 }
+
+
+
+#' ggplot2 with group means and error bars.
+#'
+#' Draws a nice ggplot2 with group means and error bars.
+#' @param df (data.frame) A data.frame with variables.
+#' @param var (character scalar) The name of the variable to plot.
+#' @param groupvar (character scaler) The name of the grouping variable.
+#' @param CI (numeric scalar) The confidence interval to use. Default = .95.
+#' @param type (character scalar) The type of plot. Options: bar, point, points. Default = bar.
+#' @keywords ggplot2, plot, group, means, confidence interval, error bars
+#' @export
+#' @examples
+#' GG_group_means()
+GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
+  library(psych)
+  library(magrittr)
+  library(ggplot2)
+
+  #checks
+  df = as.data.frame(df)
+  if (any(is.na(df[[groupvar]])) ) stop("There must not be missing values in the group variable!")
+  if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
+  if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
+
+  #summarize
+  df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
+
+  #calculate CIs
+  df_sum$ci_bar = apply(df_sum, 1, function(x) {
+    qt(1 - ((1 - CI) / 2), df = x[4] %>% as.numeric)
+  })
+
+  #plot
+  if (type == "bar") {
+    g = ggplot(df_sum, aes(group1, mean)) + geom_bar(stat="identity") + geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+  }
+
+  if (type == "point") {
+    g = ggplot(df_sum, aes(group1, mean)) + geom_point() + geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+  }
+
+  if (type == "points") {
+    g = ggplot(df, aes_string(groupvar, var)) + geom_point() + geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) + geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+  }
+
+  return(g)
+}

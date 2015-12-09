@@ -684,3 +684,27 @@ stopifnot({
   dim(t) == c(1525, 16)
   class(t) == "data.frame"
 })
+
+
+
+# GG_group_means -----------------------------------------------------------
+#this the plot means function
+l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .99))
+
+stopifnot({
+  sapply(l_t, function(x) "ggplot" %in% class(x))
+})
+
+
+
+# percent_cutoff ----------------------------------------------------------
+#test cutoff function
+
+stopifnot({
+  percent_cutoff(iris$Sepal.Length, cutoffs = c(4, 8)) == c(1, 0)
+  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2) == .79
+})
+

@@ -1057,3 +1057,37 @@ MOD_partial = function(df, x, y, z, weights_var) {
 
   return(r[1])
 }
+
+
+
+#' Find percentage of numbers that are above given thresholds.
+#'
+#' Takes a numeric vector and a numeric vector of thresholds. Returns the percent of numbers in the first above each of the numbers in the second.
+#' @param x (numeric vector) A vector of numbers.
+#' @param cutoffs (numeric vector) A vector of thresholds. Default=(.30, .50)
+#' @param digits (numeric scalar) The number of digits to round output to. Default=2.
+#' @keywords threshold, percent, proportion
+#' @export
+#' @examples
+#' percent_cutoff()
+percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2) {
+  library(magrittr)
+
+  #convert
+  x = as.numeric(x)
+  cutoffs = as.numeric(cutoffs)
+
+  v_res = numeric()
+  for (idx in seq_along(cutoffs)) {
+    v_res[idx] = (x > cutoffs[idx]) %>%
+      (function(x) {
+        sum(x) / (na.omit(x) %>% length)
+        })
+  }
+  names(v_res) = cutoffs
+
+  #round
+  if (!missing("digits")) v_res = round(v_res, digits = digits)
+
+  return(v_res)
+}
