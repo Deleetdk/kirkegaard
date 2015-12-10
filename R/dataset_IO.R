@@ -226,17 +226,59 @@ as_abbrev2 = function(x, mega, georgia = "country", miss_msg = T) {
 }
 
 
+#' Get full country names from ISO-3.
+#'
+#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
+#' @param x (character vector) The ISO-3 codes.
+#' @keywords names, ISO
+#' @export
+#' @examples
+#' as_long()
+as_long = function(x) {
+  library(stringr)
+  d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
+
+  sapply(x, function(i) {
+    indice = str_detect(d_names$Codes, i) %>% #find matches
+      which %>% #their indices
+      `[`(1) #get the first
+    if(is.na(indice)) message(str_c(i, " could not be found!"))
+
+    return(d_names$Names[indice])
+  })
+}
+
+
 #' Write object to clipboard
 #'
 #' A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
-#' @param x An matrix or data.frame, or something similar.
-#' @param x A number of digits to round the data to.
+#' @param x (any object that works with write.table) Something to write to the clipboard.
+#' @param digits (integer) A number of digits to round the data to.
+#' @param clean_names (boolean) Whether to clean the names. Default=F.
+#' @param clean_what (character vector) Which things to clean. Defaults to underscores and dots.
 #' @keywords write, output, export, clipboard
 #' @export
 #' @examples
 #' write_clipboard()
-write_clipboard = function(x, digits = 3) {
+write_clipboard = function(x, digits = 3, clean_names = F, clean_what = c("_", "\\.")) {
+  library(stringr)
+
+  #round
   x = round_df(x, digits)
+
+  #clean
+  if (clean_names) {
+    for (char in clean_what) {
+      if (is.data.frame(x) | is.matrix(x)) {
+        rownames(x) = str_replace_all(rownames(x), char, " ")
+        colnames(x) = str_replace_all(colnames(x), char, " ")
+      }
+
+      if (is.vector(x)) {
+        names(x) = str_replace_all(names(x), "_", " ")
+      }
+    }
+  }
+
   write.table(x, "clipboard", sep = "\t", na = "")
 }
-

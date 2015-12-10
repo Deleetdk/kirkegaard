@@ -86,7 +86,7 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95) {
 
   ## text
   #correlation + CI
-  cor = cor(df)[1, 2] #get correlation
+  cor = cor(df, use = "p")[1, 2] #get correlation
   cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
 
 

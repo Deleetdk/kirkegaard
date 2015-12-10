@@ -4,12 +4,17 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x, digits = 3)
+write_clipboard(x, digits = 3, clean_names = F, clean_what = c("_",
+  "\\\\."))
 }
 \arguments{
-\item{x}{An matrix or data.frame, or something similar.}
+\item{x}{(any object that works with write.table) Something to write to the clipboard.}
 
-\item{x}{A number of digits to round the data to.}
+\item{digits}{(integer) A number of digits to round the data to.}
+
+\item{clean_names}{(boolean) Whether to clean the names. Default=F.}
+
+\item{clean_what}{(character vector) Which things to clean. Defaults to underscores and dots.}
 }
 \description{
 A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
