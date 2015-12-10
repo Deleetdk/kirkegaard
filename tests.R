@@ -6,10 +6,17 @@ options("expressions" = 10000)
 
 # merge_datasets ----------------------------------------------------------
 #some data to merge
-d1 = iris[1:75,] #split in two
-d2 = iris[76:150,]
+d1 = iris[1:75, ] #split in two
+d2 = iris[76:150, ]
 t = merge_datasets(d1, d2) #merge into one
-stopifnot(all(iris == t)) #they should be equal again
+t2 = merge_datasets(d1, d2, join = "left")
+t3 = merge_datasets(d1, d2, join = "right")
+
+stopifnot({
+  t == iris #because everything went back to original position
+  t2 == d1 #because nothing was joined
+  t3 == d2 #because nothing was joined
+})
 
 #multi version
 stopifnot({

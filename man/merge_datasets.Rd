@@ -4,7 +4,7 @@
 \alias{merge_datasets}
 \title{Dataset merger function}
 \usage{
-merge_datasets(DF1, DF2, main = 1, time = F)
+merge_datasets(DF1, DF2, main = 1, time = F, join = "both")
 }
 \arguments{
 \item{DF1}{the first data.frame}
@@ -12,6 +12,8 @@ merge_datasets(DF1, DF2, main = 1, time = F)
 \item{DF2}{the second data.frame}
 
 \item{main}{which data.frame should be used as the main? Choose the larger one if working with large datasets. Default to using neither.}
+
+\item{join}{(character scalar) Which data.frames to use cases from. Defaults to "both". Can be: both, left, right.}
 }
 \description{
 This function allows you to merge two data.frames by their overlapping rownames.

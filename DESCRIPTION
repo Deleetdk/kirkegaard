@@ -1,6 +1,6 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2015.12.10
+Version: 2015.12.11
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to

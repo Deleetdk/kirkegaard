@@ -6,34 +6,56 @@
 #' @param DF1 the first data.frame
 #' @param DF2 the second data.frame
 #' @param main which data.frame should be used as the main? Choose the larger one if working with large datasets. Default to using neither.
+#' @param join (character scalar) Which data.frames to use cases from. Defaults to "both". Can be: both, left, right.
 #' @keywords merging combining datasets data.frame
 #' @export
 #' @examples
 #' merge_datasets()
-merge_datasets = function (DF1, DF2, main=1, time=F){
+merge_datasets = function (DF1, DF2, main=1, time=F, join = "both"){
   #time if desired
   if (time) {time1 = proc.time()} #start timer
 
-  #colnames, remove duplicates
-  total.colnames = c(colnames(DF1),colnames(DF2))
-  total.colnames.unique = unique(total.colnames)
 
-  #rownames, remove duplicates
-  total.rownames = c(rownames(DF1),rownames(DF2))
-  total.rownames.unique = unique(total.rownames)
+  #checks
+  if (!main %in% 0:2){ #check for valid input
+    stop("Invalid input to main parameter provided!")
+  }
+  if (!join %in% c("both", "left", "right")) stop("Invalid join parameter!")
+
+
+  #main setting decides how to combine
+  if (join == "left") {
+    DF2 = DF2[intersect(rownames(DF1), rownames(DF2)), ] #subset to overlap with DF1
+  }
+  if (join == "right") {
+    DF1 = DF1[intersect(rownames(DF1), rownames(DF2)), ] #subset to overlap with DF2
+  }
+
+  #if nothing to join
+  if (nrow(DF1) == 0) {
+    message("Warning, nothing joined! No case in DF1 matches any in DF2!")
+    return(DF2)
+  }
+  if (nrow(DF2) == 0) {
+    message("Warning, nothing joined! No case in DF2 matches any in DF1!")
+    return(DF1)
+  }
 
   #combined dataset
-  #main setting decides how to combine
-  #default is to create a new DF and add everything into it
-  #but this will be slow for larger DFs
-  if (!(main == 1 | main == 2 | main == 0)){ #check for valid input
-	  print("Valid input to parameter 'main' not provided");return(NULL)
-  }
   if (main==0){ #create a combined dataset
-	DF3 = as.data.frame(matrix(nrow = length(total.rownames.unique),
-                             ncol = length(total.colnames.unique)))
-	rownames(DF3) = sort(total.rownames.unique)
-	colnames(DF3) = total.colnames.unique
+    #colnames, remove duplicates
+    total.colnames = c(colnames(DF1), colnames(DF2))
+    total.colnames.unique = unique(total.colnames)
+
+    #rownames, remove duplicates
+    total.rownames = c(rownames(DF1), rownames(DF2))
+    total.rownames.unique = unique(total.rownames)
+
+    #make DF3
+  	DF3 = as.data.frame(matrix(nrow = length(total.rownames.unique),
+                               ncol = length(total.colnames.unique)))
+  	rownames(DF3) = sort(total.rownames.unique)
+  	colnames(DF3) = total.colnames.unique
   }
   if (main==1){ #use first DF as main
 	  DF3 = DF1
@@ -46,10 +68,10 @@ merge_datasets = function (DF1, DF2, main=1, time=F){
   	#loop over input dataset 2
   	for (variable in 1:length(colnames(DF2))){ #loop over variables/cols
   		for (case in 1:length(rownames(DF2))){ #loop over cases/rows
-  		  if (is.na(DF2[case,variable])){ #skip if datapoint is missing
+  		  if (is.na(DF2[case, variable])){ #skip if datapoint is missing
   			  next
   		  }
-  		  DF3[rownames(DF2)[case], colnames(DF2)[variable]] = DF2[case,variable]
+  		  DF3[rownames(DF2)[case], colnames(DF2)[variable]] = DF2[case, variable]
   		  #print(DF3[rownames(DF2)[case], colnames(DF2)[variable]]) #used for debugging
   		}
   	}
@@ -58,10 +80,10 @@ merge_datasets = function (DF1, DF2, main=1, time=F){
 	    #loop over input dataset 1
 		for (variable in 1:length(colnames(DF1))){ #loop over variables/cols
 			for (case in 1:length(rownames(DF1))){ #loop over cases/rows
-			  if (is.na(DF1[case,variable])){ #skip if datapoint is missing
+			  if (is.na(DF1[case, variable])){ #skip if datapoint is missing
 				next
 			  }
-		    DF3[rownames(DF1)[case], colnames(DF1)[variable]] = DF1[case,variable]
+		    DF3[rownames(DF1)[case], colnames(DF1)[variable]] = DF1[case, variable]
 			#print(DF3[rownames(DF1)[case], colnames(DF1)[variable]]) #used for debugging
 			}
 		}
@@ -69,8 +91,8 @@ merge_datasets = function (DF1, DF2, main=1, time=F){
 
   #output time
   if (time) {
-    time2 = proc.time()-time1 #end timer
-    print(time2) #print time
+    time2 = proc.time() - time1 #end timer
+    message(time2) #print time
   }
 
   return(DF3)
