@@ -710,13 +710,17 @@ stopifnot({
 
 
 # score_accuracy -------------------------------------------------
+library(stringr)
 #simulate some data
 n_cases = 1000
 n_countries = 100
 
 #random guesses
 set.seed(2)
+{
 d_randomguesses = matrix(runif(n_cases * n_countries, 0, 100), ncol = n_countries) %>% as.data.frame()
+v_randomguesses = runif(n_countries, 0, 100)
+}
 
 #random true values
 set.seed(1)
@@ -726,13 +730,15 @@ v_criteria = runif(n_countries, 0, 100)
 d_randomguesses_na = df_addNA(d_randomguesses)
 
 #score
-t = score_accuracy(d_randomguesses, v_criteria, methods = "all")
-t2 = score_accuracy(d_randomguesses_na, v_criteria, methods = "all")
+l_t = list(t = score_accuracy(d_randomguesses, v_criteria, methods = "all"),
+           t2 = score_accuracy(d_randomguesses_na, v_criteria, methods = "all"),
+           t3 = score_accuracy(d_randomguesses, v_criteria, methods = "all", aggregate = T),
+           t4 = score_accuracy(v_randomguesses, v_criteria, methods = "all"))
 
 #tests
 stopifnot({
-  dim(t) == dim(t2)
-  class(t) == "data.frame"
-  class(t2) == "data.frame"
-  !all(cor(t) == cor(t2, use = "p"))
+  #test class
+  sapply(l_t, function(x) class(x) == "data.frame")
+  #test not the same
+  !all(cor(l_t$t) == cor(l_t$t, use = "p"))
 })

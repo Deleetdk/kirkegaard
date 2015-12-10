@@ -1100,11 +1100,31 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2) {
 #' @param df (numeric data.frame) A data.frame with estimates. Rows must be cases.
 #' @param criteria (numeric vector) A vector of criteria values to score estimates against.
 #' @param methods (character vector) Which measures to return. Defaults to c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"). Use "all" to get all.
+#' @param aggregate (boolean) Whether to use aggregated estimates. Default=F.
+#' @param aggregate_function (function) Which function to use for aggregation. Default=base::mean.
+#' @param ... (named parameters) Additional parameters to pass to the aggregator function, such as na.rm=T to ignore missing data.
 #' @keywords score, estimates, accuracy
 #' @export
 #' @examples
 #' score_accuracy()
-score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs")) {
+score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
+  #check
+  if (!is.function(aggregate_function)) stop("Aggregate function isn't a function!")
+  if (missing("df")) stop("Estimates df is missing!")
+  if (missing("criteria")) stop("Criteria values vector is missing!")
+
+  #aggregate?
+  if (aggregate) { #if the user wants aggregated results
+
+    #convert the df to aggregate estimates
+    df = apply(df, 2, aggregate_function, ...) %>% t %>% data.frame
+  }
+
+  #detect aggregate
+  if (is.vector(df)) { #if df is a vector, assume it is aggregate
+    df = df %>% t %>% data.frame #convert to df form
+    aggregate = T
+  }
 
   #NAs
   if (any(is.na(df))) message("Note: some data were missing. This function uses pairwise complete cases.")
@@ -1147,6 +1167,9 @@ score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta
 
   #subset and return
   if ("all" %in% methods) return(d_res)
+
+  #check methods
+  if (any(!methods %in% colnames(d_res))) stop(str_c("Some methods were not recognized!: "), setdiff(methods, colnames(d_res)))
 
   return(d_res[methods])
 }
