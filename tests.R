@@ -11,11 +11,13 @@ d2 = iris[76:150, ]
 t = merge_datasets(d1, d2) #merge into one
 t2 = merge_datasets(d1, d2, join = "left")
 t3 = merge_datasets(d1, d2, join = "right")
+t4 = merge_datasets(iris[1], iris[2:5])
 
 stopifnot({
   t == iris #because everything went back to original position
   t2 == d1 #because nothing was joined
   t3 == d2 #because nothing was joined
+  t4 == iris #if not, likely that drop=F is needed!
 })
 
 #multi version
@@ -756,3 +758,90 @@ stopifnot({
   #test not the same
   !all(cor(l_t$t) == cor(l_t$t, use = "p"))
 })
+
+
+
+# as_abbrev, as_long ------------------------------------------------------
+#convert to and from ISO-3 names
+#note that file with names must be in the folder!
+some_names = c("Denmark", "Australia", "Netherlands", "Portugal")
+
+stopifnot({
+  as_abbrev(some_names) %>% as_long() %>% `==`(some_names) #convert back and forth
+})
+
+
+# is_simple_vector --------------------------------------------------------
+#an improvement on is.vector()
+
+stopifnot({
+  #try list
+  is.vector(list(1:3))
+  is.list(list(1:3))
+  !is_simple_vector(list(1:3))
+
+  #test vector
+  is.vector(1:3)
+  !is.list(1:3)
+  is_simple_vector(1:3)
+})
+
+
+# is_error, throws_error() ------------------------------------------------
+#test error functions
+
+trial = try({1/"1"}, silent = T)
+
+stopifnot({
+  #first
+  is_error(trial)
+  !is_error(15)
+
+  #second
+  !throws_error("1==1")
+  !throws_error("1 > 2")
+  throws_error("!1!")
+  throws_error("1><>2")
+  throws_error("7///7")
+})
+
+
+# conditional_change ------------------------------------------------------
+#a complement to plyr's mapvalues.
+
+stopifnot({
+  #tests
+  conditional_change(1:10, func_str = "<5", new_value = NA) %>% count_NA == 4
+  conditional_change(1:10, func_str = "> 9", new_value = NA) %>% count_NA == 1
+  conditional_change(data.frame(1:10), func_str = "> 9", new_value = NA) %>% count_NA == 1
+  conditional_change(list(1:10, 1:10), func_str = "> 9", new_value = NA) %>% sapply(is.na) %>% sum == 2
+  conditional_change(matrix(1:9, nrow = 3), func_str = "> 5", new_value = NA) %>% count_NA == 4
+  conditional_change(c(1:10, NA), func_str = "<5", new_value = NA) %>% count_NA == 5
+
+  #errors
+  throws_error('conditional_change(1:10, func_str = "!1!", new_value = NA)')
+  throws_error('conditional_change(is.array, func_str = "<0", new_value = NA)')
+})
+
+
+# math_to_function --------------------------------------------------------
+#converts a string with math to a function
+stopifnot({
+  #tests
+  sapply(-1:1, math_to_function("<0")) == c(T, F, F)
+  sapply(-1:1, math_to_function(">0")) == c(F, F, T)
+  sapply(-1:1, math_to_function("=0")) == c(F, T, F)
+  sapply(-1:1, math_to_function("==0")) == c(F, T, F)
+  sapply(-1:1, math_to_function("=5")) == rep(FALSE, 3)
+
+  #errors
+  throws_error("math_to_function('!4!4!4')(1)")
+})
+
+
+# missing data handling ---------------------------------------------------
+
+stopifnot({
+  count_NA(c(1:10, rep(NA, 5), 1:10)) == 5
+})
+

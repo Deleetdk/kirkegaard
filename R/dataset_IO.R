@@ -25,10 +25,10 @@ merge_datasets = function (DF1, DF2, main=1, time=F, join = "both"){
 
   #main setting decides how to combine
   if (join == "left") {
-    DF2 = DF2[intersect(rownames(DF1), rownames(DF2)), ] #subset to overlap with DF1
+    DF2 = DF2[intersect(rownames(DF1), rownames(DF2)), , drop = F] #subset to overlap with DF1
   }
   if (join == "right") {
-    DF1 = DF1[intersect(rownames(DF1), rownames(DF2)), ] #subset to overlap with DF2
+    DF1 = DF1[intersect(rownames(DF1), rownames(DF2)), , drop = F] #subset to overlap with DF2
   }
 
   #if nothing to join
@@ -261,7 +261,7 @@ as_long = function(x) {
   d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
 
   sapply(x, function(i) {
-    indice = str_detect(d_names$Codes, i) %>% #find matches
+    indice = (d_names$Codes == i) %>% #find matches
       which %>% #their indices
       `[`(1) #get the first
     if(is.na(indice)) message(str_c(i, " could not be found!"))
