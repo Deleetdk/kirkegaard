@@ -68,14 +68,16 @@ plot_kmeans = function(df, clusters, runs, standardize=T) {
 #' @param text_pos Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names Whether to add case names or not. Defaults to true. Row names are used for case names.
 #' @param CI Confidence interval. Defaults to .95. Set to NULL to disable.
+#' @param clean_names (boolean) Whether to clean the axes names using str_clean(). Default=T.
 #' @keywords ggplot2, plot, scatter
 #' @export
 #' @examples
 #' GG_scatter()
-GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95) {
+GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clean_names = T) {
   library(ggplot2)
   library(grid)
   library(psychometric)
+  library(psych)
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
@@ -88,7 +90,6 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95) {
   #correlation + CI
   cor = cor(df, use = "p")[1, 2] #get correlation
   cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
-
 
   #auto detect text position
   if (missing(text_pos)) {
@@ -146,6 +147,11 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95) {
   #case names?
   if (case_names) {
     g = g + geom_text(aes(label = label), size = 3, vjust = 1)
+  }
+
+  #clean?
+  if (clean_names) {
+    g = g + xlab(str_clean(x_var)) + ylab(str_clean(y_var))
   }
 
   return(g)

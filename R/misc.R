@@ -564,3 +564,53 @@ is_simple_vector = function(x) {
 count_NA = function(x) {
   sum(is.na(x))
 }
+
+
+#' Multiple replacement
+#'
+#' A simple wrapper for stringr's str_replace() and str_replace_all().
+#' @param string (a character scalar) A string.
+#' @param patterns (a character vector) A character vector of things to clean. Regex.
+#' @param replacement (a character scalar) What to replace matches with.
+#' @param all (boolean) Whether to clean all instances or just the first. Default=T.
+#' @keywords string, character. replace, vectorized
+#' @export
+#' @examples
+#' str_replace_multi()
+str_replace_multi = function(string, patterns, replacement, all = T) {
+  library(stringr)
+
+  for (pattern in patterns) {
+    if (all) string = str_replace_all(string, pattern, replacement)
+    if (!all) string = str_replace(string, pattern, replacement)
+  }
+
+  return(string)
+}
+
+
+
+#' Clean string
+#'
+#' A simple wrapper str_replace_all() with sensible defaults.
+#' @param string (a character scalar) A string to clean.
+#' @param underscores (boolean) Whether to clean underscores. Default=T.
+#' @param spacing_dots (boolean) Whether to clean spacing underscores. Default=T.
+#' @param end_dots (boolean) Whether to clean dots at the end of the string. Default=T.
+#' @param all_dots (boolean) Whether to clean all dots. Default=F.
+#' @keywords string, character, clean
+#' @export
+#' @examples
+#' str_clean()
+str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F) {
+  library(stringr)
+
+  if (spacing_dots) string = str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
+  if (underscores) string = str_replace_all(string, "_", " ")
+  if (end_dots) string = str_replace_all(string, "\\.$", "")
+  if (all_dots) string = str_replace_all(string, "\\.", " ")
+
+  return(string)
+}
+
+

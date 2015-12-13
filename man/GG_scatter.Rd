@@ -4,7 +4,8 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, text_pos, case_names = T, CI = 0.95)
+GG_scatter(df, x_var, y_var, text_pos, case_names = T, CI = 0.95,
+  clean_names = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -18,6 +19,8 @@ GG_scatter(df, x_var, y_var, text_pos, case_names = T, CI = 0.95)
 \item{case_names}{Whether to add case names or not. Defaults to true. Row names are used for case names.}
 
 \item{CI}{Confidence interval. Defaults to .95. Set to NULL to disable.}
+
+\item{clean_names}{(boolean) Whether to clean the axes names using str_clean(). Default=T.}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.

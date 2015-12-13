@@ -845,3 +845,12 @@ stopifnot({
   count_NA(c(1:10, rep(NA, 5), 1:10)) == 5
 })
 
+
+# str_replace_multi, str_clean --------------------------------------------
+stopifnot({
+  str_clean("Long_Test.String.") == "Long Test String"
+  str_replace_multi("Long_Test.String", c("_", "\\."), " ") == "Long Test String"
+})
+
+
+
