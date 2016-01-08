@@ -4,7 +4,7 @@
 \alias{plot_kmeans}
 \title{Scatter plot with kmeans clustering}
 \usage{
-plot_kmeans(df, clusters, runs, standardize = T)
+plot_kmeans(df, clusters, runs = 100, standardize = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

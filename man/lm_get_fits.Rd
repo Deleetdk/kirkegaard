@@ -7,7 +7,7 @@
 lm_get_fits(model_list)
 }
 \arguments{
-\item{model_list}{A list of model fits e.g. from lm().}
+\item{model_list}{(list) A list of model fits e.g. from lm().}
 }
 \description{
 Returns a data.frame with each models R2 and R2 adj.

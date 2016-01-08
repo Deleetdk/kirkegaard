@@ -13,7 +13,12 @@ is_simple_vector(x)
 A simple wrapper for is.vector and is.list. The normal is.vector function returns true for lists which is undesirable. Returns a boolean.
 }
 \examples{
-is_simple_vector()
+l = list(1:10)
+v = 1:10
+is.vector(v)
+is.vector(l)
+is_simple_vector(v)
+is_simple_vector(l)
 }
 \keyword{list}
 \keyword{vector,}

@@ -282,11 +282,17 @@ as_long = function(x) {
 #' @export
 #' @examples
 #' write_clipboard()
-write_clipboard = function(x, digits = 3, clean_names = F, clean_what = c("_", "\\.")) {
-  library(stringr)
+write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "\\."), pad_digits = T) {
+  library("stringr")
+  library("magrittr")
 
   #round
-  x = round_df(x, digits)
+  x = as.data.frame(x) %>% round_df(digits)
+
+  #format if desired
+  if (pad_digits) {
+    x = format(x, nsmall = digits)
+  }
 
   #clean
   if (clean_names) {
@@ -304,3 +310,89 @@ write_clipboard = function(x, digits = 3, clean_names = F, clean_what = c("_", "
 
   write.table(x, "clipboard", sep = "\t", na = "")
 }
+
+
+#' Stack data into n columns.
+#'
+#' Reshapes the data to an n column structure for easy use in documents. Pads empty lines between variables and can include their names as well. Outputs a character matrix.
+#' @param data (data.frame, matrix, or something coercible into a matrix) The data to reshape.
+#' @param columns (whole number scalar) How many columns to stack the data into.
+#' @param pad_columns (logical) Whether to pad empty columns to the data if the data and column dimensions do fit divide into a whole number. Defaults to TRUE.
+#' @param include_colnames (logical) Whether to include the column names in the output. Defaults to TRUE.
+#' @param rownames_colnames (character scalar) If adding colnames in rows, which rownames should these be given? Defaults to "name".
+#' @keywords reshape, stack, column, matrix, data.frame
+#' @export
+#' @examples
+#' df = split_every_k(1:12, 2) %>% as.data.frame
+#' stack_into_n_columns(df, 2)
+#' stack_into_n_columns(df, 3)
+#' stack_into_n_columns(df, 4)
+stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colnames = TRUE, rowname_colnames = "name") {
+  library("stringr")
+  library("assertthat")
+
+  #checks
+  data = as.matrix(data)
+  assert_that(is.matrix(data))
+  assert_that(is_whole_number(columns))
+  assert_that(is.logical(pad_columns))
+
+  #already the case?
+  if (ncol(data) == columns) {
+    message("data already was in the desired number of columns")
+    return(data)
+  }
+
+  #column number
+  if (pad_columns) {
+    if (ncol(data) %% columns != 0) {
+      message(str_c("data isn't integer divisible into ", columns, " columns.", ncol(data), "/", columns, "=", ncol(data) %% columns), ". Padding empty columns.")
+
+      #pad cols
+      v_n_to_pad = columns - (ncol(data) %% columns)
+      data = cbind(data, matrix(NA, ncol=v_n_to_pad, nrow=nrow(data)))
+    }
+  } else {
+    if (ncol(data) %% columns != 0) {
+      stop(str_c("data isn't integer divisible into ", columns, " columns!", ncol(data), "/", columns, "=", ncol(data) %% columns))
+    }
+  }
+
+  #stack
+  l_indices = split_every_k(1:ncol(data), columns)
+  m = matrix(ncol = columns, nrow = 0)
+  for (indices in l_indices) {
+    #fetch colnames
+    v_names = colnames(data)[indices]
+
+    if (include_colnames) {
+      m = rbind(m, #the object so far
+                v_names, #the column names
+                data[, indices], #the data slice
+                matrix(NA, nrow=1, ncol=columns)) #empty row
+    } else {
+      m = rbind(m, #the object so far
+                data[, indices], #the data slice
+                matrix(NA, nrow=1, ncol=columns)) #empty row
+    }
+
+  }
+
+  #clean
+  m = m[-nrow(m), ] #remove last empty row
+
+  #rownames
+  if (is.null(rownames(data))) {
+    rownames(data) = 1:nrow(data)
+  }
+  if (include_colnames) {
+    rownames(m) = rep(c(rowname_colnames, rownames(data), NA), length.out = nrow(m))
+  } else {
+    rownames(m) = rep(c(rownames(data), NA), length.out = nrow(m))
+  }
+  #remove colnames
+  colnames(m) = NULL
+
+  return(m)
+}
+

@@ -14,6 +14,7 @@ miss_case = function(x){
   return(y)
 }
 
+
 #' Missing datapoint counter, variable-level
 #'
 #' Counts the number of missing datapoints per variable
@@ -26,6 +27,19 @@ miss_table = function(x){
   y = apply(x, 2, is.na)
   y = apply(y, 2, sum)
   return(y)
+}
+
+#' Count missing data
+#'
+#' A simple wrapper for is.na() and sum(). Returns an integer.
+#' @param x (any object) An object for which to count NAs.
+#' @keywords NA, missing data, count, number
+#' @export
+#' @examples
+#' m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)
+#' count_NA(m)
+count_NA = function(x) {
+  sum(is.na(x))
 }
 
 #' Missing data histogram with ggplot2.
@@ -42,11 +56,11 @@ plot_miss = function(df, percent=T) {
   d = data.frame(number.of.NA = m)
   max.miss = max(m)
   min.miss = min(m)
-  
+
   if (percent) {
     d$percent = (d$number.of.NA/sum(d$number.of.NA))*100
     g = ggplot(data = d, aes(x = factor(number.of.NA))) +
-      geom_bar(aes(y = ((..count..)/sum(..count..))*100)) + 
+      geom_bar(aes(y = ((..count..)/sum(..count..))*100)) +
       scale_y_continuous('percent') +
       xlab("Number of NAs") +
       scale_x_discrete(breaks=min.miss:max.miss)
@@ -61,6 +75,7 @@ plot_miss = function(df, percent=T) {
   }
 }
 
+
 #' Wrapper for matrixplot()
 #'
 #' Wrapper for matrixplot() from VIM, but automatically substrings the variable names to 8 characters.
@@ -71,6 +86,6 @@ plot_miss = function(df, percent=T) {
 #' matrixplot2()
 matrixplot2 = function(df) {
 	library(VIM) #load VIM if not already loaded
-  	return(matrixplot(df, labels=substr(colnames(df),1,8)))
+  	return(matrixplot(df, labels=substr(colnames(df), 1, 8)))
 }
 

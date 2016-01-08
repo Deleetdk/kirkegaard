@@ -3,44 +3,6 @@
 #the idea is to combine functional programming with subsetting for cases where one needs conditional subsetting and plyr's mapvalues cannot easily be used
 
 
-# helper functions --------------------------------------------------------
-#these could be defined with math_to_function but that would be slightly slower
-
-
-#' Test if value is negative
-#'
-#' A wrapper for "<0", returns a boolean.
-#' @param x (any object compatible with <) Some values to test.
-#' @keywords negative, value, boolean
-#' @export
-#' @examples
-#' is_negative()
-is_negative = function(x) x < 0
-
-
-#' Test if value is positive
-#'
-#' A wrapper for ">0", returns a boolean.
-#' @param x (any object compatible with <) Some values to test.
-#' @keywords positive, value, boolean
-#' @export
-#' @examples
-#' is_positive()
-is_positive = function(x) x > 0
-
-
-
-#' Test if value is zero
-#'
-#' A wrapper for "==0", returns a boolean.
-#' @param x (any object compatible with <) Some values to test.
-#' @keywords zero, value, boolean
-#' @export
-#' @examples
-#' is_zero()
-is_zero = function(x) x == 0
-
-
 
 #' Change values conditionally
 #'
@@ -115,4 +77,52 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
 }
 
 
+#' Filter data by missing values per row.
+#'
+#' Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
+#' @param data (data.frame or something coersible to a data.frame) The data.
+#' @param missing (whole number scalar) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
+#' @keywords missing values, subset
+#' @export
+#' @examples
+#' df = data.frame(1:10, letters[1:10])
+#' df = df_addNA(df)
+#' filter_by_missing_values(df)
+filter_by_missing_values = function(data, missing = 0) {
+  #initial
+  if (!is_whole_number(missing)) stop("missing must be a whole number!")
+  data = as.data.frame(data)
+
+  #keep cases with that number of missing datapoints or fewer
+  data = data[miss_case(data) <= missing, ]
+  return(data)
+}
+
+
+#' Extract numerical variables
+#'
+#' Extract the numerical variables from a data.frame or matrix.
+#' @param data (data.frame or matrix) The data.
+#' @return Returns the subset of the data while keeping the type (using drop = FALSE).
+#' @export
+#' @examples
+#' extract_num_vars(iris)
+extract_num_vars = function(data) {
+  v_numerical = sapply(data, is.numeric)
+  data[, v_numerical, drop = FALSE]
+}
+
+
+#' Extract non-numerical variables
+#'
+#' Extract the non-numerical variables from a data.frame or matrix.
+#' @param data (data.frame or matrix) The data.
+#' @return Returns the subset of the data while keeping the type (using drop = FALSE).
+#' @export
+#' @examples
+#' extract_nonnum_vars(iris)
+extract_nonnum_vars = function(data) {
+  v_numerical = !sapply(data, is.numeric)
+  data[, v_numerical, drop = FALSE]
+}
 

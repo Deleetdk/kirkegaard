@@ -725,6 +725,8 @@ SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, w
   }
 }
 
+SAC_knsn_reg = SAC_knsnr #old name
+
 
 #' K nearest spatial neighbor partial correlations.
 #'
@@ -859,7 +861,7 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
   return(df_ret)
 }
 
-
+get_SAC_measures = SAC_measures #old name
 
 #' Perform spatial local regression.
 #'
@@ -1201,5 +1203,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
   #return
   return(d_betas)
 }
+
+SAC_control_all_methods = SAC_control #old name
 
 

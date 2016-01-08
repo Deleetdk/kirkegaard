@@ -1,3 +1,8 @@
+# some libs ---------------------------------------------------------------
+library(pacman)
+p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
+
+
 #make datasets
 source("kirkegaard/datasets.R")
 
@@ -27,7 +32,7 @@ stopifnot({
 
 
 # FA_all_methods & FA_congruence_mat --------------------------------------------------------
-t = FA_all_methods(iris[-5], skip_methods = "pa")
+t = FA_all_methods(iris[-5], skip_methods = "pa", messages = F)
 
 # FA_congruence_mat -------------------------------------------------------
 stopifnot({
@@ -69,7 +74,6 @@ stopifnot({
 })
 
 
-
 # lm_best -----------------------------------------------------------------
 #fit some models
 t = list(lm(Sepal.Length ~ Sepal.Width, iris),
@@ -81,7 +85,7 @@ stopifnot(lm_best(t) == 4)
 
 
 # lm_beta_matrix df_addNA ----------------------------------------------------------
-t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3],data = iris,standardized = T)
+t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T)
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -90,7 +94,7 @@ stopifnot({
 })
 
 #with missing data
-t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T)
+t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F)
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -490,10 +494,15 @@ stopifnot({
 })
 
 t = remove_redundant_vars2(longley, .9)
+t = remove_redundant_vars2(longley, .9, messages = F)
+e = throws_error("remove_redundant_vars2(longley, .9, messages = 123)")
+e2 = throws_error("remove_redundant_vars2(longley, threshold = 5)")
 
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(16, 3)
+  e
+  e2
 })
 
 
@@ -529,8 +538,14 @@ stopifnot({
 })
 
 ## reconstruct a matrix
-set.seed(1)
-t = dist(sample(100, 5)) %>% as.matrix #make a symmetric matrix
+#debug matrix
+# t = expand.grid(letters[1:5], 1:5) %>% apply(1, function(x) {
+#   str_c(x[1], "_", x[2])
+# }) %>% matrix(nrow = 5)
+
+#make symmetric matrix for testing
+t = dist(1:5, diag = T, upper = T) %>% as.matrix
+
 t_l = t[lower.tri(t)]     #extract halves with and without diagonals
 t_l2 = t[lower.tri(t, T)]
 t_u = t[upper.tri(t)]
@@ -560,13 +575,19 @@ stopifnot({
 
 
 # plot_loadings_multi FA_rank_fa -----------------------------------------------------
-fa_list = list(std = fa(iris[-5]),
-               rank = FA_rank_fa(iris[-5]))
-g = plot_loadings_multi(fa_list)
+fa_list = list(part1 = fa(iris[1:50, -5]),
+               part2 = fa(iris[51:100, -5]),
+               part3 = fa(iris[101:150, -5]))
+g = plot_loadings_multi(fa_list);g
+g_1 = plot_loadings_multi(fa_list, reorder = 1);g_1
+g_2 = plot_loadings_multi(fa_list, reorder = 2);g_2
+g_3 = plot_loadings_multi(fa_list, reorder = 3);g_3
+
 
 stopifnot({
-  "gg" %in% class(g)
+  sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
 })
+
 
 # SAC_control -------------------------------------------------
 t = SAC_control(df=d_ex5, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3)
@@ -771,9 +792,10 @@ stopifnot({
 })
 
 
-# is_simple_vector --------------------------------------------------------
-#an improvement on is.vector()
+# simple is_ --------------------------------------------------------
+#various small helpful functions
 
+#is_simple_vector
 stopifnot({
   #try list
   is.vector(list(1:3))
@@ -784,6 +806,17 @@ stopifnot({
   is.vector(1:3)
   !is.list(1:3)
   is_simple_vector(1:3)
+})
+
+#is_whole_number
+stopifnot({
+  is_whole_number(seq(0, 2, .5)) == c(T, F, T, F, T)
+})
+
+#is_negative, is_positive
+stopifnot({
+  is_negative(-2:2) == c(T, T, F, F, F)
+  is_positive(-2:2) == c(F, F, F, T, T)
 })
 
 
@@ -854,3 +887,243 @@ stopifnot({
 
 
 
+# silence ---------------------------------------------------------------
+#not sure how to test these, but they should not give errors
+
+suppressor(log(-1))
+suppressor(warning("test"))
+suppressor(warning("test"), warnings = T)
+suppressor(message("test"))
+suppressor(message("test"), messages = T)
+
+
+
+# get_dims --------------------------------------------------------------
+#a better version of dim() from base-r
+
+stopifnot({
+  get_dims(1:2) == 2
+  get_dims(list(1, 2)) == 2
+  get_dims(matrix(1:4, nrow=2)) == c(2, 2)
+  matrix(1:4, nrow=2) %>% as.data.frame %>% get_dims == c(2, 2)
+  array(1:16, dim = c(2, 2, 2)) %>% dim == c(2, 2, 2)
+})
+
+
+# copy_names --------------------------------------------------------------
+#copy names from one object to another, partially if possible
+
+#make two 3x3 mats and copy from one to the other
+t = matrix(1:9, nrow=3)
+t2 = t
+rownames(t) = LETTERS[1:3]; colnames(t) = letters[1:3]
+copy_names(t, t2)
+
+stopifnot({
+  rownames(t) == rownames(t2)
+  colnames(t) == colnames(t2)
+})
+
+
+#partiamatching test, copy from 3x2 to 3x3
+t = matrix(1:6, nrow=3)
+t2 = matrix(1:9, nrow=3)
+rownames(t) = LETTERS[1:3]; colnames(t) = letters[1:2]
+
+copy_names(t, t2)
+
+stopifnot({
+  rownames(t) == rownames(t2)
+})
+
+
+#test error, try to do perfect match copy on non-perfect match
+t2 = matrix(1:9, nrow=3)
+t = matrix(1:6, nrow=3)
+rownames(t) = LETTERS[1:3]; colnames(t) = letters[1:2]
+
+stopifnot({
+  throws_error("copy_names(t, t2, F)")
+})
+
+
+
+# is_between --------------------------------------------------------------
+#tests whether values are between two limits.
+
+stopifnot({
+  #scalars
+  is_between(5, 0, 10)
+  is_between(5, 5, 5)
+  !is_between(1, 5, 5)
+
+  #vectors
+  is_between(0:10, 0, 10)
+  !is_between(-10:-1, 0, 10)
+
+  #test parameters
+  !is_between(1, 1, 2, include_lower = F)
+  !is_between(2, 1, 2, include_upper = F)
+  !is_between(1, 1, 1, include_upper = F, include_lower = F)
+})
+
+
+
+# fill_in -----------------------------------------------------------------
+#fills in values so that a vector reaches a desired length.
+
+stopifnot({
+  fill_in(1:5, 10) %>% count_NA == 5
+  fill_in(1:5, 5) %>% count_NA == 0
+  fill_in(1:5, 10, value = -1) == c(1:5, rep(-1, 5))
+})
+
+
+# named_vectors_to_df -----------------------------------------------------------------------
+#inputs a list of vectors with names, outputs a data.frame
+
+l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
+l2 = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2))
+
+stopifnot({
+  named_vectors_to_df(l) %>% dim == c(3, 4)
+  named_vectors_to_df(l2) %>% dim == c(3, 4)
+})
+
+
+# get_salient_loadings ----------------------------------------------------
+#returns either a list or data.frame with the salient loadings of each factor from a factor analysis.
+
+library("psych")
+library("magrittr")
+fa_iris1 = fa(iris[-5])
+fa_iris2 = fa(iris[-5], 2)
+
+stopifnot({
+  get_salient_loadings(fa_iris1) %>% dim == c(4, 2)
+  get_salient_loadings(fa_iris2) %>% dim == c(3, 4)
+})
+
+
+
+# split_every_k -----------------------------------------------------------
+#split a vector every k element
+
+stopifnot({
+  all.equal(split_every_k(1:12, 4), list(1:4, 5:8, 9:12), check.names = F)
+  all.equal(split_every_k(1:11, 4), list(1:4, 5:8, 9:11), check.names = F)
+  all.equal(split_every_k(1:4, 4), list(1:4), check.names = F)
+  throws_error("split_every_k(1:11, 4, uneven = F)")
+})
+
+# stack_into_n_columns ----------------------------------------------------
+#useful function for stacking data that is too wide for the document or screen.
+
+df = split_every_k(1:12, 2) %>% as.data.frame
+
+stopifnot({
+  stack_into_n_columns(df, 2) %>% dim == c(11, 2)
+  stack_into_n_columns(df, 3) %>% dim == c(7, 3)
+  silence(stack_into_n_columns(df, 4) %>% dim == c(7, 4))
+})
+
+
+
+# alternate ---------------------------------------------------------------
+#intertwine vectors
+
+stopifnot({
+  alternate(list(1:3, letters[1:3])) == c("1", "a", "2", "b", "3", "c")
+  alternate(list(1:3, letters[1:3], LETTERS[1:3])) == c("1", "a", "A", "2", "b", "B", "3", "c", "C")
+  throws_error("alternate(list(1:2, letters[1:3]))")
+  throws_error("alternate(c(1:2, 2:1))")
+})
+
+
+# df_residualize ----------------------------------------------------------
+
+library("magrittr")
+
+set.seed(1)
+df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
+
+stopifnot({
+  #test basic function
+  df_residualize(df, resid.vars = "c") %>% extract(c("a", "b")) != df[c("a", "b")]
+  #test suffix + message off
+  df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)
+  #test exclusion vector
+  df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% extract("b") == df$b
+  #test return
+  df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"
+})
+
+
+# filter_by_missing_values ------------------------------------------------
+#filters data by number of missing values per case
+
+df = data.frame(1:10, letters[1:10])
+set.seed(1)
+df = df_addNA(df)
+
+stopifnot({
+  filter_by_missing_values(df) %>% nrow %>% equals(8)
+})
+
+
+
+# extract_num_vars --------------------------------------------------------
+
+stopifnot({
+  extract_num_vars(iris) == iris[-5]
+  extract_nonnum_vars(iris) == iris[5]
+})
+
+
+
+# is_numeric is_numeric_by_col --------------------------------------------------------------
+
+stopifnot({
+  #
+  is_numeric_by_col(iris)
+
+  #
+  is_numeric(1:3)
+  !is_numeric("123")
+  !is_numeric(iris)
+  is_numeric(iris[-5])
+  !is_numeric(iris[-5], F)
+  !is_numeric(T)
+  is_numeric(array(1:8, dim = rep(2, 3)))
+  is_numeric(list(1, 2, 3))
+  is_numeric(list(1, 2, 3), F)
+  is_numeric(list(list(1, 2, 3), 5, list(1, 2, 3), 4, list(list(10))))
+})
+
+
+
+# format_digits -----------------------------------------------------------
+#useful for outputting data
+
+stopifnot({
+  format_digits(c(.1), 2) == "0.10"
+  format_digits(c(.1), 5) == "0.10000"
+  format_digits(c(.12345), 2) == "0.12"
+  format_digits(c(.15555), 2) == "0.16"
+})
+
+
+# cor_matrix --------------------------------------------------------------
+#correlation matrix with nice output
+library(weights);library(magrittr)
+
+stopifnot({
+  are_equal(cor_matrix(iris[-5]), cor(iris[-5])) #validate vs. base-r
+  are_equal(cor_matrix(iris), cor(iris[-5])) #automatic skip non-numeric
+  are_equal(cor_matrix(iris[-5], weights = rep(1, 150)), cor(iris[-5])) #with weights
+  !are_equal(cor_matrix(iris[-5], weights = runif(150)), cor(iris[-5])) #other weights
+  !are_equal(cor_matrix(iris[-5], weights = iris[-5]), cor(iris[-5])) #complex weights
+  cor_matrix(iris, CI = .95) %>% is.character #with CI
+  cor_matrix(iris, CI = .95) %>% get_dims %>% equals(c(4, 4)) #verify dims
+  cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character #complex weights + CI
+})

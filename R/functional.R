@@ -60,3 +60,9 @@ math_to_function = function(str, convert_equal = T, silent_try = T, test_functio
 
   return(func)
 }
+
+
+
+
+
+

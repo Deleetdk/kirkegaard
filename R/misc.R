@@ -1,60 +1,5 @@
 ## Misc other functions
 
-##Function to find the cell or index with the highest value
-# Works on matrices and data.frames too
-#Credit: http://r.789695.n4.nabble.com/returning-the-largest-element-in-an-array-matrix-td795214.html
-#' Generalized which.max(). Returns the index of the cell or number with the highest value.
-#'
-#' A generalization of which.max() that works on matrices and data.frames too.
-#' @param x a numeric vector, matrix or data.frame.
-#' @keywords max, index
-#' @export
-#' @examples
-#' which_max2()
-which_max2 = function(x) {
-  #check class
-  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
-    stop(paste0("x was not numeric, data frame or matrix, but instead ", class(x)))
-  }
-  if (is.matrix(x)) {
-    wm = which.max(x) #index of max
-    return(c(row(x)[wm], col(x)[wm])) #return indices of data.frame / matrix
-  }
-  if (is.data.frame(x)) {
-    x = as.matrix(x) #convert to matrix
-    wm = which.max(x) #index of max
-    return(c(row(x)[wm], col(x)[wm])) #return indices of data.frame / matrix
-  }
-  print("test")
-  return(which.max(x)) #index of max
-}
-
-#' Generalized which.min(). Returns the index of the cell or number with the lowest value.
-#'
-#' A generalization of which.min() that works on matrices and data.frames too.
-#' @param x a numeric vector, matrix or data.frame.
-#' @keywords min, index
-#' @export
-#' @examples
-#' which_min2()
-which_min2 = function(x) {
-  #check class
-  if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
-    stop(paste0("x was not numeric, data frame or matrix, but instead ",class(x)))
-  }
-  if (is.matrix(x)) {
-    wm = which.min(x) #index of max
-    return(c(row(x)[wm], col(x)[wm])) #return indices of data.frame / matrix
-  }
-  if (is.data.frame(x)) {
-    x = as.matrix(x) #convert to matrix
-    wm = which.min(x) #index of max
-    return(c(row(x)[wm], col(x)[wm])) #return indices of data.frame / matrix
-  }
-  print("test")
-  return(which.min(x)) #index of max
-}
-
 ##Combines lower and upper part of two matrices into one. Additional option for the diagonal.
 #Credit to: http://stackoverflow.com/questions/13115720/how-do-i-combine-the-upper-tri-of-one-matrix-with-the-lower-tri-of-another-in-r
 #' Combine upper and lower part of a matrix.
@@ -90,6 +35,7 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
 }
 
 
+
 #' Insert newlines into text every nth character.
 #'
 #' Returns a character string with newlines every nth character. See also add_newlines().
@@ -119,6 +65,7 @@ new_lines_adder = function(x, interval) {
   return(result)
 }
 
+
 #' Insert newlines into text every nth character.
 #'
 #' Returns a character string with newlines every nth character. Works for character vectors too.
@@ -136,120 +83,6 @@ add_newlines = function(x, total.length = 95) {
   # apply splitter to each
   t = sapply(x, FUN = new_lines_adder, interval = round(total.length/groups), USE.NAMES=FALSE)
   return(t)
-}
-
-
-#' Standardize data.frame
-#'
-#' Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
-#' @param df A data.frame or matrix.
-#' @param exclude A character vector of variables to exclude from the process.
-#' @keywords standardize, data.frame, z-score
-#' @export
-#' @examples
-#' std_df()
-std_df = function(df, exclude = "") {
-  library(stringr)
-
-  for (col_idx in 1:ncol(df)) {
-
-    #skip if in exclusion vector
-    if (colnames(df)[col_idx] %in% exclude) {
-      next
-    }
-
-    #skip if factor
-    if (class(unlist(df[col_idx])) == "factor") {
-      s = str_c("Skipped ", colnames(df)[col_idx], " because it is a factor.")
-      print(s)
-      next
-    }
-
-    #skip if character
-    if (class(unlist(df[col_idx])) == "character") {
-      s = str_c("Skipped ", colnames(df)[col_idx], " because it is a character vector.")
-      print(s)
-      next
-    }
-
-    #otherwise standardize
-    df[col_idx] = scale(df[col_idx]) %>% as.vector
-  }
-
-  return(df)
-}
-
-
-#' Round numeric variables of a data frame.
-#'
-#' Returns a data.frame where numeric variables have been rounded to the desired number of digits.
-#' @param df A data.frame or matrix.
-#' @param digits The number of digits to round to.
-#' @keywords round, data.frame
-#' @export
-#' @examples
-#' round_df()
-round_df = function(df, digits=3) {
-  df = as.data.frame(df) #convert to df
-  for (idx in seq_along(df)) {
-    num = is.numeric(df[ , idx, drop = T]) #have to drop to get the variable not a df
-    if (num) {
-      df[idx] = round(df[idx], digits)
-    }
-  }
-
-  return(df)
-}
-
-
-#' Rank numeric variables of a data frame.
-#'
-#' Returns a data.frame where numeric variables have been converted to their ranks.
-#' @param df A data.frame.
-#' @param ... Other parameters for rank().
-#' @keywords rank, data.frame
-#' @export
-#' @examples
-#' rank_df()
-rank_df = function(df, ...) {
-  #for each column
-  df2 = lapply(df, function(x) {
-    #check what class it is, if numeric, then rank, otherwise, leave it as it is
-    if (class(x) == "numeric") rank(x, ...) else return(x)
-  }) %>% as.data.frame #transform into df again
-  rownames(df2) = rownames(df)
-  return(df2)
-}
-
-
-
-#' Convert a data.frame to a numeric matrix, including factors.
-#'
-#' Returns a numeric matrix.
-#' @param df A data.frame.
-#' @keywords data.frame, numeric, factor, convert
-#' @export
-#' @examples
-#' as_num_matrix()
-as_num_matrix = function(df) {
-  return(as.matrix(as.data.frame(lapply(df, as.numeric))))
-}
-
-#' Get every subset of the data where one case is missing.
-#'
-#' Return a list of data.frames.
-#' @param df A data.frame.
-#' @keywords data.frame, subset
-#' @export
-#' @examples
-#' get_each_subset_minus_1()
-get_each_subset_minus_1 = function(df){
-  return_list = list()
-  for (case in 1:nrow(df)){
-    return_list[[case]] = df[-case, ] #save subset
-  }
-
-  return_list
 }
 
 
@@ -276,269 +109,6 @@ get_prop_table = function(x, breaks_=20){
 }
 
 
-#' Convert convertible columns in a data.frame to numeric.
-#'
-#' Attempts to convert all columns in a data.frame to numeric. If that fails, keeps the original.
-#' @param df A data.frame.
-#' @param stringsAsFactors Whether to convert strings to factors. Default is F.
-#' @param skip_factors Whether to skip factors. Default is T.
-#' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.
-#' @keywords convert, as, numeric, data.frame
-#' @export
-#' @examples
-#' as_num_df()
-as_num_df = function (df, stringsAsFactors = F, skip_factors = T, remove_commas = T) {
-  #convert to df from whatever
-  df = as.data.frame(df)
-
-
-  #check type
-  if (!is.data.frame(df))
-    stop("df isn't a data.frame!")
-
-  #names
-  rnames = rownames(df)
-
-  #commas?
-  if (remove_commas) {
-    df = lapply(df, function(x) {
-      if (str_detect(x, ",") %>% any(., na.rm = T)) { #if commas present
-        return(str_replace_all(x, ",", "")) #replace commas
-      } else { #if not
-        return(x) #return as it was
-      }
-    }) %>% as.data.frame(stringsAsFactors = F)
-  }
-
-  #new df
-  new_df = lapply(df, function(x) {
-    if (skip_factors) {
-      if (class(x) == "factor") {
-        return(x)
-      }
-    }
-    trial = tryCatch({
-      as.numeric(x)
-    }, warning = function(w) {
-      w
-    })
-    if ("warning" %in% class(trial)) {
-      return(x)
-    }
-    else {
-      return(as.numeric(x))
-    }
-  }) %>% as.data.frame(stringsAsFactors = stringsAsFactors) #decide whether to make factors
-
-  #set names again
-  rownames(new_df) = rnames
-
-  return(new_df)
-}
-
-
-#' Add delta columns to a data.frame.
-#'
-#' Adds delta (difference) columns to a data.frame. These are made from one primary variable and a number of secondary variables. Variables can be given either by indices or by name. If no secondary variables are given, all numeric variables are used.
-#' @param df (data.frame) A data.frame.
-#' @param primary_var (character or numeric vector) The primary variable to use.
-#' @param secondary_vars (character or numeric vector) Which secondary variables to use. Defaults to all non-primary variables.
-#' @param prefix (character) The prefix to use on the new variables. Default="delta".
-#' @param sep (character) The separator to use for the new variables. Default="_".
-#' @param subtract_from_primary (boolean) Whether to subtract from the primary variable. Defaults to T. If F, then the primary will be subtracted from the secondaries.
-#' @param standardize (boolean) Whether to standardize the difference scores. Defaults to F.
-#' @keywords date.frame, difference, delta
-#' @export
-#' @examples
-#' df_add_delta()
-df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep = "_", subtract_from_primary = T, standardize = F) {
-  library(stringr)
-  #browser()
-  #checks
-  df = as.data.frame(df)
-  if (missing("primary_var")) stop("Primary var not given!")
-  if (class(df[[primary_var]]) != "numeric") stop("Primary var must be numeric!")
-
-  #non-numeric
-  non_num_vars = sapply(df, is.numeric) %>% `!` %>% names(.)[.]
-  #find the non-numeric variable names
-
-  #convert
-  if (is.double(primary_var)) primary_var = as.integer(primary_var)
-
-  #primary
-  if (is.integer(primary_var)) {
-    if (primary_var < 1) stop("Primary var indice must be a positive, whole number!")
-
-    primary_var = colnames(df)[primary_var]
-  }
-
-  #secondary
-  #if secondaries not given, use all other vars
-  if(missing(secondary_vars)) secondary_vars = setdiff(colnames(df), primary_var) %>% setdiff(non_num_vars)
-
-  #convert
-  if (is.double(secondary_vars)) secondary_vars = as.integer(secondary_vars)
-
-  #if given integers
-  if(is.integer(secondary_vars)) {
-    #checks
-
-    #neither all positive or all negative
-    if (!(all(secondary_vars < 0) | all(secondary_vars > 0))) stop("When using indices for secondary vars, they must all be positive or all negative!")
-
-    #outside of range
-    if (any(secondary_vars > ncol(df))) stop("Secondary var indice outside range!")
-
-    #all positive
-    if (all(secondary_vars > 0)) {
-      secondary_vars = colnames(df)[secondary_vars] #select vars using the indices
-
-      #check if primary is among them
-      if (primary_var %in% secondary_vars) stop("Primary var is among the secondary vars!")
-
-      #check if any are non-numeric
-      if (intersect(secondary_vars, non_num_vars) %>% length != 0) stop("Some secondary vars were non-numeric!")
-    }
-
-    #all negative
-    if (all(secondary_vars < 0)) {
-      #fetch secondary var names
-      secondary_vars = colnames(df)[secondary_vars]
-
-      #remove primary var if among
-      secondary_vars = setdiff(secondary_vars, primary_var) %>%
-        setdiff(., non_num_vars) #remove non-num vars
-    }
-  }
-
-  #add delta vars
-  for (var in secondary_vars) {
-    tmp_delta_name = str_c(prefix, sep, primary_var, sep, var)
-
-    #method
-    if (!standardize) {
-      if (subtract_from_primary) {
-        df[tmp_delta_name] = df[primary_var] - df[var]
-      } else {
-        df[tmp_delta_name] = df[var] - df[primary_var]
-      }
-    } else {
-      if (subtract_from_primary) {
-        df[tmp_delta_name] = (df[primary_var] - df[var]) %>% scale() %>% as.vector
-      } else {
-        df[tmp_delta_name] = (df[var] - df[primary_var]) %>% scale() %>% as.vector
-      }
-    }
-
-  }
-
-  return(df)
-}
-
-
-#' Calculate summary statistics by row from multiple columns in a data.frame.
-#'
-#' Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default. Can also subset columns from a data.frame using regex of the colnames.
-#' @param ... (data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.
-#' @param standardize (boolean) Whether to standardize the data before calculating. Defaults to F.
-#' @param func (function) Which base function to call. Can be mean, median, sd, var and any other suitable function. Default to mean.
-#' @param pattern (string) A pattern to use for finding the columns names.
-#' @param ignore_NA (boolean) Whether to ignore missing data. Defaults to T.
-#' @keywords date.frame, mean, standardize, median, function
-#' @export
-#' @examples
-#' df_func()
-df_func = function(..., standardize = F, func = mean, pattern, ignore_NA = T) {
-  library(stringr)
-
-  #make df
-  tmp_df = data.frame(...)
-
-  ## if pattern not given
-  if (missing("pattern")) {
-
-    #check for numericness
-    if(!all(sapply(tmp_df, class) == "numeric")) stop("Some variables were not numeric!")
-
-    #standardize?
-    if (standardize) tmp_df = std_df(tmp_df)
-
-    #get results
-    results = apply(tmp_df, 1, function(x) {
-      get("func")(x, na.rm = ignore_NA)
-    })
-
-    return(results)
-  }
-
-  ## if pattern given
-
-  #find cols to use
-  cols = str_detect(colnames(tmp_df), pattern)
-
-  #check if any cols were found
-  if (all(!cols)) stop("No columns matched the pattern!")
-
-  #get results by calling simpler function
-  results = df_func(tmp_df[cols], standardize = standardize, func = func, ignore_NA = ignore_NA)
-
-  return(results)
-}
-
-#func from https://trinkerrstuff.wordpress.com/2012/05/02/function-to-generate-a-random-data-set/
-
-#' Insert random NAs into a data.frame.
-#'
-#' Inserts missing data into a data.frame at random, thus creating data that are Missing Completely At Random (MCAR). THis isn't how data usually are missing in the real world, but may be sufficient for some simulations.
-#' @param df (data.frame) A data.frame.
-#' @param prop (numeric) The proportion of NAs to add.
-#' @keywords date.frame, missing data, NA, add, simulate
-#' @export
-#' @examples
-#' df_addNA()
-df_addNA <-  NAinsert <- function(df, prop = .1){
-  n <- nrow(df)
-  m <- ncol(df)
-  num.to.na <- ceiling(prop*n*m)
-  id <- sample(0:(m*n-1), num.to.na, replace = FALSE)
-  rows <- id %/% m + 1
-  cols <- id %% m + 1
-  sapply(seq(num.to.na), function(x){
-    df[rows[x], cols[x]] <<- NA
-  }
-  )
-  return(df)
-}
-
-
-
-#sort a df according to a variable
-#just a minor edit of the function in reshape package.
-
-#' Sort a data.frame by one or more variables.
-#'
-#' A wrapper for order(). Improved from the version in the reshape package.
-#' @param df (data.frame) A data.frame.
-#' @param vars (strings/integers) variables to use for sorting.
-#' @param decreasing Whether to use decreasing order. Default=F.
-#' @keywords date.frame, missing data, NA, add, simulate
-#' @export
-#' @examples
-#' sort_df()
-sort_df = function (df, vars = names(df), decreasing = F)
-{
-  if (length(vars) == 0 || is.null(vars))
-    return(df)
-  df[do.call("order", list(what = df[, vars, drop = FALSE], decreasing = decreasing)), , drop = FALSE]
-}
-
-
-
-
-
-
-
 #' Is object a simple vector?
 #'
 #' A simple wrapper for is.vector and is.list. The normal is.vector function returns true for lists which is undesirable. Returns a boolean.
@@ -546,24 +116,18 @@ sort_df = function (df, vars = names(df), decreasing = F)
 #' @keywords vector, list
 #' @export
 #' @examples
-#' is_simple_vector()
+#' l = list(1:10)
+#' v = 1:10
+#' is.vector(v)
+#' is.vector(l)
+#' is_simple_vector(v)
+#' is_simple_vector(l)
 is_simple_vector = function(x) {
   is.vector(x) & !is.list(x)
 }
 
 
 
-#' Count missing data
-#'
-#' A simple wrapper for is.na() and sum(). Returns an integer.
-#' @param x (any object) An object for which to count NAs.
-#' @keywords NA, missing data, count, number
-#' @export
-#' @examples
-#' count_NA()
-count_NA = function(x) {
-  sum(is.na(x))
-}
 
 
 #' Multiple replacement
@@ -611,6 +175,341 @@ str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, al
   if (all_dots) string = str_replace_all(string, "\\.", " ")
 
   return(string)
+}
+
+
+#' Get dimensions of object.
+#'
+#' Returns the dimensions of an object. Also works on atomic (1-d) objects for which base-r dim() returns NULL.
+#' @param x (an object) An object.
+#' @keywords dim, dimensions
+#' @export
+#' @examples
+#' v = 1:10
+#' get_dims(v)
+#' m = matrix(1:9, nrow=3)
+#' get_dims(m)
+get_dims = function(x) {
+  if (is.null(dim(x))) {
+    return(length(x))
+    } else {
+    return(dim(x))
+  }
+}
+
+
+#' Copy names from one object to another.
+#'
+#' Attempts to copy names that fit the dimensions of vectors, lists, matrices and data.frames.
+#' @param x (an object) An object whose dimnames should be copied.
+#' @param y (an object) An object whose dimensions that should be renamed.
+#' @keywords names, rownames, colnames, copy
+#' @export
+#' @examples
+#' m = matrix(1:9, nrow=3)
+#' n = m
+#' rownames(m) = letters[1:3]
+#' colnames(m) = LETTERS[1:3]
+#' copy_names(m, n)
+#' n
+copy_names = function(x, y, partialmatching = T) {
+  library(stringr)
+  #find object dimensions
+  x_dims = get_dims(x)
+  y_dims = get_dims(y)
+  same_n_dimensions = length(x_dims) == length(y_dims)
+
+  #what is the object in y parameter?
+  y_obj_name = deparse(substitute(y))
+
+  #perfect matching
+  if (!partialmatching) {
+    #set names if matching dims
+    if (all(x_dims == y_dims)) {
+      attr(y, "dimnames") = attr(x, "dimnames")
+    } else {
+      stop(str_c("Dimensions did not match! ", x_dims, " vs. ", y_dims))
+    }
+  }
+
+  #if using partial matching and dimensions match in number
+  if (same_n_dimensions && partialmatching) {
+    #loop over each dimension
+    for (dim in 1:length(dimnames(x))) {
+      #do lengths match?
+      if (x_dims[dim] == y_dims[dim]) {
+        dimnames(y)[[dim]] = dimnames(x)[[dim]]
+      }
+    }
+  }
+
+  #assign in the outer envir
+  assign(y_obj_name, value = y, envir = parent.frame())
+}
+
+
+#' Fill in values in a vector
+#'
+#' Fill in values in a vector until it reaches a specific length.
+#' @param x (an object) An object whose dimnames should be copied.
+#' @param length (numeric scalar) The desired length.
+#' @param value (numeric/character/logical scalar) The value to fill in.
+#' @keywords vector, fill
+#' @export
+#' @examples
+#' fill_in(1:5, 10)
+fill_in = function(x, length, value = NA) {
+  v_length = length(x)
+  if (v_length >= length) return(x)
+  x[(v_length+1):length] = value
+  return(x)
+}
+
+
+#' Split vector every k elements
+#'
+#' Split a vector every k elements. Returns a list.
+#' @param x (vector) A vector to split.
+#' @param k (whole number scalar) Split every k elements.
+#' @param uneven (logical scalar) Whether to accept a split that would be uneven. If yes, the last group will be smaller than the others. Defaults to TRUE.
+#' @keywords vector, split
+#' @export
+#' @examples
+#' split_every_k(1:12, 4)
+#' split_every_k(1:11, 4) #last group isnt as large as the others
+split_every_k = function(x, k, uneven = T) {
+  library("stringr")
+  library("assertthat")
+  library("magrittr")
+
+  #input checks
+  assert_that(is.vector(x))
+  assert_that(is_whole_number(k))
+  assert_that(is.logical(uneven))
+
+  #check length
+  if (!uneven) {
+    if (length(x) %% k != 0) {
+      stop(str_c("The length of n was not integer disible by n! ", length(x), "%%", k, "=", length(x) %% k))
+    }
+  }
+
+  #split
+  x_length = length(x)
+  k_in_x = (x_length / k) %>% ceiling
+  v_groups = rep(1:k_in_x, each = k)
+  v_groups = v_groups[1:x_length]
+  return(split(x, v_groups))
+}
+
+
+
+#' Reshape named vectors to a data.frame.
+#'
+#' Construct a data.frame from a list of named vectors by filling in the shorter vectors with NAs.
+#' @param list (a list of vectors) The list of vectors.
+#' @param name_suffix (character scalar) The suffix to use on the names.
+#' @param valie_suffix (character scalar) The the suffix to use on the values.
+#' @keywords vectors, data.frame, reshape
+#' @export
+#' @examples
+#' l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
+#' named_vectors_to_df(l)
+named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_value") {
+  library("magrittr")
+  library("stringr")
+
+  #checks
+
+  #how many vectors
+  v_vectors = length(list)
+
+  #longest vector
+  v_max = max(sapply(list, length))
+
+  #fill out
+  list = lapply(list, fill_in, length = v_max)
+
+  #make data.frame
+  df = matrix(ncol = 2*v_vectors, nrow = v_max) %>% as.data.frame
+  v_names = str_c(rep(names(list), each = 2), c(name_suffix, value_suffix))
+  colnames(df) = v_names
+
+  #fill out values
+  l_names = lapply(list, names)
+  df[seq(1, 2*v_vectors, 2)] = l_names
+  df[seq(2, 2*v_vectors, 2)] = list
+
+  return(df)
+}
+
+
+#' Silence warnings or messages from expression via parameter.
+#'
+#' If warnings and messages need to be toggleable, but there are many expressions that can give them and it would be cumbersome to add an if sentence for every expression.
+#' @param expr (expression) Some expression to run.
+#' @param warnings (logical) Show warnings? Default=F.
+#' @param messages (logical) Show messages? Default=F.
+#' @keywords warning, message, suppress
+#' @export silence suppressor
+#' @aliases suppressor
+#' @examples
+#' silence(warning())
+#' silence(log(-1))
+#' silence(warning("test"))
+#' silence(warning("test"), warnings = T)
+#' silence(message("test"))
+#' silence(message("test"), messages = T)
+silence = function(expr, warnings = F, messages = F) {
+  if (!warnings & !messages) {
+    suppressWarnings(suppressMessages(expr))
+  } else if (!warnings & messages) {
+    suppressWarnings(expr)
+  } else if (warnings & !messages) {
+    suppressMessages(expr)
+  } else {
+    eval(expr)
+  }
+}
+
+suppressor = silence #old name
+
+
+#' Are all elements of a vector the same?
+#'
+#' Tests whether all elements of a vector are the same. Uses the max/min method mentioned at .
+#' @param x (expression) Some expression to run.
+#' @keywords vector, same, identical, equal
+#' @export
+#' @examples
+#' all_the_same(rep(1, 100))
+#' all_the_same(rnorm(100))
+all_the_same = function(x) {
+  #for numeric data, a faster method
+  if (is.numeric(x)) {
+    return(max(x) == min(x))
+  }
+  #for non-numeric data, a slower method
+  return(length(unique(x)) == 1)
+}
+
+
+#' Merge vectors by alternating elements.
+#'
+#' Inputs a list of equal length vectors, outputs a vector which is the merged vector by picking elements from each vector in alternating fashion.
+#' @param x (a list of vectors) The list of vectors.
+#' @keywords vector, merge, alternate, intertwine
+#' @export
+#' @examples
+#' alternate(list(1:3, letters[1:3]))
+alternate = function(x) {
+  #checks
+  if (!is.list(x)) stop("x must be a list!")
+  v_lengths = sapply(x, length)
+  if (!all_the_same(v_lengths)) stop("lengths of all vectors are not the same!")
+
+  #merge alternatingly
+  x_length = length(x)
+
+  #how long does result need to be
+  y_length = x_length * length(x[[1]])
+
+  #make template
+  y = rep(NA, y_length)
+
+  #insert data with loop
+  for (vector_i in seq_along(x)) {
+    v_indices = seq(vector_i, y_length, by = x_length)
+    y[v_indices] = x[[vector_i]]
+  }
+
+  return(y)
+}
+
+
+
+#' Check numericalness by column.
+#'
+#' A simple wrapper for \code{vapply}.
+#' @param x (something coercible to a data.frame) An object to test.
+#' @return Returns a logical vector the same length as the number of columns in x.
+#' @export
+#' @examples
+#' is_numeric_by_col(iris)
+is_numeric_by_col = function(df) {
+  df = as.data.frame(df)
+  vapply(df, FUN = is.numeric, FUN.VALUE = logical(1))
+}
+
+
+#' Is object thoroughly numeric?
+#'
+#' A more advanced version of \code{\link{is.numeric}}. It wraps the base-r function, but allows for recursive checking inside lists and hence data.frames as well.
+#' @param x (any object) An object to test.
+#' @param recursive (logical scalar) Whether to use recursive checking. Default=TRUE.
+#' @return Returns a logical scalar indicating whether the object is thoroughly numeric.
+#' @export
+#' @examples
+#' is_numeric(iris)
+#' is_numeric(iris[-5])
+is_numeric = function(x, recursive = TRUE) {
+  #vector
+  if (is_simple_vector(x)) return(is.numeric(x))
+
+  #array or matrix
+  if (is.array(x) || is.matrix(x)) return(is.numeric(x))
+
+  #factor
+  if (is.factor(x)) return(FALSE)
+
+  #recursive test?
+  if (recursive) {
+    #test all elements
+    return(all(sapply(x, is_numeric)))
+  }
+
+  #otherwise assume FALSE
+  FALSE
+}
+
+
+#' Are objects equal?
+#'
+#' A wrapper for \code{\link{all.equal}} that returns a logical scalar.
+#' @param x (any object) The first object.
+#' @param y (any object) The second object.
+#' @param ... (other named parameters) Further parameters to pass to \code{all.equal}.
+#' @return Returns a logical scalar indicating whether the objects are equal.
+#' @export
+#' @examples
+#' are_equal(iris[1:4], iris[-5])
+are_equal = function(x, y, ...) {
+  test = all.equal(x, y, ...)
+  if (is.logical(test)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+
+
+#' Format number of digits
+#'
+#' A wrapper for \code{\link{format}} and \code{\link{round}} that makes sure that a certain number of digits are shown after rounding. Useful for outputting numbers for tables. Vectorized.
+#' @param x (numeric vector) The number(s) to format.
+#' @param digits (whole number scalar) The number of digits to show.
+#' @return Returns a character vector of the same length as x.
+#' @export
+#' @examples
+#' format_digits(c(.1), 2)
+#' format_digits(c(.1), 5)
+#' format_digits(c(.12345), 2)
+#' format_digits(c(.15555), 2)
+format_digits = function(x, digits = 2) {
+  sapply(x, function(y) {
+    format(round(y, digits = digits), nsmall = digits)
+  })
 }
 
 

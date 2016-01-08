@@ -32,28 +32,28 @@ GG_denhist = function(df, var, binwidth = NULL) {
 #' @export
 #' @examples
 #' plot_kmeans()
-plot_kmeans = function(df, clusters, runs, standardize=T) {
+plot_kmeans = function (df, clusters, runs = 100, standardize = T) {
   library(psych)
   library(ggplot2)
 
-  #standardize
-  if (standardize) df = std_df(df)
+  #class
+  df = as.data.frame(df)
 
-  #cluster
-  tmp_k = kmeans(df, centers = clusters, nstart = 100)
+  #standardize?
+  if (standardize)
+    df = std_df(df)
 
-  #factor
+  #analyze
+  tmp_k = kmeans(df, centers = clusters, nstart = runs)
   tmp_f = fa(df, 2, rotate = "none")
-
-  #collect data
-  tmp_d = data.frame(matrix(ncol=0, nrow=nrow(df)))
+  tmp_d = data.frame(matrix(ncol = 0, nrow = nrow(df)))
   tmp_d$cluster = as.factor(tmp_k$cluster)
   tmp_d$fact_1 = as.numeric(tmp_f$scores[, 1])
   tmp_d$fact_2 = as.numeric(tmp_f$scores[, 2])
   tmp_d$label = rownames(df)
-
-  #plot
-  g = ggplot(tmp_d, aes(fact_1, fact_2, color = cluster)) + geom_point() + geom_text(aes(label = label), size = 3, vjust = 1, color = "black")
+  g = ggplot(tmp_d, aes(fact_1, fact_2, color = cluster)) +
+    geom_point() + geom_text(aes(label = label), size = 3,
+                             vjust = 1, color = "black")
   return(g)
 }
 
@@ -78,6 +78,7 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clea
   library(grid)
   library(psychometric)
   library(psych)
+  library(stringr)
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
@@ -233,82 +234,94 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #' @param fa_objects a list of factor analyses objects from the fa() function from the psych package.
 #' @param fa_labels a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..
 #' @param reverse.vector a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
+#' @param reorder (character scalar or NA) Which factor analysis to order the loadings by. Can be integers, "all" or NA for not reordering.
 #' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
 #' @export
 #' @examples
 #' plot_loadings_multi()
-plot_loadings_multi = function(fa_objects, fa_labels, reverse_vector = NA) {
-  #dependecy
+plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "all") {
   library("plotflow")
   library("stringr")
+  library("ggplot2")
+  library("plyr")
 
-  fa_num = length(fa_objects) #number of fas
-  fa_names = str_c("fa.", 1:fa_num) #use these names for the code
-
-
-  #check if fa_objects is a list
+  fa_num = length(fa_objects)
+  fa_names = str_c("fa.", 1:fa_num)
   if (!is.list(fa_objects)) {
     stop("fa_objects parameter is not a list.")
   }
-
-  #check if there is no list (i.e. if user just gave one fa object)
   if (class(fa_objects) %in% c("psych", "fa")) {
     fa_objects = list(fa_objects)
-    #must rerun these
-    fa_num = length(fa_objects) #number of fas
+    fa_num = length(fa_objects)
     fa_names = str_c("fa.", 1:fa_num)
   }
-
-  #labels
-  if (missing("fa_labels")) { #labels not given
+  if (missing("fa_labels")) {
     if (!is.null(names(fa_objects))) {
-      fa_labels = names(fa_objects) #use names from list if they are present
-    } else {
+      fa_labels = names(fa_objects)
+    }
+    else {
       fa_labels = fa_names
     }
   }
-
-  #check labels length
   if (length(fa_labels) != fa_num) {
     stop("Factor analysis labels length is not identical to number of analyses.")
   }
-
-  #make reverse vector if not given
   if (all(is.na(reverse_vector))) {
     reverse_vector = rep(1, fa_num)
-  } else if (length(reverse_vector) != fa_num) {
+  }
+  else if (length(reverse_vector) != fa_num) {
     stop("Length of reversing vector does not match number of factor analyses.")
   }
-
-  #merge into df
-  d = data.frame() #to merge into
-  for (fa.idx in 1:fa_num) { #loop over fa objects
-    loads = fa_objects[[fa.idx]]$loadings*reverse_vector[fa.idx]
+  d = data.frame()
+  for (fa.idx in 1:fa_num) {
+    loads = fa_objects[[fa.idx]]$loadings * reverse_vector[fa.idx]
     rnames = rownames(loads)
     loads = as.data.frame(as.vector(loads))
     rownames(loads) = rnames
     colnames(loads) = fa_names[fa.idx]
-
-    d = merge_datasets(d, loads, 1)
+    suppressor({
+      d = merge_datasets(d, loads, 1)
+    })
   }
-
-  #reshape to long form
-  d2 = reshape(d,
-               varying = 1:fa_num,
-               direction="long",
-               ids = rownames(d))
+  d2 = reshape(d, varying = 1:fa_num, direction = "long", ids = rownames(d))
   d2$time = as.factor(d2$time)
   d2$id = as.factor(d2$id)
   colnames(d2)[2] = "fa"
 
-  #plot
-  g = ggplot(reorder_by(id, ~ fa, d2), aes(x=id, y=fa, color=time, group=time)) +
-    geom_point(position=position_dodge(width = .5)) +
-    ylab("Loading") + xlab("Indicator") +
-    scale_color_discrete(name="Analysis",
-                         labels=fa_labels) +
-    coord_flip()
 
+  #reorder factor?
+  if (!is.na(reorder)) {
+    if (reorder == "all") {
+      suppressor({
+        d2 = reorder_by(id, ~fa, d2)
+      })
+    } else if (reorder == "mean") {
+      browser()
+      v_aggregate_values = daply(d2, .(id), function(x) {
+        mean(x$fa)
+      })
+
+    } else if (reorder == "median") {
+      v_aggregate_values = daply(d2, .(id), function(x) {
+        median(x$fa)
+      })
+
+    } else {
+      d2_sub = d2[d2$time == reorder, ] #subset the analysis whose loading is to be used for the reorder
+      suppressor({
+        d2_sub = reorder_by(id, ~fa, d2_sub)
+      })
+
+      library(gdata)
+      d2$id = reorder.factor(d2$id, new.order = levels(d2_sub$id))
+    }
+  }
+
+  #plot
+  g = ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
+    geom_point(position = position_dodge(width = 0.5)) +
+    ylab("Loading") + xlab("Indicator") + scale_color_discrete(name = "Analysis",
+                                                               labels = fa_labels) + coord_flip()
   return(g)
 }
 
@@ -328,7 +341,7 @@ plot_loadings_multi = function(fa_objects, fa_labels, reverse_vector = NA) {
 #' GG_group_means()
 GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
   library(psych)
-  library(magrittr)
+  library(stringr)
   library(ggplot2)
 
   #checks
@@ -360,3 +373,145 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
 
   return(g)
 }
+
+
+#' Jensen method (method of correlated vectors) plot
+#'
+#' Returns a ggplot2 scatter plot with numerical results in a corner. Also supports reversing for dealing with factors that have negative indicators.
+#' @param loadings a vector of factor loadings.
+#' @param loadings a vector of correlations of the indicators with the criteria variable.
+#' @param reverse whether to reverse indicators with negative loadings. Default to true.
+#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
+#' @keywords psychometrics psychology latent variable
+#' @export
+#' @examples
+#' Jensen_plot()
+Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE){
+  #libs
+  library(ggplot2)
+  library(grid)
+
+  #initial
+  temp_loadings = as.numeric(loadings) #conver to vector
+  names(temp_loadings) = rownames(loadings) #set names again
+  loadings = temp_loadings #back to normal name
+  DF = data.frame(loadings, cors) #DF
+
+  #reverse
+  if (reverse) {
+    for (idx in 1:nrow(DF)) {
+      if (DF[idx, 1] < 0){ #if loading <0
+        DF[idx, ] = DF[idx, ] * -1 #reverse
+        rownames(DF)[idx] = paste0(rownames(DF)[idx], "_r")
+      }
+    }
+  }
+
+  #method text
+  if (reverse) {method_text = "Jensen's method with reversing\n"}
+  else {method_text = "Jensen's method without reversing\n"}
+
+  #correlation
+  cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
+
+  #auto detect text position
+  if (missing(text_pos)) {
+    if (cor>0) text_pos = "tl" else text_pos = "tr"
+  }
+
+  #text object location
+  if (text_pos == "tl") {
+    x = .02
+    y = .98
+    hjust = 0
+    vjust = 1
+  }
+  if (text_pos == "tr") {
+    x = .98
+    y = .98
+    hjust = 1
+    vjust = 1
+  }
+  if (text_pos == "bl") {
+    x = .02
+    y = .02
+    hjust = 0
+    vjust = -.1
+  }
+  if (text_pos == "br") {
+    x = .98
+    y = .02
+    hjust = 1
+    vjust = -.1
+  }
+
+  #text
+  text = paste0(method_text,
+                "r=", cor, " (orange line)",
+                "\nn=", nrow(DF))
+
+  #text object
+  text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
+                         gp = gpar(fontsize = 11))
+
+  #regression line
+  model = lm(cors ~ loadings, DF)
+  coefs = coef(model)
+
+  #plot
+  DF$rnames = rownames(DF)
+
+  g = ggplot(data = DF, aes(x = loadings, y = cors)) +
+    geom_point() +
+    xlab("Loadings") +
+    ylab("Correlation with criteria variable") +
+    annotation_custom(text_object) +
+    geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
+
+  #add var_names if desired
+  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1)
+
+  return(g)
+}
+
+
+#' Scatter plot of Jensens method.
+#'
+#' Takes a factor analysis, data.frame and name of the criteria variable as inputs and returns a ggplot2 scatter plot with Jensen's method applied.
+#' @param fa A factor analysis object from fa().
+#' @param df A data.frame that contains all the variables.
+#' @param criteria A character string of the name of the criteria variable.
+#' @param reverse_factor Whether to reverse the factor first.
+#' @param loading_reversing Whether to use loading reversing to avoid inflated results. Defaults to TRUE.
+#' @param text_pos Which corner to put the text in. Defaults to "tl". Other options: tr, bl, br.
+#' @keywords factor analysis, Jensen, method of correlated vectors
+#' @export
+#' @examples
+#' Jensens_method()
+Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos) {
+  #get loadings
+  fa_loadings = as.numeric(fa$loadings)
+
+  #reverse factor is desired
+  if (reverse_factor) fa_loadings = fa_loadings * -1
+
+  #get indicator names
+  indicator_names = rownames(fa$loadings)
+  indicator_num = length(indicator_names)
+
+  #make new df
+  df2 = df[c(indicator_names, criteria)]
+
+  #correlate
+  df2_cors = cor(df2, use = "p")
+
+  #criteria x indicator cor vector
+  criteria_indi_cor = df2_cors[1:indicator_num, (indicator_num+1)]
+
+  #call plotter
+  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text_pos = text_pos)
+
+  #return ggplot object
+  return(g)
+}
+

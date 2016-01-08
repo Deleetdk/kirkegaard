@@ -31,24 +31,29 @@ MAT_find_size = function(x, diag=F) {
 #' Reconstructs a symmetric matrix based on a vector of values of one of the halves.
 #'
 #' Returns a symmetric matrix.
-#' @param x A vector of values.
-#' @param diag Whether the diagonal values are included or not. Defaults to F.
-#' @param byrow Whether the values were extracted by row or column. Defaults to F which matches the output from e.g. dist().
-#' @keywords matrix, symmetric, lower, upper
+#' @param x (vector) A vector of values.
+#' @param diag (logical scalar) Whether the diagonal values are included or not. Defaults to FALSE.
+#' @param byrow (logical scalar) Whether the values were extracted by row or column. Defaults to FALSE which matches the output from e.g. dist().
+#' @param diag_value (scalar) Which value to fill in the diagonal if necessary.
 #' @export
 #' @examples
-#' MAT_vector2full()
-MAT_vector2full = function(x, diag=F, byrow=F) {
-  #code made from http://r.789695.n4.nabble.com/how-to-convert-the-lower-triangle-of-a-matrix-to-a-symmetric-matrix-td823271.html
-  X = base::diag(0, MAT_find_size(length(x), diag))
-  if (byrow) {
-    X[upper.tri(X, diag=diag)] = x
-  } else {
-    X[lower.tri(X, diag=diag)] = x
-  }
-  X = X + t(X) - diag(diag(X))
-  return(X)
+#' MAT_vector2full(1:3)
+MAT_vector2full = function(x, diag = FALSE, byrow = FALSE, diag_value = 0) {
+
+  #make matrix with cell numbers
+  m_size = MAT_find_size(length(x), diag)
+  m = matrix(1:(m_size^2), nrow = m_size, byrow = byrow)
+  #which cells from where?
+  m_lower = MAT_get_half(m, diag = diag, lower = !byrow)
+
+  #make full
+  full = matrix(diag_value, nrow = nrow(m), ncol = ncol(m))
+  full[m_lower] = x
+  full = t(full)
+  full[m_lower] = x
+  full
 }
+
 
 
 #' Get half of a matrix.

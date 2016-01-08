@@ -4,12 +4,15 @@
 \alias{plot_loadings_multi}
 \title{Plot multiple factor loadings in one plot.}
 \usage{
-plot_loadings_multi(fa_objects, fa_labels, reverse_vector = NA)
+plot_loadings_multi(fa_objects, fa_labels, reverse_vector = NA,
+  reorder = "all")
 }
 \arguments{
 \item{fa_objects}{a list of factor analyses objects from the fa() function from the psych package.}
 
 \item{fa_labels}{a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..}
+
+\item{reorder}{(character scalar or NA) Which factor analysis to order the loadings by. Can be integers, "all" or NA for not reordering.}
 
 \item{reverse.vector}{a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.}
 }

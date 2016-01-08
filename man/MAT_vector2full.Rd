@@ -4,23 +4,21 @@
 \alias{MAT_vector2full}
 \title{Reconstructs a symmetric matrix based on a vector of values of one of the halves.}
 \usage{
-MAT_vector2full(x, diag = F, byrow = F)
+MAT_vector2full(x, diag = FALSE, byrow = FALSE, diag_value = 0)
 }
 \arguments{
-\item{x}{A vector of values.}
+\item{x}{(vector) A vector of values.}
 
-\item{diag}{Whether the diagonal values are included or not. Defaults to F.}
+\item{diag}{(logical scalar) Whether the diagonal values are included or not. Defaults to FALSE.}
 
-\item{byrow}{Whether the values were extracted by row or column. Defaults to F which matches the output from e.g. dist().}
+\item{byrow}{(logical scalar) Whether the values were extracted by row or column. Defaults to FALSE which matches the output from e.g. dist().}
+
+\item{diag_value}{(scalar) Which value to fill in the diagonal if necessary.}
 }
 \description{
 Returns a symmetric matrix.
 }
 \examples{
-MAT_vector2full()
+MAT_vector2full(1:3)
 }
-\keyword{lower,}
-\keyword{matrix,}
-\keyword{symmetric,}
-\keyword{upper}
 

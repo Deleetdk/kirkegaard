@@ -5,26 +5,27 @@
 \title{Repeatedly run glmnet.cv()}
 \usage{
 MOD_repeat_cv_glmnet(df, dependent, predictors, weights_ = NA,
-  standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, verbose = T)
+  standardize = T, runs = 100, alpha_ = 1, NA_ignore = T,
+  messages = T)
 }
 \arguments{
-\item{dependent}{A string of the name of the dependent variable.}
+\item{dependent}{(character scalar) The name of the dependent variable.}
 
-\item{predictors}{A character vector of the names of the predictor variables.}
+\item{predictors}{(character vector) The names of the predictor variables.}
 
-\item{weights_}{If weights should be used, a numeric vector of values to use. Defaults to equal weights.}
+\item{weights_}{(numeric vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.}
 
-\item{standardize}{Whether to standardize the data beforehand. Defaults to true.}
+\item{standardize}{(boolean) Whether to standardize the data beforehand. Defaults to true.}
 
-\item{runs}{Number of times to run. Defaults to 100.}
+\item{runs}{(numeric/integer scalar) Number of times to run. Defaults to 100.}
 
-\item{alpha_}{The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
+\item{alpha_}{(numeric scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
 
-\item{NA_ignore}{Whether to remove cases with missing data. Defaults to T.}
+\item{NA_ignore}{(boolean) Whether to remove cases with missing data. Defaults to T.}
 
-\item{verbose}{Whether to send messages to the user.}
+\item{messages}{(boolean) Whether to send messages to the user.}
 
-\item{data}{A data frame with the data. Must contain dependent and predictor variables.}
+\item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}
 }
 \description{
 Returns a data frame of beta coefficients from glmnet.cv() fits.

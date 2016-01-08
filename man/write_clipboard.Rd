@@ -4,8 +4,8 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x, digits = 3, clean_names = F, clean_what = c("_",
-  "\\\\."))
+write_clipboard(x, digits = 2, clean_names = F, clean_what = c("_",
+  "\\\\."), pad_digits = T)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}

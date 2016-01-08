@@ -3,16 +3,18 @@
 #' Matrix of beta coefficients of all simple linear models.
 #'
 #' Returns a data.frame with beta coefficients for all possible simple (without interactions) linear models given a set of predictor variables and a dependent variable.
-#' @param dependent A string with the name of the dependent variable.
-#' @param predictors A character vector with the predictor variables.
-#' @param data A data.frame with the variables.
-#' @param standardized Whether to standardize the results. Defaults to true.
-#' @param .weights Weights to use. Leave blank not to use weights.
+#' @param dependent (character scalar) The name of the dependent variable.
+#' @param predictors (character vector) The names of the redictor variables.
+#' @param data (data.frame) A data.frame with the variables.
+#' @param standardized (boolean) Whether to standardize the results. Defaults to true.
+#' @param .weights (character scalar) The name of the variable to use for weights. Defaults to NA, which causes it to use unit weights for all cases.
+#' @param return_models (character scalar) What to return. all = all models, best = best model. Defaults to best.
+#' @param messages (boolean) Whether to show messages.
 #' @keywords modeling, lm, linear, automatic
 #' @export
 #' @examples
 #' lm_beta_matrix()
-lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights=NA, return_models = "b") {
+lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights = NA, return_models = "b", messages = T) {
   library(gtools) #for combinations()
   library(stringr) #for str_c()
 
@@ -28,9 +30,9 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 
   sets = list() #list of all combinations
   for (num.choose in 1:num.inde) { #loop over numbers of variables to choose
-    temp.sets = combinations(num.inde,num.choose) #all combinations of picking r out of n
+    temp.sets = combinations(num.inde, num.choose) #all combinations of picking r out of n
     temp.sets = split(temp.sets, seq.int(nrow(temp.sets))) #as a list
-    sets = c(sets,temp.sets)
+    sets = c(sets, temp.sets)
   }
   #return(sets) #for debugging
 
@@ -62,7 +64,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
   colnames(betas) = model_fit_names #colnames
   for (model.idx in 1:length(models)) { #loop over the index of each model
     #progress
-    print(str_c("Model ", model.idx, " of ", length(models)))
+    if (messages) message(str_c("Model ", model.idx, " of ", length(models)))
 
     #fit model and extract betas
     lm.fit = lm(models[model.idx], data, weights = .weights) #fit the model
@@ -75,8 +77,6 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     for (beta.idx in 1:length(lm.fit.betas)) { #loop over each beta
       beta.names = as.vector(names(lm.fit.betas)) #get the names
       beta.name = beta.names[beta.idx] #get the name
-      #print(beta.names)
-      #print(beta.name)
       betas[model.idx,beta.name] = lm.fit.betas[beta.idx] #insert beta in the right place
     }
 
@@ -123,58 +123,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 }
 
 
-#Thanks to: https://stat.ethz.ch/pipermail/r-help/2011-October/293842.html
-#' Residualized data.frame.
-#'
-#' Returns a residualized data.frame given a set of variables to partial out.
-#' @param data A data.frame or matrix.
-#' @param resid.vars A character vector of the variables to partial out.
-#' @param exclude.resid.vars Whether to exclude the residualization variables from residualization. Defaults to true.
-#' @param return.resid.vars Whether to include the residualization variables in the returned data.frame. Defaults to true.
-#' @param print.models Wether to print the lm models used in the process. Defaults to true.
-#' @keywords modeling, residualize, partialing
-#' @export
-#' @examples
-#' residualize_DF()
-residualize_DF = function(data, resid.vars, suffix = "", exclude.resid.vars = T, return.resid.vars = T, print.models = T) {
-  #the residuals function
-  lm_f = function(x) {
-    x = residuals(lm(data = data, formula = update(x ~ 0, paste0("~",resid.vars)), na.action = na.exclude))
-  }
 
-  #calculate residuals
-  if (exclude.resid.vars) {
-    resid = data.frame(matrix(nrow=nrow(data),ncol=ncol(data))) #make empty df same size as data
-    colnames(resid) = colnames(data) #get colnames
-
-    for (colname in colnames(data)) { #loop over colnames
-      if (!colname %in% resid.vars) { #if colname ISNT an indepednet, get residuals
-        f = str_c(colname, " ~ ", paste0(resid.vars))
-        if (print.models) print(f)
-
-        resid[,colname] = residuals(lm(data = data, formula = f, na.action = na.exclude))
-      }
-      if (colname %in% resid.vars) { #if colname IS an indepedent, get originals
-        resid[,colname] = data[,colname]
-      }
-    }
-  }
-  else {
-    resid = data.frame(apply(data, 2, lm_f)) #get residuals from everything including independents
-  }
-
-  #this adds the suffix, if desired
-  colnames(resid) = paste0(colnames(data),suffix)
-
-  #remove resid vars if desired
-  if (return.resid.vars==F) {
-    for (resid.vars in resid.vars) {
-      resid[,resid.vars] = NULL
-    }
-  }
-
-  return(resid)
-}
 
 #' Convenient summary of an lm() model with confidence intervals.
 #'
@@ -207,7 +156,7 @@ lm_CI = function(fitted_model, level = .95, round = 2) {
 #' Get R2 and R2 adj. for each model.
 #'
 #' Returns a data.frame with each models R2 and R2 adj.
-#' @param model_list A list of model fits e.g. from lm().
+#' @param model_list (list) A list of model fits e.g. from lm().
 #' @keywords model, fit
 #' @export
 #' @examples
@@ -245,20 +194,20 @@ lm_best = function(model_list) {
 #' Repeatedly run glmnet.cv()
 #'
 #' Returns a data frame of beta coefficients from glmnet.cv() fits.
-#' @param data A data frame with the data. Must contain dependent and predictor variables.
-#' @param dependent A string of the name of the dependent variable.
-#' @param predictors A character vector of the names of the predictor variables.
-#' @param weights_ If weights should be used, a numeric vector of values to use. Defaults to equal weights.
-#' @param standardize Whether to standardize the data beforehand. Defaults to true.
-#' @param runs Number of times to run. Defaults to 100.
-#' @param alpha_ The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
-#' @param NA_ignore Whether to remove cases with missing data. Defaults to T.
-#' @param verbose Whether to send messages to the user.
+#' @param data (data.frame) A data.frame with the data. Must contain dependent and predictor variables.
+#' @param dependent (character scalar) The name of the dependent variable.
+#' @param predictors (character vector) The names of the predictor variables.
+#' @param weights_ (numeric vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.
+#' @param standardize (boolean) Whether to standardize the data beforehand. Defaults to true.
+#' @param runs (numeric/integer scalar) Number of times to run. Defaults to 100.
+#' @param alpha_ (numeric scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
+#' @param NA_ignore (boolean) Whether to remove cases with missing data. Defaults to T.
+#' @param messages (boolean) Whether to send messages to the user.
 #' @keywords model, fit, cross-validation, glmnet, repeat
 #' @export
 #' @examples
 #' MOD_repeat_cv_glmnet()
-MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, verbose = T) {
+MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T) {
   #load lib
   library(glmnet)
   library(stringr)
@@ -287,7 +236,7 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
   #standardize
   df = df
   if (standardize) {
-    df = std_df(df, exclude = "weights_")
+    df = std_df(df, exclude = "weights_", messages = messages)
     message("Data standardized.")
   }
 
@@ -298,7 +247,7 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
 
   #loop
   for (run in 1:runs) {
-    message(str_c("Run ", run, " of ", runs))
+    if (messages) message(str_c("Run ", run, " of ", runs))
 
     #fit lasso
     fit_cv = cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix

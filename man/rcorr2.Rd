@@ -13,9 +13,6 @@ rcorr2(x, ...)
 A wrapper for rcorr() that takes data.frames or matrices as opposed to only matrices.
 }
 \examples{
-rcorr2()
+rcorr2(iris[-5])
 }
-\keyword{correlation}
-\keyword{matrix}
-\keyword{wrapper}
 
