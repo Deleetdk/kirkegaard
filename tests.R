@@ -567,10 +567,14 @@ stopifnot({
 
 # GG_denhist --------------------------------------------------------------
 library(MASS)
-g = GG_denhist(Boston, "rm")
+library(ggplot2)
+library(magrittr)
+Sepal_Length = iris$Sepal.Length
+g = list(GG_denhist(iris, "Sepal.Length"),
+         GG_denhist(Sepal_Length))
 
 stopifnot({
-  all(class(g) == c("gg", "ggplot"))
+  sapply(g, function(x) class(x)) %in% c("gg", "ggplot")
 })
 
 

@@ -7,18 +7,14 @@
 GG_denhist(df, var, binwidth = NULL)
 }
 \arguments{
-\item{df}{A data.frame with variables.}
+\item{df}{(data.frame or something coercible into) A data.frame with variables.}
 
-\item{var}{A string of the name of the variable to use.}
+\item{var}{(character scalar) The name of the variable to use. Not needed if df is a vector.}
 }
 \description{
 Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
 }
 \examples{
-GG_denhist()
+GG_denhist(iris, "Sepal.Length")
 }
-\keyword{density,}
-\keyword{ggplot2,}
-\keyword{histogram}
-\keyword{plot,}
 
