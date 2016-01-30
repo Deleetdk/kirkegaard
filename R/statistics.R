@@ -587,3 +587,127 @@ get_t_value = function(conf, df, ...) {
   value = conf + ((1 - conf) / 2)
   qt(value, df = df, ...)
 }
+
+
+#' Pooled sd
+#'
+#' Calculate pooled sd.
+#' @param x (numeric vector) The data.
+#' @param group (vector) Group membership.
+#' @export
+#' @examples
+#' #Wikipedia's example https://en.wikipedia.org/wiki/Pooled_variance
+#' v_test_vals = c(31, 30, 29, 42, 41, 40, 39, 31, 28, 23, 22, 21, 19, 18, 21, 20, 19, 18, 17)
+#' v_test_group = c(rep(1, 3), rep(2, 4), rep(3, 2), rep(4, 5), rep(5, 5))
+#' pool_sd(v_test_vals, v_test_group)
+pool_sd = function(x, group) {
+  library(plyr)
+
+  #validate input
+  if (!is_simple_vector(x)) stop("x must be a vector!")
+  group = as.factor(group)
+  if (!is.factor(group)) stop("x must be a factor or convertible to that!")
+
+  #to df
+  d = data.frame("x" = x, "group" = group)
+
+  #summarize
+  d_sum = ddply(d, "group", plyr::summarize,
+                df = sum(!is.na(x)) - 1,
+                var = var(x, na.rm = TRUE))
+
+  #weighted sum divided by weights (with Bessel's correction), then square root
+  #https://en.wikipedia.org/wiki/Pooled_variance
+  sqrt(sum(d_sum$df * d_sum$var) / sum(d_sum$df))
+}
+
+
+#' Standardized mean differences
+#'
+#' Calculate standardized mean differneces between all groups.
+#' @param x (numeric vector) A vector of values.
+#' @param group (vector) A vector of group memberships.
+#' @param central_tendency (function) A function to use for calculating the central tendency. Must support a parameter called na.rm. Ideal choices: mean, median.
+#' @param dispersion (character or numeric scalar) Either the name of the metric to use (sd or mad) or a value to use.
+#' @param dispersion_method (character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).
+#' @export
+#' @examples
+#' #get t value for 95 pct. confidence interval with df = 20
+SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all") {
+  library(plyr)
+  library(magrittr)
+
+  #df form
+  d_x = data.frame(x = x, group = as.factor(group))
+
+  #find uniqs
+  uniq = levels(d_x$group)
+
+  #how manys groups
+  n_groups = length(uniq)
+
+  #make matrix for results
+  m = matrix(NA, nrow = n_groups, ncol = n_groups)
+
+  #set names
+  colnames(m) = rownames(m) = uniq
+
+  #calculate group centrals
+  v_central = sapply(uniq, function(var) {
+    central_tendency(x[group == var], na.rm = TRUE)
+  })
+
+  #loop for each combo
+  for (row_i in seq_along(uniq)) {
+    for (col_i in seq_along(uniq)) {
+      #skip if dia/above diag
+      if (col_i >= row_i) next
+
+      #set valyes
+      col = uniq[col_i]
+      row = uniq[row_i]
+
+      #partition data
+      d_comb = d_x[d_x$group %in% c(col, row), ]
+
+      #dispersion
+      if (dispersion == "sd") {
+        if (dispersion_method == "all") {
+          disp = pool_sd(d_x$x, d_x$group)
+        }
+        if (dispersion_method == "pair") {
+          disp = pool_sd(d_comb$x, d_comb$group)
+        }
+        if (dispersion_method == "total") disp = sd(d_x$x, na.rm = TRUE)
+      } else if (dispersion == "mad") {
+        #mean of medians, robust
+        if (dispersion_method == "all") {
+          disp = daply(d_x, "group", function(part) {
+            stats::mad(part$x, na.rm = TRUE)
+          }) %>% mean
+        }
+        if (dispersion_method == "pair") {
+          disp = daply(d_comb, "group", function(part) {
+            stats::mad(part$x, na.rm = TRUE)
+          }) %>% mean
+        }
+      } else if (is.numeric(dispersion)) disp = dispersion #use given number
+
+      #distance
+      diff = central_tendency(d_comb$x[d_comb$group == col]) - central_tendency(d_comb$x[d_comb$group == row])
+      SMD = diff / disp
+      m[row, col] = SMD
+    }
+  }
+
+  #expand to full
+  m_old = m
+  m = m %>% MAT_get_half() %>% MAT_vector2full()
+  diag(m) = NA
+
+  #names
+  copy_names(m_old, m)
+
+  #
+  m
+}

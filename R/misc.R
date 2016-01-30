@@ -513,3 +513,31 @@ format_digits = function(x, digits = 2) {
 }
 
 
+#function from http://stackoverflow.com/questions/4730551/making-a-string-concatenation-operator-in-r
+
+#' Easy character concatenation
+#'
+#' A wrapper for stringr's \code{\link{str_c}} and the primitive "+" function.
+#' @param x (character vector) A character vector.
+#' @param y (character vector) A character vector.
+#' @return A character vector. Note that it will have a length longer than one if one of the inputs has that.
+#' @export
+#' @examples
+#' #digits still work
+#' 1+1
+#' #characters work too
+#' "str" + "ing"
+#' #mixes are converted to characters
+#' "123" + 456
+#' #longer than length 1
+#' 1:2 + "a"
+"+" = function(x, y) {
+  library("stringr")
+
+  if(is.character(x) || is.character(y)) {
+    return(str_c(x, y))
+  } else {
+    .Primitive("+")(x, y)
+  }
+}
+

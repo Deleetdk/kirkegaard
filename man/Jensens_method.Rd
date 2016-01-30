@@ -5,7 +5,7 @@
 \title{Scatter plot of Jensens method.}
 \usage{
 Jensens_method(fa, df, criteria, reverse_factor = F, loading_reversing = T,
-  text_pos)
+  text_pos, var_names = TRUE, check_overlap = TRUE)
 }
 \arguments{
 \item{fa}{A factor analysis object from fa().}

@@ -392,7 +392,7 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
 #' @export
 #' @examples
 #' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE){
+Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE, check_overlap = TRUE){
   #libs
   library(ggplot2)
   library(grid)
@@ -475,7 +475,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
     geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
 
   #add var_names if desired
-  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1)
+  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1, check_overlap = check_overlap)
 
   return(g)
 }
@@ -494,7 +494,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
 #' @export
 #' @examples
 #' Jensens_method()
-Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos) {
+Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos, var_names = TRUE, check_overlap = TRUE) {
   #get loadings
   fa_loadings = as.numeric(fa$loadings)
 
@@ -515,7 +515,7 @@ Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversin
   criteria_indi_cor = df2_cors[1:indicator_num, (indicator_num+1)]
 
   #call plotter
-  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text_pos = text_pos)
+  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text_pos = text_pos, var_names = var_names, check_overlap = check_overlap)
 
   #return ggplot object
   return(g)

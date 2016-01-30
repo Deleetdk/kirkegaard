@@ -161,6 +161,10 @@ stopifnot({
   class(g) == c("gg", "ggplot")
   g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F)
   class(g) == c("gg", "ggplot")
+  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, var_names = F)
+  class(g) == c("gg", "ggplot")
+  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, check_overlap = F)
+  class(g) == c("gg", "ggplot")
 })
 
 
@@ -1131,3 +1135,21 @@ stopifnot({
   cor_matrix(iris, CI = .95) %>% get_dims %>% equals(c(4, 4)) #verify dims
   cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character #complex weights + CI
 })
+
+
+# SMD_matrix & pooled_sd --------------------------------------------------------------
+#standardized mean differences
+library(magrittr)
+
+#test parameters
+t = list(SMD_matrix(iris$Sepal.Length, iris$Species),
+         SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = median),
+         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
+         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
+         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"))
+
+stopifnot({
+  sapply(t, is.matrix) #all matrices
+  unique(t) %>% length %>% equals(5) #all different
+})
+

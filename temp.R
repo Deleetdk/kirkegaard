@@ -250,5 +250,87 @@ random_probs = function(k) {
 
 # run_tests(T)
 
+serial_r2 = function(x) {
+  #vectors
+  var_remain = c(1, rep(NA, length(x) - 1))
+  step_r2 = rep(NA, length(x))
+
+  for (step_i in seq_along(x)) {
+    #first step
+    if (step_i == 1) {
+      var_remain[1] = 1 - x[1]
+      step_r2[1] = x[1]
+      next
+    }
+
+    #else
+    var_remain[step_i] = var_remain[step_i - 1] - x[step_i] * var_remain[step_i - 1]
+    step_r2[step_i] = x[step_i] * var_remain[step_i - 1]
+  }
+
+  data.frame(var_remaining = var_remain,
+             step_r2 = step_r2,
+             sum_r2 = cumsum(step_r2))
+}
+
+serial_r2(c(.1, .1, .1))
+
+MOD_serial_regressions = function(df, dependent, steps, weights) {
+  library(stringr)
+
+  #checks
+  if (!is.list(steps)) stop("steps must be a list of vectors!")
+  df = as.data.frame(df)
+
+  #weights
+  if (missing("weights")) {
+    df[["weights__"]] = rep(1, nrow(df))
+  } else if (is.character(weights)) {
+    df[["weights__"]] = df[[weights]]
+  } else if (length(weights) == nrow(df)) {
+    df[["weights__"]] = weights
+  }
+
+  #list for fits
+  l_fits = list()
+
+  #fitting loop
+  for (step_i in seq_along(steps)) {
+    step = steps[step_i]
+
+    #the variable to explain
+    if (step_i == 1) df[str_c("dependent_1")] = df[dependent]
+
+    #make model
+    model = str_c(str_c("dependent_", step_i), " ~ ", str_c(step, collapse = " + "))
+
+    #fit
+    fit_name = str_c("fit_", step_i)
+    l_fits[[fit_name]] = lm(model, df, weights = weights__)
+
+    #save residuals for next step
+    df[str_c("dependent_", step_i + 1)] = resid(l_fits[[fit_name]])
+  }
+
+  #make stats
+  l_summaries = lapply(l_fits, function(fit) summary(fit))
+  v_R2s = sapply(l_summaries, function(sum_) sum_$r.squared)
+
+  d_stepinfo = serial_r2(v_R2s)
+  #R2 serial
+  d_stepinfo
+}
+
+# library(kirkegaard)
+# library(magrittr)
+#
+# n = 1e4
+# d = data.frame(a = rnorm(n))
+# d$b = scale(d$a + rnorm(n))
+# d$y = scale(d$a + d$b + rnorm(n))
+#
+# cor(d)
+# semi_par(d$b, d$y, d$a)
 
 
+MOD_serial_regressions(iris, dependent = "Sepal.Length", steps = list("Sepal.Width", "Petal.Length", "Petal.Width"))
