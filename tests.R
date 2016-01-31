@@ -723,11 +723,12 @@ stopifnot({
 #scores test items
 library(psych) #data in here
 
-t = score_items(iqitems, rep(1, 16))
+t = score_items(iqitems, c(4,4,4, 6,  6,3,4,4,   5,2,2,4,   3,2,6,7))
 
 stopifnot({
   dim(t) == c(1525, 16)
   class(t) == "data.frame"
+  (cor(t, use = "p") > 0) %>% all #all cors positive
 })
 
 
@@ -1151,5 +1152,21 @@ t = list(SMD_matrix(iris$Sepal.Length, iris$Species),
 stopifnot({
   sapply(t, is.matrix) #all matrices
   unique(t) %>% length %>% equals(5) #all different
+})
+
+
+
+# merge_rows --------------------------------------------------------------
+#performs row-wise merging
+
+t = data.frame(key = c("a", "a", "b", "b", "c"), value = 1:5)
+t_true = data.frame(key = c("a", "b", "c"), value = c(3, 7, 5))
+t_true2 = data.frame(key = c("a", "b", "c"), value = c(1.5, 3.5, 5))
+
+stopifnot({
+  merge_rows(t, key) == t_true #test non-string input
+  merge_rows(t, "key") == t_true #test string input
+  merge_rows(t, "key", func = mean) == t_true2 #test another function
+  throws_error("merge_rows(t, 'key', numeric = FALSE)") #test error
 })
 

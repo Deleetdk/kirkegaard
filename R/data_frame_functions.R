@@ -457,3 +457,58 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 #old name
 residualize_DF = df_residualize
 
+
+#' Merge rows in data.frame.
+#'
+#' Find blocks of rows with a matching
+#' @param data (data.frame or matrix) The data object.
+#' @param resid.vars (character vector) The names of the variables to use for the residualization.
+#' @param exclude.resid.vars (logical) Whether to exclude the residualization variables from residualization. Defaults to TRUE.
+#' @param return.resid.vars (logical) Whether to include the residualization variables in the returned data.frame. Defaults to TRUE.
+#' @param print.models (logical) Wether to print the lm models used in the process. Defaults to TRUE.
+#' @param exclude_vars (character vector) Names of variables are that excluded from the residualization.
+#' @keywords modeling, residualize, partialing
+#' @export
+#' @examples
+#' t = data.frame(key = c("a", "a", "b", "b", "c"), value = 1:5)
+#' merge_rows(t, "key") #rows merged by sum
+#' merge_rows(t, "key", func = mean) #rows merged by mean
+merge_rows = function(df, key, func = sum, numeric = TRUE) {
+  library(plyr)
+
+  #checks
+  df = as.data.frame(df)
+
+  #deparse input if given as a call
+  if (!missing("key")) {
+    tri = try({
+      key
+    }, silent = TRUE)
+    if (is_error(tri)) key = deparse(substitute(key))
+  }
+
+  #check function
+  if (!is.function(func)) stop("func must be a function!")
+
+  #numeric columns
+  if (numeric) {
+    v_numeric = sapply(df, is.numeric) #detect numeric cols
+  } else {
+    v_numeric = 1:ncol(df) #use all
+  }
+
+
+  #do it
+  df2 = ddply(df, .(key), function(row) {
+    #skip if only 1 row
+    if (nrow(row) == 1) return(row)
+
+    #compute
+    row_new = row[1, ] #copy content of the first row in the block
+    row_new[v_numeric] = apply(row[v_numeric], 2, func) #subset to numerics, use func
+    row_new #save the new row
+  })
+
+  df2
+}
+

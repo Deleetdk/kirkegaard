@@ -14,8 +14,13 @@ score_items(df, key)
 \description{
 Score a data.frame with multiple choice items using an answer key. Each column has a answers for one question.
 }
+\details{
+Returns a data.frame of the same size as that given with the values 0 representing incorrect answers and 1 representing correct answers.
+}
 \examples{
-score_items()
+library(psych) #for ICAR data
+d = score_items(iqitems, c(4,4,4, 6,  6,3,4,4,   5,2,2,4,   3,2,6,7)) #score and save
+psych::alpha(d) #examine internal consistency
 }
 \keyword{choice}
 \keyword{date.frame,}
