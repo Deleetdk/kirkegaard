@@ -7,27 +7,19 @@
 merge_rows(df, key, func = sum, numeric = TRUE)
 }
 \arguments{
-\item{data}{(data.frame or matrix) The data object.}
+\item{df}{(data.frame or matrix) The data object.}
 
-\item{resid.vars}{(character vector) The names of the variables to use for the residualization.}
+\item{key}{(character scalar) The name of the key variable, which is the variable to merge rows by.}
 
-\item{exclude.resid.vars}{(logical) Whether to exclude the residualization variables from residualization. Defaults to TRUE.}
-
-\item{return.resid.vars}{(logical) Whether to include the residualization variables in the returned data.frame. Defaults to TRUE.}
-
-\item{print.models}{(logical) Wether to print the lm models used in the process. Defaults to TRUE.}
-
-\item{exclude_vars}{(character vector) Names of variables are that excluded from the residualization.}
+\item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.
+numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.}
 }
 \description{
-Find blocks of rows with a matching
+Find blocks of rows with a matching key and merge them using a given function.
 }
 \examples{
 t = data.frame(key = c("a", "a", "b", "b", "c"), value = 1:5)
 merge_rows(t, "key") #rows merged by sum
 merge_rows(t, "key", func = mean) #rows merged by mean
 }
-\keyword{modeling,}
-\keyword{partialing}
-\keyword{residualize,}
 

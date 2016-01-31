@@ -460,14 +460,11 @@ residualize_DF = df_residualize
 
 #' Merge rows in data.frame.
 #'
-#' Find blocks of rows with a matching
-#' @param data (data.frame or matrix) The data object.
-#' @param resid.vars (character vector) The names of the variables to use for the residualization.
-#' @param exclude.resid.vars (logical) Whether to exclude the residualization variables from residualization. Defaults to TRUE.
-#' @param return.resid.vars (logical) Whether to include the residualization variables in the returned data.frame. Defaults to TRUE.
-#' @param print.models (logical) Wether to print the lm models used in the process. Defaults to TRUE.
-#' @param exclude_vars (character vector) Names of variables are that excluded from the residualization.
-#' @keywords modeling, residualize, partialing
+#' Find blocks of rows with a matching key and merge them using a given function.
+#' @param df (data.frame or matrix) The data object.
+#' @param key (character scalar) The name of the key variable, which is the variable to merge rows by.
+#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.
+#' numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
 #' @export
 #' @examples
 #' t = data.frame(key = c("a", "a", "b", "b", "c"), value = 1:5)
@@ -478,14 +475,6 @@ merge_rows = function(df, key, func = sum, numeric = TRUE) {
 
   #checks
   df = as.data.frame(df)
-
-  #deparse input if given as a call
-  if (!missing("key")) {
-    tri = try({
-      key
-    }, silent = TRUE)
-    if (is_error(tri)) key = deparse(substitute(key))
-  }
 
   #check function
   if (!is.function(func)) stop("func must be a function!")

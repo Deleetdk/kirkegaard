@@ -1149,7 +1149,6 @@ t_true = data.frame(key = c("a", "b", "c"), value = c(3, 7, 5))
 t_true2 = data.frame(key = c("a", "b", "c"), value = c(1.5, 3.5, 5))
 
 stopifnot({
-  merge_rows(t, key) == t_true #test non-string input
   merge_rows(t, "key") == t_true #test string input
   merge_rows(t, "key", func = mean) == t_true2 #test another function
   throws_error("merge_rows(t, 'key', numeric = FALSE)") #test error
