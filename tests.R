@@ -197,7 +197,7 @@ stopifnot({
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = FA_splitsample_repeat(ability, runs = 5)
+t = FA_splitsample_repeat(ability, runs = 5, messages = F)
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(5, 1)
@@ -206,6 +206,7 @@ stopifnot({
 
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
+library(ggplot2)
 mpg_na = df_addNA(mpg) #missing data
 
 l_t = list(t = GG_scatter(mpg, "hwy", "cty"), #test default
@@ -282,12 +283,12 @@ stopifnot({
 
 
 # get_distances -----------------------------------------------------------
-library(fields)
+library(maps)
 
 #with spherical variables
-d = as.data.frame(ozone)
-t = get_distances(d, distance_method="spherical")
-t_m = get_distances_mat(df=d, distance_method="spherical")
+d = as.data.frame(maps::ozone)
+t = get_distances(d, distance_method = "spherical")
+t_m = get_distances_mat(df=d, distance_method = "spherical")
 
 stopifnot({
   nrow(t) == 820
@@ -329,6 +330,8 @@ stopifnot({
 
 # cor_matrix_weights ------------------------------------------------------
 library(datasets)
+library(weights)
+
 t = cor_matrix_weights(as.data.frame(state.x77), weight_var = "Population")
 stopifnot({
   dim(t) == c(7, 7)
@@ -362,7 +365,7 @@ stopifnot({
 
 
 # add_SAC & Morans_I & Morans_I_multi & SAC_knsn_reg & SAC_measures ----------------------------
-n=500
+n=10
 set.seed(1)
 t0 = data.frame(x = runif(n, 1, 100),
                 y = runif(n, 1, 100),
@@ -447,8 +450,8 @@ stopifnot({
 set.seed(1)
 dists_y = dist(t1$y) %>% as.matrix
 dists_x = dist(t1$x) %>% as.matrix
-t_x = SAC_measures(t1, dists = dists_x, vars = c("outcome", "test"), k = 3:5);t_x
-t_y = SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5);t_y
+t_x = SAC_measures(t1, dists = dists_x, vars = c("outcome", "test"), k = 3:5)
+t_y = SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5)
 
 stopifnot({
   class(t_x) == "data.frame"
@@ -472,22 +475,15 @@ t1_x = add_SAC(t0, vars = "outcome", dists = dists_x)
 
 # SAC_slr -----------------------------------------------------------------
 #example from "Some methods for analyzing and correcting for spatial autocorrelation"
-r_num = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3)
-r_num2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3)
-r_vec = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
-r_vec2 = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, output = "vector")
+r_num = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3)
+r_vec = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3, output = "vector")
 
 #without the case itself
-r_num_self = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, include_self = T)
-r_num2_self = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, include_self = T)
-r_vec_self = SAC_slr(df=d_ex5, dependent = "outcome", predictors = "predictor", k = 3, output = "vector", include_self = T)
-r_vec2_self = SAC_slr(df=d_ex6, dependent = "outcome", predictors = "predictor", k = 3, output = "vector", include_self = T)
+r_num_self = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3, include_self = T)
+r_num2_self = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3, include_self = T)
+r_vec_self = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3, output = "vector", include_self = T)
+r_vec2_self = SAC_slr(df=t1, dependent = "outcome", predictors = "test", k = 3, output = "vector", include_self = T)
 
-stopifnot({
-  r_num2 > r_num
-  nrow(r_vec) == nrow(r_vec2)
-  nrow(r_vec) == nrow(d_ex5)
-})
 
 # remove_redundant_vars & remove_redundant_vars2 ----------------------------------------------
 t = remove_redundant_vars(longley, 3)
@@ -510,14 +506,12 @@ stopifnot({
 })
 
 
-# # SAC_SEVM ----------------------------------------------------------------
-# t = SAC_SEVM(d_ex5, c("predictor", "outcome"))
-
-
 # GG_scatter &  Jensens_method --------------------------------------------------------------
+library(psych)
+
 g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
 g = GG_scatter(longley, "Unemployed", "GNP");g
-library(psych)
+
 fa = fa(swiss[-c(3, 5)])
 Jensens_method(fa, swiss, "Examination", reverse_factor = T)
 Jensens_method(fa, swiss, "Examination", reverse_factor = F)
@@ -573,6 +567,7 @@ stopifnot({
 library(MASS)
 library(ggplot2)
 library(magrittr)
+
 Sepal_Length = iris$Sepal.Length
 g = list(GG_denhist(iris, "Sepal.Length"),
          GG_denhist(Sepal_Length))
@@ -598,33 +593,23 @@ stopifnot({
 
 
 # SAC_control -------------------------------------------------
-t = SAC_control(df=d_ex5, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3)
-t2 = SAC_control(df=d_ex6, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3)
+t = SAC_control(df=t1, dependent = "outcome", predictors = "test", knsn_k = 5, slr_k = 3)
 
 #with mr
-t3 = SAC_control(df=d_ex5, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
-t4 = SAC_control(df=d_ex6, dependent = "outcome", predictors = "predictor", knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+t3 = SAC_control(df=t1, dependent = "outcome", predictors = "test", knsn_k = 5, slr_k = 3, control_approach = c("partial", "mr"))
 
 #multiple predictors no mr
-t5 = SAC_control(df=d_ex5, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial"))
+t5 = SAC_control(df=t1, dependent = "outcome", predictors = c("test", "weightVar"), knsn_k = 5, slr_k = 3, control_approach = c("partial"))
 #this is just to see if it returns an error
 
 #multiple predictors + mr
-t5 = SAC_control(df=d_ex5, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
-t6 = SAC_control(df=d_ex6, dependent = "outcome", predictors = c("predictor", "random"), knsn_k = 10, slr_k = 3, control_approach = c("partial", "mr"))
+t5 = SAC_control(df=t1, dependent = "outcome", predictors = c("test", "weightVar"), knsn_k = 5, slr_k = 3, control_approach = c("partial", "mr"))
 
 
 stopifnot({
-  all(t2 > t) #those from 6 should be larger
   class(t) == "data.frame" #check classes
-  class(t2) == "data.frame"
   !is.null(names(t)) #check names are present
-  !is.null(names(t2))
-
-  #with mr
   class(t3) == "data.frame" #check classes
-  class(t4) == "data.frame"
-  all(dim(t3) == dim(t4))
 })
 
 
@@ -758,7 +743,7 @@ stopifnot({
 # score_accuracy -------------------------------------------------
 library(stringr)
 #simulate some data
-n_cases = 1000
+n_cases = 10
 n_countries = 100
 
 #random guesses
@@ -1058,7 +1043,7 @@ df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
 
 stopifnot({
   #test basic function
-  df_residualize(df, resid.vars = "c") %>% extract(c("a", "b")) != df[c("a", "b")]
+  df_residualize(df, resid.vars = "c", print.models = F) %>% extract(c("a", "b")) != df[c("a", "b")]
   #test suffix + message off
   df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)
   #test exclusion vector

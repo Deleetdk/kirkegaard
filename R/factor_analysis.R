@@ -467,7 +467,7 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' @export
 #' @examples
 #' hist(FA_splitsample_repeat(iris[-5]))
-FA_splitsample_repeat = function(df, runs = 100, save_scores = F, ...){
+FA_splitsample_repeat = function(df, runs = 100, save_scores = F, messages = TRUE, ...){
   library(psych)
   library(stringr)
 
@@ -484,7 +484,7 @@ FA_splitsample_repeat = function(df, runs = 100, save_scores = F, ...){
 
   #loop
   for (run in 1:runs){
-    message(str_c("run ", run, " of ", runs))
+    if (messages) message(str_c("run ", run, " of ", runs))
 
     #reorder df
     df = sample(df) #reorder at random

@@ -4,7 +4,8 @@
 \alias{FA_splitsample_repeat}
 \title{Repeated splithalf reliability with factor analysis}
 \usage{
-FA_splitsample_repeat(df, runs = 100, save_scores = F, ...)
+FA_splitsample_repeat(df, runs = 100, save_scores = F, messages = TRUE,
+  ...)
 }
 \arguments{
 \item{df}{(data.frame) The data.}
