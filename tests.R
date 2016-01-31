@@ -85,7 +85,7 @@ stopifnot(lm_best(t) == 4)
 
 
 # lm_beta_matrix df_addNA ----------------------------------------------------------
-t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T)
+t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F)
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -122,14 +122,14 @@ stopifnot({
 
 # MOD_repeat_glmnet_cv ----------------------------------------------------
 #using the iris dataset
-t = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5)
+t = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F)
 stopifnot({
   dim(t) == c(5, 4)
   class(t) == "data.frame"
 })
 
 #weights
-t_w = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)))
+t_w = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)), messages = F)
 
 
 # MOD_summarize_models ----------------------------------------------------

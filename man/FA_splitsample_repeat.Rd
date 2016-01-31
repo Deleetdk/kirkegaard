@@ -7,15 +7,19 @@
 FA_splitsample_repeat(df, runs = 100, save_scores = F, ...)
 }
 \arguments{
-\item{df}{A data.frame with variables.}
+\item{df}{(data.frame) The data.}
 
-\item{var}{A string of the name of the variable to use.}
+\item{runs}{(integer scalar) The number of runs to do.}
+
+\item{save_scores}{(boolean scalar) Whether to save scores. Default=F.}
+
+\item{...}{Extra parameters to pass to fa().}
 }
 \description{
 Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
 }
 \examples{
-FA_splitsample_repeat()
+hist(FA_splitsample_repeat(iris[-5]))
 }
 \keyword{density,}
 \keyword{ggplot2,}

@@ -459,12 +459,14 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' Repeated splithalf reliability with factor analysis
 #'
 #' Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
-#' @param df A data.frame with variables.
-#' @param var A string of the name of the variable to use.
+#' @param df (data.frame) The data.
+#' @param runs (integer scalar) The number of runs to do.
+#' @param save_scores (boolean scalar) Whether to save scores. Default=F.
+#' @param ... Extra parameters to pass to fa().
 #' @keywords ggplot2, plot, density, histogram
 #' @export
 #' @examples
-#' FA_splitsample_repeat()
+#' hist(FA_splitsample_repeat(iris[-5]))
 FA_splitsample_repeat = function(df, runs = 100, save_scores = F, ...){
   library(psych)
   library(stringr)
