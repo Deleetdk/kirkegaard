@@ -488,7 +488,7 @@ merge_rows = function(df, key, func = sum, numeric = TRUE) {
 
 
   #do it
-  df2 = ddply(df, .(key), function(row) {
+  df2 = ddply(df, key, function(row) {
     #skip if only 1 row
     if (nrow(row) == 1) return(row)
 
