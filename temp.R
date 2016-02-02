@@ -334,3 +334,48 @@ MOD_serial_regressions = function(df, dependent, steps, weights) {
 
 
 MOD_serial_regressions(iris, dependent = "Sepal.Length", steps = list("Sepal.Width", "Petal.Length", "Petal.Width"))
+
+
+
+# extract the python way --------------------------------------------------
+#negative indexes in python means counting from the end
+#negative indexes in R means excluding that element and returning everything else
+#both are useful
+
+extract_last = function(x, margin_1, margin_2, drop = FALSE) {
+  #check types
+  if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) stop("x was an unsupported type (not a vector, matrix or data.frame)!")
+
+  #vector
+  if (is.vector(x)) return(rev(x)[margin_1])
+
+  #get dims
+  x_dims = dim(x)
+
+  #make indices
+  if (missing("margin_1")) {
+    margin_1 = 1:x_dims[1]
+  } else {
+    margin_1 = (x_dims[1] + 1) - margin_1
+  }
+  if (missing("margin_2")) {
+    margin_2 = 1:x_dims[2]
+  } else {
+    margin_2 = (x_dims[2] + 1) - margin_2
+  }
+
+  #subset
+  return(x[margin_1, margin_2, drop = drop])
+}
+
+#tests
+extract_last(iris, 1) == tail(iris, 1)
+extract_last(iris, 10:1) == tail(iris, 10)
+extract_last(iris, seq(10, 2, by = -2)) == iris[(nrow(iris)+1) - seq(10, 2, by = -2), ]
+extract_last(iris, c(20, 15, 5, 1)) == iris[(nrow(iris)+1) - c(20, 15, 5, 1), ]
+extract_last(iris, , 1) == iris[5]
+extract_last(iris, , 2:1) == iris[4:5]
+extract_last(iris, 10:1, 1) == iris[141:150, 5, drop = FALSE]
+extract_last(letters, 1) == rev(letters)[1]
+extract_last(letters, 5:1) == rev(letters)[5:1]
+

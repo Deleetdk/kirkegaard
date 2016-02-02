@@ -126,3 +126,42 @@ extract_nonnum_vars = function(data) {
   data[, v_numerical, drop = FALSE]
 }
 
+
+#' Subset object using Python's negative indexing
+#'
+#' Subset object using Python's negative indexing, that is, by counting indices backwards.
+#' @param x (vector, data.frame or matrix) Object to subset.
+#' @param margin_1 (integer vector) Indices for the first (vertical) margin.
+#' @param margin_2 (integer vector) Indices for the second (horizontal) margin.
+#' @param drop (logical scalar) Whether to convert to a vector if there is only 1 column. Default=FALSE.
+#' @return Returns the subset of the object.
+#' @export
+#' @examples
+#' extract_last(iris, 1) # last row
+#' extract_last(iris, , 1) # last column
+#' extract_last(iris, 5:1, 2:1) #last 5 elements rows and last 2 columns
+extract_last = function(x, margin_1, margin_2, drop = FALSE) {
+  #check types
+  if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) stop("x was an unsupported type (not a vector, matrix or data.frame)!")
+
+  #vector
+  if (is.vector(x)) return(rev(x)[margin_1])
+
+  #get dims
+  x_dims = dim(x)
+
+  #make indices
+  if (missing("margin_1")) {
+    margin_1 = 1:x_dims[1]
+  } else {
+    margin_1 = (x_dims[1] + 1) - margin_1
+  }
+  if (missing("margin_2")) {
+    margin_2 = 1:x_dims[2]
+  } else {
+    margin_2 = (x_dims[2] + 1) - margin_2
+  }
+
+  #subset
+  return(x[margin_1, margin_2, drop = drop])
+}

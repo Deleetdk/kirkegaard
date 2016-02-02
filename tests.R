@@ -2,10 +2,6 @@
 library(pacman)
 p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
 
-
-#make datasets
-source("kirkegaard/datasets.R")
-
 #otherwise get error
 options("expressions" = 10000)
 
@@ -493,7 +489,6 @@ stopifnot({
   dim(t) == c(16, 4)
 })
 
-t = remove_redundant_vars2(longley, .9)
 t = remove_redundant_vars2(longley, .9, messages = F)
 e = throws_error("remove_redundant_vars2(longley, .9, messages = 123)")
 e2 = throws_error("remove_redundant_vars2(longley, threshold = 5)")
@@ -1153,4 +1148,21 @@ stopifnot({
   merge_rows(t, "id", func = mean) == t_true2 #test another function
   throws_error("merge_rows(t, 'id', numeric = FALSE)") #test error
 })
+
+
+
+# extract_last ------------------------------------------------------------
+
+stopifnot({
+  extract_last(iris, 1) == tail(iris, 1)
+  extract_last(iris, 10:1) == tail(iris, 10)
+  extract_last(iris, seq(10, 2, by = -2)) == iris[(nrow(iris)+1) - seq(10, 2, by = -2), ]
+  extract_last(iris, c(20, 15, 5, 1)) == iris[(nrow(iris)+1) - c(20, 15, 5, 1), ]
+  extract_last(iris, , 1) == iris[5]
+  extract_last(iris, , 2:1) == iris[4:5]
+  extract_last(iris, 10:1, 1) == iris[141:150, 5, drop = FALSE]
+  extract_last(letters, 1) == rev(letters)[1]
+  extract_last(letters, 5:1) == rev(letters)[5:1]
+})
+
 
