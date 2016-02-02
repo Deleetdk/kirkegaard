@@ -30,7 +30,7 @@ rcorr2 = function(x, ...) {
 #' cor_matrix(iris)
 #' cor_matrix(iris, CI = .95)
 cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2) {
-  library(weights);library(stringr);library(psych)
+  library(weights);library(stringr);library(psych);library(psychometric)
 
   #checks
   data = as.data.frame(data)
@@ -83,9 +83,9 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
       #simple weights & CI
       if (simpleweights && !missing("CI")) {
         r_obj = wtd.cor(data[row], data[col], weight = weights)
-        r_t = get_t_value(conf = CI, df = nrow(data) - 2)
+        r_n = count.pairwise(data[row], data[col])
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
-        r_CI = c(r_obj[1] - r_t * r_obj[2], r_obj[1] + r_t * r_obj[2]) %>%
+        r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
           winsorise(1, -1) %>% #limit CIs to between -1 and 1
           format_digits(digits = CI_round)
 
@@ -102,9 +102,9 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
           m[row, col] = wtd.cors(data[row], data[col], weight = v_weights)
         } else {
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
-          r_t = get_t_value(conf = CI, df = nrow(data) - 2)
+          r_n = count.pairwise(data[row], data[col])
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
-          r_CI = c(r_obj[1] - r_t * r_obj[2], r_obj[1] + r_t * r_obj[2]) %>%
+          r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
             winsorise(1, -1) %>% #limit CIs to between -1 and 1
             format_digits(digits = CI_round)
 
