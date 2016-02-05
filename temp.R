@@ -337,45 +337,104 @@ MOD_serial_regressions(iris, dependent = "Sepal.Length", steps = list("Sepal.Wid
 
 
 
-# extract the python way --------------------------------------------------
-#negative indexes in python means counting from the end
-#negative indexes in R means excluding that element and returning everything else
-#both are useful
+# merge_datasets ----------------------------------------------------------
 
-extract_last = function(x, margin_1, margin_2, drop = FALSE) {
-  #check types
-  if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) stop("x was an unsupported type (not a vector, matrix or data.frame)!")
+merge_datasets2 = function (DF1, DF2, time = FALSE, join = "both", overwrite_NA = FALSE, restore_factors = FALSE){
+  library(magrittr)
 
-  #vector
-  if (is.vector(x)) return(rev(x)[margin_1])
+  #checks
+  if (!join %in% c("both", "left", "right")) stop("Invalid join parameter!")
 
-  #get dims
-  x_dims = dim(x)
-
-  #make indices
-  if (missing("margin_1")) {
-    margin_1 = 1:x_dims[1]
-  } else {
-    margin_1 = (x_dims[1] + 1) - margin_1
+  #join setting decides how to combine
+  v_shared_rows = intersect(rownames(DF1), rownames(DF2))
+  if (join == "left") {
+    DF2 = DF2[v_shared_rows, , drop = FALSE] #subset to overlap with DF1
   }
-  if (missing("margin_2")) {
-    margin_2 = 1:x_dims[2]
-  } else {
-    margin_2 = (x_dims[2] + 1) - margin_2
+  if (join == "right") {
+    DF1 = DF1[v_shared_rows, , drop = FALSE] #subset to overlap with DF2
   }
 
-  #subset
-  return(x[margin_1, margin_2, drop = drop])
+  #if nothing to join
+  if (nrow(DF1) == 0) {
+    message("Warning, nothing joined! No case in DF1 matches any in DF2!")
+    return(DF2)
+  }
+  if (nrow(DF2) == 0) {
+    message("Warning, nothing joined! No case in DF2 matches any in DF1!")
+    return(DF1)
+  }
+
+  #new DF
+  v_rows = unique(c(rownames(DF1), rownames(DF2)))
+  v_cols = unique(c(colnames(DF1), colnames(DF2)))
+  DF3 = matrix(NA, nrow = length(v_rows), ncol = length(v_cols)) %>% as.data.frame()
+  rownames(DF3) = v_rows;colnames(DF3) = v_cols
+
+  #for each dataset
+  for (DF in list(DF1, DF2)) {
+    v_rows_to_add = rownames(DF)
+
+    #for each col
+    for (col in colnames(DF)) {
+
+      #dont overwrite NAs
+      if (!overwrite_NA) {
+        #all
+        v_rows_to_add = rownames(DF)
+
+        #subset
+        v_rows_to_add = v_rows_to_add[!is.na(DF[[col]])] #subset rows with non-NA
+      }
+
+
+      #write in
+      #is factor?
+      logi_nonfactor = !is.factor(DF[v_rows_to_add, col])
+      if (logi_nonfactor) {
+        DF3[v_rows_to_add, col] = DF[v_rows_to_add, col]
+      } else {
+        DF3[v_rows_to_add, col] = DF[v_rows_to_add, col] %>% as.character()
+      }
+    }
+  }
+
+  #restore factors
+  if (restore_factors) {
+    v_factors = sapply(colnames(DF3), function(col) {
+      #check if cols are factors or nulls in both datasets
+      if ((is.factor(DF1[[col]]) || is.null(DF1[[col]])) &&
+          (is.factor(DF2[[col]]) || is.null(DF2[[col]]))) return(TRUE)
+      #if they are, treat as factor
+      #otherwise, treat as non-factor
+      FALSE
+    })
+
+    #change cols to factors
+    for (col_i in v_factors %>% which) {
+      DF3[col_i] = as.factor(DF3[[col_i]])
+    }
+  }
+
+
+  return(DF3)
 }
 
-#tests
-extract_last(iris, 1) == tail(iris, 1)
-extract_last(iris, 10:1) == tail(iris, 10)
-extract_last(iris, seq(10, 2, by = -2)) == iris[(nrow(iris)+1) - seq(10, 2, by = -2), ]
-extract_last(iris, c(20, 15, 5, 1)) == iris[(nrow(iris)+1) - c(20, 15, 5, 1), ]
-extract_last(iris, , 1) == iris[5]
-extract_last(iris, , 2:1) == iris[4:5]
-extract_last(iris, 10:1, 1) == iris[141:150, 5, drop = FALSE]
-extract_last(letters, 1) == rev(letters)[1]
-extract_last(letters, 5:1) == rev(letters)[5:1]
+d1 = iris[1:5, 1, drop = F]
+d2 = iris[4:9, 5, drop = F]
+
+merge_datasets2(d1, d2)
+
+
+d1 = iris[1:5, ]
+d2 = iris[4:9, ]
+
+merge_datasets2(d1, d2)
+
+d1 = iris[1:75, ]
+d2 = iris[-c(1:75), ]
+
+# library(microbenchmark)
+#
+# microbenchmark(merge_datasets(d1, d2),
+#                merge_datasets2(d1, d2))
 

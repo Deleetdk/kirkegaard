@@ -5,10 +5,11 @@ p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
 #otherwise get error
 options("expressions" = 10000)
 
-# merge_datasets ----------------------------------------------------------
+# merge_datasets + merge_datasets2 ----------------------------------------------------------
 #some data to merge
 d1 = iris[1:75, ] #split in two
 d2 = iris[76:150, ]
+set.seed(1);d2_na = df_addNA(d2)
 t = merge_datasets(d1, d2) #merge into one
 t2 = merge_datasets(d1, d2, join = "left")
 t3 = merge_datasets(d1, d2, join = "right")
@@ -26,6 +27,25 @@ stopifnot({
   iris == merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
 })
 
+#merge_datasets2
+t = merge_datasets2(d1, d2) #merge into one
+t2 = merge_datasets2(d1, d2, join = "left")
+t3 = merge_datasets2(d1, d2, join = "right")
+t4 = merge_datasets2(iris[1], iris[2:5])
+t5 = merge_datasets2(d2, d2_na) #test overwriting of NAs
+
+stopifnot({
+  t == iris #because everything went back to original position
+  t2 == d1 #because nothing was joined
+  t3 == d2 #because nothing was joined
+  t4 == iris #if not, likely that drop=F is needed!
+  t5 == d2   #because NAs should not be overwritten on top of values
+})
+
+#multi version
+stopifnot({
+  iris == merge_datasets2_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
+})
 
 # FA_all_methods & FA_congruence_mat --------------------------------------------------------
 t = FA_all_methods(iris[-5], skip_methods = "pa", messages = F)
@@ -1166,3 +1186,7 @@ stopifnot({
 })
 
 
+
+# done --------------------------------------------------------------------
+
+message("DONE! If you see this, there were no errors. Hopefully!")

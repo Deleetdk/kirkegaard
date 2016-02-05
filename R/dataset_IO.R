@@ -106,13 +106,10 @@ merge_datasets = function (DF1, DF2, main=1, time=F, join = "both"){
 #' @keywords merging, combining, datasets, data.frame, multi, wrapper
 #' @export
 #' @examples
-#' merge_datasets_multi()
-merge_datasets_multi = function(..., main=1, time=F) {
+#' merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
+merge_datasets_multi = function(...) {
   #wrap with Reduce
-  Reduce(function(x, y) merge_datasets(x, y, main=main, time=time), list(...))
-
-  #debugging, verify that the anonymous function works
-  #(function(x, y) merge_datasets(x, y, main=main, time=time))(iris[1:50, ], iris[51:100, ])
+  Reduce(function(x, y) merge_datasets(x, y), list(...))
 }
 
 
@@ -394,5 +391,113 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
   colnames(m) = NULL
 
   return(m)
+}
+
+
+#' Improved dataset merger function
+#'
+#' This function allows you to merge two data.frames by their overlapping rownames. About 15 times faster than the earlier version.
+#' @param DF1 (data.frame) A data.frame to merge into.
+#' @param DF2 (data.frame) A data.frame with the new data.
+#' @param join (character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.
+#' @param overwrite_NA (logical scalar) Whether to overwrite with NA values. Default = FALSE.
+#' @param restore_factors (logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.
+#' @export
+#' @examples
+#' merge_datasets2(iris[1:4], iris[1:5]) #merge together two parts of iris
+merge_datasets2 = function (DF1, DF2, join = "both", overwrite_NA = FALSE, restore_factors = FALSE){
+  library(magrittr)
+
+  #checks
+  if (!join %in% c("both", "left", "right")) stop("Invalid join parameter!")
+
+  #join setting decides how to combine
+  v_shared_rows = intersect(rownames(DF1), rownames(DF2))
+  if (join == "left") {
+    DF2 = DF2[v_shared_rows, , drop = FALSE] #subset to overlap with DF1
+  }
+  if (join == "right") {
+    DF1 = DF1[v_shared_rows, , drop = FALSE] #subset to overlap with DF2
+  }
+
+  #if nothing to join
+  if (nrow(DF1) == 0) {
+    message("Warning, nothing joined! No case in DF1 matches any in DF2!")
+    return(DF2)
+  }
+  if (nrow(DF2) == 0) {
+    message("Warning, nothing joined! No case in DF2 matches any in DF1!")
+    return(DF1)
+  }
+
+  #new DF
+  v_rows = unique(c(rownames(DF1), rownames(DF2)))
+  v_cols = unique(c(colnames(DF1), colnames(DF2)))
+  DF3 = matrix(NA, nrow = length(v_rows), ncol = length(v_cols)) %>% as.data.frame()
+  rownames(DF3) = v_rows;colnames(DF3) = v_cols
+
+  #for each dataset
+  for (DF in list(DF1, DF2)) {
+    v_rows_to_add = rownames(DF)
+
+    #for each col
+    for (col in colnames(DF)) {
+
+      #dont overwrite NAs
+      if (!overwrite_NA) {
+        #all
+        v_rows_to_add = rownames(DF)
+
+        #subset
+        v_rows_to_add = v_rows_to_add[!is.na(DF[[col]])] #subset rows with non-NA
+      }
+
+
+      #write in
+      #is factor?
+      logi_nonfactor = !is.factor(DF[v_rows_to_add, col])
+      if (logi_nonfactor) {
+        DF3[v_rows_to_add, col] = DF[v_rows_to_add, col]
+      } else {
+        DF3[v_rows_to_add, col] = DF[v_rows_to_add, col] %>% as.character()
+      }
+    }
+  }
+
+  #restore factors
+  if (restore_factors) {
+    v_factors = sapply(colnames(DF3), function(col) {
+      #check if cols are factors or nulls in both datasets
+      if ((is.factor(DF1[[col]]) || is.null(DF1[[col]])) &&
+          (is.factor(DF2[[col]]) || is.null(DF2[[col]]))) return(TRUE)
+      #if they are, treat as factor
+      #otherwise, treat as non-factor
+      FALSE
+    })
+
+    #change cols to factors
+    for (col_i in v_factors %>% which) {
+      DF3[col_i] = as.factor(DF3[[col_i]])
+    }
+  }
+
+
+  return(DF3)
+}
+
+
+#' Merge multiple datasets at once, improved version.
+#'
+#' This is a wrapper for merge_datasets2().
+#' @param ... (data.frames) Two or more data.frames to merge.
+#' @param join (character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.
+#' @param overwrite_NA (logical scalar) Whether to overwrite with NA values. Default = FALSE.
+#' @param restore_factors (logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.
+#' @export
+#' @examples
+#' merge_datasets2_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
+merge_datasets2_multi = function(..., join = "both", overwrite_NA = FALSE, restore_factors = FALSE) {
+  #wrap with Reduce
+  Reduce(function(x, y) merge_datasets2(x, y, join=join, overwrite_NA = overwrite_NA, restore_factors = restore_factors), list(...))
 }
 

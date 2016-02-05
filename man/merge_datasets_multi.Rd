@@ -4,7 +4,7 @@
 \alias{merge_datasets_multi}
 \title{Dataset merger function for multiple data.frames.}
 \usage{
-merge_datasets_multi(..., main = 1, time = F)
+merge_datasets_multi(...)
 }
 \arguments{
 \item{...}{(data.frames) Two or more data.frames to merge.}
@@ -13,7 +13,7 @@ merge_datasets_multi(..., main = 1, time = F)
 This is a wrapper for merge_datasets().
 }
 \examples{
-merge_datasets_multi()
+merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
 }
 \keyword{combining,}
 \keyword{data.frame,}
