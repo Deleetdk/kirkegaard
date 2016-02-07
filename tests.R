@@ -1186,6 +1186,16 @@ stopifnot({
 })
 
 
+# subset_by_pattern -------------------------------------------------------
+#subset using regex for column names
+
+stopifnot({
+  subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
+  subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
+  subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
+})
+
+
 
 # done --------------------------------------------------------------------
 

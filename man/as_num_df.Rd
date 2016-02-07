@@ -19,10 +19,7 @@ as_num_df(df, stringsAsFactors = F, skip_factors = T, remove_commas = T)
 Attempts to convert all columns in a data.frame to numeric. If that fails, keeps the original.
 }
 \examples{
-as_num_df()
+iris_chr = as.data.frame(lapply(iris, as.character)) #convert iris to strings
+as_num_df(iris_chr) #convert back
 }
-\keyword{as,}
-\keyword{convert,}
-\keyword{data.frame}
-\keyword{numeric,}
 

@@ -165,3 +165,24 @@ extract_last = function(x, margin_1, margin_2, drop = FALSE) {
   #subset
   return(x[margin_1, margin_2, drop = drop])
 }
+
+
+#' Subset by pattern
+#'
+#' Subset a data.frame or matrix by a pattern in the column names. A simple wrapper using str_detect().
+#'
+#' Subsets using [] and with drop=FALSE.
+#' @param data (data.frame or matrix) Object to subset.
+#' @param pattern (character scalar) A regex pattern.
+#' @param inverse (logical scalar) Whther to keep the non-matches instead.
+#' @return Returns the subset of the object.
+#' @export
+#' @examples
+#' subset_by_pattern(iris, "Length") # length columns
+#' subset_by_pattern(iris, "Length", T) # non-length columns
+subset_by_pattern = function(data, pattern, inverse = FALSE) {
+  library(stringr)
+
+  if (!inverse) return(data[, str_detect(colnames(data), pattern), drop = FALSE])
+  if (inverse) return(data[, !str_detect(colnames(data), pattern), drop = FALSE])
+}
