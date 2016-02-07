@@ -132,10 +132,10 @@ get_each_subset_minus_1 = function(df){
 #' @param stringsAsFactors Whether to convert strings to factors. Default is F.
 #' @param skip_factors Whether to skip factors. Default is T.
 #' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.
-#' @keywords convert, as, numeric, data.frame
 #' @export
 #' @examples
-#' as_num_df()
+#' iris_chr = as.data.frame(lapply(iris, as.character)) #convert iris to strings
+#' as_num_df(iris_chr) #convert back
 as_num_df = function (df, stringsAsFactors = F, skip_factors = T, remove_commas = T) {
   library(stringr)
 
