@@ -7,13 +7,13 @@
 #' @param predictors (character vector) The names of the redictor variables.
 #' @param data (data.frame) A data.frame with the variables.
 #' @param standardized (boolean) Whether to standardize the results. Defaults to true.
-#' @param .weights (character scalar) The name of the variable to use for weights. Defaults to NA, which causes it to use unit weights for all cases.
+#' @param .weights (numeric vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.
 #' @param return_models (character scalar) What to return. all = all models, best = best model. Defaults to best.
-#' @param messages (boolean) Whether to show messages.
-#' @keywords modeling, lm, linear, automatic
+#' @param messages (boolean) Whether to show messages. Default=TRUE.
 #' @export
 #' @examples
-#' lm_beta_matrix()
+#' #try all models in iris dataset to predict sepal length
+#' lm_beta_matrix(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
 lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights = NA, return_models = "b", messages = T) {
   library(gtools) #for combinations()
   library(stringr) #for str_c()

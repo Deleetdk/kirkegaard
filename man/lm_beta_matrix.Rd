@@ -16,20 +16,17 @@ lm_beta_matrix(dependent, predictors, data, standardized = T, .weights = NA,
 
 \item{standardized}{(boolean) Whether to standardize the results. Defaults to true.}
 
-\item{.weights}{(character scalar) The name of the variable to use for weights. Defaults to NA, which causes it to use unit weights for all cases.}
+\item{.weights}{(numeric vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.}
 
 \item{return_models}{(character scalar) What to return. all = all models, best = best model. Defaults to best.}
 
-\item{messages}{(boolean) Whether to show messages.}
+\item{messages}{(boolean) Whether to show messages. Default=TRUE.}
 }
 \description{
 Returns a data.frame with beta coefficients for all possible simple (without interactions) linear models given a set of predictor variables and a dependent variable.
 }
 \examples{
-lm_beta_matrix()
+#try all models in iris dataset to predict sepal length
+lm_beta_matrix(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
 }
-\keyword{automatic}
-\keyword{linear,}
-\keyword{lm,}
-\keyword{modeling,}
 
