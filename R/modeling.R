@@ -17,11 +17,12 @@
 lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights = NA, return_models = "b", messages = T) {
   library(gtools) #for combinations()
   library(stringr) #for str_c()
+  library(fmsb) #for VIF()
 
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
-  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "N")
+  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "N", "VIF")
 
   #standardize?
   if (standardized == T) {
@@ -99,6 +100,12 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     #sample N
     betas[model.idx, "N"] = nrow(model.frame(lm.fit))
 
+    #VIF
+    trial = try({ #fails if model has <2 predictors
+      betas[model.idx, "VIF"] = fmsb::VIF(lm.fit)
+    }, silent = TRUE)
+    if (is_error(trial)) betas[model.idx, "VIF"] = 0
+
   }
 
   #rearrange colnames
@@ -121,7 +128,6 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 
   return(betas)
 }
-
 
 
 
