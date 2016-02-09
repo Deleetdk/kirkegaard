@@ -66,7 +66,7 @@ stopifnot({
 # std_df ------------------------------------------------------------------
 #should print: "Skipped Species because it is a factor."
 stopifnot({
-  t = std_df(iris)
+  t = std_df(iris, messages = F)
   round(t[5, 1], 4) == -1.0184
   t[10, 5] == "setosa"
 })

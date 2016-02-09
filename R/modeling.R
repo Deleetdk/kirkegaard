@@ -17,7 +17,7 @@
 lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights = NA, return_models = "b", messages = T) {
   library(gtools) #for combinations()
   library(stringr) #for str_c()
-  library(fmsb) #for VIF()
+  library(faraway) #for vif()
 
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
@@ -26,7 +26,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 
   #standardize?
   if (standardized == T) {
-    data = std_df(data)
+    data = std_df(data, messages = messages)
   }
 
   sets = list() #list of all combinations
@@ -35,7 +35,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     temp.sets = split(temp.sets, seq.int(nrow(temp.sets))) #as a list
     sets = c(sets, temp.sets)
   }
-  #return(sets) #for debugging
+
 
   #create all the models
   models = numeric() #empty vector for models
@@ -101,10 +101,11 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     betas[model.idx, "N"] = nrow(model.frame(lm.fit))
 
     #VIF
-    trial = try({ #fails if model has <2 predictors
-      betas[model.idx, "VIF"] = fmsb::VIF(lm.fit)
-    }, silent = TRUE)
-    if (is_error(trial)) betas[model.idx, "VIF"] = 0
+    betas[model.idx, "VIF"] = max(faraway::vif(lm.fit))
+    # fmsb::VIF(lm.fit)
+    # car::vif(lm.fit)
+    # HH::vif(lm.fit)
+    # faraway::vif(lm.fit)
 
   }
 
@@ -128,7 +129,6 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 
   return(betas)
 }
-
 
 
 #' Convenient summary of an lm() model with confidence intervals.
