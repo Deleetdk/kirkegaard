@@ -4,8 +4,8 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x, digits = 2, clean_names = F, clean_what = c("_",
-  "\\\\."), pad_digits = T)
+write_clipboard(x, digits = 2, clean_names = FALSE, clean_what = c("_",
+  "\\\\."), pad_digits = T, print = FALSE)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}
@@ -20,7 +20,7 @@ write_clipboard(x, digits = 2, clean_names = F, clean_what = c("_",
 A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
 }
 \examples{
-write_clipboard()
+write_clipboard(cor(iris[-5]))
 }
 \keyword{clipboard}
 \keyword{export,}

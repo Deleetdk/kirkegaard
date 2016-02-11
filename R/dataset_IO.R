@@ -278,8 +278,8 @@ as_long = function(x) {
 #' @keywords write, output, export, clipboard
 #' @export
 #' @examples
-#' write_clipboard()
-write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "\\."), pad_digits = T) {
+#' write_clipboard(cor(iris[-5]))
+write_clipboard = function(x, digits = 2, clean_names = FALSE, clean_what = c("_", "\\."), pad_digits = T, print = FALSE) {
   library("stringr")
   library("magrittr")
 
@@ -304,6 +304,9 @@ write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "
       }
     }
   }
+
+  #print
+  if (print) print(x)
 
   write.table(x, "clipboard", sep = "\t", na = "")
 }

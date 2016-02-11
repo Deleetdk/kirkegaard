@@ -89,6 +89,12 @@ stopifnot({
   read.delim("clipboard")[66, 5] == "versicolor"
 })
 
+#test arguments
+write_clipboard(iris[1:5, ], digits = 5)
+write_clipboard(iris[1:5, ], clean_names = T)
+write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
+write_clipboard(iris[1:5, ], print = T)
+
 
 # lm_best -----------------------------------------------------------------
 #fit some models
