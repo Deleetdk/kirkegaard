@@ -796,17 +796,6 @@ stopifnot({
 })
 
 
-
-# as_abbrev, as_long ------------------------------------------------------
-#convert to and from ISO-3 names
-#note that file with names must be in the folder!
-some_names = c("Denmark", "Australia", "Netherlands", "Portugal")
-
-stopifnot({
-  as_abbrev(some_names) %>% as_long() %>% `==`(some_names) #convert back and forth
-})
-
-
 # simple is_ --------------------------------------------------------
 #various small helpful functions
 

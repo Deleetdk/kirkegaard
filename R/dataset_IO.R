@@ -195,77 +195,7 @@ as_abbrev = function(names, georgia = "country"){
 }
 
 
-#' Abbreviate country and regional names to ISO-3. For megadataset version >=3.
-#'
-#' To enable easier merging of datasets of international and regional data. Data file can be downloaded from https://osf.io/zdcbq/files/
-#' @param x A character vector of the full names of countries and regions to abbreviate.
-#' @param mega Full path to the mega file. This is the .xlsx file you downloaded above.
-#' @param georgia Whether to treat georgia as a country or US state. Defaults to country. Use "state" to use as state.
-#' @param miss_msg Whether to output messages when abbreviations are missing. Defaults to T.
-#' @keywords abbreviate, names, shorten; ISO
-#' @export
-#' @examples
-#' as_abbrev2()
-as_abbrev2 = function(x, mega, georgia = "country", miss_msg = T) {
-  library(XLConnect)
-  library(stringr)
 
-  #load mega
-  wb_mega = XLConnect::loadWorkbook(mega)
-
-  #load the dictionary sheet
-  d_dict = XLConnect::readWorksheet(wb_mega, 3)
-
-  #work around the rownames bug
-  rownames(d_dict) = d_dict$Names
-  d_dict$Names = NULL
-
-  #georgia?
-  #if begins with "s", then use state abbrev, otherwise use country abbrev
-  if (substr(georgia, 1, 1) == "s") {
-    d_dict["Georgia", "ISO3"] = "USA_GA"
-  }
-
-  #translate
-  for (i in seq_along(x)) {
-    #missing?
-    if (is.na(d_dict[x[i], ])) {
-      if (miss_msg) {
-        message(str_c(x[i], " is missing from the dictionary. Add it to the megadataset file and retry."))
-      }
-      next
-    }
-
-    #swap to abbreviation
-    x[i] = d_dict[x[i], ]
-
-  }
-
-  return(x)
-}
-
-
-#' Get full country names from ISO-3.
-#'
-#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
-#' @param x (character vector) The ISO-3 codes.
-#' @keywords names, ISO
-#' @export
-#' @examples
-#' as_long()
-as_long = function(x) {
-  library(stringr)
-  d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
-
-  sapply(x, function(i) {
-    indice = (d_names$Codes == i) %>% #find matches
-      which %>% #their indices
-      `[`(1) #get the first
-    if(is.na(indice)) message(str_c(i, " could not be found!"))
-
-    return(d_names$Names[indice])
-  })
-}
 
 
 #' Write object to clipboard
