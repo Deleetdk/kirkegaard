@@ -195,7 +195,27 @@ as_abbrev = function(names, georgia = "country"){
 }
 
 
+#' Get full country names from ISO-3.
+#'
+#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
+#' @param x (character vector) The ISO-3 codes.
+#' @keywords names, ISO
+#' @export
+#' @examples
+#' as_long()
+as_long = function(x) {
+  library(stringr)
+  d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
 
+  sapply(x, function(i) {
+    indice = (d_names$Codes == i) %>% #find matches
+      which %>% #their indices
+      `[`(1) #get the first
+    if(is.na(indice)) message(str_c(i, " could not be found!"))
+
+    return(d_names$Names[indice])
+  })
+}
 
 
 #' Write object to clipboard

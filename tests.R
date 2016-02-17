@@ -1151,7 +1151,7 @@ stopifnot({
 
 
 
-# merge_rows --------------------------------------------------------------
+# merge_rows, merge_rows_by_name --------------------------------------------------------------
 #performs row-wise merging
 
 t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
@@ -1164,6 +1164,17 @@ stopifnot({
   throws_error("merge_rows(t, 'id', numeric = FALSE)") #test error
 })
 
+#do it by name
+t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
+t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
+
+stopifnot({
+  merge_rows_by_name(df = t1, names = c("C", "D"), func = mean) == t1_cor
+  #another new_name
+  merge_rows_by_name(df = t1, names = c("C", "D"), func = mean, new_name = "D") %>% rownames %>% equals(c("A", "B", "D"))
+  #sum instead (no difference in this case)
+  merge_rows_by_name(df = t1, names = c("C", "D"), func = sum) == t1_cor
+})
 
 
 # extract_last ------------------------------------------------------------
@@ -1190,6 +1201,23 @@ stopifnot({
   subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
 })
 
+
+# merge_vectors -----------------------------------------------------------
+
+t1 = c(NA, 2, 3, NA)
+t2 = c(1, NA, NA, 4)
+t1_n = c(NA, 2, 3, NA);names(t1_n) = letters[1:4]
+t2_n = c(1, NA, NA, 4);names(t2_n) = letters[1:4]
+t3_n = c(1, NA, NA, 4, 5);names(t3_n) = letters[1:5]
+
+
+stopifnot({
+  merge_vectors(t1, t2) == 1:4
+  throws_error("merge_vectors(t1, t2, byname = T)")
+  merge_vectors(t1_n, t2_n, byname = T) == 1:4
+  are_equal(merge_vectors(t1_n, t2_n, byname = T, overwrite_NA = T), c(1, NA, NA, 4), check.names = F)
+  merge_vectors(t1_n, t3_n, byname = T) == 1:5
+})
 
 
 # done --------------------------------------------------------------------

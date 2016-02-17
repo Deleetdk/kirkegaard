@@ -541,3 +541,17 @@ format_digits = function(x, digits = 2) {
   }
 }
 
+
+#' Does object have names?
+#'
+#' A wrapper for names to test for existence of names.
+#' @param x (any object) The object to test.
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' has_names(iris)
+#' has_names(1:4)
+has_names = function(x) {
+  !is.null(names(x))
+}
+

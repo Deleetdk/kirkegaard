@@ -9,10 +9,11 @@ merge_rows(df, key, func = sum, numeric = TRUE)
 \arguments{
 \item{df}{(data.frame or matrix) The data object.}
 
-\item{key}{(character scalar) The name of the key variable, which is the variable to merge rows by.}
+\item{key}{(character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.}
 
-\item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.
-numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.}
+\item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.}
+
+\item{numeric}{(logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.}
 }
 \description{
 Find blocks of rows with a matching key and merge them using a given function.

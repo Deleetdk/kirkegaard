@@ -462,9 +462,9 @@ residualize_DF = df_residualize
 #'
 #' Find blocks of rows with a matching key and merge them using a given function.
 #' @param df (data.frame or matrix) The data object.
-#' @param key (character scalar) The name of the key variable, which is the variable to merge rows by.
-#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.
-#' numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
+#' @param key (character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.
+#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.
+#' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
 #' @export
 #' @examples
 #' t = data.frame(key = c("a", "a", "b", "b", "c"), value = 1:5)
@@ -486,7 +486,6 @@ merge_rows = function(df, key, func = sum, numeric = TRUE) {
     v_numeric = 1:ncol(df) #use all
   }
 
-
   #do it
   df2 = ddply(df, key, function(row) {
     #skip if only 1 row
@@ -494,10 +493,59 @@ merge_rows = function(df, key, func = sum, numeric = TRUE) {
 
     #compute
     row_new = row[1, ] #copy content of the first row in the block
-    row_new[v_numeric] = apply(row[v_numeric], 2, func) #subset to numerics, use func
+    row_new[v_numeric] = apply(row[v_numeric], 2, func, na.rm = TRUE) #subset to numerics, use func
     row_new #save the new row
   })
 
   df2
 }
+
+
+#' Merge rows in data.frame by name.
+#'
+#' Find blocks of rows with a rowname that matches a given vector of names and merge them into one.
+#' @param df (data.frame or matrix) The data object.
+#' @param names (character vector) The rownames to merge.
+#' @param new_name (character scalar) The new rownames to use. Defaults to the first member of the names parameter.
+#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to mean.
+#' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
+#' @export
+#' @examples
+#' #suppse you had a data.frame with data for multiple variables
+#' #but accidentally, one observation was given two names, "C" and "D".
+#' #and data has been dispersed among the rows
+#' #we can move all the data into one row without data loss.
+#' t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
+#' #here the real values for the C observation are both 3, but it has accidentally been called
+#' "D".
+#' merge_rows_by_name(df = t1, names = c("C", "D"), func = mean)
+merge_rows_by_name = function(df, names, new_name, func = mean, numeric = TRUE) {
+  library(stringr)
+  library(plyr)
+
+  #checks
+  if (missing("df")) stop("df must be given!")
+  if (missing("names")) stop("names must be given!")
+  if (missing("new_name")) new_name = names[1]
+
+  #make vectors for matches
+  v_key = mapvalues(rownames(df), names, to = rep(new_name, length(names)))
+
+  #make new df with rownames column
+  df2 = cbind(df, "rownames__" = v_key)
+
+  #call merge_rows
+  df2 = merge_rows(df2, key = "rownames__", func = func, numeric = numeric)
+
+  #restore rownames
+  rownames(df2) = df2$rownames__
+
+  #remove added column
+  df2$rownames__ = NULL
+
+  #return
+  df2
+}
+
+
 
