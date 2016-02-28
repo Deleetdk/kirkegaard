@@ -17,7 +17,9 @@ sort_df(df, vars = names(df), decreasing = F)
 A wrapper for order(). Improved from the version in the reshape package.
 }
 \examples{
-sort_df()
+sort_df(iris, 1)
+sort_df(iris, 1, T)
+sort_df(iris, "Species")
 }
 \keyword{NA,}
 \keyword{add,}
