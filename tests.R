@@ -719,6 +719,9 @@ stopifnot({
 # sort_df ---------------------------------------------------------------
 t1 = sort_df(iris, "Sepal.Length")
 t2 = sort_df(iris, "Sepal.Length", decreasing = T)
+t3 = sort_df(iris, 1)
+t4 = sort_df(iris, 2)
+t5 = sort_df(iris, 5)
 
 stopifnot({
   cor(t1$Sepal.Length, t2$Sepal.Length) < -.9

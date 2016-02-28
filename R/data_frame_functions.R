@@ -378,9 +378,11 @@ df_addNA =  function(df, prop = .1){
 #' @keywords date.frame, missing data, NA, add, simulate
 #' @export
 #' @examples
-#' sort_df()
-sort_df = function (df, vars = names(df), decreasing = F)
-{
+#' sort_df(iris, 1)
+#' sort_df(iris, 1, T)
+#' sort_df(iris, "Species")
+sort_df = function (df, vars = names(df), decreasing = F){
+  df = as.data.frame(df)
   if (length(vars) == 0 || is.null(vars))
     return(df)
   df[do.call("order", list(what = df[, vars, drop = FALSE], decreasing = decreasing)), , drop = FALSE]
