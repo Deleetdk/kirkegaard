@@ -555,3 +555,17 @@ has_names = function(x) {
   !is.null(names(x))
 }
 
+
+#' Write session information to a file.
+#'
+#' A wrapper for writeLines() and capture.output().
+#' @param filename (character scalar) The filename of the file to write to.
+#' @param print (logical scalar) Whether to also print the output. Default=FALSE.
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' write_sessioninfo("session_info.txt", print = TRUE)
+write_sessioninfo = function(filename, print = FALSE) {
+  writeLines(capture.output(sessionInfo()), con = filename)
+}
+
