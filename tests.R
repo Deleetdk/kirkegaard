@@ -1223,6 +1223,17 @@ stopifnot({
 })
 
 
+# discretize --------------------------------------------------------------
+
+x1 = discretize(rnorm(100), 5)
+x2 = discretize(rnorm(100), 5, equal_range = F)
+x3 = discretize(rnorm(100), 5, labels = "intervals")
+
+stopifnot({
+  sapply(list(x1, x2, x3), function(x) length(unique(x)) == 5)
+})
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")
