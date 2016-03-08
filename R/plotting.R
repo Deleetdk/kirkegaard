@@ -3,10 +3,12 @@
 #' Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
 #' @param df (data.frame or something coercible into) A data.frame with variables.
 #' @param var (character scalar) The name of the variable to use. Not needed if df is a vector.
+#' @param vline (character scalar) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean".
+#' @param binwidth (numeric scalar) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
 #' @export
 #' @examples
 #' GG_denhist(iris, "Sepal.Length")
-GG_denhist = function(df, var, binwidth = NULL) {
+GG_denhist = function(df, var, vline = "mean", binwidth = NULL) {
   library(ggplot2)
 
   #input type
@@ -19,9 +21,20 @@ GG_denhist = function(df, var, binwidth = NULL) {
   g = ggplot(df, aes_string(var)) +
     geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                    colour="black", fill="white", binwidth = binwidth) +
-    geom_density(alpha=.2, fill="#FF6666") +  # Overlay with transparent density plot
-    geom_vline(aes_string(xintercept = mean(df[[var]], na.rm=T)),   # Ignore NA values for mean
+    geom_density(alpha=.2, fill="#FF6666") # Overlay with transparent density plot
+
+  #vline
+  if (!is.null(vline)) {
+    if (vline == "mean") {
+      g = g + geom_vline(aes_string(xintercept = mean(df[[var]], na.rm=T)),   # Ignore NA
                color="red", linetype="dashed", size=1)
+    }
+    if (vline == "median") {
+      g = g + geom_vline(aes_string(xintercept = median(df[[var]], na.rm=T)),   # Ignore NA
+                         color="red", linetype="dashed", size=1)
+    }
+  }
+
 
   return(g)
 }
@@ -37,7 +50,7 @@ GG_denhist = function(df, var, binwidth = NULL) {
 #' @keywords ggplot2, plot, density, histogram
 #' @export
 #' @examples
-#' plot_kmeans()
+#' plot_kmeans(iris[-5], 3)
 plot_kmeans = function (df, clusters, runs = 100, standardize = T) {
   library(psych)
   library(ggplot2)
@@ -78,7 +91,7 @@ plot_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @keywords ggplot2, plot, scatter
 #' @export
 #' @examples
-#' GG_scatter()
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width")
 GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clean_names = T) {
   library(ggplot2)
   library(grid)

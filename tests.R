@@ -591,7 +591,10 @@ library(magrittr)
 
 Sepal_Length = iris$Sepal.Length
 g = list(GG_denhist(iris, "Sepal.Length"),
-         GG_denhist(Sepal_Length))
+         GG_denhist(Sepal_Length),
+         GG_denhist(Sepal_Length, vline = "mean"),
+         GG_denhist(Sepal_Length, vline = "median"),
+         GG_denhist(Sepal_Length, vline = NULL))
 
 stopifnot({
   sapply(g, function(x) class(x)) %in% c("gg", "ggplot")

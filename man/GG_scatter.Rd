@@ -26,7 +26,7 @@ GG_scatter(df, x_var, y_var, text_pos, case_names = T, CI = 0.95,
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
 }
 \examples{
-GG_scatter()
+GG_scatter(iris, "Sepal.Length", "Sepal.Width")
 }
 \keyword{ggplot2,}
 \keyword{plot,}

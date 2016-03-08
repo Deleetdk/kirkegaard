@@ -4,12 +4,16 @@
 \alias{GG_denhist}
 \title{Histogram with an empirical density curve and a vertical line at the mean}
 \usage{
-GG_denhist(df, var, binwidth = NULL)
+GG_denhist(df, var, vline = "mean", binwidth = NULL)
 }
 \arguments{
 \item{df}{(data.frame or something coercible into) A data.frame with variables.}
 
 \item{var}{(character scalar) The name of the variable to use. Not needed if df is a vector.}
+
+\item{vline}{(character scalar) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean".}
+
+\item{binwidth}{(numeric scalar) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
 }
 \description{
 Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.

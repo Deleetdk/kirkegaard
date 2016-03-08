@@ -19,7 +19,7 @@ plot_kmeans(df, clusters, runs = 100, standardize = T)
 Performs kmeans and factor analysis on a dataset. Then plots a scatter plot using the first two factors (orthogonal) and color codes cases by their kmeans cluster.
 }
 \examples{
-plot_kmeans()
+plot_kmeans(iris[-5], 3)
 }
 \keyword{density,}
 \keyword{ggplot2,}
