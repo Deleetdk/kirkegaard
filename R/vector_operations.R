@@ -146,6 +146,7 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   #NA
   if (.NA) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
+    if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
     if (is.infinite(y)) return(T)
     if (is.nan(y)) return(T)
     !is.na(y)
@@ -154,12 +155,14 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   #NaN
   if (.NaN) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
+    if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
     !is.nan(y)
   })]
 
   #Inf
   if (.Inf) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
+    if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
     if (is.na(y)) return(T)
     is.finite(y)
   })]

@@ -1272,13 +1272,18 @@ stopifnot({
 #exclude a broad array of missing data types, with specificity
 
 x = list(1, NA, 2, NULL, 3, NaN, 4, Inf)
+x2 = list(1, NA, 2, NULL, 3, NaN, 4, Inf, list(1)) #a list with a list
 
 stopifnot({
+  #list of scalars
   are_equal(exclude_missing(x), list(1, 2, 3, 4))
   are_equal(exclude_missing(x, .NA = F), list(1, NA, 2, 3, 4))
   are_equal(exclude_missing(x, .NULL = F), list(1, 2, NULL, 3, 4))
   are_equal(exclude_missing(x, .NaN = F), list(1, 2, 3, NaN, 4))
   are_equal(exclude_missing(x, .Inf = F), list(1, 2, 3, 4, Inf))
+
+  #complex list
+  are_equal(exclude_missing(x2), list(1, 2, 3, 4, list(1)))
 })
 
 # done --------------------------------------------------------------------
