@@ -551,3 +551,41 @@ merge_rows_by_name = function(df, names, new_name, func = mean, numeric = TRUE) 
 
 
 
+#' Copy columns between data.frames
+#'
+#' Copy columns from one data.frame to another by name or pattern.
+#' @param from (data.frame) The source data.frame.
+#' @param to (data.frame) The destination data.frame.
+#' @param columns (character vector or numeric vector) The columns to copy. Can be either their names or whole numbers indicating their position in the source data.frame. By default, it will copy all columns.
+#' @param pattern (character scalar) Alternatively, a regex pattern to use to match the desired columns. Uses the stringr package.
+#' @export
+#' @examples
+#' merge_rows_by_name(df = t1, names = c("C", "D"), func = mean)
+copy_columns = function(from, to, columns, pattern) {
+  #checks
+  from = as.data.frame(from); to = as.data.frame(to) #convert
+  if (nrow(from) != nrow(to)) stop("Number of rows not identical in the two objects!")
+
+  #columns not given
+  if (missing("columns") && missing("pattern")) pattern = "." #match all columns
+
+  #pattern
+  if (!missing("pattern")) {
+    library(stringr)
+    columns = colnames(from)[str_detect(string = colnames(from), pattern = pattern)]
+  }
+
+  #columns
+  if (is.numeric(columns)) columns = colnames(from)[columns] #get names
+
+  #loop and copy
+  for (col in columns) {
+    to[col] = from[col]
+  }
+
+  #return
+  to
+}
+
+
+

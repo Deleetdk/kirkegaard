@@ -109,3 +109,60 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
 }
 
 
+#' Calculate mean absolute difference for values in a vector
+#'
+#' Calculates all the pairwise absolute differences, then averages them.
+#' @param x (numeric vector) A vector of values.
+#' @param na.rm (logical scalar) Whether to ignore missing values. Default=TRUE.
+#' @export
+#' @examples
+#' mean_abs_diff(iris[[1]])
+mean_abs_diff = function(x, na.rm = T) {
+  library(magrittr)
+  dist(unlist(as.vector(x))) %>% as.vector() %>% mean(., na.rm = na.rm)
+}
+
+
+#' Exclude missing datapoints
+#'
+#' Exclude datapoints that are NA, NULL or NaN.
+#' @param x (an interatable object) An object to subset based on missingness.
+#' @param .NA (logical scalar) Whether to exclude NA (default TRUE).
+#' @param .NULL (logical scalar) Whether to exclude NULL (default TRUE).
+#' @param .NaN (logical scalar) Whether to exclude NaN (default TRUE).
+#' @export
+#' @examples
+#' x = list(1, NA, 2, NULL, 3, NaN, 4, Inf)
+#' exclude_missing(x)
+#' exclude_missing(x, .NA = F)
+#' exclude_missing(x, .NULL = F)
+#' exclude_missing(x, .NaN = F)
+#' exclude_missing(x, .Inf = F)
+exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
+  # browser()
+  #NULL
+  if (.NULL.) x = x[!sapply(x, is.null)]
+
+  #NA
+  if (.NA) x = x[sapply(x, function(y) {
+    if (is.null(y)) return(T)
+    if (is.infinite(y)) return(T)
+    if (is.nan(y)) return(T)
+    !is.na(y)
+  })]
+
+  #NaN
+  if (.NaN) x = x[sapply(x, function(y) {
+    if (is.null(y)) return(T)
+    !is.nan(y)
+  })]
+
+  #Inf
+  if (.Inf) x = x[sapply(x, function(y) {
+    if (is.null(y)) return(T)
+    if (is.na(y)) return(T)
+    is.finite(y)
+  })]
+
+  x
+}

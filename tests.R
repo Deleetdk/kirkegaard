@@ -1090,6 +1090,29 @@ stopifnot({
 })
 
 
+# copy_columns ------------------------------------------------------------
+#copy cols from one df to another
+library(magrittr)
+
+stopifnot({
+  #copy all using default
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150))) %>% dim %>% equals(c(150, 6))
+
+  #copy all using pattern
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), pattern = ".") %>% dim %>% equals(c(150, 6))
+
+  #copy those with Length in name (2)
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), pattern = "Length") %>% dim %>% equals(c(150, 3))
+
+  #copy one specific column
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = "Species") %>% dim %>% equals(c(150, 2))
+
+  #copy two specific cols
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = c("Species", "Sepal.Length")) %>% dim %>% equals(c(150, 3))
+
+  #copy using numbers
+  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = 1:3) %>% dim %>% equals(c(150, 4))
+})
 
 # is_numeric is_numeric_by_col --------------------------------------------------------------
 
@@ -1236,6 +1259,27 @@ stopifnot({
   sapply(list(x1, x2, x3), function(x) length(unique(x)) == 5)
 })
 
+
+# mean_abs_diff -----------------------------------------------------------
+
+stopifnot({
+  (mean_abs_diff(iris[[1]]) - 0.9461924) < 1e-6
+})
+
+
+
+# exclude_missing ---------------------------------------------------------
+#exclude a broad array of missing data types, with specificity
+
+x = list(1, NA, 2, NULL, 3, NaN, 4, Inf)
+
+stopifnot({
+  are_equal(exclude_missing(x), list(1, 2, 3, 4))
+  are_equal(exclude_missing(x, .NA = F), list(1, NA, 2, 3, 4))
+  are_equal(exclude_missing(x, .NULL = F), list(1, 2, NULL, 3, 4))
+  are_equal(exclude_missing(x, .NaN = F), list(1, 2, 3, NaN, 4))
+  are_equal(exclude_missing(x, .Inf = F), list(1, 2, 3, 4, Inf))
+})
 
 # done --------------------------------------------------------------------
 
