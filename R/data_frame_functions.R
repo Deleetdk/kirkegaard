@@ -311,7 +311,7 @@ df_func = function(..., standardize = F, func = mean, pattern, ignore_NA = T) {
   if (missing("pattern")) {
 
     #check for numericness
-    if(!all(sapply(tmp_df, class) == "numeric")) stop("Some variables were not numeric!")
+    if(!all(sapply(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
 
     #standardize?
     if (standardize) tmp_df = std_df(tmp_df)

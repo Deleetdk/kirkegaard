@@ -139,9 +139,14 @@ mean_abs_diff = function(x, na.rm = T) {
 #' exclude_missing(x, .NaN = F)
 #' exclude_missing(x, .Inf = F)
 exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
-  # browser()
+  #check empty
+  if (length(x) == 0) return(x)
+
   #NULL
   if (.NULL.) x = x[!sapply(x, is.null)]
+
+  #check empty
+  if (length(x) == 0) return(x)
 
   #NA
   if (.NA) x = x[sapply(x, function(y) {
@@ -152,12 +157,18 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
     !is.na(y)
   })]
 
+  #check empty
+  if (length(x) == 0) return(x)
+
   #NaN
   if (.NaN) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
     if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
     !is.nan(y)
   })]
+
+  #check empty
+  if (length(x) == 0) return(x)
 
   #Inf
   if (.Inf) x = x[sapply(x, function(y) {
