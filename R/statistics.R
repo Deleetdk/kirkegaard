@@ -632,7 +632,7 @@ pool_sd = function(x, group) {
 #' @param dispersion_method (character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).
 #' @export
 #' @examples
-#' #get t value for 95 pct. confidence interval with df = 20
+#' SMD_matrix(iris$Sepal.Length, iris$Species)
 SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all") {
   library(plyr)
   library(magrittr)
@@ -651,11 +651,6 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
 
   #set names
   colnames(m) = rownames(m) = uniq
-
-  #calculate group centrals
-  v_central = sapply(uniq, function(var) {
-    central_tendency(x[group == var], na.rm = TRUE)
-  })
 
   #loop for each combo
   for (row_i in seq_along(uniq)) {
@@ -693,9 +688,13 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
         }
       } else if (is.numeric(dispersion)) disp = dispersion #use given number
 
-      #distance
-      diff = central_tendency(d_comb$x[d_comb$group == col]) - central_tendency(d_comb$x[d_comb$group == row])
+      #difference
+      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T)
+
+      #devide by dispersion measure
       SMD = diff / disp
+
+      #save
       m[row, col] = SMD
     }
   }

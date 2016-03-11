@@ -1166,16 +1166,24 @@ stopifnot({
 #standardized mean differences
 library(magrittr)
 
-#test parameters
-t = list(SMD_matrix(iris$Sepal.Length, iris$Species),
+#iris with missing
+iris_miss = df_addNA(iris)
+
+#tests
+t = list(#parameters
+         SMD_matrix(iris$Sepal.Length, iris$Species),
          SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = median),
          SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
          SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
-         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"))
+         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
+
+         #with missing data
+         SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
+         )
 
 stopifnot({
   sapply(t, is.matrix) #all matrices
-  unique(t) %>% length %>% equals(5) #all different
+  unique(t) %>% length %>% equals(6) #all different
 })
 
 
@@ -1273,6 +1281,9 @@ stopifnot({
 
 x = list(1, NA, 2, NULL, 3, NaN, 4, Inf)
 x2 = list(1, NA, 2, NULL, 3, NaN, 4, Inf, list(1)) #a list with a list
+x3 = list(NULL, NULL) #list that becomes empty when values are excluded
+#this led to difficult to solve bugs before
+x4 = list() #empty
 
 stopifnot({
   #list of scalars
@@ -1281,6 +1292,8 @@ stopifnot({
   are_equal(exclude_missing(x, .NULL = F), list(1, 2, NULL, 3, 4))
   are_equal(exclude_missing(x, .NaN = F), list(1, 2, 3, NaN, 4))
   are_equal(exclude_missing(x, .Inf = F), list(1, 2, 3, 4, Inf))
+  are_equal(exclude_missing(x3), list())
+  are_equal(exclude_missing(x4), list())
 
   #complex list
   are_equal(exclude_missing(x2), list(1, 2, 3, 4, list(1)))

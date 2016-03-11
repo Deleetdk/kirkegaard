@@ -22,6 +22,6 @@ SMD_matrix(x, group, central_tendency = mean, dispersion = "sd",
 Calculate standardized mean differneces between all groups.
 }
 \examples{
-#get t value for 95 pct. confidence interval with df = 20
+SMD_matrix(iris$Sepal.Length, iris$Species)
 }
 
