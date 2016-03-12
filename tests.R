@@ -1344,6 +1344,14 @@ stopifnot({
 })
 
 
+
+# add_id ------------------------------------------------------------------
+x = iris; x["ID"] = "A"
+stopifnot({
+  add_id(iris, "A") == x
+})
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")
