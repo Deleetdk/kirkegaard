@@ -589,3 +589,108 @@ copy_columns = function(from, to, columns, pattern) {
 
 
 
+
+# split unsplit functions -----------------------------------------------------------------
+#built in functions have some problems
+
+
+#' Transform data.frame to vector
+#'
+#' Appends each column after each other. A wrapper for unlist() with some extra features.
+#' @param data (data.frame) The data.frame.
+#' @param fact_to_chr (logical scalar) Convert factors to characters? (Default yes)
+#' @export
+#' @examples
+#' df_to_v(iris)
+df_to_v = function(data, fact_to_chr = T) {
+
+  #to df
+  data = as.data.frame(data)
+
+  #convert?
+  if (fact_to_chr) {
+    for (col in colnames(data)) {
+      if (is.factor(data[, col])) data[, col] = as.character(data[, col])
+    }
+  }
+
+  unlist(data) %>% unname()
+}
+
+
+#' Transform data.frame to a list of data.frames
+#'
+#' Splits a data.frame by a variable and returns a named list.
+#' @param data (data.frame) The data.frame.
+#' @param by (character scalar or vector) The values to split by. If input is a character scalar, will use that variable from the data.frame. If it is a longer vector, will use that to split with.
+#' @param remove_by (logical scalar) Whether to remove the vector used to split with from the data.frame. Only relevant when using a character scalar as input to by.
+#' @export
+#' @examples
+#' df_to_ldf(iris, "Species")
+df_to_ldf = function(data, by, remove_by = T) {
+  #determine by
+  if (!length(by) == nrow(data)) { #if length doesnt match
+    if (length(by) == 1 && is.character(by)) { #check if its a character scalar
+      by_name = by #if so, save name
+      by = data[[by_name]] #fetch the split vector
+
+      #remove by?
+      if (remove_by) {
+        data[by_name] = NULL
+      }
+    }
+  }
+
+  #split
+  data2 = split(x = data, f = by)
+
+  data2
+}
+
+
+#' Transform list of data.frames to a data.frame.
+#'
+#' Combines a split data.frame back to the original.
+#' @param list (list of data.frames) The data.frames.
+#' @param add_by (logical scalar) Whether to add a variable indicating the origin of each row.
+#' @param by_name (character scalar) What should the added variable by called? Only used when add_by = TRUE.
+#' @param rownames_to_var (logical scalar) Should rownames be saved in a variable? (Default no)
+#' @param rownames_name (logical scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.
+#' @export
+#' @examples
+#' ldf_to_df(df_to_ldf(iris), "Species")
+ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames") {
+  # browser()
+  #save list names
+  list_names = names(list)
+
+  #remove list names
+  list = unname(list)
+
+  #save rownames
+  if (rownames_to_var) {
+    list = lapply(list, FUN = function(data) {
+      data[rownames_name] = rownames(data)
+      rownames(data) = NULL
+      data
+    })
+  }
+
+  #combine
+  data = do.call("rbind", args = list)
+
+  #add by?
+  if (add_by) {
+    nrows = sapply(list, nrow)
+    by = mapply(x = list_names, each = nrows, FUN = function(x, each) {
+      rep(x, each)
+    }, SIMPLIFY = F) %>% unlist()
+
+    data[by_name] = by
+  }
+
+  data
+}
+
+
+

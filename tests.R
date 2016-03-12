@@ -1299,6 +1299,51 @@ stopifnot({
   are_equal(exclude_missing(x2), list(1, 2, 3, 4, list(1)))
 })
 
+
+# split unsplit functions -----------------------------------------------------------------
+library(magrittr)
+
+
+#df_to_v
+stopifnot({
+  #length
+  df_to_v(iris) %>% length() == 750
+
+  #type convert
+  df_to_v(iris) %>% class() == "character"
+
+  #dont convert factors
+  df_to_v(iris, fact_to_chr = F) %>% class() == "numeric"
+
+  #with matrix input
+  df_to_v(as.matrix(iris)) %>% length() == 750
+})
+
+#df_to_ldf
+stopifnot({
+  df_to_ldf(iris, iris$Species, remove_by = T) %>% length() == 3
+  df_to_ldf(iris, "Species") %>% length() == 3
+})
+
+#ldf_to_df
+stopifnot({
+  #remove by, add back
+  df_to_ldf(iris, "Species", remove_by = T) %>% ldf_to_df() %>% equals(iris)
+
+  #dont remove by, dont add
+  df_to_ldf(iris, "Species", remove_by = F) %>% ldf_to_df(add_by = F) %>% equals(iris)
+
+  #reorder cars, split by cyl, keep by
+  df_to_ldf(mtcars[order(mtcars$cyl), ], "cyl", remove_by = F) %>%
+    #then combine back, set rownames to a var, and dont add another by
+    ldf_to_df(rownames_to_var = T, rownames_name = "Car_name", add_by = F) %>%
+    #then extract car names
+    extract("Car_name") %>%
+    #then compare to the orig
+    equals(rownames(mtcars[order(mtcars$cyl), ]))
+})
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")
