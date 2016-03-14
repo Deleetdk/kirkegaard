@@ -4,7 +4,6 @@
 #'
 #' Counts the number of missing datapoints per case
 #' @param x a matrix or data.frame
-#' @keywords missing data
 #' @export
 #' @examples
 #' miss_case()
@@ -19,7 +18,6 @@ miss_case = function(x){
 #'
 #' Counts the number of missing datapoints per variable
 #' @param x a matrix or data.frame
-#' @keywords missing data
 #' @export
 #' @examples
 #' miss_table()
@@ -32,13 +30,14 @@ miss_table = function(x){
 #' Count missing data
 #'
 #' A simple wrapper for is.na() and sum(). Returns an integer.
-#' @param x (any object) An object for which to count NAs.
-#' @keywords NA, missing data, count, number
+#' @param x (any suitable object) An object for which to count NAs.
+#' @param reverse (logical scalar) Whether to count non-NAs instead (default false).
 #' @export
 #' @examples
 #' m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)
 #' count_NA(m)
-count_NA = function(x) {
+count_NA = function(x, reverse = F) {
+  if (reverse) return(sum(!is.na(x)))
   sum(is.na(x))
 }
 
@@ -47,7 +46,6 @@ count_NA = function(x) {
 #' Returns a ggplot2 histogram plot.
 #' @param df a data.frame.
 #' @param percent whether to use percent or not. Defaults to true.
-#' @keywords missing data, histogram, plot
 #' @export
 #' @examples
 #' plot_miss()
@@ -80,7 +78,6 @@ plot_miss = function(df, percent=T) {
 #'
 #' Wrapper for matrixplot() from VIM, but automatically substrings the variable names to 8 characters.
 #' @param df a data.frame.
-#' @keywords missing data, plot, matrix, VIM
 #' @export
 #' @examples
 #' matrixplot2()
