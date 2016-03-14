@@ -630,10 +630,11 @@ pool_sd = function(x, group) {
 #' @param central_tendency (function) A function to use for calculating the central tendency. Must support a parameter called na.rm. Ideal choices: mean, median.
 #' @param dispersion (character or numeric scalar) Either the name of the metric to use (sd or mad) or a value to use.
 #' @param dispersion_method (character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).
+#' @param ... (other arguments) Additional arguments to pass to the central tendency function.
 #' @export
 #' @examples
 #' SMD_matrix(iris$Sepal.Length, iris$Species)
-SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all") {
+SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all", ...) {
   library(plyr)
   library(magrittr)
 
@@ -689,7 +690,7 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
       } else if (is.numeric(dispersion)) disp = dispersion #use given number
 
       #difference
-      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T)
+      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T, ...) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T)
 
       #devide by dispersion measure
       SMD = diff / disp

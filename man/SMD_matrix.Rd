@@ -5,7 +5,7 @@
 \title{Standardized mean differences}
 \usage{
 SMD_matrix(x, group, central_tendency = mean, dispersion = "sd",
-  dispersion_method = "all")
+  dispersion_method = "all", ...)
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}
@@ -17,6 +17,8 @@ SMD_matrix(x, group, central_tendency = mean, dispersion = "sd",
 \item{dispersion}{(character or numeric scalar) Either the name of the metric to use (sd or mad) or a value to use.}
 
 \item{dispersion_method}{(character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).}
+
+\item{...}{(other arguments) Additional arguments to pass to the central tendency function.}
 }
 \description{
 Calculate standardized mean differneces between all groups.

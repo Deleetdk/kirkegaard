@@ -1168,6 +1168,7 @@ stopifnot({
 library(magrittr)
 
 #iris with missing
+set.seed(1)
 iris_miss = df_addNA(iris)
 
 #tests
@@ -1177,6 +1178,7 @@ t = list(#parameters
          SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
          SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
          SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
+         SMD_matrix(iris$Sepal.Length, iris$Species, trim = .05),
 
          #with missing data
          SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
@@ -1184,7 +1186,7 @@ t = list(#parameters
 
 stopifnot({
   sapply(t, is.matrix) #all matrices
-  unique(t) %>% length %>% equals(6) #all different
+  unique(t) %>% length %>% equals(7) #all different
 })
 
 
