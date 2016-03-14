@@ -569,3 +569,47 @@ write_sessioninfo = function(filename, print = FALSE) {
   writeLines(capture.output(sessionInfo()), con = filename)
 }
 
+#' Create list-array
+#'
+#' A convenience function to create a list-array. A list with dimensions like an array.
+#' @param ... (any number of whole numbers or vectors) If given a whole number scalar, will use that to define the length of that dimension. If given a vector, will use the length of that to determine the length of the dimension and use the values as names.
+#' @return An n-dimensional list-array.
+#' @export
+#' @examples
+#' make_list_array(1:3, letters[1:3], LETTERS[1:3])
+make_list_array = function(...) {
+
+  input_list = list(...)
+  names_list = input_list
+
+  v_lengths = sapply(seq_along(input_list), FUN = function(x) {
+
+    #is scalar
+    if (length(input_list[[x]]) == 1) {
+      names_list[[x]] <<- 1:input_list[[x]]
+      return(input_list[[x]])
+    } else {
+      return(length(input_list[[x]]))
+    }
+  })
+
+  #how many total cells?
+  total_cells = Reduce(f = `*`, init = 1, x = v_lengths)
+
+  #create list-array
+  l = as.list(rep(NA, total_cells))
+  dim(l) = v_lengths
+
+  #set names
+  l = do.call(what = "dimnames<-", args = list(l, names_list))
+
+
+  l
+}
+
+
+
+# l_samples = as.list(rep(NA, length(l_SIRE) * length(l_relations)))
+# dim(l_samples) = c(length(l_SIRE), length(l_relations))
+# colnames(l_samples) = names(l_relations)
+# rownames(l_samples) = names(l_SIRE)

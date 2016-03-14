@@ -690,7 +690,7 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
       } else if (is.numeric(dispersion)) disp = dispersion #use given number
 
       #difference
-      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T, ...) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T)
+      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T, ...) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T, ...)
 
       #devide by dispersion measure
       SMD = diff / disp

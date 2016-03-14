@@ -1355,6 +1355,27 @@ stopifnot({
 })
 
 
+
+# list-arrays -------------------------------------------------------------
+#easy way to make list-arrays
+
+t = list(#vector input
+         make_list_array(1:2, letters[1:2], LETTERS[1:2]),
+         #mixed input
+         make_list_array(1:2, letters[1:2], 2),
+         #using only scalars as input
+         make_list_array(1, 1, 1),
+         #what about 10 dimensions with length 2?
+         do.call("make_list_array", args = as.list(rep(2, 10))))
+
+stopifnot({
+  #check types
+  sapply(t, is.list)
+  #check all dims
+  are_equal(sapply(t, dim), list(c(2, 2, 2), c(2, 2, 2), c(1, 1, 1), rep(2, 10)))
+})
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")
