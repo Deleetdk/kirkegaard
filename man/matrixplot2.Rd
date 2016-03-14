@@ -15,9 +15,4 @@ Wrapper for matrixplot() from VIM, but automatically substrings the variable nam
 \examples{
 matrixplot2()
 }
-\keyword{VIM}
-\keyword{data,}
-\keyword{matrix,}
-\keyword{missing}
-\keyword{plot,}
 

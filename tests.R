@@ -882,10 +882,11 @@ stopifnot({
 })
 
 
-# missing data handling ---------------------------------------------------
+# missing data counting ---------------------------------------------------
 
 stopifnot({
   count_NA(c(1:10, rep(NA, 5), 1:10)) == 5
+  count_NA(c(1:10, rep(NA, 5), 1:10), reverse = T) == 20
 })
 
 

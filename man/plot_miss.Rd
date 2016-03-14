@@ -17,8 +17,4 @@ Returns a ggplot2 histogram plot.
 \examples{
 plot_miss()
 }
-\keyword{data,}
-\keyword{histogram,}
-\keyword{missing}
-\keyword{plot}
 

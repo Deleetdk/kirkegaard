@@ -15,6 +15,4 @@ Counts the number of missing datapoints per variable
 \examples{
 miss_table()
 }
-\keyword{data}
-\keyword{missing}
 

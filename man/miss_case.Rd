@@ -15,6 +15,4 @@ Counts the number of missing datapoints per case
 \examples{
 miss_case()
 }
-\keyword{data}
-\keyword{missing}
 
