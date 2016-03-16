@@ -304,13 +304,14 @@ split_every_k = function(x, k, uneven = T) {
 
 
 
+
+
 #' Reshape named vectors to a data.frame.
 #'
 #' Construct a data.frame from a list of named vectors by filling in the shorter vectors with NAs.
 #' @param list (a list of vectors) The list of vectors.
 #' @param name_suffix (character scalar) The suffix to use on the names.
-#' @param valie_suffix (character scalar) The the suffix to use on the values.
-#' @keywords vectors, data.frame, reshape
+#' @param valie_suffix (character scalar) The suffix to use on the values.
 #' @export
 #' @examples
 #' l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
@@ -608,8 +609,41 @@ make_list_array = function(...) {
 }
 
 
+#' Calculate total number of cells in an object
+#'
+#' Calculate the total number of cells in an object. This is done by finding the product of the lengths of each dimension.
+#' @param x (any suitable object) The object.
+#' @return A whole number.
+#' @export
+#' @examples
+#' total_cells(iris)
+total_cells = function(x) {
+  #find the lengths of each dimension
+  v_lengths = get_dims(x)
 
-# l_samples = as.list(rep(NA, length(l_SIRE) * length(l_relations)))
-# dim(l_samples) = c(length(l_SIRE), length(l_relations))
-# colnames(l_samples) = names(l_relations)
-# rownames(l_samples) = names(l_SIRE)
+  #get the product and return
+  return(product(v_lengths))
+}
+
+
+#' Calculate the product
+#'
+#' Calculate the product of a given set of numbers.
+#' @param ... (any number of numbers) The numbers. Can be multiple arguments, or one argument that is a vector.
+#' @return A whole number.
+#' @export
+#' @examples
+#' product(1:3)
+#' product(1, 2, 3)
+product = function(...) {
+  #convert to list
+  input = list(...)
+
+  #if given a vector
+  if (length(input) == 1) {
+    return(Reduce(f = "*", init = 1, x = input[[1]]))
+  }
+
+  #if not
+  return(Reduce(f = "*", init = 1, x = as.vector(input)))
+}

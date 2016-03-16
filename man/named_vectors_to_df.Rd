@@ -11,7 +11,7 @@ named_vectors_to_df(list, name_suffix = "_name", value_suffix = "_value")
 
 \item{name_suffix}{(character scalar) The suffix to use on the names.}
 
-\item{valie_suffix}{(character scalar) The the suffix to use on the values.}
+\item{valie_suffix}{(character scalar) The suffix to use on the values.}
 }
 \description{
 Construct a data.frame from a list of named vectors by filling in the shorter vectors with NAs.
@@ -20,7 +20,4 @@ Construct a data.frame from a list of named vectors by filling in the shorter ve
 l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
 named_vectors_to_df(l)
 }
-\keyword{data.frame,}
-\keyword{reshape}
-\keyword{vectors,}
 

@@ -909,7 +909,7 @@ suppressor(message("test"), messages = T)
 
 
 
-# get_dims --------------------------------------------------------------
+# get_dims total_cells --------------------------------------------------------------
 #a better version of dim() from base-r
 
 stopifnot({
@@ -918,6 +918,11 @@ stopifnot({
   get_dims(matrix(1:4, nrow=2)) == c(2, 2)
   matrix(1:4, nrow=2) %>% as.data.frame %>% get_dims == c(2, 2)
   array(1:16, dim = c(2, 2, 2)) %>% dim == c(2, 2, 2)
+
+  #total cells, easy application
+  total_cells(iris) == 750 #2d
+  total_cells(1:3) == 3 #1d
+  total_cells(array(1:27, dim = c(3, 3, 3))) == 27 #3d
 })
 
 
@@ -1027,10 +1032,11 @@ stopifnot({
   throws_error("split_every_k(1:11, 4, uneven = F)")
 })
 
-# stack_into_n_columns ----------------------------------------------------
+# stack_into_n_columns split_into_n_columns -----------------------------------------
 #useful function for stacking data that is too wide for the document or screen.
 
 df = split_every_k(1:12, 2) %>% as.data.frame
+df2 = data.frame(small = letters[1:6], big = LETTERS[1:6], stringsAsFactors = F)
 
 stopifnot({
   stack_into_n_columns(df, 2) %>% dim == c(11, 2)
@@ -1038,6 +1044,29 @@ stopifnot({
   silence(stack_into_n_columns(df, 4) %>% dim == c(7, 4))
 })
 
+#reverse function
+
+stopifnot({
+  #check wrong input
+  throws_error("split_into_n_columns(data = df2, columns = 5, pad_rows = F)")
+
+  #test some values
+  split_into_n_columns(df2, split_times = 4) %>% get_dims() == c(3, 12)
+  split_into_n_columns(df2, split_times = 3) %>% get_dims() == c(3, 9)
+  split_into_n_columns(df2, split_times = 2) %>% get_dims() == c(4, 6)
+
+  #without rownames
+  split_into_n_columns(df2, split_times = 2, include_rownames = F) %>% get_dims() == c(4, 4)
+
+  #without colnames
+  split_into_n_columns(df2, split_times = 2, include_colnames = F) %>% get_dims() == c(3, 6)
+
+  #without doing anything
+  are_equal(split_into_n_columns(df2, split_times = 1, include_rownames = F, include_colnames = F) %>% as.data.frame(), df2, check.names = F)
+
+  #test the colname
+  split_into_n_columns(df2, split_times = 2, rownames_var =  "testname")[1, 1] %>% unlist() == "testname"
+})
 
 
 # alternate ---------------------------------------------------------------
@@ -1373,6 +1402,23 @@ stopifnot({
   sapply(t, is.list)
   #check all dims
   are_equal(sapply(t, dim), list(c(2, 2, 2), c(2, 2, 2), c(1, 1, 1), rep(2, 10)))
+})
+
+
+
+# product -----------------------------------------------------------------
+
+stopifnot({
+  #single input
+  product(1:3) == 6
+  product(1) == 1
+  product(c(1, 1)) == 1
+  product(c(1, 2)) == 2
+
+  #multiple input
+  product(1, 2, 3) == 6
+  product(1, 1) == 1
+  product(1, 2) == 2
 })
 
 

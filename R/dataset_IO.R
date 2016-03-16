@@ -347,6 +347,84 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
 }
 
 
+
+#' Split data into n columns.
+#'
+#' Reshapes the data to a wider structure for easy use in documents. Pads empty lines between and can include their rownames and colnames as well. Outputs a character matrix.
+#' @param data (data.frame, matrix, or something coercible into a matrix) The data to reshape.
+#' @param split_times (whole number scalar) How many times to split the rows.
+#' @param pad_columns (logical) Whether to pad empty columns to the data if the data and column dimensions do fit divide into a whole number. Defaults to TRUE.
+#' @param include_colnames (logical) Whether to include the column names in the output. Defaults to TRUE.
+#' @param rownames_colnames (character scalar) If adding colnames in rows, which rownames should these be given? Defaults to "name".
+#' @export
+#' @examples
+#' df = data.frame(small = letters[1:6], big = LETTERS[1:6], stringsAsFactors = F)
+#' split_into_n_columns(df, 2) #ok
+#' split_into_n_columns(df, 3) #ok
+#' split_into_n_columns(df, 4) #stupid but no error!
+split_into_n_columns = function(data, split_times, pad_rows = T, include_rownames = T, rownames_var = "name", include_colnames = T) {
+  library(magrittr)
+
+  #types
+  data = as.data.frame(data)
+
+  #convert factors to chr
+  data[] = lapply(data, FUN = function(col) {
+    if (is.factor(col)) return(as.character(col))
+    col
+  })
+
+  #check length
+  v_remainder = nrow(data) %% split_times
+  if (!pad_rows & (v_remainder != 0)) {
+    stop("It is not possible to reform the data without padding rows because the number of rows is not integer disible by the desired number of columns! " + nrow(data) + "/" + split_times + "=" + v_remainder)
+  }
+
+  #include rownames?
+  if (include_rownames) {
+    data = data.frame(rownames___ = rownames(data), data, stringsAsFactors = F)
+    colnames(data)[1] = rownames_var
+  }
+
+  #save colnames
+  v_colnames = colnames(data)
+
+  #make out data object
+  v_rows_out = (nrow(data) / split_times) %>% ceiling()
+
+  #fill in missing rows
+  if ((nrow(data) %% split_times) != 0) {
+    #how many rows to fill in?
+    v_to_fill = nrow(data) %% split_times
+
+    #make the extra block
+    data_extra = matrix(nrow = v_to_fill, ncol = ncol(data)) %>% as.data.frame(stringsAsFactors = F)
+
+    #copy over colnames
+    colnames(data_extra) = colnames(data)
+
+    #rbind them
+    data = rbind(data, data_extra)
+  }
+
+  #transform
+  data2 = df_to_ldf(data, by = rep(1:split_times, each = v_rows_out)) %>%
+    do.call(what = "cbind", args = .)
+
+  #names
+  colnames(data2) = NULL
+
+  #add colnames on top
+  if (include_colnames) {
+    v_colnames = rep(v_colnames, length.out = ncol(data2))
+    data2 = rbind(v_colnames, data2)
+  }
+
+  data2
+}
+
+
+
 #' Improved dataset merger function
 #'
 #' This function allows you to merge two data.frames by their overlapping rownames. About 15 times faster than the earlier version.
@@ -454,3 +532,39 @@ merge_datasets2_multi = function(..., join = "both", overwrite_NA = FALSE, resto
   Reduce(function(x, y) merge_datasets2(x, y, join=join, overwrite_NA = overwrite_NA, restore_factors = restore_factors), list(...))
 }
 
+
+#' Make a function to write to an XLSX file with
+#'
+#' This creates a copy of writeWorksheet where the object is filled out. Uses the XLConnect package.
+#' @param filename (character scalar) The filename to write to. Requires full path.
+#' @export
+#' @examples
+#' #set up the function
+#' write_to_test = make_xlsx_write_function("test.xlsx")
+#' #test it by writing iris dataset to a sheet in the file
+#' write_to_test(data = iris, sheet = "iris")
+make_xlsx_write_function = function(filename) {
+  library(XLConnect)
+
+  #make workbook
+  wb_obj = loadWorkbook(filename, create = TRUE)
+  saveWorkbook(object = wb_obj)
+
+  func = function(data, sheet, ...) {
+    #try write
+    trial = try({
+      writeWorksheet(object = wb_obj, data = data, sheet = sheet, ...)
+    })
+
+    #if failed, create sheet
+    if (is_error(trial)) {
+      createSheet(object = wb_obj, name = sheet)
+      writeWorksheet(object = wb_obj, data = data, sheet = sheet, ...)
+    }
+
+    #write to file
+    saveWorkbook(object = wb_obj)
+  }
+
+  return(func)
+}
