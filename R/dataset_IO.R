@@ -533,38 +533,4 @@ merge_datasets2_multi = function(..., join = "both", overwrite_NA = FALSE, resto
 }
 
 
-#' Make a function to write to an XLSX file with
-#'
-#' This creates a copy of writeWorksheet where the object is filled out. Uses the XLConnect package.
-#' @param filename (character scalar) The filename to write to. Requires full path.
-#' @export
-#' @examples
-#' #set up the function
-#' write_to_test = make_xlsx_write_function("test.xlsx")
-#' #test it by writing iris dataset to a sheet in the file
-#' write_to_test(data = iris, sheet = "iris")
-make_xlsx_write_function = function(filename) {
-  library(XLConnect)
 
-  #make workbook
-  wb_obj = loadWorkbook(filename, create = TRUE)
-  saveWorkbook(object = wb_obj)
-
-  func = function(data, sheet, ...) {
-    #try write
-    trial = try({
-      writeWorksheet(object = wb_obj, data = data, sheet = sheet, ...)
-    })
-
-    #if failed, create sheet
-    if (is_error(trial)) {
-      createSheet(object = wb_obj, name = sheet)
-      writeWorksheet(object = wb_obj, data = data, sheet = sheet, ...)
-    }
-
-    #write to file
-    saveWorkbook(object = wb_obj)
-  }
-
-  return(func)
-}
