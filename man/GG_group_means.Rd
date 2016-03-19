@@ -4,7 +4,7 @@
 \alias{GG_group_means}
 \title{ggplot2 with group means and error bars.}
 \usage{
-GG_group_means(df, var, groupvar, CI = 0.95, type = "bar")
+GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -15,20 +15,15 @@ GG_group_means(df, var, groupvar, CI = 0.95, type = "bar")
 
 \item{CI}{(numeric scalar) The confidence interval to use. Default = .95.}
 
-\item{type}{(character scalar) The type of plot. Options: bar, point, points. Default = bar.}
+\item{type}{(character scalar) The type of plot. Options: bar (default), point, points.}
 }
 \description{
 Draws a nice ggplot2 with group means and error bars.
 }
 \examples{
-GG_group_means()
+GG_group_means(iris, "Sepal.Length", "Species")
+GG_group_means(iris, "Sepal.Length", "Species", type = "point")
+GG_group_means(iris, "Sepal.Length", "Species", type = "points")
+GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
 }
-\keyword{bars}
-\keyword{confidence}
-\keyword{error}
-\keyword{ggplot2,}
-\keyword{group,}
-\keyword{interval,}
-\keyword{means,}
-\keyword{plot,}
 

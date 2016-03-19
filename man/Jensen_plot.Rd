@@ -22,8 +22,4 @@ Returns a ggplot2 scatter plot with numerical results in a corner. Also supports
 \examples{
 Jensen_plot()
 }
-\keyword{latent}
-\keyword{psychology}
-\keyword{psychometrics}
-\keyword{variable}
 

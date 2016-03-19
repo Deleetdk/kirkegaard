@@ -746,15 +746,29 @@ stopifnot({
 
 
 # GG_group_means -----------------------------------------------------------
+
+iris_na = df_addNA(iris)
+
+#does it respect factor levels order?
+iris_reorder = iris
+iris_reorder$Species = factor(x = iris_reorder$Species, levels = levels(iris$Species) %>% rev())
+levels(iris_reorder$Species)
+gg = GG_group_means(iris_reorder, "Sepal.Length", "Species")
+
 #this the plot means function
 l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
-           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999))
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
+           GG_group_means(iris_na, "Sepal.Length", "Species"),
+           "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"))
 
 stopifnot({
   sapply(l_t, function(x) "ggplot" %in% class(x))
+  throws_error("GG_group_means(iris_na, 'Sepal.Length', 'Species', na.rm = F)")
+  levels(l_t$order$data$group1) == rev(levels(iris$Species))
 })
+
 
 
 

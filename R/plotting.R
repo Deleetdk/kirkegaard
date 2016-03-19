@@ -353,24 +353,45 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' @param var (character scalar) The name of the variable to plot.
 #' @param groupvar (character scaler) The name of the grouping variable.
 #' @param CI (numeric scalar) The confidence interval to use. Default = .95.
-#' @param type (character scalar) The type of plot. Options: bar, point, points. Default = bar.
-#' @keywords ggplot2, plot, group, means, confidence interval, error bars
+#' @param type (character scalar) The type of plot. Options: bar (default), point, points.
 #' @export
 #' @examples
-#' GG_group_means()
-GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
+#' GG_group_means(iris, "Sepal.Length", "Species")
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
+GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T) {
   library(psych)
   library(stringr)
   library(ggplot2)
 
-  #checks
+  #convert
   df = as.data.frame(df)
-  if (any(is.na(df[[groupvar]])) ) stop("There must not be missing values in the group variable!")
+
+  #subset
+  df = df[c(var, groupvar)]
+
+  #check for missing
+  if (count_NA(df) > 0 ) {
+    #remove missing?
+    if (na.rm) {
+      df = filter_by_missing_values(df, missing = 0)
+      message("Missing values were removed.")
+    } else {
+      stop("There must not be missing values in the group variable when na.rm = F!")
+    }
+  }
+
+  #checks
   if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
   if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
+  if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
 
   #summarize
   df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
+
+  #reorder groups in line with data
+  df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
 
   #calculate CIs
   df_sum$ci_bar = apply(df_sum, 1, function(x) {
@@ -394,6 +415,7 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
 }
 
 
+
 #' Jensen method (method of correlated vectors) plot
 #'
 #' Returns a ggplot2 scatter plot with numerical results in a corner. Also supports reversing for dealing with factors that have negative indicators.
@@ -401,7 +423,6 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar") {
 #' @param loadings a vector of correlations of the indicators with the criteria variable.
 #' @param reverse whether to reverse indicators with negative loadings. Default to true.
 #' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
-#' @keywords psychometrics psychology latent variable
 #' @export
 #' @examples
 #' Jensen_plot()
