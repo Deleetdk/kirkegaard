@@ -391,7 +391,9 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T) 
   df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
 
   #reorder groups in line with data
-  df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
+  if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
+    df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
+  }
 
   #calculate CIs
   df_sum$ci_bar = apply(df_sum, 1, function(x) {
