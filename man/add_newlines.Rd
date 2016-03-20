@@ -4,21 +4,18 @@
 \alias{add_newlines}
 \title{Insert newlines into text every nth character.}
 \usage{
-add_newlines(x, total.length = 95)
+add_newlines(x, line_length = 95)
 }
 \arguments{
-\item{x}{A character string or vector.}
+\item{x}{(chr vector) The strings to split with newlines.}
 
-\item{total.length}{The total length of each line of text. Defaults to 95 (suitable for ggplot2).}
+\item{line_length}{(num scalar) The desired max length of each line. Defaults to 95 (suitable for ggplot2).}
 }
 \description{
 Returns a character string with newlines every nth character. Works for character vectors too.
 }
 \examples{
-add_newlines()
+set.seed(2)
+add_newlines(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""))
 }
-\keyword{label,}
-\keyword{newline,}
-\keyword{string,}
-\keyword{text}
 

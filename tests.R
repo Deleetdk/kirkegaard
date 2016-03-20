@@ -760,7 +760,7 @@ l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
-           GG_group_means(iris_na, "Sepal.Length", "Species"),
+           GG_group_means(iris_na, "Sepal.Length", "Species", msg_NA = F),
            "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"))
 
 stopifnot({

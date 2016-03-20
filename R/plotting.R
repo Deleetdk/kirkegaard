@@ -354,13 +354,15 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' @param groupvar (character scaler) The name of the grouping variable.
 #' @param CI (numeric scalar) The confidence interval to use. Default = .95.
 #' @param type (character scalar) The type of plot. Options: bar (default), point, points.
+#' @param msg_NA (logical scalar) Show a message if NAs were removed? (default true)
+#' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
 #' @export
 #' @examples
 #' GG_group_means(iris, "Sepal.Length", "Species")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
-GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T) {
+GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T) {
   library(psych)
   library(stringr)
   library(ggplot2)
@@ -376,7 +378,7 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T) 
     #remove missing?
     if (na.rm) {
       df = filter_by_missing_values(df, missing = 0)
-      message("Missing values were removed.")
+      silence(message("Missing values were removed."), messages = msg_NA)
     } else {
       stop("There must not be missing values in the group variable when na.rm = F!")
     }
@@ -411,6 +413,10 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T) 
 
   if (type == "points") {
     g = ggplot(df, aes_string(groupvar, var)) + geom_point() + geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) + geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+  }
+
+  if (split_group_labels) {
+    g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines())
   }
 
   return(g)

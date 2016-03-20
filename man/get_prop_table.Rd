@@ -15,10 +15,6 @@ get_prop_table(x, breaks_ = 20)
 Cuts a vector into a specified number of equal sized bins and calculations the proportion of datapoints in each bin. Returns a data.frame.
 }
 \examples{
-get_prop_table()
+get_prop_table(iris$Sepal.Length)
 }
-\keyword{bins,}
-\keyword{cut,}
-\keyword{proportion,}
-\keyword{table}
 

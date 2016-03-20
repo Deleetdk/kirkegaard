@@ -41,27 +41,39 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
 #' Returns a character string with newlines every nth character. See also add_newlines().
 #' @param x A character string.
 #' @param interval How often the newlines are added.
-#' @keywords string, newline, label, text
 #' @export
 #' @examples
-#' new_lines_adder()
+#' set.seed(2)
+#' new_lines_adder(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""), interval = 30)
 new_lines_adder = function(x, interval) {
+  library(stringr)
+
   #add spaces after /
   x = str_replace_all(x, "/", "/ ")
+
   #split at spaces
   x.split = strsplit(x, " ")[[1]]
+
   # get length of snippets, add one for space
   lens <- nchar(x.split) + 1
+
   # now the trick: split the text into lines with
   # length of at most interval + 1 (including the spaces)
   lines <- cumsum(lens) %/% (interval + 1)
+
   # construct the lines
   x.lines <- tapply(x.split, lines, function(line)
     paste0(paste(line, collapse=" "), "\n"), simplify = TRUE)
+
   # put everything into a single string
   result <- paste(x.lines, collapse="")
+
   #remove spaces we added after /
   result = str_replace_all(result, "/ ", "/")
+
+  #remove ending newline
+  result = str_sub(result, start = 1, end = -2)
+
   return(result)
 }
 
@@ -69,19 +81,19 @@ new_lines_adder = function(x, interval) {
 #' Insert newlines into text every nth character.
 #'
 #' Returns a character string with newlines every nth character. Works for character vectors too.
-#' @param x A character string or vector.
-#' @param total.length The total length of each line of text. Defaults to 95 (suitable for ggplot2).
-#' @keywords string, newline, label, text
+#' @param x (chr vector) The strings to split with newlines.
+#' @param line_length (num scalar) The desired max length of each line. Defaults to 95 (suitable for ggplot2).
 #' @export
 #' @examples
-#' add_newlines()
-add_newlines = function(x, total.length = 95) {
+#' set.seed(2)
+#' add_newlines(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""))
+add_newlines = function(x, line_length = 95) {
   # make sure, x is a character array
   x = as.character(x)
   #determine number of groups
   groups = length(x)
   # apply splitter to each
-  t = sapply(x, FUN = new_lines_adder, interval = round(total.length/groups), USE.NAMES=FALSE)
+  t = sapply(x, FUN = new_lines_adder, interval = round(line_length/groups), USE.NAMES = FALSE)
   return(t)
 }
 
@@ -91,11 +103,10 @@ add_newlines = function(x, total.length = 95) {
 #' Cuts a vector into a specified number of equal sized bins and calculations the proportion of datapoints in each bin. Returns a data.frame.
 #' @param x A numeric vector.
 #' @param breaks_ The number of bins to use.
-#' @keywords cut, bins, proportion, table
 #' @export
 #' @examples
-#' get_prop_table()
-get_prop_table = function(x, breaks_=20){
+#' get_prop_table(iris$Sepal.Length)
+get_prop_table = function(x, breaks_ = 20){
   library(magrittr)
   library(plyr)
   x_prop_table = cut(x, 20) %>% table(.) %>% prop.table %>% data.frame

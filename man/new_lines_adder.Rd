@@ -15,10 +15,7 @@ new_lines_adder(x, interval)
 Returns a character string with newlines every nth character. See also add_newlines().
 }
 \examples{
-new_lines_adder()
+set.seed(2)
+new_lines_adder(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""), interval = 30)
 }
-\keyword{label,}
-\keyword{newline,}
-\keyword{string,}
-\keyword{text}
 
