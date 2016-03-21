@@ -5,7 +5,7 @@
 \title{ggplot2 with group means and error bars.}
 \usage{
 GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T,
-  msg_NA = T, split_group_labels = T)
+  msg_NA = T, split_group_labels = T, line_length = 95)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -21,6 +21,8 @@ GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T,
 \item{msg_NA}{(logical scalar) Show a message if NAs were removed? (default true)}
 
 \item{split_group_labels}{(log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).}
+
+\item{line_length}{(num scalar) The desired line length. Only used when split_group_labels = T.}
 }
 \description{
 Draws a nice ggplot2 with group means and error bars.

@@ -777,7 +777,10 @@ stopifnot({
 
 stopifnot({
   percent_cutoff(iris$Sepal.Length, cutoffs = c(4, 8)) == c(1, 0)
-  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2) == .79
+  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2, inclusive = F) == .79
+  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2) == .85
+  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2, below = T) == .21
+  percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2, below = T, inclusive = F) == .15
 })
 
 

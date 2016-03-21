@@ -356,13 +356,14 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' @param type (character scalar) The type of plot. Options: bar (default), point, points.
 #' @param msg_NA (logical scalar) Show a message if NAs were removed? (default true)
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
+#' @param line_length (num scalar) The desired line length. Only used when split_group_labels = T.
 #' @export
 #' @examples
 #' GG_group_means(iris, "Sepal.Length", "Species")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
-GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T) {
+GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
   library(psych)
   library(stringr)
   library(ggplot2)
@@ -416,7 +417,7 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, 
   }
 
   if (split_group_labels) {
-    g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines())
+    g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines(line_length = line_length))
   }
 
   return(g)

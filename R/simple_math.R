@@ -4,11 +4,12 @@
 #' @param x (numeric vector) A vector of numbers.
 #' @param cutoffs (numeric vector) A vector of thresholds. Default=(.30, .50)
 #' @param digits (numeric scalar) The number of digits to round output to. Default=2.
-#' @keywords threshold, percent, proportion
+#' @param below (log scalar) Whether to count values below the cutoff (default false).
+#' @param inclusive (log scalar) Whether to include values at the cutoff (default true).
 #' @export
 #' @examples
 #' percent_cutoff()
-percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2) {
+percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclusive = T) {
   library(magrittr)
 
   #convert
@@ -17,11 +18,34 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2) {
 
   v_res = numeric()
   for (idx in seq_along(cutoffs)) {
-    v_res[idx] = (x > cutoffs[idx]) %>%
-      (function(x) {
-        sum(x) / (na.omit(x) %>% length)
-      })
+    #count
+    if (!below & !inclusive) {
+      v_res[idx] = (x > cutoffs[idx]) %>%
+        (function(x) {
+          sum(x) / (na.omit(x) %>% length)
+        })
+    }
+    if (!below & inclusive) {
+      v_res[idx] = (x >= cutoffs[idx]) %>%
+        (function(x) {
+          sum(x) / (na.omit(x) %>% length)
+        })
+    }
+    if (below & !inclusive) {
+      v_res[idx] = (x < cutoffs[idx]) %>%
+        (function(x) {
+          sum(x) / (na.omit(x) %>% length)
+        })
+    }
+    if (below & inclusive) {
+      v_res[idx] = (x <= cutoffs[idx]) %>%
+        (function(x) {
+          sum(x) / (na.omit(x) %>% length)
+        })
+    }
   }
+
+  #names
   names(v_res) = cutoffs
 
   #round
