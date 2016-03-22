@@ -182,9 +182,9 @@ str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, al
 
   if (spacing_dots) string = str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
   if (underscores) string = str_replace_all(string, "_", " ")
-  if (end_dots) string = str_replace_all(string, "\\.$", "")
   if (all_dots) string = str_replace_all(string, "\\.", " ")
   if (multi_dots) string = str_replace_all(string, "\\.+", ".")
+  if (end_dots) string = str_replace_all(string, "\\.$", "")
 
   return(string)
 }
