@@ -911,6 +911,8 @@ stopifnot({
 stopifnot({
   str_clean("Long_Test.String.") == "Long Test String"
   str_replace_multi("Long_Test.String", c("_", "\\."), " ") == "Long Test String"
+  str_clean("A_B") == "A B" #underscores to spaces
+  str_clean("A..B") == "A.B" #multiple dots in a row
 })
 
 

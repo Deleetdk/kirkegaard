@@ -5,26 +5,25 @@
 \title{Clean string}
 \usage{
 str_clean(string, underscores = T, spacing_dots = T, end_dots = T,
-  all_dots = F)
+  all_dots = F, multi_dots = T)
 }
 \arguments{
-\item{string}{(a character scalar) A string to clean.}
+\item{string}{(chr scalar) A string to clean.}
 
-\item{underscores}{(boolean) Whether to clean underscores. Default=T.}
+\item{underscores}{(log scalar) Whether to clean underscores. Default=T.}
 
-\item{spacing_dots}{(boolean) Whether to clean spacing underscores. Default=T.}
+\item{spacing_dots}{(log scalar) Whether to clean spacing underscores. Default=T.}
 
-\item{end_dots}{(boolean) Whether to clean dots at the end of the string. Default=T.}
+\item{end_dots}{(log scalar) Whether to clean dots at the end of the string. Default=T.}
 
-\item{all_dots}{(boolean) Whether to clean all dots. Default=F.}
+\item{all_dots}{(log scalar) Whether to clean all dots. Default=F.}
+
+\item{multi_dots}{(log scalar) Whether to reduce multiple dots in a row to a single dot. Default=T.}
 }
 \description{
 A simple wrapper str_replace_all() with sensible defaults.
 }
 \examples{
-str_clean()
+str_clean(colnames(iris))
 }
-\keyword{character,}
-\keyword{clean}
-\keyword{string,}
 

@@ -168,22 +168,23 @@ str_replace_multi = function(string, patterns, replacement, all = T) {
 #' Clean string
 #'
 #' A simple wrapper str_replace_all() with sensible defaults.
-#' @param string (a character scalar) A string to clean.
-#' @param underscores (boolean) Whether to clean underscores. Default=T.
-#' @param spacing_dots (boolean) Whether to clean spacing underscores. Default=T.
-#' @param end_dots (boolean) Whether to clean dots at the end of the string. Default=T.
-#' @param all_dots (boolean) Whether to clean all dots. Default=F.
-#' @keywords string, character, clean
+#' @param string (chr scalar) A string to clean.
+#' @param underscores (log scalar) Whether to clean underscores. Default=T.
+#' @param spacing_dots (log scalar) Whether to clean spacing underscores. Default=T.
+#' @param end_dots (log scalar) Whether to clean dots at the end of the string. Default=T.
+#' @param all_dots (log scalar) Whether to clean all dots. Default=F.
+#' @param multi_dots (log scalar) Whether to reduce multiple dots in a row to a single dot. Default=T.
 #' @export
 #' @examples
-#' str_clean()
-str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F) {
+#' str_clean(colnames(iris))
+str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F, multi_dots = T) {
   library(stringr)
 
   if (spacing_dots) string = str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
   if (underscores) string = str_replace_all(string, "_", " ")
   if (end_dots) string = str_replace_all(string, "\\.$", "")
   if (all_dots) string = str_replace_all(string, "\\.", " ")
+  if (multi_dots) string = str_replace_all(string, "\\.+", ".")
 
   return(string)
 }
