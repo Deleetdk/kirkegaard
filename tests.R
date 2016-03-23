@@ -1447,8 +1447,16 @@ stopifnot({
 # homogeneity -------------------------------------------------------------
 
 stopifnot({
+  #test normal and reverse
   homogeneity(iris$Species) == 1/3
   are_equal(homogeneity(iris$Species, reverse = T), 2/3)
+
+  #use summary statistics
+  homogeneity(c(.7, .2, .1), summary = T) + homogeneity(c(.7, .2, .1), summary = T, reverse = T) == 1
+  homogeneity(c(80, 15, 5), summary = T) + homogeneity(c(80, 15, 5), summary = T, reverse = T) == 1
+
+  #test error
+  throws_error("homogeneity(c(80, 15, 99), summary = T)")
 })
 
 

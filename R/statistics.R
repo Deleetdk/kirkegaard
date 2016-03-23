@@ -717,17 +717,48 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
 #'
 #' Calculate a simple index of homogeneity for nominal data, that is variously called Simpson's, Herfindahl's or Hirschman's index.
 #' @param x (a vector) A vector of values.
-#' @param reverse (log scalar) Whether to reverse the index to index heterogeneity.
+#' @param reverse (log scalar) Whether to reverse the index to index heterogeneity (default false).
+#' @param summary (log scalar) Whether to treat data as summary statistics of the group proportions (default false). If data are given in 0-100 format, it will automatically convert.
 #' @export
 #' @examples
 #' homogeneity(iris$Species)
 #' homogeneity(iris$Species, reverse = T)
-homogeneity = function(x, reverse = F) {
+#' homogeneity(c(.7, .2, .1), summary = T)
+#' homogeneity(c(80, 15, 5), summary = T)
+homogeneity = function(x, reverse = F, summary = F) {
   library(magrittr)
 
-  if (!reverse) {
-    return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum())
+  #not using summary statistics
+  if (!summary) {
+    #reversed
+    if (!reverse) {
+      return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum())
+    }
+
+    #reversed
+    return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum() %>% subtract(1, .))
   }
 
-  table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum() %>% subtract(1, .)
+  #using summary statistics
+  if (sum(x) %>% is_between(.99, 1.01)) {
+    #not reversed
+    if (!reverse) {
+      return(x %>% raise_to_power(2) %>% sum())
+    }
+
+    #reversed
+    return(x %>% raise_to_power(2) %>% sum() %>% subtract(1, .))
+  } else if (sum(x) %>% is_between(99, 101)) {
+    #not reversed
+    if (!reverse) {
+      return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum())
+    }
+
+    #reversed
+    return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum() %>% subtract(1, .))
+
+  } else {
+      stop("Tried to use summary statistics, but they did not sum to either around 1 or 100 (±1%)")
+    }
+
 }

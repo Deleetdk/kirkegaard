@@ -4,12 +4,14 @@
 \alias{homogeneity}
 \title{Calculate homogeneity/heterogeneity}
 \usage{
-homogeneity(x, reverse = F)
+homogeneity(x, reverse = F, summary = F)
 }
 \arguments{
 \item{x}{(a vector) A vector of values.}
 
-\item{reverse}{(log scalar) Whether to reverse the index to index heterogeneity.}
+\item{reverse}{(log scalar) Whether to reverse the index to index heterogeneity (default false).}
+
+\item{summary}{(log scalar) Whether to treat data as summary statistics of the group proportions (default false). If data are given in 0-100 format, it will automatically convert.}
 }
 \description{
 Calculate a simple index of homogeneity for nominal data, that is variously called Simpson's, Herfindahl's or Hirschman's index.
@@ -17,5 +19,7 @@ Calculate a simple index of homogeneity for nominal data, that is variously call
 \examples{
 homogeneity(iris$Species)
 homogeneity(iris$Species, reverse = T)
+homogeneity(c(.7, .2, .1), summary = T)
+homogeneity(c(80, 15, 5), summary = T)
 }
 
