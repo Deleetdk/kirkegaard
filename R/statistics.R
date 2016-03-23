@@ -711,3 +711,23 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
   #
   m
 }
+
+
+#' Calculate homogeneity/heterogeneity
+#'
+#' Calculate a simple index of homogeneity for nominal data, that is variously called Simpson's, Herfindahl's or Hirschman's index.
+#' @param x (a vector) A vector of values.
+#' @param reverse (log scalar) Whether to reverse the index to index heterogeneity.
+#' @export
+#' @examples
+#' homogeneity(iris$Species)
+#' homogeneity(iris$Species, reverse = T)
+homogeneity = function(x, reverse = F) {
+  library(magrittr)
+
+  if (!reverse) {
+    return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum())
+  }
+
+  table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum() %>% subtract(1, .)
+}

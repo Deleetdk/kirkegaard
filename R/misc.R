@@ -35,69 +35,6 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
 }
 
 
-
-#' Insert newlines into text every nth character.
-#'
-#' Returns a character string with newlines every nth character. See also add_newlines().
-#' @param x A character string.
-#' @param interval How often the newlines are added.
-#' @export
-#' @examples
-#' set.seed(2)
-#' new_lines_adder(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""), interval = 30)
-new_lines_adder = function(x, interval) {
-  library(stringr)
-
-  #add spaces after /
-  x = str_replace_all(x, "/", "/ ")
-
-  #split at spaces
-  x.split = strsplit(x, " ")[[1]]
-
-  # get length of snippets, add one for space
-  lens <- nchar(x.split) + 1
-
-  # now the trick: split the text into lines with
-  # length of at most interval + 1 (including the spaces)
-  lines <- cumsum(lens) %/% (interval + 1)
-
-  # construct the lines
-  x.lines <- tapply(x.split, lines, function(line)
-    paste0(paste(line, collapse=" "), "\n"), simplify = TRUE)
-
-  # put everything into a single string
-  result <- paste(x.lines, collapse="")
-
-  #remove spaces we added after /
-  result = str_replace_all(result, "/ ", "/")
-
-  #remove ending newline
-  result = str_sub(result, start = 1, end = -2)
-
-  return(result)
-}
-
-
-#' Insert newlines into text every nth character.
-#'
-#' Returns a character string with newlines every nth character. Works for character vectors too.
-#' @param x (chr vector) The strings to split with newlines.
-#' @param line_length (num scalar) The desired max length of each line. Defaults to 95 (suitable for ggplot2).
-#' @export
-#' @examples
-#' set.seed(2)
-#' add_newlines(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""))
-add_newlines = function(x, line_length = 95) {
-  # make sure, x is a character array
-  x = as.character(x)
-  #determine number of groups
-  groups = length(x)
-  # apply splitter to each
-  t = sapply(x, FUN = new_lines_adder, interval = round(line_length/groups), USE.NAMES = FALSE)
-  return(t)
-}
-
-
 #' Cut into bins and get proportions
 #'
 #' Cuts a vector into a specified number of equal sized bins and calculations the proportion of datapoints in each bin. Returns a data.frame.
@@ -120,74 +57,7 @@ get_prop_table = function(x, breaks_ = 20){
 }
 
 
-#' Is object a simple vector?
-#'
-#' A simple wrapper for is.vector and is.list. The normal is.vector function returns true for lists which is undesirable. Returns a boolean.
-#' @param x (any object) An object to test.
-#' @keywords vector, list
-#' @export
-#' @examples
-#' l = list(1:10)
-#' v = 1:10
-#' is.vector(v)
-#' is.vector(l)
-#' is_simple_vector(v)
-#' is_simple_vector(l)
-is_simple_vector = function(x) {
-  is.vector(x) & !is.list(x)
-}
 
-
-
-
-
-#' Multiple replacement
-#'
-#' A simple wrapper for stringr's str_replace() and str_replace_all().
-#' @param string (a character scalar) A string.
-#' @param patterns (a character vector) A character vector of things to clean. Regex.
-#' @param replacement (a character scalar) What to replace matches with.
-#' @param all (boolean) Whether to clean all instances or just the first. Default=T.
-#' @keywords string, character. replace, vectorized
-#' @export
-#' @examples
-#' str_replace_multi()
-str_replace_multi = function(string, patterns, replacement, all = T) {
-  library(stringr)
-
-  for (pattern in patterns) {
-    if (all) string = str_replace_all(string, pattern, replacement)
-    if (!all) string = str_replace(string, pattern, replacement)
-  }
-
-  return(string)
-}
-
-
-
-#' Clean string
-#'
-#' A simple wrapper str_replace_all() with sensible defaults.
-#' @param string (chr scalar) A string to clean.
-#' @param underscores (log scalar) Whether to clean underscores. Default=T.
-#' @param spacing_dots (log scalar) Whether to clean spacing underscores. Default=T.
-#' @param end_dots (log scalar) Whether to clean dots at the end of the string. Default=T.
-#' @param all_dots (log scalar) Whether to clean all dots. Default=F.
-#' @param multi_dots (log scalar) Whether to reduce multiple dots in a row to a single dot. Default=T.
-#' @export
-#' @examples
-#' str_clean(colnames(iris))
-str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F, multi_dots = T) {
-  library(stringr)
-
-  if (spacing_dots) string = str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
-  if (underscores) string = str_replace_all(string, "_", " ")
-  if (all_dots) string = str_replace_all(string, "\\.", " ")
-  if (multi_dots) string = str_replace_all(string, "\\.+", ".")
-  if (end_dots) string = str_replace_all(string, "\\.$", "")
-
-  return(string)
-}
 
 
 #' Get dimensions of object.
@@ -388,23 +258,7 @@ silence = function(expr, warnings = F, messages = F) {
 suppressor = silence #old name
 
 
-#' Are all elements of a vector the same?
-#'
-#' Tests whether all elements of a vector are the same. Uses the max/min method mentioned at .
-#' @param x (expression) Some expression to run.
-#' @keywords vector, same, identical, equal
-#' @export
-#' @examples
-#' all_the_same(rep(1, 100))
-#' all_the_same(rnorm(100))
-all_the_same = function(x) {
-  #for numeric data, a faster method
-  if (is.numeric(x)) {
-    return(max(x) == min(x))
-  }
-  #for non-numeric data, a slower method
-  return(length(unique(x)) == 1)
-}
+
 
 
 #' Merge vectors by alternating elements.
@@ -441,69 +295,13 @@ alternate = function(x) {
 
 
 
-#' Check numericalness by column.
-#'
-#' A simple wrapper for \code{vapply}.
-#' @param x (something coercible to a data.frame) An object to test.
-#' @return Returns a logical vector the same length as the number of columns in x.
-#' @export
-#' @examples
-#' is_numeric_by_col(iris)
-is_numeric_by_col = function(df) {
-  df = as.data.frame(df)
-  vapply(df, FUN = is.numeric, FUN.VALUE = logical(1))
-}
 
 
-#' Is object thoroughly numeric?
-#'
-#' A more advanced version of \code{\link{is.numeric}}. It wraps the base-r function, but allows for recursive checking inside lists and hence data.frames as well.
-#' @param x (any object) An object to test.
-#' @param recursive (logical scalar) Whether to use recursive checking. Default=TRUE.
-#' @return Returns a logical scalar indicating whether the object is thoroughly numeric.
-#' @export
-#' @examples
-#' is_numeric(iris)
-#' is_numeric(iris[-5])
-is_numeric = function(x, recursive = TRUE) {
-  #vector
-  if (is_simple_vector(x)) return(is.numeric(x))
-
-  #array or matrix
-  if (is.array(x) || is.matrix(x)) return(is.numeric(x))
-
-  #factor
-  if (is.factor(x)) return(FALSE)
-
-  #recursive test?
-  if (recursive) {
-    #test all elements
-    return(all(sapply(x, is_numeric)))
-  }
-
-  #otherwise assume FALSE
-  FALSE
-}
 
 
-#' Are objects equal?
-#'
-#' A wrapper for \code{\link{all.equal}} that returns a logical scalar.
-#' @param x (any object) The first object.
-#' @param y (any object) The second object.
-#' @param ... (other named parameters) Further parameters to pass to \code{all.equal}.
-#' @return Returns a logical scalar indicating whether the objects are equal.
-#' @export
-#' @examples
-#' are_equal(iris[1:4], iris[-5])
-are_equal = function(x, y, ...) {
-  test = all.equal(x, y, ...)
-  if (is.logical(test)) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
+
+
+
 
 
 
@@ -528,45 +326,9 @@ format_digits = function(x, digits = 2) {
 
 #function from http://stackoverflow.com/questions/4730551/making-a-string-concatenation-operator-in-r
 
-#' Easy character concatenation
-#'
-#' A wrapper for stringr's \code{\link{str_c}} and the primitive "+" function.
-#' @param x (character vector) A character vector.
-#' @param y (character vector) A character vector.
-#' @return A character vector. Note that it will have a length longer than one if one of the inputs has that.
-#' @export
-#' @examples
-#' #digits still work
-#' 1+1
-#' #characters work too
-#' "str" + "ing"
-#' #mixes are converted to characters
-#' "123" + 456
-#' #longer than length 1
-#' 1:2 + "a"
-"+" = function(x, y) {
-  library("stringr")
-
-  if(is.character(x) || is.character(y)) {
-    return(str_c(x, y))
-  } else {
-    .Primitive("+")(x, y)
-  }
-}
 
 
-#' Does object have names?
-#'
-#' A wrapper for names to test for existence of names.
-#' @param x (any object) The object to test.
-#' @return Logical scalar.
-#' @export
-#' @examples
-#' has_names(iris)
-#' has_names(1:4)
-has_names = function(x) {
-  !is.null(names(x))
-}
+
 
 
 #' Write session information to a file.
@@ -638,24 +400,4 @@ total_cells = function(x) {
 }
 
 
-#' Calculate the product
-#'
-#' Calculate the product of a given set of numbers.
-#' @param ... (any number of numbers) The numbers. Can be multiple arguments, or one argument that is a vector.
-#' @return A whole number.
-#' @export
-#' @examples
-#' product(1:3)
-#' product(1, 2, 3)
-product = function(...) {
-  #convert to list
-  input = list(...)
 
-  #if given a vector
-  if (length(input) == 1) {
-    return(Reduce(f = "*", init = 1, x = input[[1]]))
-  }
-
-  #if not
-  return(Reduce(f = "*", init = 1, x = as.vector(input)))
-}

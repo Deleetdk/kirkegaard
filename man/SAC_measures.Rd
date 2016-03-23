@@ -11,25 +11,29 @@ SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
   CD_convert_NaN_to_zero = T)
 }
 \arguments{
-\item{df}{A data.frame with variables.}
+\item{df}{(data.frame) The data.frame with variables.}
 
-\item{vars}{A character vector with the names of the variables for which SAC measures should be calculated.}
+\item{vars}{(chr vector) The names of the variables for which SAC measures should be calculated.}
 
-\item{dists}{A matrix of distances between cases.}
+\item{dists}{(matrix) A matrix of distances between cases.}
 
-\item{lat_var}{A string with the name of the variable which has the latitude/east-west data.}
+\item{lat_var}{(chr scalar) The name of the variable which has the latitude/east-west data.}
 
-\item{lon_var}{A string with the name of the variable which has the longitude/north-south data.}
+\item{lon_var}{(chr scalar) The name of the variable which has the longitude/north-south data.}
 
-\item{distance_method}{Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
+\item{distance_method}{(chr scalar) Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
 
-\item{k}{A vector of k values to use for knsnr. Defaults to 3.}
+\item{k}{(num vector) A vector of k values to use for knsnr. Defaults to 3.}
 
-\item{weights_var}{A string with the name of the variable which has the case weights. Optional.}
+\item{weights_var}{(chr scalar) The name of the variable which has the case weights. Optional.}
 
-\item{weight_method}{A string with the weighing method to use. Defaults to harmonic.}
+\item{weight_method}{(chr scalar) The weighing method to use. Defaults to harmonic.}
 
-\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
+\item{auto_detect_dist_method}{(log scalar) Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
+
+\item{measures}{(chr vector) A vector of the measures to use. Options are Morans, CD and KNSNR (default is to use all).}
+
+\item{CD_convert_NaN_to_zero}{(log scalar) Whether to convert NaN to zeros in CD. At a point in the calculate, a square root is taken and because the first value can be negative, this may give a non-real number. This probably means that it should be thought of as 0.}
 }
 \description{
 Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
@@ -37,12 +41,4 @@ Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR
 \examples{
 SAC_measures()
 }
-\keyword{I,}
-\keyword{Moran's}
-\keyword{autocorrelation,}
-\keyword{distance,}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{spatial}
-\keyword{wrapper}
 

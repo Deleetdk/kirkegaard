@@ -22,6 +22,7 @@ percent_cutoff(x, cutoffs = c(0.3, 0.5), digits = 2, below = F,
 Takes a numeric vector and a numeric vector of thresholds. Returns the percent of numbers in the first above each of the numbers in the second.
 }
 \examples{
-percent_cutoff()
+percent_cutoff(iris$Sepal.Length, cutoffs = 4:8)
+percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T)
 }
 

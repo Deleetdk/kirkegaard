@@ -907,12 +907,15 @@ stopifnot({
 })
 
 
-# str_replace_multi, str_clean --------------------------------------------
+# str_replace_multi, str_clean, str_detect2 --------------------------------------------
 stopifnot({
   str_clean("Long_Test.String.") == "Long Test String"
   str_replace_multi("Long_Test.String", c("_", "\\."), " ") == "Long Test String"
   str_clean("A_B") == "A B" #underscores to spaces
   str_clean("A..B") == "A.B" #multiple dots in a row
+
+  str_detect2(letters[1:10], pattern = "[acbde]") == c(rep(T, 5), rep(F, 5))
+  str_detect2(letters[1:10], pattern = "[acbde]", value = T) == letters[1:5]
 })
 
 
@@ -1438,6 +1441,14 @@ stopifnot({
   product(1, 2, 3) == 6
   product(1, 1) == 1
   product(1, 2) == 2
+})
+
+
+# homogeneity -------------------------------------------------------------
+
+stopifnot({
+  homogeneity(iris$Species) == 1/3
+  are_equal(homogeneity(iris$Species, reverse = T), 2/3)
 })
 
 
