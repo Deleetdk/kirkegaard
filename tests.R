@@ -112,7 +112,7 @@ fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
 stopifnot({
   #then we test and make sure all the numbers are right
   lm_CI(fit1, standardize = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
-  lm_CI(fit1, standardize = T)$coefs$Beta == c(.31, 1.01)  #unstd. data, std. betas
+  lm_CI(fit1, standardize = T)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
   lm_CI(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
   lm_CI(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
 })
@@ -944,13 +944,19 @@ stopifnot({
 
 
 # silence ---------------------------------------------------------------
-#not sure how to test these, but they should not give errors
+#make stuff shut up
 
-suppressor(log(-1))
-suppressor(warning("test"))
-suppressor(warning("test"), warnings = T)
-suppressor(message("test"))
-suppressor(message("test"), messages = T)
+#unload maps if its loaded
+p_unload("maps")
+
+stopifnot({
+  #minimal silent stuff
+  are_equal(capture.output(silence(warning("test"), messages = T, startupmessages = T)), character())
+  are_equal(capture.output(silence(message("test"), warnings = T, startupmessages = T)), character())
+  are_equal(capture.output(silence(library(maps), warnings = T, messages = T)), character())
+
+})
+
 
 
 
@@ -1496,6 +1502,20 @@ stopifnot({
 
 stopifnot({
   df_remove_vars(iris, "Species") == iris[-5]
+})
+
+
+# check_missing -----------------------------------------------------------
+#check if arguments are missing
+
+test_func = function(y) {
+  check_missing("y")
+  T
+}
+
+stopifnot({
+  throws_error("test_func(y = )")
+  test_func(y = "k")
 })
 
 

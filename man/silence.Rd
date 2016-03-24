@@ -5,7 +5,7 @@
 \alias{suppressor}
 \title{Silence warnings or messages from expression via parameter.}
 \usage{
-silence(expr, warnings = F, messages = F)
+silence(expr, warnings = F, messages = F, startupmessages = F)
 }
 \arguments{
 \item{expr}{(expression) Some expression to run.}
@@ -25,7 +25,4 @@ silence(warning("test"), warnings = T)
 silence(message("test"))
 silence(message("test"), messages = T)
 }
-\keyword{message,}
-\keyword{suppress}
-\keyword{warning,}
 

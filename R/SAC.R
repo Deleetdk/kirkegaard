@@ -1019,7 +1019,7 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 #' Returns a data.frame with predictors for linear regression with and without controls for SAC.
 #' @param df A data.frame with variables.
 #' @param dependent A character vector with the name of the dependent variable.
-#' @param predictor A character vector with the name of the predictor variables.
+#' @param predictors A character vector with the name of the predictor variables.
 #' @param knsn_k The number of neighbors to use with k nearest spatial regression. Defaults to 3.
 #' @param slr_k The number of neighbors to use with spatial local regression. Defaults to 3.
 #' @param dists A matrix of distances between cases.
@@ -1032,26 +1032,29 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 #' @param SLR_central_measure Which central tendency measure to meta-analyze SLR results with. Defaults to trim10, which is a 10 percent trimmed mean. For other options, see help for SAC_slr.
 #' @param CD_weight_method A string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.
 #' @param weights_var A character vector of the name of the weight variable to use. If none given, defaults to equal weights.
-#' @param methods_ Which control methods to use. Options are CD, KNSNR, SLR. Defaults to all of them.
+#' @param methods Which control methods to use. Options are CD, KNSNR, SLR. Defaults to all of them.
 #' @param standardize Whether to standardize the data to get standardized betas. Defaults to T.
 #' @param control_approach Which control approaches to use. Options are partial and mr. Defaults to partial.
-#' @keywords spatial autocorrelation, regression, control, k nearest spatial neighbor regression, KNSNR, spatial local regression, slr
 #' @export SAC_control SAC_control_all_methods
 #' @aliases SAC_control_all_methods
-#' @examples
-#' SAC_control()
-SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods_ = c("CD", "KNSNR", "SLR"), standardize = T, control_approach = c("partial")) {
+SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods = c("KNSNR", "SLR"), standardize = T, control_approach = c("partial")) {
   library(stringr)
 
-
   #check input
+  #is df
   if (missing("df")) stop("df input missing!")
+
+  #are variables even there?
+  if (any(!(c(dependent, predictors) %in% colnames(df))))
+
   if (missing("dependent")) stop("Dependent variable not given!")
   if (missing("predictors")) stop("Dependent variable not given!")
-  if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  if (anyNA(df[c(dependent, predictors)])) stop("Missing values present. Remove/impute and try again.")
   if (!all(control_approach %in% c("partial", "mr"))) {
     stop("Unrecognized control approaches included!")
   }
+
+
 
   #weights
   if (weights_var == "") {
@@ -1079,7 +1082,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
     dists = get_distances_mat(df[c(lat_var, lon_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)[[1]]
 
     #calculate only if needed
-    if ("CD" %in% methods_) {
+    if ("CD" %in% methods) {
       dists_vec = get_distances(df=df[c(lat_var, lon_var, dependent, predictors, weights_var)], lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, weights_var = weights_var)
 
       #standardize?
@@ -1091,7 +1094,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
   #add KNSNR predictor scores var
   #must be done before standardization if that is done
-  if ("KNSNR" %in% methods_) {
+  if ("KNSNR" %in% methods) {
     df$spatial = SAC_knsn_reg(df=df, dependent = dependent, k = knsn_k, output = "scores", weights_var = "weights___")
   }
 
@@ -1131,7 +1134,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
 
   #CD
-  if ("CD" %in% methods_) {
+  if ("CD" %in% methods) {
     #get distances if using dists input
     if (check_results$setting == "dists") {
       dists_vec = get_distances(df=df[c(dependent, predictors)], auto_detect_dist_method = F, weights_var = "weights___")
@@ -1166,7 +1169,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
 
   #KNSNR
-  if ("KNSNR" %in% methods_) {
+  if ("KNSNR" %in% methods) {
 
     if ("partial" %in% control_approach) {
       #res. df
@@ -1197,7 +1200,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
 
   #SLR
-  if ("SLR" %in% methods_) {
+  if ("SLR" %in% methods) {
     d_betas[rows_, str_c("SLR_k", slr_k)] = SAC_slr(df=df, dependent=dependent, predictors=predictors, k=slr_k, weights_method = SLR_weights_method, dists=dists, include_self = SLR_include_self, output = SLR_central_measure)
   }
 

@@ -17,14 +17,14 @@ object_to_string = function(x) {
 #' Convert a half-complete math condition to a function.
 #'
 #' Takes a string like "<0" and outputs a function to test for that condition. Returns a boolean.
-#' @param str (a character scalar) A string of a half math conditional
-#' @param convert_equal (boolean) Converts = to ==. Default=T.
-#' @param silent_try (boolean) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.
-#' @param test_function (boolean) Whether to test the function. This is done by trying on 0. Default=T.
-#' @keywords math, condition
+#' @param str (chr scalar) A string of a half math conditional
+#' @param convert_equal (log scalar) Converts = to ==. Default=T.
+#' @param silent_try (log scalar) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.
+#' @param test_function (log scalar) Whether to test the function. This is done by trying on 0. Default=T.
 #' @export
 #' @examples
-#' math_to_function()
+#' math_to_function("<0")(-1) #check if -1<0
+#' math_to_function("=0")(1234) #check if 1235=0
 math_to_function = function(str, convert_equal = T, silent_try = T, test_function = T) {
   library(stringr)
 
@@ -63,6 +63,37 @@ math_to_function = function(str, convert_equal = T, silent_try = T, test_functio
 
 
 
+#' Check if arguments are missing and raise error if they are
+#'
+#' Checks if arguments are missing and raises an error if they are. Put this in the beginning of your functions to check the input and give useful errors without writing checking code over and over again.
+#' @param str (a character scalar) A string of a half math conditional
+#' @param convert_equal (boolean) Converts = to ==. Default=T.
+#' @param silent_try (boolean) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.
+#' @param test_function (boolean) Whether to test the function. This is done by trying on 0. Default=T.
+#' @export
+#' @examples
+#' math_to_function()
+check_missing = function(var_names, error_msg = "[VAR] was missing! Please supply the input and try again.") {
+
+  #parent.frame as list
+  pf = as.list(parent.frame())
+
+  #check each if missing
+  for (name in var_names) {
+    #is it there at all?
+    if (!name %in% names(pf)) {
+      stop(name + " is not even found in the parent.frame! Check the variable names.", call. = F)
+    }
+
+    #check if missing
+    if (are_equal(pf[[name]], quote(expr = ))) {
+      stop(str_replace(error_msg, pattern = "\\[VAR\\]", name), call. = F)
+    }
+  }
+
+  #all fine
+  return(invisible(NULL))
+}
 
 
 

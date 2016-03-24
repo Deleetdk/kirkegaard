@@ -8,13 +8,15 @@
 SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,
   lat_var, lon_var, distance_method, auto_detect_dist_method = T,
   SLR_weights_method = "inverse", SLR_include_self = F, SLR_central_measure,
-  CD_weight_method = "harmonic", weights_var = "", methods_ = c("CD",
-  "KNSNR", "SLR"), standardize = T, control_approach = c("partial"))
+  CD_weight_method = "harmonic", weights_var = "", methods = c("KNSNR",
+  "SLR"), standardize = T, control_approach = c("partial"))
 }
 \arguments{
 \item{df}{A data.frame with variables.}
 
 \item{dependent}{A character vector with the name of the dependent variable.}
+
+\item{predictors}{A character vector with the name of the predictor variables.}
 
 \item{knsn_k}{The number of neighbors to use with k nearest spatial regression. Defaults to 3.}
 
@@ -40,28 +42,13 @@ SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,
 
 \item{weights_var}{A character vector of the name of the weight variable to use. If none given, defaults to equal weights.}
 
-\item{methods_}{Which control methods to use. Options are CD, KNSNR, SLR. Defaults to all of them.}
+\item{methods}{Which control methods to use. Options are CD, KNSNR, SLR. Defaults to all of them.}
 
 \item{standardize}{Whether to standardize the data to get standardized betas. Defaults to T.}
 
 \item{control_approach}{Which control approaches to use. Options are partial and mr. Defaults to partial.}
-
-\item{predictor}{A character vector with the name of the predictor variables.}
 }
 \description{
 Returns a data.frame with predictors for linear regression with and without controls for SAC.
 }
-\examples{
-SAC_control()
-}
-\keyword{KNSNR,}
-\keyword{autocorrelation,}
-\keyword{control,}
-\keyword{k}
-\keyword{local}
-\keyword{nearest}
-\keyword{neighbor}
-\keyword{regression,}
-\keyword{slr}
-\keyword{spatial}
 

@@ -233,7 +233,6 @@ named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_val
 #' @param expr (expression) Some expression to run.
 #' @param warnings (logical) Show warnings? Default=F.
 #' @param messages (logical) Show messages? Default=F.
-#' @keywords warning, message, suppress
 #' @export silence suppressor
 #' @aliases suppressor
 #' @examples
@@ -243,21 +242,28 @@ named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_val
 #' silence(warning("test"), warnings = T)
 #' silence(message("test"))
 #' silence(message("test"), messages = T)
-silence = function(expr, warnings = F, messages = F) {
-  if (!warnings & !messages) {
+silence = function(expr, warnings = F, messages = F, startupmessages = F) {
+  if (!warnings & !messages & !startupmessages) {
+    suppressPackageStartupMessages(suppressWarnings(suppressMessages(expr)))
+  } else if (warnings & !messages & !startupmessages) {
+    suppressPackageStartupMessages(suppressMessages(expr))
+  } else if (!warnings & messages & !startupmessages) {
+    suppressPackageStartupMessages(suppressWarnings(expr))
+  } else if (!warnings & !messages & startupmessages) {
     suppressWarnings(suppressMessages(expr))
-  } else if (!warnings & messages) {
-    suppressWarnings(expr)
-  } else if (warnings & !messages) {
+  } else if (warnings & messages & !startupmessages) {
+    suppressPackageStartupMessages(expr)
+  } else if (warnings & !messages & startupmessages) {
     suppressMessages(expr)
-  } else {
-    eval(expr)
+  } else if (!warnings & messages & startupmessages) {
+    suppressWarnings(expr)
+  } else if (warnings & messages & startupmessages) {
+    expr
   }
+
 }
 
 suppressor = silence #old name
-
-
 
 
 

@@ -8,20 +8,19 @@ math_to_function(str, convert_equal = T, silent_try = T,
   test_function = T)
 }
 \arguments{
-\item{str}{(a character scalar) A string of a half math conditional}
+\item{str}{(chr scalar) A string of a half math conditional}
 
-\item{convert_equal}{(boolean) Converts = to ==. Default=T.}
+\item{convert_equal}{(log scalar) Converts = to ==. Default=T.}
 
-\item{silent_try}{(boolean) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.}
+\item{silent_try}{(log scalar) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.}
 
-\item{test_function}{(boolean) Whether to test the function. This is done by trying on 0. Default=T.}
+\item{test_function}{(log scalar) Whether to test the function. This is done by trying on 0. Default=T.}
 }
 \description{
 Takes a string like "<0" and outputs a function to test for that condition. Returns a boolean.
 }
 \examples{
-math_to_function()
+math_to_function("<0")(-1) #check if -1<0
+math_to_function("=0")(1234) #check if 1235=0
 }
-\keyword{condition}
-\keyword{math,}
 

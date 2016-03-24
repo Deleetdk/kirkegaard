@@ -179,9 +179,9 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
 
 
   #calculate CIs
-  multiplier = qt(1-((1-level)/2),df) #to calculate the CIs
-  coefs$CI.lower = coefs[,1] - multiplier*coefs[,2] #lower
-  coefs$CI.upper = coefs[,1] + multiplier*coefs[,2] #upper
+  multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
+  coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
+  coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
   coefs = round(coefs, round) #round to desired digit
 
   #return
