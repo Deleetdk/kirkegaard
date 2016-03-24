@@ -131,32 +131,63 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 }
 
 
-#' Convenient summary of an lm() model with confidence intervals.
+#' Convenient summary of an lm() model with analytic confidence intervals.
 #'
 #' Returns beta coefficients and confidence intervals from a fitted lm() model.
-#' @param fitted_model the fitted model to summarize.
-#' @param level the level of confidence to use. Defaults to .95 (95\%).
-#' @param round at which digit to round the numbers. Defaults to 2.
-#' @keywords modeling, summary, model
+#' @param fitted_model (a lm or similar object) The fitted model.
+#' @param level (num scalar) The level of confidence to use. Defaults to .95 (95\%).
+#' @param round (num scalar) At which digit to round the numbers. Defaults to 2.
+#' @param standardize (log scalar) Whether to report standardized betas (default true).
 #' @export
 #' @examples
-#' lm_CI()
-lm_CI = function(fitted_model, level = .95, round = 2) {
-  sum.model = summary(fitted_model) #summary
-  df = df = sum.model$df[2] #degrees of freedom
-  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared)
+#' #fit two models with iris data, one with normal and one with standardized data
+#' fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
+#' fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
+#' #then summarize the two models
+#' lm_CI(fit1, standardize = F) #unstd. data, don't std. betas
+#' lm_CI(fit1, standardize = T) #unstd. data, then std. betas
+#' lm_CI(fit2, standardize = F) #std data., don't std. betas
+lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
+  library(magrittr)
+
+  #summary
+  sum.model = summary(fitted_model)
+  # browser()
+  #degrees of freedom
+  df = sum.model$df[2]
+
+  #R2 values
+  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared) %>% round(round)
   names(model_effect_size) = c("R2", "R2 adj.")
+
+  #coefs
   coefs = sum.model$coef[-1,1:2, drop=F] #coefs without intercept
   coefs = as.data.frame(coefs) #conver to dataframe
   colnames(coefs) = c("Beta", "SE") #rename
+
+  #standardize?
+  if (standardize) {
+    #calculate sds
+    sds = sapply(fitted_model$model, sd, na.rm = T)
+
+    #calculate the factors
+    factors = sds[-1] / sds[1]
+
+    #calculate std. betas
+    coefs = coefs * factors
+  }
+
+
+  #calculate CIs
   multiplier = qt(1-((1-level)/2),df) #to calculate the CIs
   coefs$CI.lower = coefs[,1] - multiplier*coefs[,2] #lower
   coefs$CI.upper = coefs[,1] + multiplier*coefs[,2] #upper
   coefs = round(coefs, round) #round to desired digit
+
+  #return
   return(list(coefs = coefs,
               effect_size = model_effect_size))
 }
-
 
 
 #' Get R2 and R2 adj. for each model.

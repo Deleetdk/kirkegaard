@@ -712,3 +712,60 @@ add_id = function(data, id, id_var="ID") {
   data
 }
 
+
+
+#' Rename variables in a data.frame
+#'
+#' Rename variables in a data.frame and keep their positions.
+#' @param data (data.frame) The data.frame.
+#' @param current_names (chr vector) The current names of the variables.
+#' @param new_names (chr scalar) The new names of the variables.
+#' @export
+#' @examples
+#' str(df_rename_vars(iris, "Sepal.Length", "Sepal_Length"))
+df_rename_vars = function(data, current_names, new_names) {
+  library(magrittr)
+
+  #data.frame input
+  data = as.data.frame(data)
+  #check that input are character vectors
+  if (!(is.character(current_names) & is.character(new_names))) {
+    stop("Both current_names and new_names must be character vectors!")
+  }
+  #check that lengths match
+  if (length(current_names) != length(new_names)) {
+    stop("The vectors of names must be equally long!")
+  }
+  #check if variables exist
+  sapply(current_names, function(name) {
+    if (!name %in% colnames(data)) {
+      stop("The variable " + name + " was not in the data.frame!")
+    }
+  })
+
+  #main loop
+  for (i in seq_along(current_names)) {
+    #current position
+    colnames(data)[i] = new_names[i]
+  }
+
+  data
+}
+
+
+#' Rename variables from a data.frame by name
+#'
+#' Remove variables from a data.frame by name.
+#' @param data (data.frame) The data.frame.
+#' @param names (chr vector) The variables to remove.
+#' @export
+#' @examples
+#' str(df_remove_vars(iris, c("Sepal.Length", "Species")))
+df_remove_vars = function(data, names) {
+  for (name in names) {
+    data[[name]] = NULL #remove
+  }
+
+  data
+}
+

@@ -96,7 +96,7 @@ write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
 write_clipboard(iris[1:5, ], print = T)
 
 
-# lm_best -----------------------------------------------------------------
+# lm_best lm_CI -----------------------------------------------------------------
 #fit some models
 t = list(lm(Sepal.Length ~ Sepal.Width, iris),
          lm(Sepal.Length ~ Sepal.Width + Petal.Length, iris),
@@ -104,6 +104,18 @@ t = list(lm(Sepal.Length ~ Sepal.Width, iris),
          lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width + Species, iris))
 stopifnot(lm_best(t) == 4)
 
+#test lm_CI
+#fit two models
+fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
+fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
+
+stopifnot({
+  #then we test and make sure all the numbers are right
+  lm_CI(fit1, standardize = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
+  lm_CI(fit1, standardize = T)$coefs$Beta == c(.31, 1.01)  #unstd. data, std. betas
+  lm_CI(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
+  lm_CI(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
+})
 
 
 # lm_beta_matrix df_addNA ----------------------------------------------------------
@@ -242,6 +254,17 @@ stopifnot({
     class(x) == c("gg", "ggplot")
   })
 })
+
+
+# GG_contingency_Table ----------------------------------------------------
+t = list(GG_contingency_table(mpg, "drv", "cyl"),
+         GG_contingency_table(mpg, "drv", "cyl", margin = 1),
+         GG_contingency_table(mpg, "drv", "cyl", margin = 2))
+
+stopifnot({
+  sapply(t, is.ggplot)
+})
+
 
 
 # Jensens_method ----------------------------------------------------------
@@ -1457,6 +1480,22 @@ stopifnot({
 
   #test error
   throws_error("homogeneity(c(80, 15, 99), summary = T)")
+})
+
+
+
+# df_rename_vars -----------------------------------------------------
+
+stopifnot({
+  (df_rename_vars(iris, current_names = "Sepal.Length", new_names = "Sepal_length") %>% colnames()) == c("Sepal_length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")
+  (df_rename_vars(iris, current_names = colnames(iris) %>% rev(), new_names = letters[1:5]) %>% colnames()) == letters[1:5]
+})
+
+
+# df_remove_vars ----------------------------------------------------------
+
+stopifnot({
+  df_remove_vars(iris, "Species") == iris[-5]
 })
 
 

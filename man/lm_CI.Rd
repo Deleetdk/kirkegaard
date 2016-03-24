@@ -2,24 +2,29 @@
 % Please edit documentation in R/modeling.R
 \name{lm_CI}
 \alias{lm_CI}
-\title{Convenient summary of an lm() model with confidence intervals.}
+\title{Convenient summary of an lm() model with analytic confidence intervals.}
 \usage{
-lm_CI(fitted_model, level = 0.95, round = 2)
+lm_CI(fitted_model, level = 0.95, round = 2, standardize = T)
 }
 \arguments{
-\item{fitted_model}{the fitted model to summarize.}
+\item{fitted_model}{(a lm or similar object) The fitted model.}
 
-\item{level}{the level of confidence to use. Defaults to .95 (95\%).}
+\item{level}{(num scalar) The level of confidence to use. Defaults to .95 (95\%).}
 
-\item{round}{at which digit to round the numbers. Defaults to 2.}
+\item{round}{(num scalar) At which digit to round the numbers. Defaults to 2.}
+
+\item{standardize}{(log scalar) Whether to report standardized betas (default true).}
 }
 \description{
 Returns beta coefficients and confidence intervals from a fitted lm() model.
 }
 \examples{
-lm_CI()
+#fit two models with iris data, one with normal and one with standardized data
+fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
+fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris \%>\% std_df())
+#then summarize the two models
+lm_CI(fit1, standardize = F) #unstd. data, don't std. betas
+lm_CI(fit1, standardize = T) #unstd. data, then std. betas
+lm_CI(fit2, standardize = F) #std data., don't std. betas
 }
-\keyword{model}
-\keyword{modeling,}
-\keyword{summary,}
 

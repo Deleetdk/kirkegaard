@@ -564,3 +564,38 @@ Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversin
   return(g)
 }
 
+
+
+#' Plot a contingency table with ggplot2
+#'
+#' Makes a pretty contingency table with ggplot2 using geom_tile.
+#' @param data (data.frame) The data.
+#' @param var1 (chr scalar) The name of the first variable (vertical)
+#' @param var2 (chr scalar) The name of the second variable (horizontal)
+#' @param margin (NULL, 1, 2) Which margin to use. Default = NULL.
+#' @export
+#' @examples
+#' GG_contingency_table(mpg, "drv", "cyl")
+#' GG_contingency_table(mpg, "drv", "cyl", margin = 1)
+#' GG_contingency_table(mpg, "drv", "cyl", margin = 2)
+GG_contingency_table = function(data, var1, var2, margin = NULL) {
+  library(ggplot2); library(magrittr)
+
+  #copy table
+  data = data[c(var1, var2)]
+
+  #convert to factors (if they are strings to begin with, will get an error)
+  data[] = lapply(data, as.factor)
+
+  #calculate table
+  t_table = table(data[[var1]], data[[var2]]) %>% prop.table(margin = margin)
+
+  #make df
+  d_table = t_table %>% as.data.frame()
+
+  #plot
+  ggplot(d_table, aes(Var2, Var1)) + geom_tile(aes(fill = Freq)) +
+    geom_text(aes(label = round(Freq, 2))) +
+    scale_fill_continuous(name = "Proportion") +
+    ylab(substitute(var1)) + xlab(substitute(var2))
+}
