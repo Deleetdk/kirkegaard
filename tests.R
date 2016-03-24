@@ -11,8 +11,8 @@ d1 = iris[1:75, ] #split in two
 d2 = iris[76:150, ]
 set.seed(1);d2_na = df_addNA(d2)
 t = merge_datasets(d1, d2) #merge into one
-t2 = merge_datasets(d1, d2, join = "left")
-t3 = merge_datasets(d1, d2, join = "right")
+t2 = silence(merge_datasets(d1, d2, join = "left"))
+t3 = silence(merge_datasets(d1, d2, join = "right"))
 t4 = merge_datasets(iris[1], iris[2:5])
 
 stopifnot({
@@ -29,8 +29,8 @@ stopifnot({
 
 #merge_datasets2
 t = merge_datasets2(d1, d2) #merge into one
-t2 = merge_datasets2(d1, d2, join = "left")
-t3 = merge_datasets2(d1, d2, join = "right")
+t2 = silence(merge_datasets2(d1, d2, join = "left"))
+t3 = silence(merge_datasets2(d1, d2, join = "right"))
 t4 = merge_datasets2(iris[1], iris[2:5])
 t5 = merge_datasets2(d2, d2_na) #test overwriting of NAs
 
@@ -107,7 +107,7 @@ stopifnot(lm_best(t) == 4)
 #test lm_CI
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
+fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df()))
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -119,7 +119,7 @@ stopifnot({
 
 
 # lm_beta_matrix df_addNA ----------------------------------------------------------
-t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F)
+t = silence(lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -128,7 +128,7 @@ stopifnot({
 })
 
 #with missing data
-t = lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F)
+t = silence(lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -146,7 +146,7 @@ stopifnot({
 
 
 # semi_par_serial ---------------------------------------------------------
-t = semi_par_serial(df = airquality, dependent = "Ozone", primary = "Solar.R", secondaries = colnames(airquality)[3:6])
+t = silence(semi_par_serial(df = airquality, dependent = "Ozone", primary = "Solar.R", secondaries = colnames(airquality)[3:6]))
 t = round(t, 2)
 stopifnot({
   t[2, 1] == .70
@@ -156,14 +156,14 @@ stopifnot({
 
 # MOD_repeat_glmnet_cv ----------------------------------------------------
 #using the iris dataset
-t = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F)
+t = silence(MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F))
 stopifnot({
   dim(t) == c(5, 4)
   class(t) == "data.frame"
 })
 
 #weights
-t_w = MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)), messages = F)
+t_w = silence(MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)), messages = F))
 
 
 # MOD_summarize_models ----------------------------------------------------
@@ -231,7 +231,7 @@ stopifnot({
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = FA_splitsample_repeat(ability, runs = 5, messages = F)
+t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F))
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(5, 1)
@@ -243,11 +243,12 @@ stopifnot({
 library(ggplot2)
 mpg_na = df_addNA(mpg) #missing data
 
-l_t = list(t = GG_scatter(mpg, "hwy", "cty"), #test default
+l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
            t2 = GG_scatter(mpg_na, "hwy", "cty"), #test with missing data
            t3 = GG_scatter(mpg, "hwy", "cty", case_names = F), #test no case names
            t4 = GG_scatter(mpg, "hwy", "cty", CI = .99), #test CI
            t5 = GG_scatter(mpg, "hwy", "cty", text_pos = "br")) #test position
+)
 
 stopifnot({
   sapply(l_t, function(x) {
