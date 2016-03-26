@@ -108,6 +108,10 @@ stopifnot(lm_best(t) == 4)
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
 fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df()))
+#weights
+v_weights = runif(150, 1, 10)
+fit3 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris, weights = v_weights)
+fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", std_df(iris), weights = v_weights))
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -115,6 +119,9 @@ stopifnot({
   lm_CI(fit1, standardize = T)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
   lm_CI(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
   lm_CI(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
+
+  #weights
+  lm_CI(fit3)$coef == lm_CI(fit3_std, standardize = F)$coef
 })
 
 

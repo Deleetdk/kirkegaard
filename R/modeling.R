@@ -168,7 +168,8 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
   #standardize?
   if (standardize) {
     #calculate sds
-    sds = sapply(fitted_model$model, sd, na.rm = T)
+    sds = sapply(fitted_model$model, sd, na.rm = T)[1:(nrow(coefs) + 1)]
+    #we subset to avoid weights in they are in the model
 
     #calculate the factors
     factors = sds[-1] / sds[1]
