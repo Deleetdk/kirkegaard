@@ -79,7 +79,7 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
   if (length(breaks) == 1) {
     #equal sizes
     if (!equal_range) {
-      breaks = quantile(x, probs = seq(0, 1, length.out = breaks+1))
+      breaks = quantile(x, probs = seq(0, 1, length.out = breaks+1), na.rm = T)
     }
   }
 

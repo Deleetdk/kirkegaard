@@ -112,7 +112,6 @@ which_min2 = function(x) {
     wm = which.min(x) #index of max
     return(c(row(x)[wm], col(x)[wm])) #return indices of data.frame / matrix
   }
-  print("test")
   return(which.min(x)) #index of max
 }
 
