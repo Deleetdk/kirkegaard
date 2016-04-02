@@ -114,6 +114,8 @@ fit3 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris, weights = v_weights
 fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", std_df(iris), weights = v_weights))
 fit4 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris)
 fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris))
+fit5 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris, weights = 1:150)
+fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris), weights = 1:150)
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -127,6 +129,9 @@ stopifnot({
 
   #factor variable
   lm_CI(fit4)$coefs == lm_CI(fit4_std, standardize = F)$coefs
+
+  #factor variable and weights
+  lm_CI(fit5)$coefs == lm_CI(fit5_std, standardize = F)$coefs
 })
 
 

@@ -152,7 +152,7 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
 
   #summary
   sum.model = summary(fitted_model)
-  # browser()
+
   #degrees of freedom
   df = sum.model$df[2]
 
@@ -164,6 +164,28 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
   coefs = sum.model$coef[-1,1:2, drop=F] #coefs without intercept
   coefs = as.data.frame(coefs) #conver to dataframe
   colnames(coefs) = c("Beta", "SE") #rename
+
+  #fix predictor names
+  v_newnames = character()
+  for (i in seq_along(fitted_model$model[-1])) {
+
+    #is factor?
+    if (is.factor(fitted_model$model[-1][[i]])) {
+      #add the non-first levels, with the variable name in front
+      v_newnames = c(v_newnames, colnames(fitted_model$model[-1])[i] + ": " + levels(fitted_model$model[-1][[i]])[-1])
+      #next
+      next
+    }
+    #is weight? then skip
+    if (colnames(fitted_model$model[-1])[i] == "(weights)") {
+      next
+    }
+
+    #add regular name
+    v_newnames = c(v_newnames, colnames(fitted_model$model[-1])[i])
+  }
+  #set the new names
+  rownames(coefs) = v_newnames
 
   #standardize?
   if (standardize) {
