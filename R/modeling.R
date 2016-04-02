@@ -168,7 +168,16 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
   #standardize?
   if (standardize) {
     #calculate sds
-    sds = sapply(fitted_model$model, sd, na.rm = T)[1:(nrow(coefs) + 1)]
+    sds = sapply(fitted_model$assign+1, function(i) {
+
+      #data
+      var = fitted_model$model[[i]]
+
+      #if var is a factor, sd = 1
+      if (is.factor(var)) return(1)
+      #otherwise, calculate it
+      sd(var, na.rm = T)
+    })[1:(nrow(coefs) + 1)]
     #we subset to avoid weights in they are in the model
 
     #calculate the factors
@@ -241,10 +250,9 @@ lm_best = function(model_list) {
 #' @param alpha_ (numeric scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
 #' @param NA_ignore (boolean) Whether to remove cases with missing data. Defaults to T.
 #' @param messages (boolean) Whether to send messages to the user.
-#' @keywords model, fit, cross-validation, glmnet, repeat
 #' @export
 #' @examples
-#' MOD_repeat_cv_glmnet()
+#' MOD_repeat_cv_glmnet(iris, "Sepal.Length", predictors = colnames(iris)[-1])
 MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T) {
   #load lib
   library(glmnet)
@@ -313,7 +321,7 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
 #' @param df A data frame with betas for predictors across models.
 #' @param digits The number of digits to round the results to. Defaults to 3.
 #' @param desc A character vector of the desired descriptive statistics. These are extracted using describe() from the psych package. Defaults to c("mean", "median", "sd").
-#' @keywords model, fit, summary, describe
+#' @param include_intercept (log scalar) Whether to include estimation of the intercept (default false).
 #' @export
 #' @examples
 #' MOD_summarize_models()

@@ -31,11 +31,6 @@ MOD_repeat_cv_glmnet(df, dependent, predictors, weights_ = NA,
 Returns a data frame of beta coefficients from glmnet.cv() fits.
 }
 \examples{
-MOD_repeat_cv_glmnet()
+MOD_repeat_cv_glmnet(iris, "Sepal.Length", predictors = colnames(iris)[-1])
 }
-\keyword{cross-validation,}
-\keyword{fit,}
-\keyword{glmnet,}
-\keyword{model,}
-\keyword{repeat}
 

@@ -13,6 +13,8 @@ MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd", "mad",
 \item{digits}{The number of digits to round the results to. Defaults to 3.}
 
 \item{desc}{A character vector of the desired descriptive statistics. These are extracted using describe() from the psych package. Defaults to c("mean", "median", "sd").}
+
+\item{include_intercept}{(log scalar) Whether to include estimation of the intercept (default false).}
 }
 \description{
 Calculates summary statistics for model betas.
@@ -20,8 +22,4 @@ Calculates summary statistics for model betas.
 \examples{
 MOD_summarize_models()
 }
-\keyword{describe}
-\keyword{fit,}
-\keyword{model,}
-\keyword{summary,}
 
