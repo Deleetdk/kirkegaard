@@ -4,19 +4,17 @@
 \alias{as_num_matrix}
 \title{Convert a data.frame to a numeric matrix, including factors.}
 \usage{
-as_num_matrix(df)
+as_num_matrix(df, skip_chr = T)
 }
 \arguments{
-\item{df}{A data.frame.}
+\item{df}{(data.frame) A data.frame with variables.}
+
+\item{skip_chr}{(log scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.}
 }
 \description{
-Returns a numeric matrix.
+Returns a numeric matrix. Ordered factors are converted to numbers, while non-ordered factors are split into dummy variables using the first level as the the reference.
 }
 \examples{
-as_num_matrix()
+as_num_matrix(iris)
 }
-\keyword{convert}
-\keyword{data.frame,}
-\keyword{factor,}
-\keyword{numeric,}
 

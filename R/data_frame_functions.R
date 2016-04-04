@@ -75,7 +75,6 @@ round_df = function(df, digits=3) {
 #' Returns a data.frame where numeric variables have been converted to their ranks.
 #' @param df A data.frame.
 #' @param ... Other parameters for rank().
-#' @keywords rank, data.frame
 #' @export
 #' @examples
 #' df = data.frame(rnorm(5), runif(5))
@@ -96,14 +95,64 @@ rank_df = function(df, ...) {
 
 #' Convert a data.frame to a numeric matrix, including factors.
 #'
-#' Returns a numeric matrix.
-#' @param df A data.frame.
-#' @keywords data.frame, numeric, factor, convert
+#' Returns a numeric matrix. Ordered factors are converted to numbers, while non-ordered factors are split into dummy variables using the first level as the the reference.
+#' @param df (data.frame) A data.frame with variables.
+#' @param skip_chr (log scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.
 #' @export
 #' @examples
-#' as_num_matrix()
-as_num_matrix = function(df) {
-  return(as.matrix(as.data.frame(lapply(df, as.numeric))))
+#' as_num_matrix(iris)
+as_num_matrix = function(df, skip_chr = T) {
+  #init
+  mat = matrix(nrow = nrow(df), ncol = 0)
+  new_colnames = character()
+
+  #loop over each variable
+  for (i in 1:ncol(df)) {
+
+    #character?
+    if (is.character(df[[i]])) {
+      if (skip_chr) next #skip
+      if (!skip_chr) df[[i]] = as.factor(df[[i]]) #convert to unordered factor
+    }
+
+    #if ordered factor
+    if (is.ordered(df[[i]])) {
+      #convert to integers
+      mat = cbind(mat, as.numeric(df[[i]]))
+
+      #save name
+      new_colnames = c(new_colnames, colnames(df)[i])
+      next
+    }
+
+    #non-ordered factor
+    if (is.factor(df[[i]])) {
+      #loop over each level
+      for (lvl in levels(df[[i]])) {
+        #skip first level
+        if (lvl == levels(df[[i]])[1]) next
+
+        #if not first, add dummy variable
+        mat = cbind(mat, (df[[i]] == lvl) %>% as.numeric())
+
+        #save name
+        new_colnames = c(new_colnames, colnames(df)[i] + "_" + lvl)
+      }
+      next
+    }
+
+    #not a factor, keep as it is
+    mat = cbind(mat, df[[i]])
+
+    #save name
+    new_colnames = c(new_colnames, colnames(df)[i])
+  }
+
+  #set names
+  rownames(mat) = rownames(df)
+  colnames(mat) = new_colnames
+
+  mat
 }
 
 

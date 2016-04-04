@@ -19,6 +19,4 @@ df = data.frame(rnorm(5), runif(5))
 df
 rank_df(df)
 }
-\keyword{data.frame}
-\keyword{rank,}
 
