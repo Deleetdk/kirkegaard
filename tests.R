@@ -192,13 +192,15 @@ stopifnot({
 
 
 # as_num_matrix -----------------------------------------------------------
-t = data.frame(a = 1:3, b = letters[10:12],
+t = data.frame(a = 1:3,
+              b = letters[10:12],
               c = seq(as.Date("2004-01-01"), by = "week", len = 3),
               stringsAsFactors = TRUE)
 t = as_num_matrix(t)
+
 stopifnot({
   class(t) == "matrix"
-  dim(t) == c(3, 3)
+  dim(t) == c(3, 4)
 })
 
 
@@ -1534,6 +1536,29 @@ test_func = function(y) {
 stopifnot({
   throws_error("test_func(y = )")
   test_func(y = "k")
+})
+
+
+
+# std_sd standardize ------------------------------------------------------
+
+set.seed(1)
+X = rnorm(100, mean = 10, sd = 5)
+set.seed(1)
+W = runif(100)
+
+stopifnot({
+  #test normal
+  are_equal(mean(standardize(X)), 0)
+  are_equal(sd(standardize(X)), 1)
+
+  #test weights
+  are_equal(weighted.mean(standardize(X, W), W), 0)
+  are_equal(wtd_sd(standardize(X, W), W), 1)
+
+  #robust
+  are_equal(median(standardize(X, robust = T)), 0)
+  are_equal(mad(standardize(X, robust = T)), 1)
 })
 
 

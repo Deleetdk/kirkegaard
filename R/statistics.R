@@ -762,3 +762,90 @@ homogeneity = function(x, reverse = F, summary = F) {
     }
 
 }
+
+
+#' Calculate weighted standard deviation
+#'
+#' Calculated the weighted standard deviation using a vector of values and a vector of weights.
+#' @param x (num vector) A vector of values.
+#' @param w (num vector) A vector of weights.
+#' @param sample (log scalar) Whether this is a sample as opposed to a population (default true).
+#' @export
+#' @examples
+#' set.seed(1)
+#' X = rnorm(100)
+#' set.seed(1)
+#' W = runif(100)
+#' sd(X) #0.898
+#' wtd_sd(X, W) #0.894, slightly different
+#' wtd_sd(X) #0.898, not using weights
+wtd_sd = function(x, w, sample = T) {
+  #if missing, use 1's
+  if (missing("w")) w = rep(1, length(x))
+
+  #weighted mean
+  wtd_mean = weighted.mean(x, w, na.rm = T)
+
+  #diffs squared
+  diffs_sq = (x - wtd_mean)^2
+
+  #weighted variance
+  if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (length(x) - 1)
+  if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / length(x)
+
+  #weighted sd
+  sqrt(wtd_var)
+}
+
+
+
+#' Standardize a vector
+#'
+#' Standardize a vector. Can use weights and robust measures of central tendency and dispersion. Returns a clean vector as opposed to base-r's \code{\link{scale}}.
+#' @param x (num vector) A vector of values.
+#' @param w (num vector) A vector of weights.
+#' @param sample (log scalar) Whether this is a sample as opposed to a population (default true).
+#' @export
+#' @examples
+#' set.seed(1)
+#' X = rnorm(100, mean = 10, sd = 5)
+#' set.seed(1)
+#' W = runif(100)
+#' standardize(X, W)
+#' standardize(X, robust = T) #almost the same for these data
+standardize = function(x, w, robust = F, sample = T) {
+  #missing w, use no weights
+  if (missing("w")) w = rep(1, length(x))
+
+  #parametric
+  if (!robust) {
+    #weighted mean
+    wtd_mean = weighted.mean(x, w, na.rm = T)
+
+    #diffs squared
+    diffs_sq = (x - wtd_mean)^2
+
+    #weighted variance
+    if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (length(x) - 1)
+    if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / length(x)
+
+    #weighted sd (sample)
+    wtd_sd = sqrt(wtd_var)
+
+    #standardize
+    return((x - wtd_mean) / wtd_sd)
+  }
+
+  #robust
+  #standard
+  if (robust) {
+    #median
+    mdn = median(x, na.rm = T)
+
+    #mad
+    mad = mad(x, na.rm = T)
+
+    #standardize
+    return((x - mdn) / mad)
+  }
+}
