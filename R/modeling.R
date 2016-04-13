@@ -397,7 +397,7 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 #' @examples
 #' fit = lm("Petal.Length ~ Sepal.Length", data = iris)
 #' MOD_k_fold_r2(fit)
-MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 100, seed = 1) {
+MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 10, seed = 1) {
   library(magrittr)
 
   #get data
@@ -417,7 +417,7 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 100, seed = 1) {
     sapply(1:folds, function(i) {
       #Segement your data by fold using the which() function
 
-      test_idx = which(folds_idx==i, arr.ind=TRUE)
+      test_idx = which(folds_idx == i, arr.ind = TRUE)
       test_data = data2[test_idx, ]
       train_data = data2[-test_idx, ]
 
@@ -441,7 +441,7 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 100, seed = 1) {
   })
 
   #return
-  c("raw_r2" = summary(fit)$r.squared, "cv_r2" = mean(v_runs))
+  c("raw_r2" = summary(lmfit)$r.squared, "cv_r2" = mean(v_runs))
 }
 
 
