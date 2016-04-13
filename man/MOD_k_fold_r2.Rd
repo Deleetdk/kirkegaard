@@ -4,7 +4,7 @@
 \alias{MOD_k_fold_r2}
 \title{Calculate k fold cross validated r2}
 \usage{
-MOD_k_fold_r2(lmfit, folds = 10, runs = 100, seed = 1)
+MOD_k_fold_r2(lmfit, folds = 10, runs = 10, seed = 1)
 }
 \arguments{
 \item{lmfit}{(an lm fit) An lm fit object.}
