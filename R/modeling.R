@@ -138,16 +138,20 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 #' @param level (num scalar) The level of confidence to use. Defaults to .95 (95\%).
 #' @param round (num scalar) At which digit to round the numbers. Defaults to 2.
 #' @param standardize (log scalar) Whether to report standardized betas (default true).
-#' @export
+#' @param kfold (log scalar) Whether to also calculate a k fold cross-validated r2 value (default true).
+#' @param folds (num scalar) The number of folds to use if using cross-validation.
+#' @param ... (other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.
+#' @export MOD_summary lm_CI
+#' @aliases lm_CI
 #' @examples
 #' #fit two models with iris data, one with normal and one with standardized data
 #' fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
 #' fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
 #' #then summarize the two models
-#' lm_CI(fit1, standardize = F) #unstd. data, don't std. betas
-#' lm_CI(fit1, standardize = T) #unstd. data, then std. betas
-#' lm_CI(fit2, standardize = F) #std data., don't std. betas
-lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
+#' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
+#' MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
+#' MOD_summary(fit2, standardize = F) #std data., don't std. betas
+MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, ...) {
   library(magrittr)
 
   #summary
@@ -157,8 +161,8 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
   df = sum.model$df[2]
 
   #R2 values
-  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared) %>% round(round)
-  names(model_effect_size) = c("R2", "R2 adj.")
+  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2]) %>% round(round)
+  names(model_effect_size) = c("R2", "R2 adj.", "R2 " + folds + "-fold cv")
 
   #coefs
   coefs = sum.model$coef[-1,1:2, drop=F] #coefs without intercept
@@ -168,7 +172,6 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
   #fix predictor names
   v_newnames = character()
   for (i in seq_along(fitted_model$model[-1])) {
-
     #is factor?
     if (is.factor(fitted_model$model[-1][[i]])) {
       #add the non-first levels, with the variable name in front
@@ -221,12 +224,14 @@ lm_CI = function(fitted_model, level = .95, round = 2, standardize = T) {
               effect_size = model_effect_size))
 }
 
+#old name
+lm_CI = MOD_summary
+
 
 #' Get R2 and R2 adj. for each model.
 #'
 #' Returns a data.frame with each models R2 and R2 adj.
 #' @param model_list (list) A list of model fits e.g. from lm().
-#' @keywords model, fit
 #' @export
 #' @examples
 #' lm_get_fits()
@@ -377,3 +382,66 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 
   return(df_desc)
 }
+
+
+# from
+# http://stackoverflow.com/a/16030020/3980197
+# via http://www.statmethods.net/stats/regression.html
+
+#' Calculate k fold cross validated r2
+#'
+#' Using k fold cross-validation, estimate the true r2 in a new sample. This is better than using adjusted r2 values.
+#' @param lmfit (an lm fit) An lm fit object.
+#' @param folds (whole number scalar) The number of folds to use (default 10).
+#' @export
+#' @examples
+#' fit = lm("Petal.Length ~ Sepal.Length", data = iris)
+#' MOD_k_fold_r2(fit)
+MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 100, seed = 1) {
+  library(magrittr)
+
+  #get data
+  data = lmfit$model
+
+  #seed
+  if (!is.na(seed)) set.seed(seed)
+
+  v_runs = sapply(1:runs, FUN = function(run) {
+    #Randomly shuffle the data
+    data2 = data[sample(nrow(data)), ]
+
+    #Create n equally size folds
+    folds_idx <- cut(seq(1, nrow(data2)), breaks = folds, labels = FALSE)
+
+    #Perform n fold cross validation
+    sapply(1:folds, function(i) {
+      #Segement your data by fold using the which() function
+
+      test_idx = which(folds_idx==i, arr.ind=TRUE)
+      test_data = data2[test_idx, ]
+      train_data = data2[-test_idx, ]
+
+      #weights
+      if ("(weights)" %in% data) {
+        wtds = train_data[["(weights)"]]
+      } else {
+        train_data$.weights = rep(1, nrow(train_data))
+      }
+
+      #fit
+      fit = lm(formula = lmfit$call$formula, data = train_data, weights = .weights)
+
+      #predict
+      preds = predict(fit, newdata = test_data)
+
+      #correlate to get r2
+      cor(preds, test_data[[1]], use = "p")^2
+    }) %>%
+      mean()
+  })
+
+  #return
+  c("raw_r2" = summary(fit)$r.squared, "cv_r2" = mean(v_runs))
+}
+
+

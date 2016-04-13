@@ -96,7 +96,17 @@ write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
 write_clipboard(iris[1:5, ], print = T)
 
 
-# lm_best lm_CI -----------------------------------------------------------------
+
+# MOD_k_fold_r2 --------------------------------------------------------------
+
+fit = lm("Petal.Length ~ Species", data = iris)
+
+stopifnot({
+  round(MOD_k_fold_r2(fit), 5) - round(c(0.941371719057368, 0.939815591508821), 5) == 0
+})
+
+
+# lm_best MOD_summary -----------------------------------------------------------------
 #fit some models
 t = list(lm(Sepal.Length ~ Sepal.Width, iris),
          lm(Sepal.Length ~ Sepal.Width + Petal.Length, iris),
@@ -104,7 +114,7 @@ t = list(lm(Sepal.Length ~ Sepal.Width, iris),
          lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width + Species, iris))
 stopifnot(lm_best(t) == 4)
 
-#test lm_CI
+#test MOD_summary
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
 fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df()))
@@ -119,21 +129,23 @@ fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Pe
 
 stopifnot({
   #then we test and make sure all the numbers are right
-  lm_CI(fit1, standardize = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
-  lm_CI(fit1, standardize = T)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
-  lm_CI(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
-  lm_CI(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
+  MOD_summary(fit1, standardize = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
+  MOD_summary(fit1, standardize = T)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
+  MOD_summary(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
+  MOD_summary(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
 
   #weights
-  lm_CI(fit3)$coef == lm_CI(fit3_std, standardize = F)$coef
+  MOD_summary(fit3)$coef == MOD_summary(fit3_std, standardize = F)$coef
 
   #factor variable
-  lm_CI(fit4)$coefs == lm_CI(fit4_std, standardize = F)$coefs
+  MOD_summary(fit4)$coefs == MOD_summary(fit4_std, standardize = F)$coefs
 
   #factor variable and weights
-  lm_CI(fit5)$coefs == lm_CI(fit5_std, standardize = F)$coefs
+  MOD_summary(fit5)$coefs == MOD_summary(fit5_std, standardize = F)$coefs
 })
 
+#check old name
+stopifnot(are_equal(lm_CI, MOD_summary))
 
 # lm_beta_matrix df_addNA ----------------------------------------------------------
 t = silence(lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
