@@ -11,6 +11,8 @@ standardize(x, w, robust = F, sample = T)
 
 \item{w}{(num vector) A vector of weights.}
 
+\item{robust}{(log vector) Whether to use robust measures (default false). See \code{\link{mad}} and \code{\link{median}}.}
+
 \item{sample}{(log scalar) Whether this is a sample as opposed to a population (default true).}
 }
 \description{

@@ -215,26 +215,4 @@ winsorise = function(x, upper, lower) {
 }
 
 
-#' Calculate the product
-#'
-#' Calculate the product of a given set of numbers.
-#' @param ... (any number of numbers) The numbers. Can be multiple arguments, or one argument that is a vector.
-#' @return A whole number.
-#' @export
-#' @examples
-#' product(1:3)
-#' product(1, 2, 3)
-product = function(...) {
-  #convert to list
-  input = list(...)
-
-  #if given a vector
-  if (length(input) == 1) {
-    return(Reduce(f = "*", init = 1, x = input[[1]]))
-  }
-
-  #if not
-  return(Reduce(f = "*", init = 1, x = as.vector(input)))
-}
-
 

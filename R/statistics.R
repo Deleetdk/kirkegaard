@@ -790,8 +790,8 @@ wtd_sd = function(x, w, sample = T) {
   diffs_sq = (x - wtd_mean)^2
 
   #weighted variance
-  if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (length(x) - 1)
-  if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / length(x)
+  if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (count_NA(x, reverse = T) - 1)
+  if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / count_NA(x, reverse = T)
 
   #weighted sd
   sqrt(wtd_var)
@@ -804,6 +804,7 @@ wtd_sd = function(x, w, sample = T) {
 #' Standardize a vector. Can use weights and robust measures of central tendency and dispersion. Returns a clean vector as opposed to base-r's \code{\link{scale}}.
 #' @param x (num vector) A vector of values.
 #' @param w (num vector) A vector of weights.
+#' @param robust (log vector) Whether to use robust measures (default false). See \code{\link{mad}} and \code{\link{median}}.
 #' @param sample (log scalar) Whether this is a sample as opposed to a population (default true).
 #' @export
 #' @examples
@@ -826,8 +827,8 @@ standardize = function(x, w, robust = F, sample = T) {
     diffs_sq = (x - wtd_mean)^2
 
     #weighted variance
-    if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (length(x) - 1)
-    if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / length(x)
+    if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (count_NA(x, reverse = T) - 1)
+    if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / count_NA(x, reverse = T)
 
     #weighted sd (sample)
     wtd_sd = sqrt(wtd_var)
