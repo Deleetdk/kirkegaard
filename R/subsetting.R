@@ -183,6 +183,6 @@ extract_last = function(x, margin_1, margin_2, drop = FALSE) {
 subset_by_pattern = function(data, pattern, inverse = FALSE) {
   library(stringr)
 
-  if (!inverse) return(data[, str_detect(colnames(data), pattern), drop = FALSE])
-  if (inverse) return(data[, !str_detect(colnames(data), pattern), drop = FALSE])
+  if (!inverse) return(data[, str_detect(colnames(data), as.character(pattern)), drop = FALSE])
+  if (inverse) return(data[, !str_detect(colnames(data), as.character(pattern)), drop = FALSE])
 }
