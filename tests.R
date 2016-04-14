@@ -102,7 +102,7 @@ write_clipboard(iris[1:5, ], print = T)
 fit = lm("Petal.Length ~ Species", data = iris)
 
 stopifnot({
-  round(MOD_k_fold_r2(fit), 5) - round(c(0.941371719057368, 0.939815591508821), 5) == 0
+  round(MOD_k_fold_r2(fit), 5) - round(c(0.9413717, 0.9397439), 5) == 0
 })
 
 
@@ -1489,22 +1489,6 @@ stopifnot({
 
 
 
-# product -----------------------------------------------------------------
-
-stopifnot({
-  #single input
-  product(1:3) == 6
-  product(1) == 1
-  product(c(1, 1)) == 1
-  product(c(1, 2)) == 2
-
-  #multiple input
-  product(1, 2, 3) == 6
-  product(1, 1) == 1
-  product(1, 2) == 2
-})
-
-
 # homogeneity -------------------------------------------------------------
 
 stopifnot({
@@ -1572,6 +1556,23 @@ stopifnot({
   are_equal(median(standardize(X, robust = T)), 0)
   are_equal(mad(standardize(X, robust = T)), 1)
 })
+
+
+# missing data functions --------------------------------------------------
+
+t1 = miss_analyze(df_addNA(iris))
+set.seed(1)
+t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% df_addNA() %>% miss_analyze()
+
+stopifnot({
+  #analyze missing data relationships
+  get_dims(t1) == c(5, 5)
+  get_dims(t2) == c(10, 10)
+  (t2 < .8) %>% sum(na.rm = T) == 90 #all are small effects
+
+})
+
+
 
 
 # done --------------------------------------------------------------------

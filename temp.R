@@ -1,4 +1,8 @@
 
+# missing data patterns ---------------------------------------------------
+
+
+
 plot_loadings2 = function (fa, factor_labels = NA, reorder = "median")
 {
   library("plotflow")

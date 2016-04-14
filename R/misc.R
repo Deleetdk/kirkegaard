@@ -402,7 +402,7 @@ total_cells = function(x) {
   v_lengths = get_dims(x)
 
   #get the product and return
-  return(product(v_lengths))
+  return(prod(v_lengths))
 }
 
 

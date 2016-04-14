@@ -165,7 +165,7 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
   names(model_effect_size) = c("R2", "R2 adj.", "R2 " + folds + "-fold cv")
 
   #coefs
-  coefs = sum.model$coef[-1,1:2, drop=F] #coefs without intercept
+  coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
   coefs = as.data.frame(coefs) #conver to dataframe
   colnames(coefs) = c("Beta", "SE") #rename
 
