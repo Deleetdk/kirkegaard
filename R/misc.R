@@ -406,3 +406,51 @@ total_cells = function(x) {
 }
 
 
+#' Transpose data.frame
+#'
+#' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
+#' @param df (data.frame) A data.frame.
+#' @return A transposed data.frame.
+#' @export
+#' @examples
+#' t_df(iris)
+t_df = function(df) {
+  library(magrittr)
+  df2 = t(df) %>% as.data.frame()
+
+  #names
+  rownames(df2) = colnames(df)
+  colnames(df2) = rownames(df)
+
+  df2
+}
+
+
+#' Last value
+#'
+#' Find the last value of a vector. By default, will take the last non-NA value.
+#' @param x (a vector) A vector.
+#' @param na.rm (log scalar) Whether to ignore missing values (default yes).
+#' @return The last value (scalar).
+#' @export
+#' @examples
+#' last_value(1:3)
+#' last_value(c(1:3, NA))
+#' last_value(rep(NA, 3))
+last_value = function(x, na.rm = T) {
+  #all NA?
+  if (all(is.na(x))) return(NA)
+
+  #dont ignore NA?
+  if (!na.rm) return(rev(x)[1])
+
+  #otherwise
+  rx = rev(x)
+  for (i in 1:length(x)) {
+    if (!is.na(rx[i])) {
+      return(rx[i])
+    }
+  }
+
+  NA
+}

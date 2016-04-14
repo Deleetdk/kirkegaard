@@ -1574,6 +1574,24 @@ stopifnot({
 
 
 
+# transpose ---------------------------------------------------------------
+
+stopifnot({
+  are_equal(t_df(iris),
+            iris %>% t %>% as.data.frame %>% set_colnames(rownames(iris)) %>% set_rownames(colnames(iris)))
+})
+
+
+
+# last_value --------------------------------------------------------------
+
+stopifnot({
+  last_value(1:3) == 3
+last_value(c(1:3, NA)) == 3
+is.na(last_value(c(1:3, NA), na.rm=F))
+is.na(last_value(rep(NA, 3)))
+})
+
 
 # done --------------------------------------------------------------------
 
