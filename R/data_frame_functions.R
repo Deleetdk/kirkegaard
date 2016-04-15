@@ -709,7 +709,10 @@ df_to_ldf = function(data, by, remove_by = T) {
 #' @examples
 #' ldf_to_df(df_to_ldf(iris), "Species")
 ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames") {
-  # browser()
+
+  #are there list names? if not, set them
+  if (is.null(names(list))) names(list) = 1:length(list)
+
   #save list names
   list_names = names(list)
 
