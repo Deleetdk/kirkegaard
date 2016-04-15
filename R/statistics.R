@@ -571,7 +571,7 @@ score_accuracy = function(x, criteria, methods = c("pearson_r", "mean_abs_delta"
   }
 
   #subset and return
-  if (methods == "all") return(d_res)
+  if ("all" %in% methods) return(d_res)
 
   #check methods
   if (any(!methods %in% colnames(d_res))) stop(str_c("Some methods were not recognized!: "), setdiff(methods, colnames(d_res)))

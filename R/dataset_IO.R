@@ -461,6 +461,16 @@ merge_datasets2 = function (DF1, DF2, join = "both", overwrite_NA = FALSE, resto
     return(DF1)
   }
 
+  #factors present?
+  if (any(c(sapply(DF1, is.factor), sapply(DF2, is.factor)))) {
+    if (!restore_factors) {
+      message("Factors were converted to characters.")
+    }
+    if (restore_factors) {
+      message("Factors were converted to characters and back to factors. However, the levels cannot be restored automatically.")
+    }
+  }
+
   #new DF
   v_rows = unique(c(rownames(DF1), rownames(DF2)))
   v_cols = unique(c(colnames(DF1), colnames(DF2)))
