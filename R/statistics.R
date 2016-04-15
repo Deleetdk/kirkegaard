@@ -504,30 +504,33 @@ MOD_partial = function(df, x, y, z, weights_var) {
 #' @export
 #' @examples
 #' score_accuracy()
-score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
+score_accuracy = function(x, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
+  #save rownames
+  v_rownames = rownames(x)
+
   #check
   if (!is.function(aggregate_function)) stop("Aggregate function isn't a function!")
-  if (missing("df")) stop("Estimates df is missing!")
+  if (missing("x")) stop("Estimates x is missing!")
   if (missing("criteria")) stop("Criteria values vector is missing!")
 
   #aggregate?
   if (aggregate) { #if the user wants aggregated results
 
-    #convert the df to aggregate estimates
-    df = apply(df, 2, aggregate_function, ...) %>% t %>% data.frame
+    #convert the x to aggregate estimates
+    x = apply(x, 2, aggregate_function, ...) %>% t %>% data.frame
   }
 
   #detect aggregate
-  if (is.vector(df)) { #if df is a vector, assume it is aggregate
-    df = df %>% t %>% data.frame #convert to df form
+  if (is.vector(x)) { #if x is a vector, assume it is aggregate
+    x = x %>% t %>% data.frame #convert to df form
     aggregate = T
   }
 
   #NAs
-  if (any(is.na(df))) message("Note: some data were missing. This function uses pairwise complete cases.")
+  if (any(is.na(x))) message("Note: some data were missing. This function uses pairwise complete cases.")
 
   #make df for results
-  df = as.data.frame(df)
+  df = as.data.frame(x)
   criteria = unlist(criteria) %>% as.vector
   d_res = data.frame(matrix(nrow = nrow(df), ncol = 0))
 
@@ -562,14 +565,17 @@ score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta
   d_res$mean_elevation_error = d_res$mean_elevation - mean(criteria, na.rm = T)
   d_res$mean_elevation_error_abs = abs(d_res$mean_elevation_error)
 
+  #rownames
+  if (!aggregate) { #dont set if we are using aggregate data
+    rownames(d_res) = v_rownames
+  }
+
   #subset and return
-  if ("all" %in% methods) return(d_res)
+  if (methods == "all") return(d_res)
 
   #check methods
   if (any(!methods %in% colnames(d_res))) stop(str_c("Some methods were not recognized!: "), setdiff(methods, colnames(d_res)))
 
-  #rownames
-  rownames(d_res) = rownames(df)
 
   return(d_res[methods])
 }

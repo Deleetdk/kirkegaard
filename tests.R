@@ -850,6 +850,7 @@ set.seed(2)
 {
 d_randomguesses = matrix(runif(n_cases * n_countries, 0, 100), ncol = n_countries) %>% as.data.frame()
 v_randomguesses = runif(n_countries, 0, 100)
+rownames(d_randomguesses) = sample(rownames(d_randomguesses)) #change order of rownames
 }
 
 #random true values
@@ -871,6 +872,8 @@ stopifnot({
   sapply(l_t, function(x) class(x) == "data.frame")
   #test not the same
   !all(cor(l_t$t) == cor(l_t$t, use = "p"))
+  #check rownames
+  rownames(l_t$t) == rownames(d_randomguesses)
 })
 
 
