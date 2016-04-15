@@ -18,6 +18,10 @@ GG_denhist = function(df, var, vline = "mean", binwidth = NULL) {
     colnames(df) = var
   }
 
+  #check if var is in df
+  if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
+
+  #plot
   g = ggplot(df, aes_string(var)) +
     geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                    colour="black", fill="white", binwidth = binwidth) +
