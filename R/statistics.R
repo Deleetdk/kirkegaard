@@ -501,7 +501,6 @@ MOD_partial = function(df, x, y, z, weights_var) {
 #' @param aggregate (boolean) Whether to use aggregated estimates. Default=F.
 #' @param aggregate_function (function) Which function to use for aggregation. Default=base::mean.
 #' @param ... (named parameters) Additional parameters to pass to the aggregator function, such as na.rm=T to ignore missing data.
-#' @keywords score, estimates, accuracy
 #' @export
 #' @examples
 #' score_accuracy()
@@ -568,6 +567,9 @@ score_accuracy = function(df, criteria, methods = c("pearson_r", "mean_abs_delta
 
   #check methods
   if (any(!methods %in% colnames(d_res))) stop(str_c("Some methods were not recognized!: "), setdiff(methods, colnames(d_res)))
+
+  #rownames
+  rownames(d_res) = rownames(df)
 
   return(d_res[methods])
 }
