@@ -1278,7 +1278,7 @@ stopifnot({
 })
 
 
-# SMD_matrix & pooled_sd --------------------------------------------------------------
+# SMD_matrix & pool_sd --------------------------------------------------------------
 #standardized mean differences
 library(magrittr)
 
@@ -1303,7 +1303,6 @@ stopifnot({
   sapply(t, is.matrix) #all matrices
   unique(t) %>% length %>% equals(7) #all different
 })
-
 
 
 # merge_rows, merge_rows_by_name --------------------------------------------------------------

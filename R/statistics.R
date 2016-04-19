@@ -622,7 +622,8 @@ pool_sd = function(x, group) {
   #summarize
   d_sum = ddply(d, "group", plyr::summarize,
                 df = sum(!is.na(x)) - 1,
-                var = var(x, na.rm = TRUE))
+                var = var(x, na.rm = TRUE)) %>%
+    na.omit() #missing data groups
 
   #weighted sum divided by weights (with Bessel's correction), then square root
   #https://en.wikipedia.org/wiki/Pooled_variance
