@@ -793,7 +793,7 @@ wtd_sd = function(x, w, sample = T) {
   if (missing("w")) w = rep(1, length(x))
 
   #weighted mean
-  wtd_mean = weighted.mean(x, w, na.rm = T)
+  wtd_mean = wtd_mean(x, w)
 
   #diffs squared
   diffs_sq = (x - wtd_mean)^2
@@ -806,6 +806,41 @@ wtd_sd = function(x, w, sample = T) {
   sqrt(wtd_var)
 }
 
+
+#' Calculate a weighted mean
+#'
+#' This is an improvement on \code{\link{weighted.mean}} in \code{base-r}.
+#'
+#' The original function returns \code{NA} when there are missing values in the weights vector despite na.rm=T. This function avoids that problem. It also returns a useful error message if there are no complete cases. The function wraps base-r's function.
+#' @param x (num vector) A vector of values.
+#' @param w (num vector) A vector of weights.
+#' @export
+#' @examples
+#' set.seed(1)
+#' X = rnorm(100)
+#' set.seed(1)
+#' W = runif(100)
+#' wtd_mean(X) # not using weights
+#' mean(X) #same as above
+#' wtd_mean(X, W) #slightly different
+wtd_mean = function(x, w) {
+  library(magrittr)
+
+  #no weights?
+  if (missing("w")) w = rep(1, length(x))
+
+  #lengths
+  if (length())
+
+  #make temp df
+  d = data.frame(x = x, w = w) %>% na.omit()
+
+  #check sample
+  if (nrow(d) == 0) stop("There were no pairwise complete cases!")
+
+  #else
+  weighted.mean(x = d$x, w = d$w)
+}
 
 
 #' Standardize a vector

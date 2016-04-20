@@ -8,13 +8,13 @@ throws_error(x, silent_try = T)
 }
 \arguments{
 \item{x}{(character scalar) Code to run in a string.}
+
+\item{silent_try}{(log scalar) Whether to use a silent try (default true).}
 }
 \description{
 Parses a string as a call and determines whether it returns an error or not. Returns a boolean.
 }
 \examples{
-throws_error()
+throws_error("log('123')") #cannot take a logarithm of a string
 }
-\keyword{error}
-\keyword{try,}
 

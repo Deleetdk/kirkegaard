@@ -1538,7 +1538,7 @@ stopifnot({
 
 
 
-# std_sd standardize ------------------------------------------------------
+# wtd_sd wtd_mean standardize ------------------------------------------------------
 
 set.seed(1)
 X = rnorm(100, mean = 10, sd = 5)
@@ -1557,7 +1557,17 @@ stopifnot({
   #robust
   are_equal(median(standardize(X, robust = T)), 0)
   are_equal(mad(standardize(X, robust = T)), 1)
+
+  #means
+  are_equal(wtd_mean(X), mean(X))
+  are_equal(wtd_mean(X, W), weighted.mean(X, W))
+
+  #errors
+  throws_error("wtd_mean(NA, NA)")
+  !throws_error("wtd_mean(c(1, NA), c(1, NA))")
 })
+
+
 
 
 # missing data functions --------------------------------------------------
@@ -1593,6 +1603,27 @@ last_value(c(1:3, NA)) == 3
 is.na(last_value(c(1:3, NA), na.rm=F))
 is.na(last_value(rep(NA, 3)))
 })
+
+
+# all_the_same lengths_match ------------------------------------------------------------
+
+stopifnot({
+  #check if same
+  all_the_same(rep(1, 100))
+  !all_the_same(1:100)
+
+  #lengths
+  lengths_match(1:4, 5:8) #same lengths
+  lengths_match(iris, iris[1:2]) #same nrow
+  !lengths_match(iris, iris[1:2], dimension = 2) #different ncol
+
+  #errors
+  throws_error("lengths_match(1:4, iris, dimension = 2)", silent_try = T)
+})
+
+
+# fail_ -------------------------------------------------------------------
+
 
 
 # done --------------------------------------------------------------------

@@ -113,3 +113,31 @@ has_names = function(x) {
 }
 
 
+#' Do the objects have the same lengths?
+#'
+#' Checks whether the nth dimension lengths match for the given objects.
+#'
+#' Vectors are treated as 1-dimensional.
+#' @param ... (objects) The objects to test.
+#' @param dimension (num scalar) The dimension to test (default 1).
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' lengths_match(1:4, 5:8) #same lengths
+#' lengths_match(iris, iris[1:2]) #same nrow
+#' lengths_match(iris, iris[1:2], dimension = 2) #different ncol
+lengths_match = function(..., dimension = 1) {
+  library(magrittr)
+
+  #try to get the nth dimension lengths
+  trial = try({
+    v_len = sapply(list(...), FUN = function(x) {
+      get_dims(x)[dimension] %>% fail_if_NA()
+    })
+  }, silent = T)
+
+  if (is_error(trial)) stop("Could not get dimension lengths! This probably means that at least one object does not have that many dimensions. E.g. if trying to get the second dimension from a vector.")
+
+  #are they all the same?
+  all_the_same(v_len)
+}
