@@ -115,6 +115,7 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vec
 
   #case names?
   if (!missing(case_names_vector)) {
+    if (!lengths_match(df, case_names_vector)) stop("Vector of case names is of the wrong length!")
     df$label = case_names_vector #use supplied names
   } else {
     df$label = rownames(df) #use rownames
