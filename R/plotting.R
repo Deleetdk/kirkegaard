@@ -165,7 +165,7 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vec
 
   #text
   if (!is.null(CI)) {
-    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " [CI", CI*100,": ", cor_CI[1] %>% round(2), " ", cor_CI[2] %>% round(2), "] (orange line)",
+    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " [CI", CI*100,": ", cor_CI[1] %>% format(nsmall = 2, digits = 2), " ", cor_CI[2] %>% format(nsmall = 2, digits = 2), "] (orange line)",
                   "\nn=", nrow(df))
   } else {
     text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " (orange line)",
