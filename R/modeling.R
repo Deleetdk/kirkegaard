@@ -151,6 +151,7 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 #' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
 #' MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
 #' MOD_summary(fit2, standardize = F) #std data., don't std. betas
+#' MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
 MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, ...) {
   library(magrittr)
 
@@ -161,8 +162,14 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
   df = sum.model$df[2]
 
   #R2 values
-  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2]) %>% round(round)
-  names(model_effect_size) = c("R2", "R2 adj.", "R2 " + folds + "-fold cv")
+  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared) %>% round(round)
+  names(model_effect_size) = c("R2", "R2 adj.")
+
+  #cross validate?
+  if (kfold) {
+    model_effect_size = c(model_effect_size, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2]) %>% round(round)
+    names(model_effect_size) = c("R2", "R2 adj.", "R2 " + folds + "-fold cv")
+  }
 
   #coefs
   coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept

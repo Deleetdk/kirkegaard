@@ -830,7 +830,7 @@ wtd_mean = function(x, w) {
   if (missing("w")) w = rep(1, length(x))
 
   #lengths
-  if (length())
+  if (!lengths_match(x, w)) stop("Lengths of x and w do not match!")
 
   #make temp df
   d = data.frame(x = x, w = w) %>% na.omit()

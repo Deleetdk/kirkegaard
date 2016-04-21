@@ -34,5 +34,6 @@ fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris \%>\% std_df())
 MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
 MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
 MOD_summary(fit2, standardize = F) #std data., don't std. betas
+MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
 }
 
