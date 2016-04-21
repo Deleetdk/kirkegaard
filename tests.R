@@ -877,7 +877,7 @@ stopifnot({
 })
 
 
-# simple is_ --------------------------------------------------------
+# is_ --------------------------------------------------------
 #various small helpful functions
 
 #is_simple_vector
@@ -903,6 +903,19 @@ stopifnot({
   is_negative(-2:2) == c(T, T, F, F, F)
   is_positive(-2:2) == c(F, F, F, T, T)
 })
+
+# is_
+stopifnot({
+  is_(iris, class = "data.frame") #check for one class
+  is_(iris, class = c("data.frame", "logical", "matrix")) #can check for multiple classes
+  is_(iris, class = "data.frame", size = c(150, 5)) #check for one class and size
+  is_(iris, size = c(150, 5)) #check for size
+  !is_(iris, size = 1) #check for wrong size
+  is_(iris, type = "list") #check for type
+  !is_(iris, type = "factor") #check for wrong type
+  throws_error('is_(iris, class = "list", error_on_false = T)')  #check for one class, error
+})
+
 
 
 # is_error, throws_error() ------------------------------------------------
@@ -1523,7 +1536,7 @@ stopifnot({
 })
 
 
-# check_missing -----------------------------------------------------------
+# check_ -----------------------------------------------------------
 #check if arguments are missing
 
 test_func = function(y) {
@@ -1532,8 +1545,13 @@ test_func = function(y) {
 }
 
 stopifnot({
+  #check_missing
   throws_error("test_func(y = )")
   test_func(y = "k")
+
+  #check_if_in
+  are_equal(check_if_in("a", letters[1:10]), NULL)
+  throws_error("check_if_in('a', letters[2])")
 })
 
 
@@ -1622,7 +1640,7 @@ stopifnot({
 })
 
 
-# fail_ -------------------------------------------------------------------
+
 
 
 

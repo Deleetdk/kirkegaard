@@ -51,11 +51,11 @@ GG_denhist = function(df, var, vline = "mean", binwidth = NULL) {
 #' @param clusters The number of clusters to find.
 #' @param runs Number of runs to use. The best run is used in the plot.
 #' @param standardize Whether to standardize the data first. Defaults to TRUE.
-#' @keywords ggplot2, plot, density, histogram
-#' @export
+#' @export GG_kmeans plot_kmeans
+#' @aliases plot_kmeans
 #' @examples
-#' plot_kmeans(iris[-5], 3)
-plot_kmeans = function (df, clusters, runs = 100, standardize = T) {
+#' GG_kmeans(iris[-5], 3)
+GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
   library(psych)
   library(ggplot2)
 
@@ -80,23 +80,29 @@ plot_kmeans = function (df, clusters, runs = 100, standardize = T) {
   return(g)
 }
 
+#old name
+plot_kmeans = GG_kmeans
 
 
 #' Scatter plot with regression line and correlation information using ggplot2
 #'
 #' Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
-#' @param df A data.frame with variables.
-#' @param x_var X variable string.
-#' @param y_var Y variable string.
-#' @param text_pos Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
-#' @param case_names Whether to add case names or not. Defaults to true. Row names are used for case names.
-#' @param CI Confidence interval. Defaults to .95. Set to NULL to disable.
-#' @param clean_names (boolean) Whether to clean the axes names using str_clean(). Default=T.
-#' @keywords ggplot2, plot, scatter
+#' @param df (data.frame) A data.frame with variables.
+#' @param x_var (chr scalar) X variable string.
+#' @param y_var (chr scalar) Y variable string.
+#' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
+#' @param case_names (log scalar) Whether to add case names or not (default true).
+#' @param case_names_vector (chr vector) The case names to use. If missing, uses row names.
+#' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
+#' @param clean_names (log scalar) Whether to clean the axes names using str_clean(). Default=T.
 #' @export
 #' @examples
-#' GG_scatter(iris, "Sepal.Length", "Sepal.Width")
-GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clean_names = T) {
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
+GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T) {
   library(ggplot2)
   library(grid)
   library(psychometric)
@@ -107,18 +113,28 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clea
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
   if (!y_var %in% colnames(df)) stop("Y variable not found in data.frame!")
 
+  #case names?
+  if (!missing(case_names_vector)) {
+    df$label = case_names_vector #use supplied names
+  } else {
+    df$label = rownames(df) #use rownames
+  }
+
   #subset + remove NA
-  df = na.omit(df[c(x_var, y_var)])
+  df = na.omit(df[c(x_var, y_var, "label")])
 
   ## text
   #correlation + CI
-  cor = cor(df, use = "p")[1, 2] #get correlation
+  cor = cor(df[1:2], use = "p")[1, 2] #get correlation
   cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
 
   #auto detect text position
   if (missing(text_pos)) {
     if (cor>0) text_pos = "tl" else text_pos = "tr"
   }
+
+  #validate text_pos
+  check_if_in(text_pos, c("tl", "tr", "bl", "br"))
 
   #text object location
   if (text_pos == "tl") {
@@ -148,21 +164,19 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clea
 
   #text
   if (!is.null(CI)) {
-    text = paste0("r=", cor %>% round(2), " [CI", CI*100,": ", cor_CI[1] %>% round(2), " ", cor_CI[2] %>% round(2), "] (orange line)",
+    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " [CI", CI*100,": ", cor_CI[1] %>% round(2), " ", cor_CI[2] %>% round(2), "] (orange line)",
                   "\nn=", nrow(df))
   } else {
-    text = paste0("r=", cor %>% round(2), " (orange line)",
+    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " (orange line)",
                   "\nn=", nrow(df))
   }
 
-
-  #labels
-  df$label = rownames(df)
 
   #text object
   text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
                          gp = gpar(fontsize = 11))
 
+  #plot
   g = ggplot(df, aes_string(x_var, y_var)) +
     geom_point() +
     geom_smooth(method = lm, se = F, color = "orange") +
@@ -188,10 +202,10 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, CI = .95, clea
 #' @param fa.object a factor analysis object from the fa() function from the psych package.
 #' @param reverse whether to reverse all loadings. Default to false.
 #' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
-#' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
 #' @export
 #' @examples
-#' plot_loadings()
+#' library(psych)
+#' plot_loadings(fa(iris[-5])) #plot loadings from analysis of iris data
 plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
   library("plotflow") #needed for reordering the variables
   library("grid") #for grob
@@ -258,10 +272,10 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #' @param fa_labels a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..
 #' @param reverse.vector a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
 #' @param reorder (character scalar or NA) Which factor analysis to order the loadings by. Can be integers, "all" or NA for not reordering.
-#' @keywords psychometrics, psychology, latent variable, factor analysis, plot, ggplot2
 #' @export
 #' @examples
-#' plot_loadings_multi()
+#' library(psych)
+#' plot_loadings_multi(fa(iris[-5]))
 plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "all") {
   library("plotflow")
   library("stringr")
@@ -537,7 +551,6 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
 #' @param reverse_factor Whether to reverse the factor first.
 #' @param loading_reversing Whether to use loading reversing to avoid inflated results. Defaults to TRUE.
 #' @param text_pos Which corner to put the text in. Defaults to "tl". Other options: tr, bl, br.
-#' @keywords factor analysis, Jensen, method of correlated vectors
 #' @export
 #' @examples
 #' Jensens_method()

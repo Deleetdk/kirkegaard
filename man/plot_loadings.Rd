@@ -17,14 +17,7 @@ plot_loadings(fa.object, reverse = F, text_pos = "tl")
 Returns a ggplot2 plot with sorted loadings and numerical results in a corner. Supports reversing of the factor is reversed.
 }
 \examples{
-plot_loadings()
+library(psych)
+plot_loadings(fa(iris[-5])) #plot loadings from analysis of iris data
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{ggplot2}
-\keyword{latent}
-\keyword{plot,}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{variable,}
 

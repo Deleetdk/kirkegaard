@@ -66,13 +66,16 @@ math_to_function = function(str, convert_equal = T, silent_try = T, test_functio
 #' Check if arguments are missing and raise error if they are
 #'
 #' Checks if arguments are missing and raises an error if they are. Put this in the beginning of your functions to check the input and give useful errors without writing checking code over and over again.
-#' @param str (a character scalar) A string of a half math conditional
-#' @param convert_equal (boolean) Converts = to ==. Default=T.
-#' @param silent_try (boolean) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.
-#' @param test_function (boolean) Whether to test the function. This is done by trying on 0. Default=T.
+#' @param var_names (chr vector) Names of variables to check.
+#' @param error_msg (chr scalar) A template of the error message to show.
 #' @export
 #' @examples
-#' math_to_function()
+#' test_func = function(y) {
+#' check_missing("y")
+#' T
+#' }
+#' test_func(y = ) #throws error
+#' test_func(y = 1) #returns true
 check_missing = function(var_names, error_msg = "[VAR] was missing! Please supply the input and try again.") {
 
   #parent.frame as list
@@ -86,6 +89,7 @@ check_missing = function(var_names, error_msg = "[VAR] was missing! Please suppl
     }
 
     #check if missing
+    if (is.list(pf[[name]])) return(invisible(NULL)) #evade bug?
     if (are_equal(pf[[name]], quote(expr = ))) {
       stop(str_replace(error_msg, pattern = "\\[VAR\\]", name), call. = F)
     }

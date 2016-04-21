@@ -4,31 +4,34 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, text_pos, case_names = T, CI = 0.95,
-  clean_names = T)
+GG_scatter(df, x_var, y_var, text_pos, case_names = T, case_names_vector,
+  CI = 0.95, clean_names = T)
 }
 \arguments{
-\item{df}{A data.frame with variables.}
+\item{df}{(data.frame) A data.frame with variables.}
 
-\item{x_var}{X variable string.}
+\item{x_var}{(chr scalar) X variable string.}
 
-\item{y_var}{Y variable string.}
+\item{y_var}{(chr scalar) Y variable string.}
 
-\item{text_pos}{Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
+\item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 
-\item{case_names}{Whether to add case names or not. Defaults to true. Row names are used for case names.}
+\item{case_names}{(log scalar) Whether to add case names or not (default true).}
 
-\item{CI}{Confidence interval. Defaults to .95. Set to NULL to disable.}
+\item{case_names_vector}{(chr vector) The case names to use. If missing, uses row names.}
 
-\item{clean_names}{(boolean) Whether to clean the axes names using str_clean(). Default=T.}
+\item{CI}{(num scalar) interval. Defaults to .95. Set to NULL to disable.}
+
+\item{clean_names}{(log scalar) Whether to clean the axes names using str_clean(). Default=T.}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
 }
 \examples{
-GG_scatter(iris, "Sepal.Length", "Sepal.Width")
+GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 }
-\keyword{ggplot2,}
-\keyword{plot,}
-\keyword{scatter}
 

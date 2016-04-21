@@ -8,18 +8,19 @@ check_missing(var_names,
   error_msg = "[VAR] was missing! Please supply the input and try again.")
 }
 \arguments{
-\item{str}{(a character scalar) A string of a half math conditional}
+\item{var_names}{(chr vector) Names of variables to check.}
 
-\item{convert_equal}{(boolean) Converts = to ==. Default=T.}
-
-\item{silent_try}{(boolean) Whether to use a silent trial. Default=T. Change to F to get potentially useful debugging information.}
-
-\item{test_function}{(boolean) Whether to test the function. This is done by trying on 0. Default=T.}
+\item{error_msg}{(chr scalar) A template of the error message to show.}
 }
 \description{
 Checks if arguments are missing and raises an error if they are. Put this in the beginning of your functions to check the input and give useful errors without writing checking code over and over again.
 }
 \examples{
-math_to_function()
+test_func = function(y) {
+check_missing("y")
+T
+}
+test_func(y = ) #throws error
+test_func(y = 1) #returns true
 }
 

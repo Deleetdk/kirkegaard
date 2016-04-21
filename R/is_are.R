@@ -91,7 +91,7 @@ is_numeric = function(x, recursive = TRUE) {
 #' @examples
 #' are_equal(iris[1:4], iris[-5])
 are_equal = function(x, y, ...) {
-  test = all.equal(x, y, ...)
+  test = all.equal(target = x, current = y, ...)
   if (is.logical(test)) {
     return(TRUE)
   } else {
@@ -140,4 +140,84 @@ lengths_match = function(..., dimension = 1) {
 
   #are they all the same?
   all_the_same(v_len)
+}
+
+
+#' Check whether object is the right class, size and type
+#'
+#' Checks both the class, size and type of an object. Returns a logical or an error if false.
+#'
+#' Vectors are treated as 1-dimensional.
+#' @param x (any object) The object to test.
+#' @param class (chr vector) The accepted classes. This is checked with \code{\link{is}}.
+#' @param size (num vector) The accepted lengths. This is checked with \code{\link{get_dims}}.
+#' @param type (chr vector) The accepted types. This is checked with \code{\link{typeof}}.
+#' @param error_on_false (log scalar) Whether to throw an error instead of returning false (default false).
+#' @return Logical scalar or error.
+#' @export
+#' @examples
+#' is_(iris, class = "data.frame") #check for one class
+#' is_(iris, class = c("data.frame", "logical", "matrix")) #can check for multiple classes
+#' is_(iris, class = "data.frame", size = c(150, 5)) #check for one class and size
+#' is_(iris, size = c(150, 5)) #check for size
+#' is_(iris, size = 1) #check for wrong size
+#' is_(iris, type = "list") #check for type
+#' is_(iris, type = "factor") #check for wrong type
+#' is_(iris, class = "list", error_on_false = T) #check for one class, error
+is_ = function(x, class, size, type, error_on_false = F) {
+
+  #check x
+  check_missing("x")
+
+  #init
+  v_type_check = v_size_check = v_class_check = T
+
+  #check class
+  if (!missing("class")) {
+    v_class_check = any(sapply(X = class, FUN = function(class_i) {
+      is(x, class2 = class_i)
+    }))
+  }
+
+  #check size
+  if (!missing("size")) {
+    v_size_check = all(get_dims(x) == size)
+  }
+
+  #check type
+  if (!missing("type")) {
+    v_type_check = any(sapply(X = type, FUN = function(type_i) {
+      typeof(x) == type_i #check type
+    }))
+  }
+
+  #error?
+  if (error_on_false) {
+    if (!v_size_check) stop("Object " + deparse(substitute(x)) + " was not of the right size!")
+    if (!v_type_check) stop("Object " + deparse(substitute(x)) + " was not of the right type!")
+    if (!v_class_check) stop("Object " + deparse(substitute(x)) + " was not of the right class!")
+  }
+
+  v_size_check & v_type_check & v_class_check
+}
+
+
+#' Check whether object is in a list/vector
+#'
+#' Checks whether an object is in a list/vector. If not, returns an informative error.
+#' @param x (any object) The object to test.
+#' @param list (list) The list of accepted values
+#' @return Logical scalar or error.
+#' @export
+#' @examples
+#' check_if_in("a", letters[1:10])
+#' check_if_in("a", letters[2])
+check_if_in = function(x, list) {
+  #check
+  if (! x %in% list) {
+    stop(deparse(substitute(x)) + " was not among the accepted values!", call. = F)
+  }
+
+  #all fine
+  return(invisible(NULL))
 }

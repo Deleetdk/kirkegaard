@@ -26,11 +26,4 @@ Takes a factor analysis, data.frame and name of the criteria variable as inputs 
 \examples{
 Jensens_method()
 }
-\keyword{Jensen,}
-\keyword{analysis,}
-\keyword{correlated}
-\keyword{factor}
-\keyword{method}
-\keyword{of}
-\keyword{vectors}
 

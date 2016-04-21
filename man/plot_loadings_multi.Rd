@@ -20,14 +20,7 @@ plot_loadings_multi(fa_objects, fa_labels, reverse_vector = NA,
 Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
 }
 \examples{
-plot_loadings_multi()
+library(psych)
+plot_loadings_multi(fa(iris[-5]))
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{ggplot2}
-\keyword{latent}
-\keyword{plot,}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{variable,}
 
