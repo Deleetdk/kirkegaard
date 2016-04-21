@@ -155,6 +155,11 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
 MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, ...) {
   library(magrittr)
 
+  #higher order?
+  if (!all(attr(fitted_model$terms, "order") == 1)) {
+    stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
+  }
+
   #summary
   sum.model = summary(fitted_model)
 
@@ -162,14 +167,17 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
   df = sum.model$df[2]
 
   #R2 values
-  model_effect_size = c(sum.model$r.squared, sum.model$adj.r.squared) %>% round(round)
-  names(model_effect_size) = c("R2", "R2 adj.")
+  model_meta = c(nrow(fitted_model$model), sum.model$r.squared, sum.model$adj.r.squared)
+  names(model_meta) = c("N", "R2", "R2 adj.")
 
   #cross validate?
   if (kfold) {
-    model_effect_size = c(model_effect_size, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2]) %>% round(round)
-    names(model_effect_size) = c("R2", "R2 adj.", "R2 " + folds + "-fold cv")
+    model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2])
+    names(model_meta) = c("N", "R2", "R2 adj.", "R2 " + folds + "-fold cv")
   }
+
+  #rounding, dont round the first value
+  model_meta = round(model_meta, round)
 
   #coefs
   coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
@@ -179,6 +187,13 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
   #fix predictor names
   v_newnames = character()
   for (i in seq_along(fitted_model$model[-1])) {
+    #is character?
+    if (is.character(fitted_model$model[-1][[i]])) {
+      #change to factor
+      fitted_model$model[-1][[i]] = as.factor(fitted_model$model[-1][[i]])
+      warning("One variable " + names(fitted_model$model[-1])[i] + " was converted from chr to factor. You should probably convert this to a factor in your data.frame.")
+    }
+
     #is factor?
     if (is.factor(fitted_model$model[-1][[i]])) {
       #add the non-first levels, with the variable name in front
@@ -228,7 +243,7 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
 
   #return
   return(list(coefs = coefs,
-              effect_size = model_effect_size))
+              meta = model_meta))
 }
 
 #old name

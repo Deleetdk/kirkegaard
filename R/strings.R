@@ -156,3 +156,27 @@ str_detect2 = function(string, pattern, value = F) {
   if (value) return(string[v])
   v
 }
+
+
+#' Detect and replace values with regex
+#'
+#' A wrapper for stringr's \code{\link{str_detect}} so that one can detect strings with a particular pattern and replacement them outright. Vectorized over patterns and replacements.
+#' @param string (chr vector) A character vector.
+#' @param pattern (chr vector) Pattern to look for (REGEX).
+#' @param replacement (chr vector) A vector of values to replace with.
+#' @return A character vector.
+#' @export
+#' @examples
+#' str = 1:99 + c(".", ",", ":") #example str vector
+#' str_detect_replace(str, pattern = c("\\.", ",", ":"), replacement = c("dot", "comma", "colon")) #replace by pattern
+str_detect_replace = function(string, pattern, replacement) {
+  #check input
+  if (!lengths_match(pattern, replacement)) stop("Lengths of pattern and replacement must match!")
+
+  #loop over pattern-replacements
+  for (i in seq_along(pattern)) {
+    string[str_detect(string, pattern = pattern[i])] = replacement[i] #detect and replace
+  }
+
+  string
+}
