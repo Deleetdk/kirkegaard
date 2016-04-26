@@ -147,8 +147,8 @@ stopifnot({
 #check old name
 stopifnot(are_equal(lm_CI, MOD_summary))
 
-# lm_beta_matrix df_addNA ----------------------------------------------------------
-t = silence(lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
+# MOD_APSLM df_addNA ----------------------------------------------------------
+t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -157,7 +157,7 @@ stopifnot({
 })
 
 #with missing data
-t = silence(lm_beta_matrix("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F))
+t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"

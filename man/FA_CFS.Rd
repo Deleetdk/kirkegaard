@@ -17,7 +17,7 @@ FA_CFS(data, sort = T, include_full_sample = T)
 Returns a numerical vector of the change in the size of the first factor by removing that case.
 }
 \examples{
-FA_CFS()
+FA_CFS(iris[-5])
 }
 \keyword{analysis}
 \keyword{factor}

@@ -17,9 +17,6 @@ FA_all_methods(DF, ..., skip_methods = "", messages = T)
 Runs factor analysis on a dataset with all 30 possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
 }
 \examples{
-FA_all_methods()
+FA_all_methods(iris[-5])
 }
-\keyword{analysis}
-\keyword{factor}
-\keyword{psychometrics,}
 

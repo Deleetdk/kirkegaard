@@ -4,22 +4,19 @@
 \alias{FA_residuals}
 \title{Find residuals on case-level basis for all indicators in a factor analysis.}
 \usage{
-FA_residuals(data, ...)
+FA_residuals(data, standardize = T, ...)
 }
 \arguments{
-\item{data}{a data.frame.}
+\item{data}{(data.frame) The data.}
+
+\item{standardize}{(log scalar) Whether to standardize the residuals (default true). If not done, they may not have the same standard deviation.}
+
+\item{...}{(arguments to fa) Further arguments to \code{\link{fa}}.}
 }
 \description{
 Extracts the first factor, then uses the factor scores to predict the indicator values for each indicator and for each case. Returns a data.frame with residuals.
 }
 \examples{
-FA_residuals()
+FA_residuals(iris[-5])
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{latent}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{residuals}
-\keyword{variable,}
 

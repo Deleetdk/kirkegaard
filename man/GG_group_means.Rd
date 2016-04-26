@@ -22,7 +22,7 @@ GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T,
 
 \item{split_group_labels}{(log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).}
 
-\item{line_length}{(num scalar) The desired line length. Only used when split_group_labels = T.}
+\item{line_length}{(num scalar) The desired line width (default 95). Only used when split_group_labels = T.}
 }
 \description{
 Draws a nice ggplot2 with group means and error bars.

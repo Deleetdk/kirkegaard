@@ -375,7 +375,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' @param type (character scalar) The type of plot. Options: bar (default), point, points.
 #' @param msg_NA (logical scalar) Show a message if NAs were removed? (default true)
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
-#' @param line_length (num scalar) The desired line length. Only used when split_group_labels = T.
+#' @param line_length (num scalar) The desired line width (default 95). Only used when split_group_labels = T.
 #' @export
 #' @examples
 #' GG_group_means(iris, "Sepal.Length", "Species")
@@ -424,15 +424,22 @@ GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, 
 
   #plot
   if (type == "bar") {
-    g = ggplot(df_sum, aes(group1, mean)) + geom_bar(stat="identity") + geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    g = ggplot(df_sum, aes(group1, mean)) +
+      geom_bar(stat="identity") +
+      geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
   }
 
   if (type == "point") {
-    g = ggplot(df_sum, aes(group1, mean)) + geom_point() + geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    g = ggplot(df_sum, aes(group1, mean)) +
+      geom_point() +
+      geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
   }
 
   if (type == "points") {
-    g = ggplot(df, aes_string(groupvar, var)) + geom_point() + geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) + geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+      geom_point(data = df, aes_string(groupvar, var)) +
+      geom_point(aes(group1, mean), color = "red", size = 3) +
+      geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
   }
 
   if (split_group_labels) {

@@ -9,7 +9,7 @@ FA_mixedness(df, ...)
 \arguments{
 \item{df}{A data.frame to calculate mixedness metrics for.}
 
-\item{...}{Parameters to fa().}
+\item{...}{Parameters to \code{\link{FA_MAR}}. These get passed on to \code{\link{fa}}.}
 }
 \description{
 Returns 4 metrics that attempt to identify cases that are structural outliers/mixed in theor structure.
@@ -26,11 +26,6 @@ MeanALC, mean absolute loading change. Measures how much loadings are affected i
 MaxALC, max absolute loading change. Measures the maximal loading change.
 }
 \examples{
-FA_mixedness()
+FA_mixedness(iris[-5])
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{mixedness,}
-\keyword{outlier}
-\keyword{psychometrics,}
 

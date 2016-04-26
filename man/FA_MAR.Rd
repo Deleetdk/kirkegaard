@@ -15,7 +15,7 @@ FA_MAR(data, sort = T, ...)
 Extracts the first factor, then uses the factor scores to predict the indicator values for each indicator and for each case. Returns a data.frame with residuals. Then calculates the mean absolute value of these by case.
 }
 \examples{
-FA_MAR()
+FA_MAR(iris[-5])
 }
 \keyword{analysis,}
 \keyword{factor}

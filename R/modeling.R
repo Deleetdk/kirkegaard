@@ -1,28 +1,30 @@
 ## VARIOUS MODELING FUNCTIONS
 
-#' Matrix of beta coefficients of all simple linear models.
+#' Fit all possible simple linear models
 #'
-#' Returns a data.frame with beta coefficients for all possible simple (without interactions) linear models given a set of predictor variables and a dependent variable.
-#' @param dependent (character scalar) The name of the dependent variable.
-#' @param predictors (character vector) The names of the redictor variables.
+#' Fits all possible simple (no interactions) linear models using \code{\link{lm}}.
+#'
+#' Use \code{\link{MOD_summarize_models}} on the data.frame with model summary information to get an overview of the results.
+#' @return Returns a list with two elements: 1) A data.frame with betas and other summary statistics from the models. 2) A list with all the models.
+#' @param dependent (chr scalar) The name of the dependent variable.
+#' @param predictors (chr vector) The names of the redictor variables.
 #' @param data (data.frame) A data.frame with the variables.
-#' @param standardized (boolean) Whether to standardize the results. Defaults to true.
-#' @param .weights (numeric vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.
-#' @param return_models (character scalar) What to return. all = all models, best = best model. Defaults to best.
-#' @param messages (boolean) Whether to show messages. Default=TRUE.
-#' @export
+#' @param standardized (log scalar) Whether to standardize the results. Defaults to true.
+#' @param .weights (num vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.
+#' @param messages (log scalar) Whether to show messages. Default=TRUE.
+#' @export MOD_APSLM lm_beta_matrix
+#' @aliases lm_beta_matrix
 #' @examples
 #' #try all models in iris dataset to predict sepal length
-#' lm_beta_matrix(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
-lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weights = NA, return_models = "b", messages = T) {
+#' MOD_APSLM(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
+MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = NA, messages = T) {
   library(gtools) #for combinations()
   library(stringr) #for str_c()
-  library(faraway) #for vif()
 
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
-  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "N", "VIF")
+  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "R", "R.adj.", "N")
 
   #standardize?
   if (standardized == T) {
@@ -97,15 +99,14 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
     r_sq_adj = summary(lm.fit)$adj.r.squared
     betas[model.idx, "r2.adj."] = r_sq_adj
 
+    #insert R
+    betas[model.idx, "R"] = sqrt(r_sq)
+
+    #insert R adj.
+    betas[model.idx, "R.adj."] = sqrt(r_sq_adj)
+
     #sample N
     betas[model.idx, "N"] = nrow(model.frame(lm.fit))
-
-    #VIF
-    betas[model.idx, "VIF"] = max(faraway::vif(lm.fit))
-    # fmsb::VIF(lm.fit)
-    # car::vif(lm.fit)
-    # HH::vif(lm.fit)
-    # faraway::vif(lm.fit)
 
   }
 
@@ -113,22 +114,13 @@ lm_beta_matrix = function(dependent, predictors, data, standardized = T, .weight
   predictor_names = setdiff(colnames(betas), model_fit_names)
   betas = betas[c(predictor_names, model_fit_names)]
 
-  #return models
-  #all models
-  if (str_sub(return_models, 1, 1) == "a") {
-    return(list(beta_matrix = betas,
-                all_models = model.fits))
-  }
-
-  #best model
-  if (str_sub(return_models, 1, 1) == "b") {
-    best_idx = which.max(unlist(betas["r2.adj."]))
-    return(list(beta_matrix = betas,
-                best_model = model.fits[[best_idx]]))
-  }
-
-  return(betas)
+  #return
+  return(list(beta_matrix = betas,
+              all_models = model.fits))
 }
+
+#old name
+lm_beta_matrix = MOD_APSLM
 
 
 #' Convenient summary of an lm() model with analytic confidence intervals.

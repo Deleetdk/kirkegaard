@@ -1,14 +1,16 @@
 #' Find residuals on case-level basis for all indicators in a factor analysis.
 #'
 #' Extracts the first factor, then uses the factor scores to predict the indicator values for each indicator and for each case. Returns a data.frame with residuals.
-#' @param data a data.frame.
-#' @keywords psychometrics, psychology, latent variable, factor analysis, residuals
+#' @param data (data.frame) The data.
+#' @param standardize (log scalar) Whether to standardize the residuals (default true). If not done, they may not have the same standard deviation.
+#' @param ... (arguments to fa) Further arguments to \code{\link{fa}}.
 #' @export
 #' @examples
-#' FA_residuals()
-FA_residuals = function(data, ...) {
+#' FA_residuals(iris[-5])
+FA_residuals = function(data, standardize = T, ...) {
   library(stringr)
   library(psych)
+
   #initial
   data = std_df(data) #standardize
   fa = fa(data, ...) #factor analyze
@@ -23,7 +25,11 @@ FA_residuals = function(data, ...) {
     formula = str_c(indicator, " ~ factor.scores") #the regression formula as string
     model = lm(formula, data2, na.action = "na.exclude") #regress
     resids = residuals(model) #extract residuals for this indicator
-    resids.table[, indicator] = resids #set into resids df
+    if (standardize) {
+      resids.table[, indicator] = standardize(resids)
+    } else {
+      resids.table[, indicator] = resids
+    }
   }
 
   return(resids.table) #return resids
@@ -37,7 +43,7 @@ FA_residuals = function(data, ...) {
 #' @keywords psychometrics, psychology, latent variable, factor analysis, residuals
 #' @export
 #' @examples
-#' FA_MAR()
+#' FA_MAR(iris[-5])
 FA_MAR = function(data, sort = T, ...) {
   resids = FA_residuals(data, ...)
 
@@ -67,7 +73,7 @@ FA_MAR = function(data, sort = T, ...) {
 #' @keywords psychometrics, psychology, latent variable, factor analysis
 #' @export
 #' @examples
-#' FA_CFS()
+#' FA_CFS(iris[-5])
 FA_CFS = function(data, sort = T, include_full_sample = T) {
   #initial
   prop.vars = as.data.frame(matrix(nrow=nrow(data)+1, ncol=2)) #for results
@@ -116,10 +122,9 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
 #' @param DF A data.frame to extract factors from.
 #' @param ... Parameters to fa().
 #' @param skip_methods A character vector of methods to skip. Defaults to none.
-#' @keywords psychometrics, factor analysis
 #' @export
 #' @examples
-#' FA_all_methods()
+#' FA_all_methods(iris[-5])
 FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
   #libs
   library(stringr)
@@ -200,11 +205,10 @@ FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
 #'
 #' MaxALC, max absolute loading change. Measures the maximal loading change.
 #' @param df A data.frame to calculate mixedness metrics for.
-#' @param ... Parameters to fa().
-#' @keywords psychometrics, factor analysis, mixedness, outlier
+#' @param ... Parameters to \code{\link{FA_MAR}}. These get passed on to \code{\link{fa}}.
 #' @export
 #' @examples
-#' FA_mixedness()
+#' FA_mixedness(iris[-5])
 FA_mixedness = function(df, ...){
   library(psych)
   library(plyr)
