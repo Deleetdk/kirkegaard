@@ -4,26 +4,26 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x, digits = 2, clean_names = FALSE, clean_what = c("_",
-  "\\\\."), pad_digits = T, print = FALSE)
+write_clipboard(x, digits = 2, clean_names = F, clean_what = c("_",
+  "\\\\."), pad_digits = T, print = F)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}
 
-\item{digits}{(integer) A number of digits to round the data to.}
+\item{digits}{(int scalar) A number of digits to round the data to.}
 
-\item{clean_names}{(boolean) Whether to clean the names. Default=F.}
+\item{clean_names}{(log scalar) Whether to clean the names. Default=F.}
 
-\item{clean_what}{(character vector) Which things to clean. Defaults to underscores and dots.}
+\item{clean_what}{(chr vector) Which things to clean. Defaults to underscores and dots.}
+
+\item{pad_digits}{(log scalar) Whether to pad zeros to the digits (for prettier tables; default = T).}
+
+\item{print}{(log scalar) Whether to also print the output in R (default F).}
 }
 \description{
-A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
+A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 }
 \examples{
 write_clipboard(cor(iris[-5]))
 }
-\keyword{clipboard}
-\keyword{export,}
-\keyword{output,}
-\keyword{write,}
 

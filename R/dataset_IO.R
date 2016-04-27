@@ -220,16 +220,17 @@ as_long = function(x) {
 
 #' Write object to clipboard
 #'
-#' A wrapper function to write.table() for writing to the clipboard for pasting in a spreadsheet.
+#' A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 #' @param x (any object that works with write.table) Something to write to the clipboard.
-#' @param digits (integer) A number of digits to round the data to.
-#' @param clean_names (boolean) Whether to clean the names. Default=F.
-#' @param clean_what (character vector) Which things to clean. Defaults to underscores and dots.
-#' @keywords write, output, export, clipboard
+#' @param digits (int scalar) A number of digits to round the data to.
+#' @param clean_names (log scalar) Whether to clean the names. Default=F.
+#' @param clean_what (chr vector) Which things to clean. Defaults to underscores and dots.
+#' @param pad_digits (log scalar) Whether to pad zeros to the digits (for prettier tables; default = T).
+#' @param print (log scalar) Whether to also print the output in R (default F).
 #' @export
 #' @examples
 #' write_clipboard(cor(iris[-5]))
-write_clipboard = function(x, digits = 2, clean_names = FALSE, clean_what = c("_", "\\."), pad_digits = T, print = FALSE) {
+write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "\\."), pad_digits = T, print = F) {
   library("stringr")
   library("magrittr")
 
