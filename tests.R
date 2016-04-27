@@ -102,7 +102,7 @@ write_clipboard(iris[1:5, ], print = T)
 fit = lm("Petal.Length ~ Species", data = iris)
 
 stopifnot({
-  round(MOD_k_fold_r2(fit), 5) - round(c(0.9413717, 0.9397439), 5) == 0
+  round(MOD_k_fold_r2(fit), 5) - round(c(0.9413717, 0.9380666), 5) == 0
 })
 
 
@@ -114,18 +114,23 @@ t = list(lm(Sepal.Length ~ Sepal.Width, iris),
          lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width + Species, iris))
 stopifnot(lm_best(t) == 4)
 
-#test MOD_summary
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df()))
+fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df(messages = F)))
+
 #weights
 v_weights = runif(150, 1, 10)
 fit3 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris, weights = v_weights)
 fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", std_df(iris), weights = v_weights))
 fit4 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris)
-fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris))
+fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris, messages = F))
 fit5 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris, weights = 1:150)
-fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris), weights = 1:150)
+fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris, messages = F), weights = 1:150)
+
+#missing data
+fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary()
+fit6_miss = lm("Petal.Length ~ Sepal.Width", df_addNA(iris)) %>% MOD_summary()
+fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", df_addNA(iris), weight = Sepal.Length) %>% MOD_summary()
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -142,12 +147,14 @@ stopifnot({
 
   #factor variable and weights
   MOD_summary(fit5)$coefs == MOD_summary(fit5_std, standardize = F)$coefs
+
 })
 
 #check old name
 stopifnot(are_equal(lm_CI, MOD_summary))
 
-# MOD_APSLM df_addNA ----------------------------------------------------------
+
+# MOD_APSLM  ----------------------------------------------------------
 t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
 stopifnot({
   length(t) == 2
@@ -1556,7 +1563,7 @@ stopifnot({
 
 
 
-# wtd_sd wtd_mean standardize ------------------------------------------------------
+# wtd_sd wtd_mean wtd_sum standardize ------------------------------------------------------
 
 set.seed(1)
 X = rnorm(100, mean = 10, sd = 5)
@@ -1579,6 +1586,10 @@ stopifnot({
   #means
   are_equal(wtd_mean(X), mean(X))
   are_equal(wtd_mean(X, W), weighted.mean(X, W))
+
+  #sums
+  are_equal(wtd_sum(X), sum(X))
+  are_equal(wtd_sum(X, W), weighted.mean(X, W) * 100)
 
   #errors
   throws_error("wtd_mean(NA, NA)")

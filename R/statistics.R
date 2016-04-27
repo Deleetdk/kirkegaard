@@ -842,6 +842,41 @@ wtd_mean = function(x, w) {
   weighted.mean(x = d$x, w = d$w)
 }
 
+#' Calculate a weighted sum
+#'
+#' This is an improvement on \code{\link{sum}} in \code{base-r}.
+#'
+#' It automatically handles missing data. It returns a useful error message if there are no complete cases.
+#' @param x (num vector) A vector of values.
+#' @param w (num vector) A vector of weights.
+#' @export
+#' @examples
+#' set.seed(1)
+#' X = rnorm(100)
+#' set.seed(1)
+#' W = runif(100)
+#' wtd_sum(X) # not using weights
+#' sum(X) #same as above
+#' wtd_sum(X, W) #different
+wtd_sum = function(x, w) {
+  #no weights?
+  if (missing("w")) w = rep(1, length(x))
+
+  #lengths
+  lengths_match(x, w)
+
+  #make temp df
+  d = data.frame(x = x, w = w) %>% na.omit()
+
+  #check sample
+  if (nrow(d) == 0) stop("There were no pairwise complete cases!")
+
+  #calculate
+  x_w = sum(d$x * d$w, na.rm = T) # sum of x * w
+  w_sum = sum(d$w, na.rm = T) # sum of w
+  (x_w/w_sum) * count_NA(d$x, reverse = T) #weighted sum
+}
+
 
 #' Standardize a vector
 #'

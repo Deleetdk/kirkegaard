@@ -405,13 +405,17 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 #' Calculate k fold cross validated r2
 #'
 #' Using k fold cross-validation, estimate the true r2 in a new sample. This is better than using adjusted r2 values.
-#' @param lmfit (an lm fit) An lm fit object.
+#' @param lmfit (lm fit) A lm fit object.
 #' @param folds (whole number scalar) The number of folds to use (default 10).
+#' @param runs (int scalar) The number of runs (default 20).
+#' @param seed (int scalar) The seed for the random number generator (default 1). This ensures reproducible results.
 #' @export
 #' @examples
-#' fit = lm("Petal.Length ~ Sepal.Length", data = iris)
-#' MOD_k_fold_r2(fit)
-MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 10, seed = 1) {
+#' fit = lm("Petal.Length ~ Sepal.Length", data = iris) #a fit
+#' fit_wtd = lm("Petal.Length ~ Sepal.Length", data = iris, weight = Sepal.Width) #with weights
+#' MOD_k_fold_r2(fit) #raw r2 and cv r2
+#' MOD_k_fold_r2(fit_wtd) #different r2 due to weights
+MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
   library(magrittr)
 
   #get data
@@ -424,6 +428,13 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 10, seed = 1) {
     #Randomly shuffle the data
     data2 = data[sample(nrow(data)), ]
 
+    #weights
+    if ("(weights)" %in% colnames(data2)) {
+      data2$.weights = data2[["(weights)"]]
+    } else {
+      data2$.weights = rep(1, nrow(data2))
+    }
+
     #Create n equally size folds
     folds_idx <- cut(seq(1, nrow(data2)), breaks = folds, labels = FALSE)
 
@@ -435,21 +446,21 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 10, seed = 1) {
       test_data = data2[test_idx, ]
       train_data = data2[-test_idx, ]
 
-      #weights
-      if ("(weights)" %in% data) {
-        wtds = train_data[["(weights)"]]
-      } else {
-        train_data$.weights = rep(1, nrow(train_data))
-      }
-
       #fit
       fit = lm(formula = lmfit$call$formula, data = train_data, weights = .weights)
 
       #predict
       preds = predict(fit, newdata = test_data)
 
-      #correlate to get r2
-      cor(preds, test_data[[1]], use = "p")^2
+      #calculate SSE and R2
+      # http://stats.stackexchange.com/questions/32596/what-is-the-difference-between-coefficient-of-determination-and-mean-squared
+      v_sq_errors = (test_data[[1]] - preds)^2 #squared errors
+      v_sq_errors_sum = wtd_sum(v_sq_errors, test_data$.weights) #weighted sum
+      v_squared_deviations = (test_data[[1]] - wtd_mean(train_data[[1]], train_data$.weights))^2 #squared deviations from mean
+      v_sum_squared_deviations = wtd_sum(v_squared_deviations, test_data$.weights)
+
+      #R2
+      1 - (v_sq_errors_sum / v_sum_squared_deviations)
     }) %>%
       mean()
   })
