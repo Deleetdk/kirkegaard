@@ -1192,6 +1192,7 @@ library("magrittr")
 
 set.seed(1)
 df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
+weightsvar = runif(5)
 
 stopifnot({
   #test basic function
@@ -1202,6 +1203,8 @@ stopifnot({
   df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% extract("b") == df$b
   #test return
   df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"
+  #with weights
+  df_residualize(df, resid.vars = "c", weights = weightsvar, print.models = F) %>% get_dims() == c(5, 3) #with weights
 })
 
 

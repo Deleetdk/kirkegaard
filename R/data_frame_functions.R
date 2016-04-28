@@ -449,17 +449,28 @@ sort_df = function (df, vars = names(df), decreasing = F){
 #' @param return.resid.vars (logical) Whether to include the residualization variables in the returned data.frame. Defaults to TRUE.
 #' @param print.models (logical) Wether to print the lm models used in the process. Defaults to TRUE.
 #' @param exclude_vars (character vector) Names of variables are that excluded from the residualization.
-#' @keywords modeling, residualize, partialing
+#' @param weights (num vector) A vector of values to use for weights. If none given, all cases will be given equal weights.
 #' @export residualize_DF df_residualize
 #' @aliases residualize_DF
 #' @examples
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
-#' df_residualize(df, resid.vars = "c")
-df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T, return.resid.vars = T, print.models = T, exclude_vars = NULL) {
+#' weightsvar = runif(5)
+#' df_residualize(df, resid.vars = "c") #without weights
+#' df_residualize(df, resid.vars = "c", weights = weightsvar) #with weights
+df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T, return.resid.vars = T, print.models = T, exclude_vars = NULL, weights = NA) {
   library("stringr")
 
   #save rownames
   v_rownames = rownames(data)
+
+  #weights
+  if (length(weights) == 1) {
+    if (is.na(weights)) {
+      wtds = rep(1, nrow(data))
+    }
+  } else {
+    wtds = weights
+  }
 
   #make exclusion vector
   v_excluded = exclude_vars
@@ -467,10 +478,10 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
     v_excluded = c(v_excluded, resid.vars)
   }
 
-  #the residuals function
-  lm_f = function(x) {
-    x = residuals(lm(data = data, formula = update(x ~ 0, paste0("~", resid.vars)), na.action = na.exclude))
-  }
+  # #the residuals function
+  # lm_f = function(x) {
+  #   x = residuals(lm(data = data, formula = update(x ~ 0, paste0("~", resid.vars)), na.action = na.exclude, weights = wtds))
+  # }
 
   #calculate residuals
   resid = data.frame(matrix(nrow = nrow(data), ncol = ncol(data))) #make empty df same size as data
@@ -478,11 +489,11 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 
   for (colname in colnames(data)) { #loop over colnames
     if (!colname %in% v_excluded) { #if colname isn't excluded
-      f = str_c(colname, " ~ ", paste0(resid.vars)) #make formula
-      if (print.models) message(f) #message if desired
+      form = str_c(colname, " ~ ", paste0(resid.vars)) %>% as.formula() #make formula
+      if (print.models) message(form) #message if desired
 
       #get resids
-      resid[, colname] = residuals(lm(data = data, formula = f, na.action = na.exclude))
+      resid[, colname] = residuals(lm(data = data, formula = form, na.action = na.exclude, weights = wtds))
     } else { #if it isnt excluded
       #save the original
       resid[, colname] = data[, colname]

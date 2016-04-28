@@ -6,7 +6,8 @@
 \title{Residualized data.frame.}
 \usage{
 df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,
-  return.resid.vars = T, print.models = T, exclude_vars = NULL)
+  return.resid.vars = T, print.models = T, exclude_vars = NULL,
+  weights = NA)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data object.}
@@ -20,15 +21,16 @@ df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,
 \item{print.models}{(logical) Wether to print the lm models used in the process. Defaults to TRUE.}
 
 \item{exclude_vars}{(character vector) Names of variables are that excluded from the residualization.}
+
+\item{weights}{(num vector) A vector of values to use for weights. If none given, all cases will be given equal weights.}
 }
 \description{
 Returns a residualized data.frame given a set of variables to partial out.
 }
 \examples{
 df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
-df_residualize(df, resid.vars = "c")
+weightsvar = runif(5)
+df_residualize(df, resid.vars = "c") #without weights
+df_residualize(df, resid.vars = "c", weights = weightsvar) #with weights
 }
-\keyword{modeling,}
-\keyword{partialing}
-\keyword{residualize,}
 
