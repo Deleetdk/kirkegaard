@@ -95,6 +95,12 @@ write_clipboard(iris[1:5, ], clean_names = T)
 write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
 write_clipboard(iris[1:5, ], print = T)
 
+#write NAs
+write_clipboard(df_addNA(iris))
+
+stopifnot({
+  read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
+})
 
 
 # MOD_k_fold_r2 --------------------------------------------------------------

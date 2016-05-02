@@ -6,24 +6,26 @@
 \usage{
 MOD_repeat_cv_glmnet(df, dependent, predictors, weights_ = NA,
   standardize = T, runs = 100, alpha_ = 1, NA_ignore = T,
-  messages = T)
+  messages = T, seed = 1)
 }
 \arguments{
-\item{dependent}{(character scalar) The name of the dependent variable.}
+\item{dependent}{(chr scalar) The name of the dependent variable.}
 
-\item{predictors}{(character vector) The names of the predictor variables.}
+\item{predictors}{(chr vector) The names of the predictor variables.}
 
-\item{weights_}{(numeric vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.}
+\item{weights_}{(num vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.}
 
-\item{standardize}{(boolean) Whether to standardize the data beforehand. Defaults to true.}
+\item{standardize}{(log scalar) Whether to standardize the data beforehand. Defaults to true.}
 
-\item{runs}{(numeric/integer scalar) Number of times to run. Defaults to 100.}
+\item{runs}{(int scalar) Number of times to run. Defaults to 100.}
 
-\item{alpha_}{(numeric scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
+\item{alpha_}{(num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
 
-\item{NA_ignore}{(boolean) Whether to remove cases with missing data. Defaults to T.}
+\item{NA_ignore}{(log scalar) Whether to remove cases with missing data. Defaults to T.}
 
-\item{messages}{(boolean) Whether to send messages to the user.}
+\item{messages}{(log scalar) Whether to send messages to the user.}
+
+\item{seed}{(int scalar) The seed to use (default 1). For reproducible results.}
 
 \item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}
 }

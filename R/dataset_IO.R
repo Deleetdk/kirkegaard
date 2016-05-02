@@ -230,6 +230,7 @@ as_long = function(x) {
 #' @export
 #' @examples
 #' write_clipboard(cor(iris[-5]))
+#' write_clipboard(df_addNA(iris))
 write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "\\."), pad_digits = T, print = F) {
   library("stringr")
   library("magrittr")
@@ -240,6 +241,9 @@ write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "
   #format if desired
   if (pad_digits) {
     x = format(x, nsmall = digits)
+
+    #recode "NAs" as real NAs
+    x[] = lapply(x, str_detect_replace, pattern = " *NA", replacement = NA)
   }
 
   #clean

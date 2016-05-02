@@ -283,21 +283,25 @@ lm_best = function(model_list) {
 #'
 #' Returns a data frame of beta coefficients from glmnet.cv() fits.
 #' @param data (data.frame) A data.frame with the data. Must contain dependent and predictor variables.
-#' @param dependent (character scalar) The name of the dependent variable.
-#' @param predictors (character vector) The names of the predictor variables.
-#' @param weights_ (numeric vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.
-#' @param standardize (boolean) Whether to standardize the data beforehand. Defaults to true.
-#' @param runs (numeric/integer scalar) Number of times to run. Defaults to 100.
-#' @param alpha_ (numeric scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
-#' @param NA_ignore (boolean) Whether to remove cases with missing data. Defaults to T.
-#' @param messages (boolean) Whether to send messages to the user.
+#' @param dependent (chr scalar) The name of the dependent variable.
+#' @param predictors (chr vector) The names of the predictor variables.
+#' @param weights_ (num vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.
+#' @param standardize (log scalar) Whether to standardize the data beforehand. Defaults to true.
+#' @param runs (int scalar) Number of times to run. Defaults to 100.
+#' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
+#' @param NA_ignore (log scalar) Whether to remove cases with missing data. Defaults to T.
+#' @param messages (log scalar) Whether to send messages to the user.
+#' @param seed (int scalar) The seed to use (default 1). For reproducible results.
 #' @export
 #' @examples
 #' MOD_repeat_cv_glmnet(iris, "Sepal.Length", predictors = colnames(iris)[-1])
-MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T) {
+MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T, seed = 1) {
   #load lib
   library(glmnet)
   library(stringr)
+
+  #set seed
+  if (!is.na(seed)) set.seed(seed)
 
   #weights
   if (length(weights_) == 1) {

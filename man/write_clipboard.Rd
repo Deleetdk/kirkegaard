@@ -25,5 +25,6 @@ A wrapper function to \code{\link{write.table}} for writing to the clipboard for
 }
 \examples{
 write_clipboard(cor(iris[-5]))
+write_clipboard(df_addNA(iris))
 }
 
