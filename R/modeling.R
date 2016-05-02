@@ -447,7 +447,9 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
       train_data = data2[-test_idx, ]
 
       #fit
-      fit = lm(formula = lmfit$call$formula, data = train_data, weights = .weights)
+      form = formula(lmfit)
+      fit = lm(formula = form, data = train_data,
+               weights = .weights)
 
       #predict
       preds = predict(fit, newdata = test_data)
