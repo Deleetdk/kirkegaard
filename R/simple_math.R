@@ -1,15 +1,16 @@
 #' Find percentage of numbers that are above given thresholds.
 #'
 #' Takes a numeric vector and a numeric vector of thresholds. Returns the percent of numbers in the first above each of the numbers in the second.
-#' @param x (numeric vector) A vector of numbers.
-#' @param cutoffs (numeric vector) A vector of thresholds. Default=(.30, .50)
-#' @param digits (numeric scalar) The number of digits to round output to. Default=2.
+#' @param x (num vector) A vector of numbers.
+#' @param cutoffs (num vector) A vector of thresholds. Default=(.30, .50)
+#' @param digits (num scalar) The number of digits to round output to. Default=2.
 #' @param below (log scalar) Whether to count values below the cutoff (default false).
 #' @param inclusive (log scalar) Whether to include values at the cutoff (default true).
 #' @export
 #' @examples
 #' percent_cutoff(iris$Sepal.Length, cutoffs = 4:8)
-#' percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T)
+#' percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T) #reverse cutoff
+#' percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3) #ignores NA/NaN
 percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclusive = T) {
   library(magrittr)
 
@@ -23,25 +24,25 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclu
     if (!below & !inclusive) {
       v_res[idx] = (x > cutoffs[idx]) %>%
         (function(x) {
-          sum(x) / (na.omit(x) %>% length)
+          sum(x, na.rm = T) / (na.omit(x) %>% length)
         })
     }
     if (!below & inclusive) {
       v_res[idx] = (x >= cutoffs[idx]) %>%
         (function(x) {
-          sum(x) / (na.omit(x) %>% length)
+          sum(x, na.rm = T) / (na.omit(x) %>% length)
         })
     }
     if (below & !inclusive) {
       v_res[idx] = (x < cutoffs[idx]) %>%
         (function(x) {
-          sum(x) / (na.omit(x) %>% length)
+          sum(x, na.rm = T) / (na.omit(x) %>% length)
         })
     }
     if (below & inclusive) {
       v_res[idx] = (x <= cutoffs[idx]) %>%
         (function(x) {
-          sum(x) / (na.omit(x) %>% length)
+          sum(x, na.rm = T) / (na.omit(x) %>% length)
         })
     }
   }

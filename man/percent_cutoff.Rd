@@ -8,11 +8,11 @@ percent_cutoff(x, cutoffs = c(0.3, 0.5), digits = 2, below = F,
   inclusive = T)
 }
 \arguments{
-\item{x}{(numeric vector) A vector of numbers.}
+\item{x}{(num vector) A vector of numbers.}
 
-\item{cutoffs}{(numeric vector) A vector of thresholds. Default=(.30, .50)}
+\item{cutoffs}{(num vector) A vector of thresholds. Default=(.30, .50)}
 
-\item{digits}{(numeric scalar) The number of digits to round output to. Default=2.}
+\item{digits}{(num scalar) The number of digits to round output to. Default=2.}
 
 \item{below}{(log scalar) Whether to count values below the cutoff (default false).}
 
@@ -23,6 +23,7 @@ Takes a numeric vector and a numeric vector of thresholds. Returns the percent o
 }
 \examples{
 percent_cutoff(iris$Sepal.Length, cutoffs = 4:8)
-percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T)
+percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T) #reverse cutoff
+percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3) #ignores NA/NaN
 }
 
