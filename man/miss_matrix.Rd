@@ -16,6 +16,6 @@ A matrix where missing/present values are coded as 1/0.
 Create the missing data matrix. Not so useful in itself, but useful for other functions.
 }
 \examples{
-miss_matrix(df_addNA(iris))
+miss_matrix(miss_add_random(iris))
 }
 

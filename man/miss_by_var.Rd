@@ -14,6 +14,6 @@ miss_by_var(x)
 Counts the number of missing datapoints per variable
 }
 \examples{
-miss_by_var(df_addNA(iris))
+miss_by_var(miss_add_random(iris))
 }
 

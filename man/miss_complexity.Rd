@@ -19,6 +19,6 @@ Calculates the complexity of the patterns of missing data in the dataset.
 This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
 }
 \examples{
-miss_complexity(df_addNA(iris))
+miss_complexity(miss_add_random(iris))
 }
 

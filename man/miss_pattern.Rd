@@ -16,6 +16,6 @@ A vector of patterns the same length as the number of rows in data.
 Calculates the patterns of missing data. This is the missing data matrix multiplied row-wise by a vector of the 2 to the 1 to n power, where n is the number of variables. This results in a unique id for each way the data can be missing.
 }
 \examples{
-miss_pattern(df_addNA(iris))
+miss_pattern(miss_add_random(iris))
 }
 

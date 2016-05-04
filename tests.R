@@ -9,7 +9,7 @@ options("expressions" = 10000)
 #some data to merge
 d1 = iris[1:75, ] #split in two
 d2 = iris[76:150, ]
-set.seed(1);d2_na = df_addNA(d2)
+set.seed(1);d2_na = miss_add_random(d2)
 t = merge_datasets(d1, d2) #merge into one
 t2 = silence(merge_datasets(d1, d2, join = "left"))
 t3 = silence(merge_datasets(d1, d2, join = "right"))
@@ -96,7 +96,7 @@ write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
 write_clipboard(iris[1:5, ], print = T)
 
 #write NAs
-write_clipboard(df_addNA(iris))
+write_clipboard(miss_add_random(iris))
 
 stopifnot({
   read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
@@ -135,8 +135,8 @@ fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Pe
 
 #missing data
 fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary()
-fit6_miss = lm("Petal.Length ~ Sepal.Width", df_addNA(iris)) %>% MOD_summary()
-fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", df_addNA(iris), weight = Sepal.Length) %>% MOD_summary()
+fit6_miss = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris)) %>% MOD_summary()
+fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris), weight = Sepal.Length) %>% MOD_summary()
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -170,7 +170,7 @@ stopifnot({
 })
 
 #with missing data
-t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = df_addNA(iris), standardized = T, messages = F))
+t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = miss_add_random(iris), standardized = T, messages = F))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -285,7 +285,7 @@ stopifnot({
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
 library(ggplot2)
-mpg_na = df_addNA(mpg) #missing data
+mpg_na = miss_add_random(mpg) #missing data
 
 l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
            t2 = GG_scatter(mpg_na, "hwy", "cty"), #test with missing data
@@ -815,7 +815,7 @@ stopifnot({
 
 # GG_group_means -----------------------------------------------------------
 
-iris_na = df_addNA(iris)
+iris_na = miss_add_random(iris)
 
 #does it respect factor levels order?
 iris_reorder = iris
@@ -875,7 +875,7 @@ set.seed(1)
 v_criteria = runif(n_countries, 0, 100)
 
 #with missing values
-d_randomguesses_na = df_addNA(d_randomguesses)
+d_randomguesses_na = miss_add_random(d_randomguesses)
 
 #score
 l_t = list(t = score_accuracy(d_randomguesses, v_criteria, methods = "all"),
@@ -1223,7 +1223,7 @@ stopifnot({
 
 df = data.frame(1:10, letters[1:10])
 set.seed(1)
-df = df_addNA(df)
+df = miss_add_random(df)
 
 stopifnot({
   filter_by_missing_values(df) %>% nrow %>% equals(8)
@@ -1317,7 +1317,7 @@ library(magrittr)
 
 #iris with missing
 set.seed(1)
-iris_miss = df_addNA(iris)
+iris_miss = miss_add_random(iris)
 
 #tests
 t = list(#parameters
@@ -1614,9 +1614,9 @@ stopifnot({
 
 # missing data functions --------------------------------------------------
 
-t1 = miss_analyze(df_addNA(iris))
+t1 = miss_analyze(miss_add_random(iris))
 set.seed(1)
-t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% df_addNA() %>% miss_analyze()
+t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% miss_add_random() %>% miss_analyze()
 
 stopifnot({
   #analyze missing data relationships

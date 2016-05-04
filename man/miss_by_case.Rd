@@ -14,6 +14,6 @@ miss_by_case(x)
 Counts the number of missing datapoints per case
 }
 \examples{
-miss_by_case(df_addNA(iris))
+miss_by_case(miss_add_random(iris))
 }
 

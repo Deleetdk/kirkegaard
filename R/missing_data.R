@@ -7,7 +7,7 @@
 #' @export miss_case miss_by_case
 #' @aliases miss_case
 #' @examples
-#' miss_by_case(df_addNA(iris))
+#' miss_by_case(miss_add_random(iris))
 miss_by_case = function(x){
   y = apply(x, 1, is.na)
   y = apply(y, 2, sum)
@@ -23,7 +23,7 @@ miss_case = miss_by_case
 #' @export miss_by_var miss_table
 #' @aliases miss_table
 #' @examples
-#' miss_by_var(df_addNA(iris))
+#' miss_by_var(miss_add_random(iris))
 miss_by_var = function(x){
   y = apply(x, 2, is.na)
   y = apply(y, 2, sum)
@@ -34,9 +34,10 @@ miss_table = miss_by_var
 
 #' Count missing data
 #'
-#' A simple wrapper for is.na() and sum(). Returns an integer.
+#' A simple wrapper for \code{\link{is.na}} and \code{\link{sum}}.
 #' @param x (any suitable object) An object for which to count NAs.
 #' @param reverse (logical scalar) Whether to count non-NAs instead (default false).
+#' @return An integer.
 #' @export
 #' @examples
 #' m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)
@@ -54,7 +55,7 @@ count_NA = function(x, reverse = F) {
 #' @export miss_plot plot_miss
 #' @aliases plot_miss
 #' @examples
-#' miss_plot(df_addNA(iris))
+#' miss_plot(miss_add_random(iris))
 miss_plot = function(df, percent=T, case=T) {
   library(ggplot2)
   if (case) {
@@ -94,7 +95,7 @@ plot_miss = miss_plot
 #' @param df a data.frame.
 #' @export
 #' @examples
-#' matrixplot2(df_addNA(iris))
+#' matrixplot2(miss_add_random(iris))
 matrixplot2 = function(df) {
 	library(VIM) #load VIM if not already loaded
   	return(matrixplot(df, labels=substr(colnames(df), 1, 8)))
@@ -108,7 +109,7 @@ matrixplot2 = function(df) {
 #' @return A matrix where missing/present values are coded as 1/0.
 #' @export
 #' @examples
-#' miss_matrix(df_addNA(iris))
+#' miss_matrix(miss_add_random(iris))
 miss_matrix = function(data) {
   m_d = data %>% as.matrix %>% is.na() %>% as.numeric() %>% matrix(ncol = ncol(data))
   copy_names(x = data, y = m_d)
@@ -123,7 +124,7 @@ miss_matrix = function(data) {
 #' @return A length 3 vector with the proportions.
 #' @export
 #' @examples
-#' miss_amount(df_addNA(iris))
+#' miss_amount(miss_add_random(iris))
 miss_amount = function(data, round = 2) {
   #calculate amount of missing
   by_case = miss_case(data) %>% percent_cutoff(cutoffs = 1)
@@ -143,7 +144,7 @@ miss_amount = function(data, round = 2) {
 #' @return A vector of patterns the same length as the number of rows in data.
 #' @export
 #' @examples
-#' miss_pattern(df_addNA(iris))
+#' miss_pattern(miss_add_random(iris))
 miss_pattern = function(data) {
   #create missing matrix
   m_d = miss_matrix(data)
@@ -164,7 +165,7 @@ miss_pattern = function(data) {
 #' @return A length 3 vector with the proportions.
 #' @export
 #' @examples
-#' miss_complexity(df_addNA(iris))
+#' miss_complexity(miss_add_random(iris))
 miss_complexity = function(data) {
   #number of unique patterns
   v_uniq = miss_pattern(data) %>% table() %>% unique() %>% length()
@@ -183,7 +184,7 @@ miss_complexity = function(data) {
 #' @return A data.frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
 #' @export
 #' @examples
-#' miss_complexity(df_addNA(iris))
+#' miss_complexity(miss_add_random(iris))
 miss_analyze = function(data, robust = F) {
   library(plyr); library(lsr); library(compute.es)
 
@@ -227,3 +228,34 @@ miss_analyze = function(data, robust = F) {
   d_NA_diffs
 }
 
+
+#func from https://trinkerrstuff.wordpress.com/2012/05/02/function-to-generate-a-random-data-set/
+
+#' Insert random NAs into a data.frame.
+#'
+#' Inserts missing data into a data.frame at random, thus creating data that are Missing Completely At Random (MCAR). THis isn't how data usually are missing in the real world, but may be sufficient for some situations.
+#' @param df (data.frame) A data.frame.
+#' @param prop (num vector) The proportion of NAs to add.
+#' @return A a data.frame.
+#' @export miss_add_random
+#' @aliases miss_add_random miss_add_random
+#' @examples
+#' df = data.frame(c(1:10), letters[1:10]) #example data
+#' miss_add_random(df) #add 10% random NAs
+#' miss_amount(df) #verify that 10% really is missing
+miss_add_random =  function(df, prop = .1){
+  n = nrow(df)
+  m = ncol(df)
+  num.to.na = ceiling(prop*n*m)
+  id = sample(0:(m*n-1), num.to.na, replace = FALSE)
+  rows = id %/% m + 1
+  cols = id %% m + 1
+  sapply(seq(num.to.na), function(x){
+    df[rows[x], cols[x]] <<- NA
+  }
+  )
+  return(df)
+}
+
+#old name
+df_addNA = miss_add_random

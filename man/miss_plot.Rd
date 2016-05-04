@@ -16,6 +16,6 @@ miss_plot(df, percent = T, case = T)
 Returns a ggplot2 histogram plot.
 }
 \examples{
-miss_plot(df_addNA(iris))
+miss_plot(miss_add_random(iris))
 }
 

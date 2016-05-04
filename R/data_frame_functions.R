@@ -388,32 +388,6 @@ df_func = function(..., standardize = F, func = mean, pattern, ignore_NA = T) {
 }
 
 
-#func from https://trinkerrstuff.wordpress.com/2012/05/02/function-to-generate-a-random-data-set/
-
-#' Insert random NAs into a data.frame.
-#'
-#' Inserts missing data into a data.frame at random, thus creating data that are Missing Completely At Random (MCAR). THis isn't how data usually are missing in the real world, but may be sufficient for some simulations.
-#' @param df (data.frame) A data.frame.
-#' @param prop (numeric) The proportion of NAs to add.
-#' @keywords date.frame, missing data, NA, add, simulate
-#' @export
-#' @examples
-#' df = data.frame(c(1:10), letters[1:10])
-#' df_addNA(df)
-df_addNA =  function(df, prop = .1){
-  n = nrow(df)
-  m = ncol(df)
-  num.to.na = ceiling(prop*n*m)
-  id = sample(0:(m*n-1), num.to.na, replace = FALSE)
-  rows = id %/% m + 1
-  cols = id %% m + 1
-  sapply(seq(num.to.na), function(x){
-    df[rows[x], cols[x]] <<- NA
-  }
-  )
-  return(df)
-}
-
 
 #sort a df according to a variable
 #just a minor edit of the function in reshape package.

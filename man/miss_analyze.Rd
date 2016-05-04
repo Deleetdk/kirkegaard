@@ -21,6 +21,6 @@ Calculates Cohen's d or equivalent for every variable pair. Larger values mean t
 This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
 }
 \examples{
-miss_complexity(df_addNA(iris))
+miss_complexity(miss_add_random(iris))
 }
 

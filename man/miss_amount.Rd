@@ -16,6 +16,6 @@ A length 3 vector with the proportions.
 Calculates the proportions of missing data by case, variable and cell.
 }
 \examples{
-miss_amount(df_addNA(iris))
+miss_amount(miss_add_random(iris))
 }
 

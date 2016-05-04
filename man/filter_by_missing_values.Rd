@@ -16,7 +16,7 @@ Counts the number of missing values per row and then keeps rows that have at mos
 }
 \examples{
 df = data.frame(1:10, letters[1:10])
-df = df_addNA(df)
+df = miss_add_random(df)
 filter_by_missing_values(df)
 }
 \keyword{missing}

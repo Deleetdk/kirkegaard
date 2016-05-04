@@ -86,7 +86,7 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
 #' @export
 #' @examples
 #' df = data.frame(1:10, letters[1:10])
-#' df = df_addNA(df)
+#' df = miss_add_random(df)
 #' filter_by_missing_values(df)
 filter_by_missing_values = function(data, missing = 0) {
   #initial

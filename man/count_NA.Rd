@@ -11,8 +11,11 @@ count_NA(x, reverse = F)
 
 \item{reverse}{(logical scalar) Whether to count non-NAs instead (default false).}
 }
+\value{
+An integer.
+}
 \description{
-A simple wrapper for is.na() and sum(). Returns an integer.
+A simple wrapper for \code{\link{is.na}} and \code{\link{sum}}.
 }
 \examples{
 m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)

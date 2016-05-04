@@ -13,6 +13,6 @@ matrixplot2(df)
 Wrapper for matrixplot() from VIM, but automatically substrings the variable names to 8 characters.
 }
 \examples{
-matrixplot2(df_addNA(iris))
+matrixplot2(miss_add_random(iris))
 }
 
