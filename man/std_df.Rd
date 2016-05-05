@@ -4,24 +4,29 @@
 \alias{std_df}
 \title{Standardize data.frame}
 \usage{
-std_df(df, exclude = "", messages = T)
+std_df(df, exclude = "", messages = T, exclude_factors = T, w)
 }
 \arguments{
 \item{df}{(data.frame) The data.frame.}
 
-\item{exclude}{(character vector) Names of variables to not standardize.}
+\item{exclude}{(chr vector) Names of variables to not standardize.}
 
-\item{messages}{(boolean) Whether to output messages.}
+\item{messages}{(log scalar) Whether to output messages (default T).}
+
+\item{exclude_factors}{(log scalar) Whether to exclude factors (default T).}
+
+\item{w}{(num vector) Weights to use, if any.}
 }
-\description{
+\value{
 Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
 }
-\examples{
-df = data.frame(rnorm(5, 100, 15))
-df
-std_df(df)
+\description{
+Standardize all variables in a data.frame. Can use weighted standardization. Wraps \code{\link{standardize}}.
 }
-\keyword{data.frame,}
-\keyword{standardize,}
-\keyword{z-score}
+\examples{
+head(iris) #not standardized
+head(std_df(iris)) #standardized
+head(std_df(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
+head(std_df(iris, w = runif(150))) #standardized with weights
+}
 

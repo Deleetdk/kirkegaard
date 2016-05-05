@@ -3,13 +3,13 @@
 \name{MOD_summary}
 \alias{MOD_summary}
 \alias{lm_CI}
-\title{Convenient summary of an lm() model with analytic confidence intervals.}
+\title{Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.}
 \usage{
 MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
   kfold = T, folds = 10, ...)
 }
 \arguments{
-\item{fitted_model}{(a lm or similar object) The fitted model.}
+\item{fitted_model}{(lm or glm) The fitted model.}
 
 \item{level}{(num scalar) The level of confidence to use. Defaults to .95 (95\%).}
 
@@ -24,7 +24,7 @@ MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
 \item{...}{(other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.}
 }
 \description{
-Returns beta coefficients and confidence intervals from a fitted lm() model.
+Tidys information from linear models or generalized linear models.
 }
 \examples{
 #fit two models with iris data, one with normal and one with standardized data

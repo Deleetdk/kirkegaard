@@ -14,6 +14,9 @@ as_num_matrix(df, skip_chr = T)
 \description{
 Returns a numeric matrix. Ordered factors are converted to numbers, while non-ordered factors are split into dummy variables using the first level as the the reference.
 }
+\details{
+Factors with only two levels are kept as they are.
+}
 \examples{
 as_num_matrix(iris)
 }

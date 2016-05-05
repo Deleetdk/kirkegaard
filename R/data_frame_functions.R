@@ -1,17 +1,23 @@
 #' Standardize data.frame
 #'
-#' Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
+#' Standardize all variables in a data.frame. Can use weighted standardization. Wraps \code{\link{standardize}}.
 #' @param df (data.frame) The data.frame.
-#' @param exclude (character vector) Names of variables to not standardize.
-#' @param messages (boolean) Whether to output messages.
-#' @keywords standardize, data.frame, z-score
+#' @param exclude (chr vector) Names of variables to not standardize.
+#' @param messages (log scalar) Whether to output messages (default T).
+#' @param exclude_factors (log scalar) Whether to exclude factors (default T).
+#' @param w (num vector) Weights to use, if any.
 #' @export
+#' @return Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
 #' @examples
-#' df = data.frame(rnorm(5, 100, 15))
-#' df
-#' std_df(df)
-std_df = function(df, exclude = "", messages = T) {
-  library(stringr)
+#' head(iris) #not standardized
+#' head(std_df(iris)) #standardized
+#' head(std_df(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
+#' head(std_df(iris, w = runif(150))) #standardized with weights
+std_df = function(df, exclude = "", messages = T, exclude_factors = T, w) {
+  library(stringr);library(magrittr)
+
+  #no weights
+  if (missing("w")) w = rep(1, nrow(df))
 
   for (col_idx in 1:ncol(df)) {
 
@@ -20,26 +26,27 @@ std_df = function(df, exclude = "", messages = T) {
       next
     }
 
-    #skip if factor
-    if (class(unlist(df[col_idx])) == "factor") {
-      if (messages){
-        s = str_c("Skipped ", colnames(df)[col_idx], " because it is a factor.")
-        message(s)
+    #factor
+    if (is.factor(df[[col_idx]])) {
+      if (exclude_factors) {
+        if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a factor.")
+        next
+      } else {
+        df[[col_idx]] = standardize(df[[col_idx]] %>% as.numeric(), w = w)
+        next
       }
-      next
     }
 
-    #skip if character
+    #character
     if (class(unlist(df[col_idx])) == "character") {
       if (messages) {
-        s = str_c("Skipped ", colnames(df)[col_idx], " because it is a character vector.")
-        message(s)
+        if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a character.")
       }
       next
     }
 
     #otherwise standardize
-    df[col_idx] = scale(df[col_idx]) %>% as.vector
+    df[[col_idx]] = standardize(df[[col_idx]], w = w)
   }
 
   return(df)
@@ -96,6 +103,8 @@ rank_df = function(df, ...) {
 #' Convert a data.frame to a numeric matrix, including factors.
 #'
 #' Returns a numeric matrix. Ordered factors are converted to numbers, while non-ordered factors are split into dummy variables using the first level as the the reference.
+#'
+#' Factors with only two levels are kept as they are.
 #' @param df (data.frame) A data.frame with variables.
 #' @param skip_chr (log scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.
 #' @export
@@ -127,6 +136,17 @@ as_num_matrix = function(df, skip_chr = T) {
 
     #non-ordered factor
     if (is.factor(df[[i]])) {
+      # if only 2 levels
+      if (length(levels(df[[i]])) == 2) {
+        #keep as it is
+        mat = cbind(mat, df[[i]])
+
+        #save name
+        new_colnames = c(new_colnames, colnames(df)[i])
+
+        next
+      }
+
       #loop over each level
       for (lvl in levels(df[[i]])) {
         #skip first level
@@ -137,6 +157,7 @@ as_num_matrix = function(df, skip_chr = T) {
 
         #save name
         new_colnames = c(new_colnames, colnames(df)[i] + "_" + lvl)
+
       }
       next
     }

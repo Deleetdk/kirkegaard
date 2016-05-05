@@ -123,10 +123,10 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
 lm_beta_matrix = MOD_APSLM
 
 
-#' Convenient summary of an lm() model with analytic confidence intervals.
+#' Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.
 #'
-#' Returns beta coefficients and confidence intervals from a fitted lm() model.
-#' @param fitted_model (a lm or similar object) The fitted model.
+#' Tidys information from linear models or generalized linear models.
+#' @param fitted_model (lm or glm) The fitted model.
 #' @param level (num scalar) The level of confidence to use. Defaults to .95 (95\%).
 #' @param round (num scalar) At which digit to round the numbers. Defaults to 2.
 #' @param standardize (log scalar) Whether to report standardized betas (default true).
@@ -147,91 +147,277 @@ lm_beta_matrix = MOD_APSLM
 MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, ...) {
   library(magrittr)
 
-  #higher order?
-  if (!all(attr(fitted_model$terms, "order") == 1)) {
-    stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
-  }
+  #fetch data
+  model_data = fitted_model$model
 
-  #summary
-  sum.model = summary(fitted_model)
+  #convert factors
+  model_data[] = lapply(model_data, FUN = function(x) {
+    if (is.character(x)) {
+      message("The model data contains characters. These were automatically converteed but you should probably do this before calling this function.")
+      return(as.factor(x))
+    }
+    x
+  })
 
-  #degrees of freedom
-  df = sum.model$df[2]
+  #get predictors
+  predictor_data = model_data[-1] %>% subset_by_pattern(pattern = "(weights)", inverse = T)
 
-  #R2 values
-  model_meta = c(nrow(fitted_model$model), sum.model$r.squared, sum.model$adj.r.squared)
-  names(model_meta) = c("N", "R2", "R2 adj.")
 
-  #cross validate?
-  if (kfold) {
-    model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2])
-    names(model_meta) = c("N", "R2", "R2 adj.", "R2 " + folds + "-fold cv")
-  }
-
-  #rounding, dont round the first value
-  model_meta = round(model_meta, round)
-
-  #coefs
-  coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
-  coefs = as.data.frame(coefs) #conver to dataframe
-  colnames(coefs) = c("Beta", "SE") #rename
-
-  #fix predictor names
-  v_newnames = character()
-  for (i in seq_along(fitted_model$model[-1])) {
-    #is character?
-    if (is.character(fitted_model$model[-1][[i]])) {
-      #change to factor
-      fitted_model$model[-1][[i]] = as.factor(fitted_model$model[-1][[i]])
-      warning("One variable " + names(fitted_model$model[-1])[i] + " was converted from chr to factor. You should probably convert this to a factor in your data.frame.")
+  if (all(class(fitted_model) == "lm")) {
+    #higher order?
+    if (!all(attr(fitted_model$terms, "order") == 1)) {
+      stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
     }
 
-    #is factor?
-    if (is.factor(fitted_model$model[-1][[i]])) {
-      #add the non-first levels, with the variable name in front
-      v_newnames = c(v_newnames, colnames(fitted_model$model[-1])[i] + ": " + levels(fitted_model$model[-1][[i]])[-1])
-      #next
-      next
+    #summary
+    sum.model = summary(fitted_model)
+
+    #degrees of freedom
+    df = sum.model$df[2]
+
+    #R2 values
+    model_meta = c(nrow(model_data), sum.model$r.squared, sum.model$adj.r.squared)
+    names(model_meta) = c("N", "R2", "R2 adj.")
+
+    #cross validate?
+    if (kfold) {
+      model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2])
+      names(model_meta) = c("N", "R2", "R2 adj.", "R2 " + folds + "-fold cv")
     }
-    #is weight? then skip
-    if (colnames(fitted_model$model[-1])[i] == "(weights)") {
-      next
+
+    #rounding
+    model_meta = round(model_meta, round)
+
+    #coefs
+    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
+    coefs = as.data.frame(coefs) #conver to dataframe
+    colnames(coefs) = c("Beta", "SE") #rename
+
+    #the assign vector
+    v_assign = fitted_model$assign+1
+
+    #standardize?
+    if (standardize) {
+      #calculate sds
+      sds = sapply(v_assign, function(i) {
+
+        #data
+        var = model_data[[i]]
+
+        #if var is a factor, sd = 1
+        if (is.factor(var)) return(1)
+        #otherwise, calculate it
+        sd(var, na.rm = T)
+      })[1:(nrow(coefs) + 1)]
+      #we subset to avoid weights in they are in the model
+
+      #calculate the factors
+      factors = sds[-1] / sds[1]
+
+      #calculate std. betas
+      coefs = coefs * factors
     }
 
-    #add regular name
-    v_newnames = c(v_newnames, colnames(fitted_model$model[-1])[i])
+
+    #calculate CIs
+    multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
+    coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
+    coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
+    coefs = round(coefs, round) #round to desired digit
+
+    #insert reference levels
+
+    #first we have to find where they are
+    v_duplicate = duplicated(v_assign[-1]) #we create this to find all the non-first betas from a factor
+    #otherwise, we would insert a new row above every factor level
+
+    v_factorsbegin = numeric() #the rows where the new factors begin
+    for (row in seq_along(v_assign[-1])) {
+      i = v_assign[-1][row] #the value
+
+      if (!is.factor(model_data[[i]])) next
+
+      #check if already covered
+      if (v_duplicate[row]) next #if so, then skip
+
+      #then save the position
+      v_factorsbegin = c(v_factorsbegin, row)
+    }
+
+    #add reference levels
+    #are there any?
+    if (length(v_factorsbegin) != 0) {
+      row = 1
+      while (T) {
+        #insert ref?
+        if (row %in% v_factorsbegin) {
+          #add the ref row
+          coefs = rbind(coefs[0:(row-1), ], #the rows above
+                        c(0, NA, NA, NA), #ref row
+                        coefs[(row):nrow(coefs), ]) #the rows below
+
+          #remove the current from the vector
+          v_factorsbegin = v_factorsbegin[-1]
+
+          #no more? then we are done
+          if (length(v_factorsbegin) == 0) break
+
+          #increment insert rows by 1 because we added another row
+          v_factorsbegin = v_factorsbegin + 1
+        }
+
+        #iterater + 1
+        row = row + 1
+
+        #stop if reached the last row
+        if (row > nrow(coefs)) stop("Bug in the code!")
+      }
+
+      #set the rownames
+      v_rownames = sapply(seq_along(predictor_data), function(i) {
+        v_varname = colnames(predictor_data)[i]
+        #factor?
+        if (is.factor(predictor_data[[i]])) {
+          return(v_varname + ": " + levels(predictor_data[[i]]))
+        } else {
+          return(v_varname)
+        }
+      }) %>% unlist()
+
+      rownames(coefs) = v_rownames
+    }
   }
-  #set the new names
-  rownames(coefs) = v_newnames
 
-  #standardize?
-  if (standardize) {
-    #calculate sds
-    sds = sapply(fitted_model$assign+1, function(i) {
 
-      #data
-      var = fitted_model$model[[i]]
+  if ("glm" %in% class(fitted_model)) {
 
-      #if var is a factor, sd = 1
-      if (is.factor(var)) return(1)
-      #otherwise, calculate it
-      sd(var, na.rm = T)
-    })[1:(nrow(coefs) + 1)]
-    #we subset to avoid weights in they are in the model
+    #higher order?
+    if (!all(attr(fitted_model$terms, "order") == 1)) {
+      stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
+    }
 
-    #calculate the factors
-    factors = sds[-1] / sds[1]
+    #summary
+    sum.model = summary(fitted_model)
 
-    #calculate std. betas
-    coefs = coefs * factors
+    #degrees of freedom
+    df = sum.model$df[2]
+
+    #meta values
+    pseudo_r2 = 1 - (sum.model$deviance / sum.model$null.deviance)
+    model_meta = c(nrow(model_data), pseudo_r2, sum.model$deviance, sum.model$aic)
+    names(model_meta) = c("N", "pseudo-R2", "deviance", "AIC")
+
+    #rounding, dont round the first value
+    model_meta = round(model_meta, round)
+
+    #coefs
+    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
+    coefs = as.data.frame(coefs) #conver to dataframe
+    colnames(coefs) = c("Beta", "SE") #rename
+
+    #since the assign vector isn't given, we create one
+    v_assign = sapply(seq_along(model_data), function(i) {
+      #if it is numeric, then it has 1 level
+      if (is.null(levels(model_data[[i]]))) return(i)
+
+      #if it has levels, then return that number repeated minus 1 (ref level)
+      rep(i, length(levels(model_data[[i]])) - 1)
+    }) %>% unlist()
+
+    #standardize?
+    if (standardize) {
+
+      #calculate sds
+      sds = sapply(v_assign, function(i) {
+
+        #data
+        var = model_data[[i]]
+
+        #if var is a factor, sd = 1
+        if (is.factor(var)) return(1)
+        #otherwise, calculate it
+        sd(var, na.rm = T)
+      })[1:(nrow(coefs) + 1)]
+      #we subset to avoid weights in they are in the model
+
+      #calculate the factors
+      factors = sds[-1] / sds[1]
+
+      #calculate std. betas
+      coefs = coefs * factors
+    }
+
+
+    #calculate CIs
+    multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
+    coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
+    coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
+    coefs = round(coefs, round) #round to desired digit
+
+    #insert reference levels
+
+    #first we have to find where they are
+    v_duplicate = duplicated(v_assign[-1]) #we create this to find all the non-first betas from a factor
+    #otherwise, we would insert a new row above every factor level
+
+    v_factorsbegin = numeric() #the rows where the new factors begin
+    for (row in seq_along(v_assign[-1])) {
+      i = v_assign[-1][row] #the value
+
+      if (!is.factor(model_data[[i]])) next
+
+      #check if already covered
+      if (v_duplicate[row]) next #if so, then skip
+
+      #then save the position
+      v_factorsbegin = c(v_factorsbegin, row)
+    }
+
+    #add reference levels
+    #are there any?
+    if (length(v_factorsbegin) != 0) {
+      row = 1
+      while (T) {
+
+        #insert ref?
+        if (row %in% v_factorsbegin) {
+          #add the ref row
+          coefs = rbind(coefs[0:(row-1), ], #the rows above
+                        c(0, NA, NA, NA), #ref row
+                        coefs[(row):nrow(coefs), ]) #the rows below
+
+          #remove the current from the vector
+          v_factorsbegin = v_factorsbegin[-1]
+
+          #no more? then we are done
+          if (length(v_factorsbegin) == 0) break
+
+          #increment insert rows by 1 because we added another row
+          v_factorsbegin = v_factorsbegin + 1
+        }
+
+        #iterater + 1
+        row = row + 1
+
+        #stop if reached the last row
+        if (row > nrow(coefs)) stop("Bug in the code!")
+      }
+
+      #set the rownames
+      v_rownames = sapply(seq_along(predictor_data), function(i) {
+        v_varname = colnames(predictor_data)[i]
+        #factor?
+        if (is.factor(predictor_data[[i]])) {
+          return(v_varname + ": " + levels(predictor_data[[i]]))
+        } else {
+          return(v_varname)
+        }
+      }) %>% unlist()
+
+      rownames(coefs) = v_rownames
+    }
+
   }
-
-
-  #calculate CIs
-  multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
-  coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
-  coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
-  coefs = round(coefs, round) #round to desired digit
 
   #return
   return(list(coefs = coefs,

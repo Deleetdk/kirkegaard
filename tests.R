@@ -64,11 +64,20 @@ stopifnot({
 
 
 # std_df ------------------------------------------------------------------
-#should print: "Skipped Species because it is a factor."
+set.seed(1)
+l_t = list(t1 = std_df(iris, messages = F),
+           t2 = std_df(iris, exclude_factors = F, messages = F),
+           t3 = std_df(iris, w = runif(150), messages = F))
+
 stopifnot({
-  t = std_df(iris, messages = F)
-  round(t[5, 1], 4) == -1.0184
-  t[10, 5] == "setosa"
+  #inequalities
+  head(l_t$t1[-5]) != head(iris)[-5]
+  head(l_t$t2) != head(iris)
+  l_t$t1[-5] != l_t$t3[-5]
+
+  #numeric
+  are_equal(sapply(l_t$t2, sd), rep(1, 5), check.names = F)
+  !are_equal(sapply(l_t$t3[-5], sd), rep(1, 4), check.names = F)
 })
 
 
@@ -122,7 +131,7 @@ stopifnot(lm_best(t) == 4)
 
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df(messages = F)))
+fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df(messages = F))
 
 #weights
 v_weights = runif(150, 1, 10)
@@ -137,6 +146,14 @@ fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Pe
 fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary()
 fit6_miss = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris)) %>% MOD_summary()
 fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris), weight = Sepal.Length) %>% MOD_summary()
+
+#glm
+fit7_c = glm("Sepal.Length ~ Sepal.Width + Species", iris, family = gaussian())
+fit7_c_std = glm("Sepal.Length ~ Sepal.Width + Species", std_df(iris, messages = F), family = gaussian())
+
+iris2 = mutate(iris, virginica = as.factor(Species == "virginica"))
+fit7_d = glm("virginica ~ Sepal.Width + Sepal.Length", iris2, family = binomial())
+fit7_d_std = glm("virginica ~ Sepal.Width + Sepal.Length", std_df(iris2, messages = F), family = binomial())
 
 stopifnot({
   #then we test and make sure all the numbers are right
@@ -154,6 +171,9 @@ stopifnot({
   #factor variable and weights
   MOD_summary(fit5)$coefs == MOD_summary(fit5_std, standardize = F)$coefs
 
+  #glm
+  all(MOD_summary(fit7_c)$coefs == MOD_summary(fit7_c_std, standardize = F)$coefs, na.rm=T)
+  all(MOD_summary(fit7_d)$coefs == MOD_summary(fit7_d_std, standardize = F)$coefs, na.rm=T)
 })
 
 #check old name
@@ -218,14 +238,14 @@ stopifnot({
 
 # as_num_matrix -----------------------------------------------------------
 t = data.frame(a = 1:3,
-              b = letters[10:12],
-              c = seq(as.Date("2004-01-01"), by = "week", len = 3),
-              stringsAsFactors = TRUE)
-t = as_num_matrix(t)
+               b = letters[10:12],
+               c = seq(as.Date("2004-01-01"), by = "week", len = 3),
+               stringsAsFactors = TRUE)
+t2 = as_num_matrix(t)
 
 stopifnot({
-  class(t) == "matrix"
-  dim(t) == c(3, 4)
+  class(t2) == "matrix"
+  dim(t2) == c(3, 4)
 })
 
 

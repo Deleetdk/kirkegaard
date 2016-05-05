@@ -5,7 +5,8 @@
 \title{Correlation matrix}
 \usage{
 cor_matrix(data, weights, CI, CI_template = "\%r [\%lower \%upper]",
-  skip_nonnumeric = T, CI_round = 2)
+  skip_nonnumeric = T, CI_round = 2, p_val, p_template = "\%r [p=\%p]",
+  p_round = 3)
 }
 \arguments{
 \item{data}{(data.frame or coercible into data.frame) The data.}
@@ -19,12 +20,21 @@ cor_matrix(data, weights, CI, CI_template = "\%r [\%lower \%upper]",
 \item{skip_nonnumeric}{(logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.}
 
 \item{CI_round}{(whole number scalar) If confidence intervals are used, how many digits should be shown?}
+
+\item{p_val}{(log scalar) If p values are desired, the alpha level to use.}
+
+\item{p_template}{(chr scalar) If p values are desired, the template to use (default "\%r [p=\%p]").}
+
+\item{p_round}{(int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.}
 }
 \description{
 Outputs a correlation matrix. Supports weights, confidence intervals and rounding.
 }
 \examples{
-cor_matrix(iris)
-cor_matrix(iris, CI = .95)
+cor_matrix(iris) #just correlations
+cor_matrix(iris, CI = .95) #with confidence intervals
+cor_matrix(iris, CI = .99) #with 99\% confidence intervals
+cor_matrix(iris, p_val = .95) #with p values
+cor_matrix(iris, p_val = .95, p_template = "\%r (\%p)") #with p values, with an alternative template
 }
 

@@ -25,17 +25,25 @@ rcorr2 = function(x, ...) {
 #' @param CI_template (character scalar) A template to use for formatting the confidence intervals. Defaults to "\%r [\%lower \%upper]".
 #' @param skip_nonnumeric (logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.
 #' @param CI_round (whole number scalar) If confidence intervals are used, how many digits should be shown?
+#' @param p_val (log scalar) If p values are desired, the alpha level to use.
+#' @param p_template (chr scalar) If p values are desired, the template to use (default "\%r [p=\%p]").
+#' @param p_round (int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.
 #' @export
 #' @examples
-#' cor_matrix(iris)
-#' cor_matrix(iris, CI = .95)
-cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2) {
+#' cor_matrix(iris) #just correlations
+#' cor_matrix(iris, CI = .95) #with confidence intervals
+#' cor_matrix(iris, CI = .99) #with 99% confidence intervals
+#' cor_matrix(iris, p_val = .95) #with p values
+#' cor_matrix(iris, p_val = .95, p_template = "%r (%p)") #with p values, with an alternative template
+cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
   library(weights);library(stringr);library(psych);library(psychometric)
 
   #checks
   data = as.data.frame(data)
   if (skip_nonnumeric) data = extract_num_vars(data)
   if (!is_numeric(data)) stop("data contains non-numeric columns!")
+  if (!missing("CI") & !missing("p_val")) stop("Cannot both calculate CIs and p values!")
+  v_noextras = missing("CI") & missing("p_val")
 
   #weights not given or as character
   if (missing("weights")) weights = rep(1, nrow(data)) #fill 1's
@@ -51,8 +59,8 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
     if (length(weights) != nrow(data)) stop("weights not the same length as the data!")
   }
 
-  ##simple weights and no CI?
-  if (simpleweights && missing("CI")) {
+  ##simple weights and no extras?
+  if (simpleweights && v_noextras) {
     m = wtd.cors(data, weight = weights)
     return(m)
   }
@@ -94,13 +102,25 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
           str_replace("%upper", r_CI[2])
       }
 
+      #simple weights & p_val
+      if (simpleweights && !missing("p_val")) {
+        r_obj = wtd.cor(data[row], data[col], weight = weights)
+        r_n = count.pairwise(data[row], data[col])
+        r_r = r_obj[1] %>% format_digits(digits = CI_round)
+
+        m[row, col] = str_replace(p_template, "%r", r_r) %>%
+          str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
+      }
+
       #complex weights
       if (!simpleweights) {
         v_weights = harmonic.mean((weights[c(row, col)]) %>% t)
 
-        if (missing("CI")) {
+        if (v_noextras) {
           m[row, col] = wtd.cors(data[row], data[col], weight = v_weights)
-        } else {
+        }
+
+        if (!missing("CI")) {
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
           r_n = count.pairwise(data[row], data[col])
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
@@ -111,6 +131,15 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
           m[row, col] = str_replace(CI_template, "%r", r_r) %>%
             str_replace("%lower", r_CI[1]) %>%
             str_replace("%upper", r_CI[2])
+        }
+
+        if (!missing("p_val")) {
+          r_obj = wtd.cor(data[row], data[col], weight = v_weights)
+          r_n = count.pairwise(data[row], data[col])
+          r_r = r_obj[1] %>% format_digits(digits = CI_round)
+
+          m[row, col] = str_replace(p_template, "%r", r_r) %>%
+            str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
         }
 
       }
