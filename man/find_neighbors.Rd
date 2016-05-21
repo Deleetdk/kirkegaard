@@ -27,9 +27,6 @@ find_neighbors(df, dists, k = 3, distance_method, lat_var, lon_var,
 \description{
 Return a list of numeric vectors. Each vector contains the k nearest neighbors to the case. When using spherical geometry, you must give names of the variables. Euclidean geometry will use all variables. Cases with missing values are removed from the data.frame.
 }
-\examples{
-find_neighbors()
-}
 \keyword{autocorrelation,}
 \keyword{distance,}
 \keyword{knn}

@@ -29,9 +29,6 @@ SAC_knsn_reg_partial(df, variables, k = 3, dists, lat_var, lon_var,
 \description{
 Removes SAC in each variable using knsnr and then correlates them with each other. Returns a correlation matrix.
 }
-\examples{
-SAC_knsn_reg_partial()
-}
 \keyword{autocorrelation,}
 \keyword{distance,}
 \keyword{knn,}

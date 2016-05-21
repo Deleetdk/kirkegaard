@@ -10,8 +10,6 @@
 #' @param output A character vector stating which output form is desired. Can be either vector or matrix. Vector results in a vector of all the unique combinations of distances, which is n*(n-1)/2, where n is the number of cases. Matrix results in the full distance matrix with every permutation including diagonals, which are always 0.
 #' @keywords spatial autocorrelation, latitude, longitude, distance
 #' @export
-#' @examples
-#' get_spherical_dists()
 get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "vector", remove_diag = T) {
   #assumes that the latitude and longitude vars are called lat and lon, otherwise set their names
 
@@ -71,8 +69,6 @@ get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "v
 #' @param output A character vector stating which output form is desired. Can be either vector or matrix. Vector results in a vector of all the unique combinations of distances, which is n*(n-1)/2, where n is the number of cases. Matrix results in the full distance matrix with every permutation including diagonals, which are always 0.
 #' @keywords spatial autocorrelation, distance, euclidean
 #' @export
-#' @examples
-#' get_euclidean_dists()
 get_euclidean_dists = function(df, output = "vector", remove_diag = T) {
   #loads fields
   library(fields)
@@ -115,8 +111,6 @@ get_euclidean_dists = function(df, output = "vector", remove_diag = T) {
 #' @param weight_method A character string indicating which averaging method to use when combining weights for cases. Defaults to harmonic mean. Other options are arithmic and geometric.
 #' @keywords pairwise, means, geometric, harmonic, arithmic
 #' @export
-#' @examples
-#' get_pairwise_means()
 get_pairwise_means = function(x, weight_method = "harmonic") {
   #change option
   if (options()$expressions < 10000) options(expressions = 10000)
@@ -192,8 +186,6 @@ get_pairwise_means = function(x, weight_method = "harmonic") {
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, weights
 #' @export
-#' @examples
-#' get_distances()
 get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_var = "", weight_method = "harmonic", auto_detect_dist_method=T) {
   library(plyr) #for llply
   library(stringr) #for str_detect
@@ -285,8 +277,6 @@ get_distances = function(df, dists, lat_var, lon_var, distance_method, weights_v
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, matrix
 #' @export
-#' @examples
-#' get_distances_mat()
 get_distances_mat = function(df, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
 
   #check input
@@ -342,8 +332,6 @@ get_distances_mat = function(df, lat_var, lon_var, distance_method, auto_detect_
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, neighbors, knn
 #' @export
-#' @examples
-#' find_neighbors()
 find_neighbors = function(df, dists, k=3, distance_method, lat_var, lon_var, auto_detect_dist_method=T) {
   #libs
   library(plyr)
@@ -424,8 +412,6 @@ find_neighbors = function(df, dists, k=3, distance_method, lat_var, lon_var, aut
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I
 #' @export
-#' @examples
-#' get_Morans_I()
 get_Morans_I = function(df, var, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
@@ -479,8 +465,6 @@ get_Morans_I = function(df, var, dists, lat_var, lon_var, distance_method, auto_
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, Moran's I, wrapper
 #' @export
-#' @examples
-#' get_Morans_I_multi()
 get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T) {
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
@@ -549,8 +533,6 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, simulation
 #' @export
-#' @examples
-#' add_SAC()
 add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, distance_method, verbose = F, auto_detect_dist_method=T){
 
   #libs
@@ -623,8 +605,6 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn
 #' @export SAC_knsn_reg SAC_knsnr
 #' @aliases SAC_knsn_reg
-#' @examples
-#' SAC_knsnr()
 SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
   library(fields) #for rdist
   library(stringr) #for str_c
@@ -742,8 +722,6 @@ SAC_knsn_reg = SAC_knsnr #old name
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, latitude, longitude, distance, knn, knsn, residuals
 #' @export
-#' @examples
-#' SAC_knsn_reg_partial()
 SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
 
   #check input
@@ -796,8 +774,6 @@ SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, w
 #' @param CD_convert_NaN_to_zero (log scalar) Whether to convert NaN to zeros in CD. At a point in the calculate, a square root is taken and because the first value can be negative, this may give a non-real number. This probably means that it should be thought of as 0.
 #' @export get_SAC_measures SAC_measures
 #' @aliases get_SAC_measures
-#' @examples
-#' SAC_measures()
 SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "CD", "KNSNR"), CD_convert_NaN_to_zero = T) {
   library(stringr)
 
@@ -880,8 +856,6 @@ get_SAC_measures = SAC_measures #old name
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @keywords spatial autocorrelation, regression, spatial local regression, local regression
 #' @export
-#' @examples
-#' SAC_slr()
 SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse", weights_var = "", include_self = F, verbose = T) {
   library(stringr)
 
@@ -1014,7 +988,7 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 
 
 
-#' Control for spatial autocorrelation with multiple methods.
+#' Control for spatial autocorrelation with multiple methods
 #'
 #' Returns a data.frame with predictors for linear regression with and without controls for SAC.
 #' @param df A data.frame with variables.
@@ -1087,7 +1061,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
       #standardize?
       if (standardize) {
-        dists_vec = std_df(dists_vec, exclude = "weights___")
+        dists_vec = std_df(dists_vec, exclude = "weights___", messages = F)
       }
     }
   }
@@ -1095,12 +1069,15 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
   #add KNSNR predictor scores var
   #must be done before standardization if that is done
   if ("KNSNR" %in% methods) {
-    df$spatial = SAC_knsn_reg(df=df, dependent = dependent, k = knsn_k, output = "scores", weights_var = "weights___")
+    df$spatial = SAC_knsn_reg(df=df, dists = dists, dependent = dependent, k = knsn_k, output = "scores", weights_var = "weights___")
   }
+
+  #subset otherwise some of the below will waste time calculating on unused variables
+  df = df[colnames(df) %in% c(dependent, predictors, "weights___", "spatial")]
 
   #standardize?
   if (standardize) {
-    df = std_df(df, exclude = "weights___")
+    df = std_df(df, exclude = "weights___", messages = F)
   }
 
 
@@ -1116,8 +1093,8 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
   #which rows?
   if ("mr" %in% control_approach) {
     rows_ = 1:(nrow(d_betas)-1)
-    } else {
-      rows_ = 1:nrow(d_betas)
+  } else {
+    rows_ = 1:nrow(d_betas)
   }
 
 
@@ -1142,7 +1119,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
       #standardize?
       if (standardize) {
-        dists_vec = std_df(dists_vec, exclude = "weights___")
+        dists_vec = std_df(dists_vec, exclude = "weights___", messages = F)
       }
     }
 
@@ -1181,7 +1158,7 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
 
       #standardize, if standardized values are desired
       if (standardize) {
-        df_tmp = std_df(df_tmp, exclude = "weights___")
+        df_tmp = std_df(df_tmp, exclude = "weights___", messages = F)
       }
 
       #regress

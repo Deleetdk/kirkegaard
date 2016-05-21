@@ -126,6 +126,8 @@ mean_abs_diff = function(x, na.rm = T) {
 #' Exclude missing datapoints
 #'
 #' Exclude datapoints that are NA, NULL or NaN.
+#'
+#' Does not remove NA etc. recursively. See the complex list example.
 #' @param x (an interatable object) An object to subset based on missingness.
 #' @param .NA (logical scalar) Whether to exclude NA (default TRUE).
 #' @param .NULL (logical scalar) Whether to exclude NULL (default TRUE).
@@ -138,6 +140,9 @@ mean_abs_diff = function(x, na.rm = T) {
 #' exclude_missing(x, .NULL = F)
 #' exclude_missing(x, .NaN = F)
 #' exclude_missing(x, .Inf = F)
+#' #complex list
+#' x = list(1, NA, 2, NULL, 3, NaN, 4, Inf, 1:3, c(1, NA, 3))
+#' exclude_missing(x) #does not remove NAs recursively
 exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   #check empty
   if (length(x) == 0) return(x)
@@ -152,6 +157,7 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   if (.NA) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
     if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
+    if (length(y) != 1) return(T) #if length isn't 1, the below functions give errors
     if (is.infinite(y)) return(T)
     if (is.nan(y)) return(T)
     !is.na(y)
@@ -164,6 +170,7 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   if (.NaN) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
     if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
+    if (length(y) != 1) return(T) #if length isn't 1, the below functions give errors
     !is.nan(y)
   })]
 
@@ -174,6 +181,7 @@ exclude_missing = function(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T) {
   if (.Inf) x = x[sapply(x, function(y) {
     if (is.null(y)) return(T)
     if (!is_simple_vector(y)) return(T) #the functions below fail on list objects
+    if (length(y) != 1) return(T) #if length isn't 1, the below functions give errors
     if (is.na(y)) return(T)
     is.finite(y)
   })]

@@ -18,6 +18,9 @@ exclude_missing(x, .NA = T, .NULL. = T, .NaN = T, .Inf = T)
 \description{
 Exclude datapoints that are NA, NULL or NaN.
 }
+\details{
+Does not remove NA etc. recursively. See the complex list example.
+}
 \examples{
 x = list(1, NA, 2, NULL, 3, NaN, 4, Inf)
 exclude_missing(x)
@@ -25,5 +28,8 @@ exclude_missing(x, .NA = F)
 exclude_missing(x, .NULL = F)
 exclude_missing(x, .NaN = F)
 exclude_missing(x, .Inf = F)
+#complex list
+x = list(1, NA, 2, NULL, 3, NaN, 4, Inf, 1:3, c(1, NA, 3))
+exclude_missing(x) #does not remove NAs recursively
 }
 

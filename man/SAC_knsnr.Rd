@@ -35,9 +35,6 @@ SAC_knsnr(df, dependent, predictor, k = 3, dists, lat_var, lon_var,
 \description{
 Predict the value of cases on the basis of values of nearby cases. A useful measure of spatial autocorrelation. Returns a data.frame. Keeps rownames.
 }
-\examples{
-SAC_knsnr()
-}
 \keyword{autocorrelation,}
 \keyword{distance,}
 \keyword{knn,}

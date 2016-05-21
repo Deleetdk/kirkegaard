@@ -3,7 +3,7 @@
 \name{SAC_control}
 \alias{SAC_control}
 \alias{SAC_control_all_methods}
-\title{Control for spatial autocorrelation with multiple methods.}
+\title{Control for spatial autocorrelation with multiple methods}
 \usage{
 SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,
   lat_var, lon_var, distance_method, auto_detect_dist_method = T,

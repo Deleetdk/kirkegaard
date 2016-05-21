@@ -1,5 +1,5 @@
 # some libs ---------------------------------------------------------------
-library(pacman)
+p_load(pacman)
 p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
 
 #otherwise get error
@@ -250,7 +250,7 @@ stopifnot({
 
 
 # Jensen_plot -------------------------------------------------------------
-library(psych)
+p_load(psych)
 #this extract GFP and checks whether the gender difference is GFP-loaded
 t = fa(bfi[1:25])
 t2 = cor(bfi, use = "p")
@@ -294,7 +294,7 @@ stopifnot({
 
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
-library(psych)
+p_load(psych)
 t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F))
 stopifnot({
   class(t) == "data.frame"
@@ -304,7 +304,7 @@ stopifnot({
 
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
-library(ggplot2)
+p_load(ggplot2)
 mpg_na = miss_add_random(mpg) #missing data
 
 l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
@@ -333,7 +333,7 @@ stopifnot({
 
 
 # Jensens_method ----------------------------------------------------------
-library(psych)
+p_load(psych)
 t = fa(bfi[1:25])
 t2 = Jensens_method(t, bfi, "gender");t2
 stopifnot({
@@ -393,7 +393,7 @@ stopifnot({
 
 
 # get_distances -----------------------------------------------------------
-library(maps)
+p_load(maps)
 
 #with spherical variables
 d = as.data.frame(maps::ozone)
@@ -439,8 +439,8 @@ stopifnot({
 
 
 # cor_matrix_weights ------------------------------------------------------
-library(datasets)
-library(weights)
+p_load(datasets)
+p_load(weights)
 
 t = cor_matrix_weights(as.data.frame(state.x77), weight_var = "Population")
 stopifnot({
@@ -616,7 +616,7 @@ stopifnot({
 
 
 # GG_scatter &  Jensens_method --------------------------------------------------------------
-library(psych)
+p_load(psych)
 
 g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
 g = GG_scatter(longley, "Unemployed", "GNP");g
@@ -673,9 +673,9 @@ stopifnot({
 
 
 # GG_denhist --------------------------------------------------------------
-library(MASS)
-library(ggplot2)
-library(magrittr)
+p_load(MASS)
+p_load(ggplot2)
+p_load(magrittr)
 
 Sepal_Length = iris$Sepal.Length
 g = list(GG_denhist(iris, "Sepal.Length"),
@@ -821,7 +821,7 @@ stopifnot({
 
 # score_items -------------------------------------------------------------
 #scores test items
-library(psych) #data in here
+p_load(psych) #data in here
 
 t = score_items(iqitems, c(4,4,4, 6,  6,3,4,4,   5,2,2,4,   3,2,6,7))
 
@@ -877,7 +877,7 @@ stopifnot({
 
 
 # score_accuracy -------------------------------------------------
-library(stringr)
+p_load(stringr)
 #simulate some data
 n_cases = 10
 n_countries = 100
@@ -1038,7 +1038,7 @@ stopifnot({
   #minimal silent stuff
   are_equal(capture.output(silence(warning("test"), messages = T, startupmessages = T)), character())
   are_equal(capture.output(silence(message("test"), warnings = T, startupmessages = T)), character())
-  are_equal(capture.output(silence(library(maps), warnings = T, messages = T)), character())
+  are_equal(capture.output(silence(p_load(maps), warnings = T, messages = T)), character())
 
 })
 
@@ -1146,8 +1146,8 @@ stopifnot({
 # get_salient_loadings ----------------------------------------------------
 #returns either a list or data.frame with the salient loadings of each factor from a factor analysis.
 
-library("psych")
-library("magrittr")
+p_load("psych")
+p_load("magrittr")
 fa_iris1 = fa(iris[-5])
 fa_iris2 = fa(iris[-5], 2)
 
@@ -1218,7 +1218,7 @@ stopifnot({
 
 # df_residualize ----------------------------------------------------------
 
-library("magrittr")
+p_load("magrittr")
 
 set.seed(1)
 df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
@@ -1261,7 +1261,7 @@ stopifnot({
 
 # copy_columns ------------------------------------------------------------
 #copy cols from one df to another
-library(magrittr)
+p_load(magrittr)
 
 stopifnot({
   #copy all using default
@@ -1317,7 +1317,7 @@ stopifnot({
 
 # cor_matrix --------------------------------------------------------------
 #correlation matrix with nice output
-library(weights);library(magrittr)
+p_load(weights);p_load(magrittr)
 
 stopifnot({
   are_equal(cor_matrix(iris[-5]), cor(iris[-5])) #validate vs. base-r
@@ -1333,7 +1333,7 @@ stopifnot({
 
 # SMD_matrix & pool_sd --------------------------------------------------------------
 #standardized mean differences
-library(magrittr)
+p_load(magrittr)
 
 #iris with missing
 set.seed(1)
@@ -1471,7 +1471,7 @@ stopifnot({
 
 
 # split unsplit functions -----------------------------------------------------------------
-library(magrittr)
+p_load(magrittr)
 
 
 #df_to_v
