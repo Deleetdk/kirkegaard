@@ -774,7 +774,7 @@ SAC_knsn_reg_partial = function(df, variables, k = 3, dists, lat_var, lon_var, w
 #' @param CD_convert_NaN_to_zero (log scalar) Whether to convert NaN to zeros in CD. At a point in the calculate, a square root is taken and because the first value can be negative, this may give a non-real number. This probably means that it should be thought of as 0.
 #' @export get_SAC_measures SAC_measures
 #' @aliases get_SAC_measures
-SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "CD", "KNSNR"), CD_convert_NaN_to_zero = T) {
+SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 3, weights_var="", weight_method="harmonic", auto_detect_dist_method=T, measures = c("Morans", "KNSNR"), CD_convert_NaN_to_zero = T) {
   library(stringr)
 
   #check spatial input

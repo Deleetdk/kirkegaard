@@ -7,7 +7,7 @@
 \usage{
 SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
   weights_var = "", weight_method = "harmonic",
-  auto_detect_dist_method = T, measures = c("Morans", "CD", "KNSNR"),
+  auto_detect_dist_method = T, measures = c("Morans", "KNSNR"),
   CD_convert_NaN_to_zero = T)
 }
 \arguments{
