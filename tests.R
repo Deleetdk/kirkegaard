@@ -551,9 +551,9 @@ t_w = SAC_measures(df = t1, vars = c("outcome", "test"), k = 3:5, weights_var = 
 
 stopifnot({
   class(t) == "data.frame"
-  dim(t) == c(2, 6)
+  dim(t) == c(2, 4)
   class(t_w) == "data.frame"
-  dim(t_w) == c(2, 6)
+  dim(t_w) == c(2, 4)
 })
 
 ##test using user-inputted dists
@@ -565,7 +565,7 @@ t_y = SAC_measures(t1, dists = dists_y, vars = c("outcome", "test"), k = 3:5)
 
 stopifnot({
   class(t_x) == "data.frame"
-  dim(t_x) == c(2, 6)
+  dim(t_x) == c(2, 4)
   !all(t_x == t_y, na.rm = T) # they should not be identical
 })
 

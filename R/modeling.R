@@ -630,8 +630,9 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
 
     #Perform n fold cross validation
     sapply(1:folds, function(i) {
-      #Segement your data by fold using the which() function
 
+
+      #Segement your data by fold using the which() function
       test_idx = which(folds_idx == i, arr.ind = TRUE)
       test_data = data2[test_idx, ]
       train_data = data2[-test_idx, ]
@@ -642,7 +643,10 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
                weights = .weights)
 
       #predict
-      preds = predict(fit, newdata = test_data)
+      trial = try({ #we try because it can fail if new levels appear in the test set not in the train set
+        preds = predict(fit, newdata = test_data)
+      }, silent = T)
+      if (is_error(trial)) return(NA)
 
       #calculate SSE and R2
       # http://stats.stackexchange.com/questions/32596/what-is-the-difference-between-coefficient-of-determination-and-mean-squared
@@ -654,11 +658,11 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
       #R2
       1 - (v_sq_errors_sum / v_sum_squared_deviations)
     }) %>%
-      mean()
+      mean(, na.rm=T)
   })
 
   #return
-  c("raw_r2" = summary(lmfit)$r.squared, "cv_r2" = mean(v_runs))
+  c("raw_r2" = summary(lmfit)$r.squared, "cv_r2" = mean(v_runs, na.rm=T))
 }
 
 
