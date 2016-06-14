@@ -478,10 +478,11 @@ lm_best = function(model_list) {
 #' @param NA_ignore (log scalar) Whether to remove cases with missing data. Defaults to T.
 #' @param messages (log scalar) Whether to send messages to the user.
 #' @param seed (int scalar) The seed to use (default 1). For reproducible results.
-#' @export
+#' @export MOD_LASSO MOD_repeat_cv_glmnet
+#' @aliases MOD_repeat_cv_glmnet
 #' @examples
-#' MOD_repeat_cv_glmnet(iris, "Sepal.Length", predictors = colnames(iris)[-1])
-MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T, seed = 1) {
+#' MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
+MOD_LASSO = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T, seed = 1) {
   #load lib
   library(glmnet)
   library(stringr)
@@ -544,6 +545,9 @@ MOD_repeat_cv_glmnet = function(df, dependent, predictors, weights_ = NA, standa
 
   return(results_df)
 }
+
+#old name
+MOD_repeat_cv_glmnet = MOD_LASSO
 
 
 #' Summarize model coefficients

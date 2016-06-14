@@ -4,21 +4,23 @@
 \alias{GG_group_means}
 \title{ggplot2 with group means and error bars.}
 \usage{
-GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T,
-  msg_NA = T, split_group_labels = T, line_length = 95)
+GG_group_means(df, var, groupvar, subgroupvar, CI = 0.95, type = "bar",
+  na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
 
-\item{var}{(character scalar) The name of the variable to plot.}
+\item{var}{(chr scalar) The name of the variable to plot.}
 
-\item{groupvar}{(character scaler) The name of the grouping variable.}
+\item{groupvar}{(chr scaler) The name of the grouping variable.}
 
-\item{CI}{(numeric scalar) The confidence interval to use. Default = .95.}
+\item{subgroupvar}{(chr scalar) The name of the subgrouping variable, if any.}
 
-\item{type}{(character scalar) The type of plot. Options: bar (default), point, points.}
+\item{CI}{(num scalar) The confidence interval to use. Default = .95.}
 
-\item{msg_NA}{(logical scalar) Show a message if NAs were removed? (default true)}
+\item{type}{(chr scalar) The type of plot. Options: bar (default), point, points.}
+
+\item{msg_NA}{(log scalar) Show a message if NAs were removed? (default true)}
 
 \item{split_group_labels}{(log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).}
 
@@ -28,9 +30,14 @@ GG_group_means(df, var, groupvar, CI = 0.95, type = "bar", na.rm = T,
 Draws a nice ggplot2 with group means and error bars.
 }
 \examples{
+#simple examples
 GG_group_means(iris, "Sepal.Length", "Species")
 GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
+
+#subgroups too
+iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type")
 }
 

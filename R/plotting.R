@@ -269,16 +269,15 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #' Plot multiple factor loadings in one plot.
 #'
 #' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
-#' @param fa_objects a list of factor analyses objects from the fa() function from the psych package.
-#' @param fa_labels a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..
-#' @param reverse.vector a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
-#' @param reorder (character scalar or NA) Which factor analysis to order the loadings by. Can be integers, "all" or NA for not reordering.
+#' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.
+#' @param fa_labels (chr vector) Names of the analyses. Defaults to fa.1, fa.2, etc..
+#' @param reverse_vector (num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
+#' @param reorder (chr scalar or NA) Which factor analysis to order the loadings by. Can be integers that reprensent each factor analysis. Can also be "mean", "median" to use the means and medians of the loadings. Use "all" for the old method. Default = "mean".
 #' @export
 #' @examples
 #' library(psych)
-#' plot_loadings_multi(fa(iris[-5]))
-plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "all") {
-  library("plotflow")
+#' plot_loadings_multi(fa(iris[-5])) #extract a factor and reverse
+plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "mean") {
   library("stringr")
   library("ggplot2")
   library("plyr")
@@ -326,32 +325,38 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
   d2$id = as.factor(d2$id)
   colnames(d2)[2] = "fa"
 
-
   #reorder factor?
   if (!is.na(reorder)) {
     if (reorder == "all") {
-      suppressor({
+      library("plotflow")
+
+      silence({
         d2 = reorder_by(id, ~fa, d2)
       })
     } else if (reorder == "mean") {
-      browser()
       v_aggregate_values = daply(d2, .(id), function(x) {
         mean(x$fa)
       })
+
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
 
     } else if (reorder == "median") {
       v_aggregate_values = daply(d2, .(id), function(x) {
         median(x$fa)
       })
 
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
+
     } else {
       d2_sub = d2[d2$time == reorder, ] #subset the analysis whose loading is to be used for the reorder
-      suppressor({
-        d2_sub = reorder_by(id, ~fa, d2_sub)
-      })
 
-      library(gdata)
-      d2$id = reorder.factor(d2$id, new.order = levels(d2_sub$id))
+      #get vector of the chosen analysis
+      v_values = d2_sub$fa; names(v_values) = d2_sub$id
+
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_values, decreasing = F)))
     }
   }
 
@@ -364,87 +369,183 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 }
 
 
-
 #' ggplot2 with group means and error bars.
 #'
 #' Draws a nice ggplot2 with group means and error bars.
 #' @param df (data.frame) A data.frame with variables.
-#' @param var (character scalar) The name of the variable to plot.
-#' @param groupvar (character scaler) The name of the grouping variable.
-#' @param CI (numeric scalar) The confidence interval to use. Default = .95.
-#' @param type (character scalar) The type of plot. Options: bar (default), point, points.
-#' @param msg_NA (logical scalar) Show a message if NAs were removed? (default true)
+#' @param var (chr scalar) The name of the variable to plot.
+#' @param groupvar (chr scaler) The name of the grouping variable.
+#' @param subgroupvar (chr scalar) The name of the subgrouping variable, if any.
+#' @param CI (num scalar) The confidence interval to use. Default = .95.
+#' @param type (chr scalar) The type of plot. Options: bar (default), point, points.
+#' @param msg_NA (log scalar) Show a message if NAs were removed? (default true)
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
 #' @param line_length (num scalar) The desired line width (default 95). Only used when split_group_labels = T.
 #' @export
 #' @examples
+#' #simple examples
 #' GG_group_means(iris, "Sepal.Length", "Species")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
-GG_group_means = function(df, var, groupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
+#'
+#' #subgroups too
+#' iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type")
+GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
   library(psych)
   library(stringr)
   library(ggplot2)
+  library(plyr)
 
   #convert
   df = as.data.frame(df)
 
-  #subset
-  df = df[c(var, groupvar)]
+  #no subgroupvar variable, simple
+  if(missing("subgroupvar")) {
 
-  #check for missing
-  if (count_NA(df) > 0 ) {
-    #remove missing?
-    if (na.rm) {
-      df = filter_by_missing_values(df, missing = 0)
-      silence(message("Missing values were removed."), messages = msg_NA)
-    } else {
-      stop("There must not be missing values in the group variable when na.rm = F!")
+    #checks
+    if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
+    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
+    if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
+
+    #subset
+    df = df[c(var, groupvar)]
+
+    #check for missing
+    if (count_NA(df) > 0 ) {
+      #remove missing?
+      if (na.rm) {
+        df = filter_by_missing_values(df, missing = 0)
+        silence(message("Missing values were removed."), messages = msg_NA)
+      } else {
+        stop("There must not be missing values in the group variable when na.rm = F!")
+      }
     }
+
+    #summarize
+    df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
+
+    #reorder groups in line with data
+    if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
+      df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
+    }
+
+    #calculate CIs
+    df_sum$ci_bar = apply(df_sum, 1, function(x) {
+      qt(1 - ((1 - CI) / 2), df = as.numeric(x[4]) - 1)
+    })
+
+    #plot
+    if (type == "bar") {
+      g = ggplot(df_sum, aes(group1, mean)) +
+        geom_bar(stat="identity") +
+        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    }
+
+    if (type == "point") {
+      g = ggplot(df_sum, aes(group1, mean)) +
+        geom_point() +
+        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    }
+
+    if (type == "points") {
+      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+        geom_point(data = df, aes_string(groupvar, var)) +
+        geom_point(aes(group1, mean), color = "red", size = 3) +
+        geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    }
+
+    if (split_group_labels) {
+      g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines(line_length = line_length))
+    }
+
+    #labels
+    g = g + xlab(groupvar) + ylab(var)
   }
 
-  #checks
-  if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
-  if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
-  if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
+  #if plot by subgroup too
+  if(!missing("subgroupvar")) {
 
-  #summarize
-  df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
+    #checks
+    if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
+    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
+    if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data.frame!")
+    if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
 
-  #reorder groups in line with data
-  if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
-    df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
+    #subset
+    df = df[c(var, groupvar, subgroupvar)]
+
+    #check for missing
+    if (count_NA(df) > 0 ) {
+      #remove missing?
+      if (na.rm) {
+        df = filter_by_missing_values(df, missing = 0)
+        silence(message("Missing values were removed."), messages = msg_NA)
+      } else {
+        stop("There must not be missing values in the group variable when na.rm = F!")
+      }
+    }
+
+    #summarize
+    df_sum = ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(d_sub) {
+      desc = psych::describe(d_sub[[var]])
+      c("mean" = desc$mean,
+        "n" = desc$n,
+        "se" = desc$se)
+    })
+
+    #copy vars
+    df_sum$groupvar = df_sum[[groupvar]]
+    df_sum$subgroupvar = df_sum[[subgroupvar]]
+    df$var = df[[var]]
+    df$groupvar = df[[groupvar]]
+    df$subgroupvar = df[[subgroupvar]]
+
+    #reorder factors in line with data
+    if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
+      df_sum$groupvar = factor(df_sum[[groupvar]], levels = levels(df[[groupvar]]))
+    }
+
+    if (is.factor(df[[subgroupvar]])) { #only do it if the data is a factor, if not, use default order
+      df_sum$subgroupvar = factor(df_sum[[subgroupvar]], levels = levels(df[[subgroupvar]]))
+    }
+
+    #calculate CIs
+    df_sum$ci_bar = apply(df_sum, 1, function(x) {
+      qt(1 - ((1 - CI) / 2), df = as.numeric(x[4]) - 1)
+    })
+
+    #plot
+    if (type == "bar") {
+      g = ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
+        geom_bar(stat="identity", position = "dodge") +
+        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+    }
+
+    if (type == "point") {
+      g = ggplot(df_sum, aes(groupvar, mean, color = subgroupvar)) +
+        geom_point(position = position_dodge(width = .9)) +
+        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
+    }
+
+    if (type == "points") {
+      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+        geom_point(data = df, aes(groupvar, y = var, color = subgroupvar), position = position_dodge(width = .9)) +
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
+        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+
+    }
+
+    if (split_group_labels) {
+      g = g + scale_x_discrete(labels = levels(g$data$groupvar) %>% add_newlines(line_length = line_length))
+    }
+
+
+    #labels
+    g = g + xlab(groupvar) + scale_color_discrete(name = subgroupvar) + scale_fill_discrete(name = subgroupvar) + ylab(var)
   }
 
-  #calculate CIs
-  df_sum$ci_bar = apply(df_sum, 1, function(x) {
-    qt(1 - ((1 - CI) / 2), df = x[4] %>% as.numeric)
-  })
-
-  #plot
-  if (type == "bar") {
-    g = ggplot(df_sum, aes(group1, mean)) +
-      geom_bar(stat="identity") +
-      geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
-  }
-
-  if (type == "point") {
-    g = ggplot(df_sum, aes(group1, mean)) +
-      geom_point() +
-      geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
-  }
-
-  if (type == "points") {
-    g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
-      geom_point(data = df, aes_string(groupvar, var)) +
-      geom_point(aes(group1, mean), color = "red", size = 3) +
-      geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
-  }
-
-  if (split_group_labels) {
-    g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines(line_length = line_length))
-  }
 
   return(g)
 }

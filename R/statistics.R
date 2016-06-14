@@ -958,3 +958,57 @@ standardize = function(x, w, robust = F, sample = T) {
     return((x - mdn) / mad)
   }
 }
+
+
+#' Find a cutoff of a normal distribution that results in a given mean trait value above the cutoff
+#'
+#' Assuming a normal distribution for a trait and a cutoff value. Estimate what this cutoff value is to obtain a population above the cutoff with a known mean trait value.
+#' @param mean_above (num scalar) Mean trait level of population above the cutoff.
+#' @param mean_pop (num scalar) Mean trait level of population. Default = 100 (IQ scale).
+#' @param sd_pop (num scalar) Standard deviation of the trait in the population. Default = 15 (IQ scale).
+#' @param n (num scalar) Sample size to generate in the process. More results in higher precision and memory use. Default = 1e4.
+#' @param precision (num scalar) The precision to use. Default = .1.
+#' @param below (log scalar) Reverse the model to find cutoffs for
+#' @export
+#' @examples
+#' #what cutoff is needed to get a population above the cutoff with a mean of 115 when the population mean is 100?
+#' find_cutoff(115)
+#' #try impossible
+#' find_cutoff(95)
+find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precision = .1, below = F) {
+  #chechk
+  if (mean_above < mean_pop) stop("This model is inapplicable if the mean trait level is lower than the population mean!")
+
+  #dangerous loop!
+  cutoff = mean_pop #begin with unselected group
+  iter = 1
+  while(T) {
+    #replicable
+    set.seed(1)
+
+    #make a population
+    population = rnorm(n = n, mean = mean_pop, sd = sd_pop)
+
+    #get the population above the cutoff
+    population_above = population[population > cutoff]
+
+    #mean above
+    population_above_mean = mean(population_above)
+
+    #check
+    v_diff = mean_above - population_above_mean
+    if (abs(v_diff) < precision) {
+      return(cutoff)
+    }
+
+    #adjust cutoff
+    if (v_diff > 0) cutoff = cutoff + precision
+    if (v_diff < 0) cutoff = cutoff - precision
+
+    #iter + 1
+    iter = iter + 1
+
+    #check if infinite
+    if (iter >= 1e5) stop("Loop reached 100k iterations without finding a solution! Use a lower level of precision!")
+  }
+}

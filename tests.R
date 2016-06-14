@@ -843,13 +843,22 @@ iris_reorder$Species = factor(x = iris_reorder$Species, levels = levels(iris$Spe
 levels(iris_reorder$Species)
 gg = GG_group_means(iris_reorder, "Sepal.Length", "Species")
 
+#subgroup
+iris2 = iris
+iris2$type = sample(c("A", "B"), size = 150, replace = T)
+
 #this the plot means function
 l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
            GG_group_means(iris_na, "Sepal.Length", "Species", msg_NA = F),
-           "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"))
+           "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"),
+
+           #some more parameters tried
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type"),
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "point"),
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points"))
 
 stopifnot({
   sapply(l_t, function(x) "ggplot" %in% class(x))
@@ -1684,6 +1693,15 @@ stopifnot({
 })
 
 
+
+# find_cutoff -------------------------------------------------------------
+# using a simple model where there is a normal distribution of a trait, and everybody is selected for a special group
+# above a cutoff. If we know what the population mean is above the cutoff, then we can estimate what the cutoff is.
+
+stopifnot({
+  are_equal(find_cutoff(115), 104.1)
+  are_equal(find_cutoff(130), 123.7)
+})
 
 
 

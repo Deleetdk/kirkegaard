@@ -5,22 +5,22 @@
 \title{Plot multiple factor loadings in one plot.}
 \usage{
 plot_loadings_multi(fa_objects, fa_labels, reverse_vector = NA,
-  reorder = "all")
+  reorder = "mean")
 }
 \arguments{
-\item{fa_objects}{a list of factor analyses objects from the fa() function from the psych package.}
+\item{fa_objects}{(list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.}
 
-\item{fa_labels}{a character vector for names of the analyses. Defaults to fa.1, fa.2, etc..}
+\item{fa_labels}{(chr vector) Names of the analyses. Defaults to fa.1, fa.2, etc..}
 
-\item{reorder}{(character scalar or NA) Which factor analysis to order the loadings by. Can be integers, "all" or NA for not reordering.}
+\item{reverse_vector}{(num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.}
 
-\item{reverse.vector}{a numeric vector to multiple factor loadings with. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.}
+\item{reorder}{(chr scalar or NA) Which factor analysis to order the loadings by. Can be integers that reprensent each factor analysis. Can also be "mean", "median" to use the means and medians of the loadings. Use "all" for the old method. Default = "mean".}
 }
 \description{
 Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
 }
 \examples{
 library(psych)
-plot_loadings_multi(fa(iris[-5]))
+plot_loadings_multi(fa(iris[-5])) #extract a factor and reverse
 }
 
