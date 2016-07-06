@@ -870,7 +870,7 @@ reorder_columns = function(data, vars){
   if (!is.data.frame(data)) stop("data must be a data.frame!")
   if (!is_simple_vector(vars)) stop("vars must be a named vector!")
   if (is.null(names(vars))) stop("vars must be a named vector!")
-  if (!all(names(vars)) %in% names(data)) stop("Not all names were names of columns in the data.frame!")
+  if (!all(names(vars) %in% names(data))) stop("Not all names were names of columns in the data.frame!")
 
   ##sort out inputs
   data.nms <- names(data)

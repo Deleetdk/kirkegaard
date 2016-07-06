@@ -25,5 +25,9 @@ Copied and modified from http://stackoverflow.com/a/37009127/3980197.
 reorder_columns(iris, c("Species" = 1))
 #check for identity
 all(reorder_columns(iris, c("Species" = 1)) == iris[c(5, 1:4)])
+#throws error if not given a named vector
+throws_error("reorder_columns(iris, c1)")
+#or if names are not there
+throws_error("reorder_columns(iris, c('abc' = 1))")
 }
 
