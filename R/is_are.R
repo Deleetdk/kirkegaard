@@ -222,3 +222,31 @@ check_if_in = function(x, list) {
   #all fine
   return(invisible(NULL))
 }
+
+
+#' Check whether all elements of a list are identical
+#'
+#' Check whether all elements of a list are identical.
+#' @param list (list) The list to check.
+#' @return TRUE if all elements are identical, FALSE if not.
+#' @export
+#' @examples
+#' #test lists
+#' l_testlist_ok = list(1:3, 1:3, 1:3, 1:3, 1:3, 1:3)
+#' l_testlist_bad = list(1:3, 1:3, 1:4, 1:3, 1:3, 1:3)
+#' all_elements_the_same(l_testlist_ok) #TRUE
+#' all_elements_the_same(l_testlist_bad) #FALSE
+#' all_elements_the_same(list()) #TRUE if list is empty
+all_elements_the_same = function(list) {
+  #double loop solution
+  for (i in seq_along(list)) {
+    for (j in seq_along(list)) {
+      #skip if comparing to self or if comparison already done
+      if (i >= j) next
+
+      #check
+      if (!identical(list[[i]], list[[j]])) return(F)
+    }
+  }
+  T
+}
