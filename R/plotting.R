@@ -95,6 +95,7 @@ plot_kmeans = GG_kmeans
 #' @param case_names_vector (chr vector) The case names to use. If missing, uses row names.
 #' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
 #' @param clean_names (log scalar) Whether to clean the axes names using str_clean(). Default=T.
+#' @param check_overlap (log scalar) Whether to avoid overplotting names. Default=T.
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
@@ -102,7 +103,7 @@ plot_kmeans = GG_kmeans
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
-GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T) {
+GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
   library(ggplot2)
   library(grid)
   library(psychometric)
@@ -185,7 +186,7 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vec
 
   #case names?
   if (case_names) {
-    g = g + geom_text(aes(label = label), size = 3, vjust = 1)
+    g = g + geom_text(aes(label = label), size = 3, vjust = 1, check_overlap = check_overlap)
   }
 
   #clean?
