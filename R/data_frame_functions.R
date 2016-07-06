@@ -707,13 +707,13 @@ df_to_ldf = function(data, by, remove_by = T) {
 #'
 #' Combines a split data.frame back to the original.
 #' @param list (list of data.frames) The data.frames.
-#' @param add_by (logical scalar) Whether to add a variable indicating the origin of each row.
-#' @param by_name (character scalar) What should the added variable by called? Only used when add_by = TRUE.
-#' @param rownames_to_var (logical scalar) Should rownames be saved in a variable? (Default no)
-#' @param rownames_name (logical scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.
+#' @param add_by (log scalar) Whether to add a variable indicating the origin of each row.
+#' @param by_name (chr scalar) What should the added variable by called? Only used when add_by = TRUE.
+#' @param rownames_to_var (log scalar) Should rownames be saved in a variable? (Default no)
+#' @param rownames_name (log scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.
 #' @export
 #' @examples
-#' ldf_to_df(df_to_ldf(iris), "Species")
+#' ldf_to_df(df_to_ldf(iris, by = "Species"))
 ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames") {
 
   #are there list names? if not, set them
