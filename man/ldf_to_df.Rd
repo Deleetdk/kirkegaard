@@ -5,23 +5,32 @@
 \title{Transform list of data.frames to a data.frame.}
 \usage{
 ldf_to_df(list, add_by = T, by_name = "group", rownames_to_var = F,
-  rownames_name = "rownames")
+  rownames_name = "rownames", messages = T)
 }
 \arguments{
 \item{list}{(list of data.frames) The data.frames.}
 
-\item{add_by}{(logical scalar) Whether to add a variable indicating the origin of each row.}
+\item{add_by}{(log scalar) Whether to add a variable indicating the origin of each row.}
 
-\item{by_name}{(character scalar) What should the added variable by called? Only used when add_by = TRUE.}
+\item{by_name}{(chr scalar) What should the added variable by called? Only used when add_by = TRUE.}
 
-\item{rownames_to_var}{(logical scalar) Should rownames be saved in a variable? (Default no)}
+\item{rownames_to_var}{(log scalar) Should rownames be saved in a variable? (Default no)}
 
-\item{rownames_name}{(logical scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.}
+\item{rownames_name}{(log scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.}
 }
 \description{
-Combines a split data.frame back to the original.
+Combines a split data.frame back to the original. This wraps \code{\link{data.table}}'s \code{\link{rbindlist}} function.
 }
 \examples{
-ldf_to_df(df_to_ldf(iris), "Species")
+#simple example: split iris by species, then recombine
+ldf_to_df(df_to_ldf(iris, by = "Species"))
+
+#complex example: same as above but delete some columns
+iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns
+iris_ver = iris[iris$Species == "versicolor", -c(2, 5)]
+iris_vir = iris[iris$Species == "virginica", -c(3, 5)]
+iris_list = list("setosa" = iris_set, "versicolor" = iris_ver, "virginica" = iris_vir) #a combined list
+#then merge to one data.frame
+ldf_to_df(iris_list) #note the missing data and column order
 }
 

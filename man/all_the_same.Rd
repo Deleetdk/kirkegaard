@@ -7,17 +7,15 @@
 all_the_same(x)
 }
 \arguments{
-\item{x}{(expression) Some expression to run.}
+\item{x}{(num vector) A numericor or character vector.}
 }
 \description{
-Tests whether all elements of a vector are the same. Uses the max/min method mentioned at .
+Tests whether all elements of a simple vector are the same.
 }
 \examples{
 all_the_same(rep(1, 100))
 all_the_same(rnorm(100))
+all_the_same(letters[rep(1, 10)])
+all_the_same(letters[sample(1:10, size = 10)])
 }
-\keyword{equal}
-\keyword{identical,}
-\keyword{same,}
-\keyword{vector,}
 

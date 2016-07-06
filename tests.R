@@ -1,5 +1,5 @@
 # some libs ---------------------------------------------------------------
-p_load(pacman)
+library(pacman)
 p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
 
 #otherwise get error
@@ -1480,7 +1480,14 @@ stopifnot({
 
 
 # split unsplit functions -----------------------------------------------------------------
-p_load(magrittr)
+library(magrittr)
+
+#complex example: same as above but delete some columns
+iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns
+iris_ver = iris[iris$Species == "versicolor", -c(2, 5)]
+iris_vir = iris[iris$Species == "virginica", -c(3, 5)]
+iris_list = list("setosa" = iris_set, "versicolor" = iris_ver, "virginica" = iris_vir) #a combined list
+#then merge to one data.frame
 
 
 #df_to_v
@@ -1520,6 +1527,9 @@ stopifnot({
     extract("Car_name") %>%
     #then compare to the orig
     equals(rownames(mtcars[order(mtcars$cyl), ]))
+
+  #complex example
+  is.data.frame(ldf_to_df(iris_list))
 })
 
 

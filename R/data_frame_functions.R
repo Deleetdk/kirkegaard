@@ -705,7 +705,7 @@ df_to_ldf = function(data, by, remove_by = T) {
 
 #' Transform list of data.frames to a data.frame.
 #'
-#' Combines a split data.frame back to the original.
+#' Combines a split data.frame back to the original. This wraps \code{\link{data.table}}'s \code{\link{rbindlist}} function.
 #' @param list (list of data.frames) The data.frames.
 #' @param add_by (log scalar) Whether to add a variable indicating the origin of each row.
 #' @param by_name (chr scalar) What should the added variable by called? Only used when add_by = TRUE.
@@ -713,8 +713,19 @@ df_to_ldf = function(data, by, remove_by = T) {
 #' @param rownames_name (log scalar) The variable name to save rownames under. Only used if rownames_to_var = TRUE.
 #' @export
 #' @examples
+#' #simple example: split iris by species, then recombine
 #' ldf_to_df(df_to_ldf(iris, by = "Species"))
-ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames") {
+#'
+#' #complex example: same as above but delete some columns
+#' iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns
+#' iris_ver = iris[iris$Species == "versicolor", -c(2, 5)]
+#' iris_vir = iris[iris$Species == "virginica", -c(3, 5)]
+#' iris_list = list("setosa" = iris_set, "versicolor" = iris_ver, "virginica" = iris_vir) #a combined list
+#' #then merge to one data.frame
+#' ldf_to_df(iris_list) #note the missing data and column order
+ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames", messages = T) {
+  library(magrittr)
+  library(data.table)
 
   #are there list names? if not, set them
   if (is.null(names(list))) names(list) = 1:length(list)
@@ -734,8 +745,18 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
     })
   }
 
+  #are some columns only found in some dfs?
+  if (messages) {
+    l_colnames = lapply(list, FUN = function(df) colnames(df)) #get names
+    l_colnames = lapply(l_colnames, FUN = sort) #sort
+
+    if (!all_elements_the_same(l_colnames)) {
+      message("Not all columns were found in each data.frame. This may indicate an error.")
+    }
+  }
+
   #combine
-  data = do.call("rbind", args = list)
+  data = data.table::rbindlist(list, fill = T) %>% as.data.frame()
 
   #add by?
   if (add_by) {
@@ -749,7 +770,6 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
 
   data
 }
-
 
 
 # add_if ------------------------------------------------------------------
