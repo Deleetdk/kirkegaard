@@ -847,3 +847,55 @@ df_remove_vars = function(data, names) {
   data
 }
 
+#' Reorder columns in a data.frame by name
+#'
+#' Reorder columns in a data.frame by name using a named vector.
+#'
+#' Copied and modified from http://stackoverflow.com/a/37009127/3980197.
+#' @param data (data.frame) The data.frame.
+#' @param vars (named vector) The variables to reorder.
+#' @export
+#' @return The modified data.frame.
+#' @examples
+#' #remove Species to front
+#' reorder_columns(iris, c("Species" = 1))
+#' #check for identity
+#' all(reorder_columns(iris, c("Species" = 1)) == iris[c(5, 1:4)])
+#' #throws error if not given a named vector
+#' throws_error("reorder_columns(iris, c1)")
+#' #or if names are not there
+#' throws_error("reorder_columns(iris, c('abc' = 1))")
+reorder_columns = function(data, vars){
+  #checks
+  if (!is.data.frame(data)) stop("data must be a data.frame!")
+  if (!is_simple_vector(vars)) stop("vars must be a named vector!")
+  if (is.null(names(vars))) stop("vars must be a named vector!")
+  if (!all(names(vars)) %in% names(data)) stop("Not all names were names of columns in the data.frame!")
+
+  ##sort out inputs
+  data.nms <- names(data)
+  var.nr <- length(data.nms)
+  var.nms <- names(vars)
+  var.pos <- vars
+
+  ##sanity checks
+  stopifnot( !any(duplicated(var.nms)),
+             !any(duplicated(var.pos)) )
+  stopifnot( is.character(var.nms),
+             is.numeric(var.pos) )
+  stopifnot( all(var.nms %in% data.nms) )
+  stopifnot( all(var.pos > 0),
+             all(var.pos <= var.nr) )
+
+  ##prepare output
+  out.vec <- character(var.nr)
+  out.vec[var.pos] <- var.nms
+  out.vec[-var.pos] <- data.nms[ !(data.nms %in% var.nms) ]
+  stopifnot( length(out.vec)==var.nr )
+
+  ##re-arrange vars by position
+  data <- data[ , out.vec]
+  return(data)
+}
+
+
