@@ -18,13 +18,14 @@ is_simple_vector = function(x) {
 
 #' Are all elements of a vector the same?
 #'
-#' Tests whether all elements of a vector are the same. Uses the max/min method mentioned at .
-#' @param x (expression) Some expression to run.
-#' @keywords vector, same, identical, equal
+#' Tests whether all elements of a simple vector are the same.
+#' @param x (num vector) A numericor or character vector.
 #' @export
 #' @examples
 #' all_the_same(rep(1, 100))
 #' all_the_same(rnorm(100))
+#' all_the_same(letters[rep(1, 10)])
+#' all_the_same(letters[sample(1:10, size = 10)])
 all_the_same = function(x) {
   #for numeric data, a faster method
   if (is.numeric(x)) {
