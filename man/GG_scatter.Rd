@@ -4,8 +4,8 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, text_pos, case_names = T, case_names_vector,
-  CI = 0.95, clean_names = T, check_overlap = T)
+GG_scatter(df, x_var, y_var, weights, text_pos, case_names = T,
+  case_names_vector, CI = 0.95, clean_names = T, check_overlap = T)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -13,6 +13,8 @@ GG_scatter(df, x_var, y_var, text_pos, case_names = T, case_names_vector,
 \item{x_var}{(chr scalar) X variable string.}
 
 \item{y_var}{(chr scalar) Y variable string.}
+
+\item{weights}{(num scalar) A set of weights to use.}
 
 \item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 

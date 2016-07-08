@@ -294,7 +294,7 @@ stopifnot({
 
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
-p_load(psych)
+library(psych)
 t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F))
 stopifnot({
   class(t) == "data.frame"
@@ -304,7 +304,7 @@ stopifnot({
 
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
-p_load(ggplot2)
+library(ggplot2)
 mpg_na = miss_add_random(mpg) #missing data
 
 l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default

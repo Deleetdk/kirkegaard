@@ -90,6 +90,7 @@ plot_kmeans = GG_kmeans
 #' @param df (data.frame) A data.frame with variables.
 #' @param x_var (chr scalar) X variable string.
 #' @param y_var (chr scalar) Y variable string.
+#' @param weights (num scalar) A set of weights to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (log scalar) Whether to add case names or not (default true).
 #' @param case_names_vector (chr vector) The case names to use. If missing, uses row names.
@@ -103,12 +104,13 @@ plot_kmeans = GG_kmeans
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
-GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
+GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
   library(ggplot2)
   library(grid)
   library(psychometric)
   library(psych)
   library(stringr)
+  library(weights)
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
@@ -117,17 +119,24 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vec
   #case names?
   if (!missing(case_names_vector)) {
     if (!lengths_match(df, case_names_vector)) stop("Vector of case names is of the wrong length!")
-    df$label = case_names_vector #use supplied names
+    df$.label = case_names_vector #use supplied names
   } else {
-    df$label = rownames(df) #use rownames
+    df$.label = rownames(df) #use rownames
+  }
+
+  #weights
+  if (missing(weights)) {
+    df$.weights = rep(1, nrow(df)) #fill with 1's
+  } else {
+    df$.weights = weights
   }
 
   #subset + remove NA
-  df = na.omit(df[c(x_var, y_var, "label")])
+  df = na.omit(df[c(x_var, y_var, ".weights", ".label")])
 
   ## text
   #correlation + CI
-  cor = cor(df[1:2], use = "p")[1, 2] #get correlation
+  cor = wtd.cors(df[1:2], weight = df$.weights)[1, 2] #get correlation
   cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
 
   #auto detect text position
@@ -179,14 +188,15 @@ GG_scatter = function(df, x_var, y_var, text_pos, case_names = T, case_names_vec
                          gp = gpar(fontsize = 11))
 
   #plot
-  g = ggplot(df, aes_string(x_var, y_var)) +
-    geom_point() +
+  g = ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+    geom_point(aes(size = .weights)) +
     geom_smooth(method = lm, se = F, color = "orange") +
-    annotation_custom(text_object)
+    annotation_custom(text_object) +
+    scale_size_continuous(guide = F)
 
   #case names?
   if (case_names) {
-    g = g + geom_text(aes(label = label), size = 3, vjust = 1, check_overlap = check_overlap)
+    g = g + geom_text(aes(label = .label), size = 3, vjust = 1, check_overlap = check_overlap)
   }
 
   #clean?
