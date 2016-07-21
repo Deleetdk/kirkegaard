@@ -37,5 +37,6 @@ GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
 }
 

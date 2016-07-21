@@ -104,13 +104,14 @@ plot_kmeans = GG_kmeans
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
 GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
-  library(ggplot2)
-  library(grid)
-  library(psychometric)
-  library(psych)
-  library(stringr)
-  library(weights)
+  library("ggplot2")
+  library("grid")
+  library("psychometric")
+  library("psych")
+  library("stringr")
+  library("weights")
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
@@ -188,15 +189,23 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
                          gp = gpar(fontsize = 11))
 
   #plot
-  g = ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
-    geom_point(aes(size = .weights)) +
-    geom_smooth(method = lm, se = F, color = "orange") +
-    annotation_custom(text_object) +
-    scale_size_continuous(guide = F)
+  if (missing(weights)) {
+    g = ggplot(df, aes_string(x_var, y_var)) +
+      geom_point()
+  } else {
+    g = ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+      geom_point(aes(size = .weights)) +
+      scale_size_continuous(guide = F)
+  }
+
+  #add the rest
+  g = g + geom_smooth(method = lm, se = F, color = "orange") +
+    annotation_custom(text_object)
 
   #case names?
+  if (missing(weights)) {y_nudge = 1.25} else {y_nudge = 2}
   if (case_names) {
-    g = g + geom_text(aes(label = .label), size = 3, vjust = 1, check_overlap = check_overlap)
+    g = g + geom_text(aes(label = .label), size = 3, vjust = y_nudge, check_overlap = check_overlap)
   }
 
   #clean?
