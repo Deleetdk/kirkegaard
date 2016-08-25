@@ -307,7 +307,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
   if (!is.list(fa_objects)) {
     stop("fa_objects parameter is not a list.")
   }
-  if (class(fa_objects) %in% c("psych", "fa")) {
+  if (all(class(fa_objects) %in% c("psych", "fa"))) {
     fa_objects = list(fa_objects)
     fa_num = length(fa_objects)
     fa_names = str_c("fa.", 1:fa_num)
