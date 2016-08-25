@@ -263,7 +263,15 @@ write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "
   #print
   if (print) print(x)
 
-  write.table(x, "clipboard", sep = "\t", na = "")
+  if (Sys.info()['sysname'] == "Linux") {
+    write.table(x, pipe("xclip -i", "w"))
+    #was it written?
+    if (!are_equal(silence(read.table("clipboard")), x)) {
+      message("write.table does not work on linux by default. A workaround involves using xclip. See this for details http://stackoverflow.com/questions/10959521/how-to-write-to-clipboard-on-ubuntu-linux-in-r")
+    }
+  } else {
+    write.table(x, "clipboard", sep = "\t", na = "")
+  }
 }
 
 
