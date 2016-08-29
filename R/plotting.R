@@ -336,7 +336,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
     loads = as.data.frame(as.vector(loads))
     rownames(loads) = rnames
     colnames(loads) = fa_names[fa.idx]
-    suppressor({
+    silence({
       d = merge_datasets(d, loads, 1)
     })
   }
@@ -381,10 +381,20 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
   }
 
   #plot
-  g = ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
-    geom_point(position = position_dodge(width = 0.5)) +
-    ylab("Loading") + xlab("Indicator") + scale_color_discrete(name = "Analysis",
-                                                               labels = fa_labels) + coord_flip()
+  if (fa_num > 1) {
+    g = ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
+      geom_point(position = position_dodge(width = 0.5)) +
+      ylab("Loading") + xlab("Indicator") +
+      scale_color_discrete(name = "Analysis", labels = fa_labels) +
+      coord_flip()
+  } else {
+    g = ggplot(d2, aes(x = id, y = fa)) +
+      geom_point(position = position_dodge(width = 0.5)) +
+      ylab("Loading") +
+      xlab("Indicator") +
+      coord_flip()
+  }
+
   return(g)
 }
 

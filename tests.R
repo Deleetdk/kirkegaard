@@ -690,14 +690,17 @@ stopifnot({
 
 
 # plot_loadings_multi FA_rank_fa -----------------------------------------------------
+library(psych)
 fa_list = list(part1 = fa(iris[1:50, -5]),
                part2 = fa(iris[51:100, -5]),
                part3 = fa(iris[101:150, -5]))
+#multianalysis plots, different orderings
 g = plot_loadings_multi(fa_list);g
 g_1 = plot_loadings_multi(fa_list, reorder = 1);g_1
 g_2 = plot_loadings_multi(fa_list, reorder = 2);g_2
 g_3 = plot_loadings_multi(fa_list, reorder = 3);g_3
-
+#monoanalysis
+g_4 = plot_loadings_multi(fa_list[[1]]);g_4
 
 stopifnot({
   sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
