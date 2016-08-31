@@ -5,8 +5,11 @@ Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", 
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
     use my own functions across projects.
-Depends:
-    R (>= 3.2.0)
+Depends: R (>= 3.2.0)
 License: GPL
 LazyData: true
 RoxygenNote: 5.0.1
+Imports:
+    plyr,
+    stringr,
+    magrittr
