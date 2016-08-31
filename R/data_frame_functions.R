@@ -1037,3 +1037,65 @@ df_add_column_affix = function(data, prefix, suffix, quick_assign = T) {
   return(invisible(data))
 }
 add_column_affix = df_add_column_affix
+
+
+#' Apply function to columns of a data.frame
+#'
+#' Apply functions to columns of a data.frame. This can be done selectively using colnames, logical indicates, integer indices or regex patterns. One can also pass extra arguments to the function. By default, the unselected columns are kept.
+#' @param data (an object) An object whose colnames should be changed
+#' @param func (function) A function to apply.
+#' @param indices (chr or num vector) Either a character, numeric or logical vector used to select columns.
+#' @param pattern (chr sclr) A regex pattern used to match column names.
+#' @param pattern_inverse (chr sclr) Whether to invert the match via regex pattern. Default=F.
+#' @param keep_unselected (log sclr) Whether to keep the unselected columns. Default=T.
+#' @export
+#' @examples
+#' #notice original numbers
+#' head(iris)
+#' #using regex
+#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+#' #using inverse regex
+#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+#' #using integer indices
+#' head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+#' #using logical indices
+#' head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+#' #removing unselected columns
+#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+#' #select all by not providing any selector
+#' str(df_colFunc(iris, func = as.character)) #all have been changed to chr
+df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T) {
+
+  #checks
+  check_missing(c("data", "func"))
+  data = as.data.frame(data)
+  if (!missing(pattern) & !missing("indices")) stop("Only one of indices or pattern can be given!")
+  if (missing("pattern") & missing("indices")) v_cols = names(data)
+
+  #which cols?
+  if (!missing("pattern")) {
+    #find names by regex
+    library(stringr)
+    v_cols = str_detect2(names(data), pattern = pattern, value = T)
+    #inverse if desired
+    if (pattern_inverse) v_cols = setdiff(names(data), v_cols)
+  }
+
+  if (!missing("indices")) {
+    if (is.logical(indices)) indices = which(indices) #conver to integers
+    if (!all(is_whole_number(indices))) stop("indices must be integers! (or numeric converible to integers without loss)")
+    v_cols = names(data)[indices]
+  }
+
+  #loop over variables and apply func
+  for (col in v_cols) {
+    data[[col]] = func(data[[col]])
+  }
+
+  #keep unselected?
+  if (!keep_unselected) {
+    data = df_remove_vars(data, setdiff(names(data), v_cols))
+  }
+
+  data
+}

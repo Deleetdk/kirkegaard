@@ -1722,7 +1722,38 @@ stopifnot({
 })
 
 
+# df_colFunc --------------------------------------------------------------
+#apply functions selectively to columns of a data.frame
+t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+#using inverse regex
+t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+#using integer indices
+t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+#using logical indices
+t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+#removing unselected columns
+t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+#select all by not providing any selector
+t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
 
+stopifnot({
+  t1[1, 1] == iris[1, 1] * 2
+  !t1[1, 2] == iris[1, 1] * 2
+
+  t2[1, 1] == iris[1, 1] * 2
+  t2[1, 2] == iris[1, 2] * 2
+
+  !t3[1, 1] == iris[1, 1] * 2
+  t3[1, 2] == iris[1, 2] * 2
+
+  t4[1, 1] == iris[1, 1] * 2
+  !t4[1, 2] == iris[1, 2] * 2
+
+  ncol(t5) == 2
+  t5[1, 1] == iris[1, 1] * 2
+
+  sapply(t6, is.character)
+})
 
 # done --------------------------------------------------------------------
 
