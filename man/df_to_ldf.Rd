@@ -17,6 +17,6 @@ df_to_ldf(data, by, remove_by = T)
 Splits a data.frame by a variable and returns a named list.
 }
 \examples{
-df_to_ldf(iris, "Species")
+df_to_ldf(iris[c(1:5, 51:55, 101:105), ], "Species") #split iris by Species.
 }
 

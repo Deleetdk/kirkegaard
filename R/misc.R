@@ -129,35 +129,7 @@ copy_names = function(x, y, partialmatching = T) {
 }
 
 
-#' Add affix to column names.
-#'
-#' Add a prefix to column names on data.frame or matrix or similar.
-#' @param data (an object) An object whose colnames should be changed
-#' @param prefix (str) A prefix to add.
-#' @param suffix (str) A suffix to add.
-#' @export
-#' @examples
-#' test_iris = iris[1:10, ] #small test dataset
-#' add_column_affix(test_iris, prefix = "P_") #ad P_ prefix
-#' colnames(test_iris)
-#' add_column_affix(test_iris, suffix = "_S") #ad _S suffix
-#' colnames(test_iris)
-#' #one can also use assign
-#' test_iris2 = add_column_affix(iris, prefix = "A_", suffix = "_B")
-#' colnames(test_iris2)
-add_column_affix = function(data, prefix, suffix) {
-  #name of obj
-  data_name = deparse(substitute(data))
-  #missing input
-  if (missing(prefix)) prefix = ""
-  if (missing(suffix)) suffix = ""
-  #rename
-  colnames(data) = paste0(prefix, colnames(data), suffix)
-  #assign in outer envir
-  assign(data_name, value = data, envir = parent.frame())
-  #silent return
-  return(invisible(data))
-}
+
 
 #' Fill in values in a vector
 #'

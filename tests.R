@@ -101,8 +101,6 @@ if (!Sys.info()['sysname'] == "Linux") {
     read.delim("clipboard")[66, 5] == "versicolor"
   })
 
-
-
   #test arguments
   write_clipboard(iris[1:5, ], digits = 5)
   write_clipboard(iris[1:5, ], clean_names = T)
@@ -745,19 +743,19 @@ stopifnot({
 })
 
 
-# as_num_df ---------------------------------------------------------------
+# df_as_num ---------------------------------------------------------------
 #converts string vectors in a data.frame to numeric ones if possible
 #make iris into a df with strings
 iris_chr = lapply(iris, as.character) %>% as.data.frame(stringsAsFactors = F)
 #change it back to numerics
-t = as_num_df(iris_chr)
+t = df_as_num(iris_chr)
 #check that back to factor works
-t2 = as_num_df(iris_chr, stringsAsFactors = T)
+t2 = df_as_num(iris_chr, stringsAsFactors = T)
 #check that skip factors works
-t3 = as_num_df(iris, skip_factors = F)
+t3 = df_as_num(iris, always_skip_factors = F)
 #check that it handles NAs
 iris_chr_NA = iris_chr;iris_chr_NA[1, 1] = NA
-t4 = as_num_df(iris_chr_NA)
+t4 = df_as_num(iris_chr_NA)
 
 stopifnot({
   all(sapply(t, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
