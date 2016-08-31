@@ -92,24 +92,31 @@ stopifnot({
 
 
 # write_clipboard ---------------------------------------------------------
-write_clipboard(iris, 0)
-stopifnot({
-  read.delim("clipboard")[38, 1] == 5
-  read.delim("clipboard")[66, 5] == "versicolor"
-})
+#skip these tests on linux
+if (!Sys.info()['sysname'] == "Linux") {
+  write_clipboard(iris, 0)
 
-#test arguments
-write_clipboard(iris[1:5, ], digits = 5)
-write_clipboard(iris[1:5, ], clean_names = T)
-write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
-write_clipboard(iris[1:5, ], print = T)
+  stopifnot({
+    read.delim("clipboard")[38, 1] == 5
+    read.delim("clipboard")[66, 5] == "versicolor"
+  })
 
-#write NAs
-write_clipboard(miss_add_random(iris))
 
-stopifnot({
-  read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
-})
+
+  #test arguments
+  write_clipboard(iris[1:5, ], digits = 5)
+  write_clipboard(iris[1:5, ], clean_names = T)
+  write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
+  write_clipboard(iris[1:5, ], print = T)
+
+  #write NAs
+  write_clipboard(miss_add_random(iris))
+
+  stopifnot({
+    read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
+  })
+}
+
 
 
 # MOD_k_fold_r2 --------------------------------------------------------------

@@ -272,6 +272,9 @@ write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "
   } else {
     write.table(x, "clipboard", sep = "\t", na = "")
   }
+
+  #silently return the output too
+  invisible(x)
 }
 
 

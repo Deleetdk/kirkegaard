@@ -675,7 +675,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
     geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
 
   #add var_names if desired
-  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1, check_overlap = check_overlap)
+  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1.5, check_overlap = check_overlap)
 
   return(g)
 }
