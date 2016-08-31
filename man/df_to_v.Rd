@@ -9,10 +9,10 @@ df_to_v(data, fact_to_chr = T)
 \arguments{
 \item{data}{(data.frame) The data.frame.}
 
-\item{fact_to_chr}{(logical scalar) Convert factors to characters? (Default yes)}
+\item{fact_to_chr}{(log sclr) Convert factors to characters? (Default yes)}
 }
 \description{
-Appends each column after each other. A wrapper for unlist() with some extra features.
+Appends each column after each other. A wrapper for unlist() that also removes the names.
 }
 \examples{
 df_to_v(iris)

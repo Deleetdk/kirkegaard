@@ -26,9 +26,9 @@ df_add_delta(df, primary_var, secondary_vars, prefix = "delta", sep = "_",
 Adds delta (difference) columns to a data.frame. These are made from one primary variable and a number of secondary variables. Variables can be given either by indices or by name. If no secondary variables are given, all numeric variables are used.
 }
 \examples{
-df_add_delta()
+#add delta variables to iris between Sepal.Length and Sepal.Width
+head(df_add_delta(iris, primary_var = 1, secondary_vars = 2))
+#add delta variables to iris between Sepal.Length and all other numerical variables
+head(df_add_delta(iris, primary_var = 1))
 }
-\keyword{date.frame,}
-\keyword{delta}
-\keyword{difference,}
 

@@ -17,6 +17,7 @@ df_rename_vars(data, current_names, new_names)
 Rename variables in a data.frame and keep their positions.
 }
 \examples{
-str(df_rename_vars(iris, "Sepal.Length", "Sepal_Length"))
+names(df_rename_vars(iris, "Sepal.Length", "Sepal_Length")) #rename one variable
+names(df_rename_vars(iris, c("Sepal.Length", "Sepal.Width"), c("Sepal_Length", "Sepal_Width"))) #rename multiple variables
 }
 

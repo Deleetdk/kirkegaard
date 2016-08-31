@@ -23,7 +23,7 @@ Combines a split data.frame back to the original. This wraps \code{\link{data.ta
 }
 \examples{
 #simple example: split iris by species, then recombine
-ldf_to_df(df_to_ldf(iris, by = "Species"))
+all(ldf_to_df(df_to_ldf(iris, by = "Species")) == iris) #all identical
 
 #complex example: same as above but delete some columns
 iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns

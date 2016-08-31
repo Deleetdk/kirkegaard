@@ -18,6 +18,6 @@ Returns a numeric matrix. Ordered factors are converted to numbers, while non-or
 Factors with only two levels are kept as they are.
 }
 \examples{
-as_num_matrix(iris)
+head(as_num_matrix(iris)) #Convert iris to purely numerics. Two variables are created because the original had 3 levels.
 }
 

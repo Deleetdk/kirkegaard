@@ -7,15 +7,13 @@
 get_each_subset_minus_1(df)
 }
 \arguments{
-\item{df}{A data.frame.}
+\item{df}{(df) A data.frame.}
 }
 \description{
-Return a list of data.frames.
+Returns a list of data.frames. This function is useful for doing leave one out cross validation (LOOCV).
 }
 \examples{
-df = data.frame(1:5, letters[1:5])
+df = data.frame(n = 1:5, a = letters[1:5])
 get_each_subset_minus_1(df)
 }
-\keyword{data.frame,}
-\keyword{subset}
 

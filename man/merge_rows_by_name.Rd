@@ -26,8 +26,8 @@ Find blocks of rows with a rowname that matches a given vector of names and merg
 #and data has been dispersed among the rows
 #we can move all the data into one row without data loss.
 t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
-#here the real values for the C observation are both 3, but it has accidentally been called
-"D".
+t1
+#here the real values for the C observation are both 3, but it has accidentally been called "D".
 merge_rows_by_name(df = t1, names = c("C", "D"), func = mean)
 }
 

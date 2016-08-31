@@ -6,7 +6,7 @@
 \title{Residualized data.frame.}
 \usage{
 df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,
-  return.resid.vars = T, print.models = T, exclude_vars = NULL,
+  return.resid.vars = T, print.models = F, exclude_vars = NULL,
   weights = NA)
 }
 \arguments{
@@ -28,8 +28,10 @@ df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,
 Returns a residualized data.frame given a set of variables to partial out.
 }
 \examples{
+#generate some data
 df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
 weightsvar = runif(5)
+#residualize the data.frame
 df_residualize(df, resid.vars = "c") #without weights
 df_residualize(df, resid.vars = "c", weights = weightsvar) #with weights
 }
