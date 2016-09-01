@@ -407,25 +407,6 @@ total_cells = function(x) {
 }
 
 
-#' Transpose data.frame
-#'
-#' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
-#' @param df (data.frame) A data.frame.
-#' @return A transposed data.frame.
-#' @export
-#' @examples
-#' t_df(iris)
-t_df = function(df) {
-  library(magrittr)
-  df2 = t(df) %>% as.data.frame()
-
-  #names
-  rownames(df2) = colnames(df)
-  colnames(df2) = rownames(df)
-
-  df2
-}
-
 
 #' Last value
 #'

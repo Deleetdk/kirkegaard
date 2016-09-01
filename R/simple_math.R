@@ -232,4 +232,29 @@ reverse_scale = function(x, .min = min(x), .max = max(x)) {
   (.max - x) + .min
 }
 
-
+#' Proportion true
+#'
+#' Given a suitable input (logical vector/matrix/array, numeric/integer vector/matrix/array), find the proportion of true values. Automatically removes NAs.
+#' @param x (numeric vector) A vector of values.
+#' @export
+#' @examples
+#' #sample some logical data
+#' x = sample(c(T, F), size = 100, replace = T)
+#' proportion_true(x)
+#' #sample some logical data with NAs
+#' x = sample(c(T, F, NA), size = 100, replace = T)
+#' proportion_true(x) #no errors or NA output
+#' #converts input to logical if possible
+#' x = sample(c(1, 0), size = 100, replace = T)
+#' proportion_true(x)
+#' #throws errors if it gets a nonsensical input
+#' "str" %>% proportion_true() #character
+#' data.frame() %>% proportion_true() #data.frame
+#' list() %>% proportion_true()
+proportion_true = function(x) {
+  if (is_(x, class = c("character", "list", "data.frame"))) stop("Cannot coerce data.frames, lists or characters into logical!")
+  x = as.logical(x)
+  #remoev NA
+  x = na.omit(x)
+  sum(x) / length(x)
+}

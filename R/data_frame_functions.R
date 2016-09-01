@@ -1099,3 +1099,24 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 
   data
 }
+
+#' Transpose data.frame
+#'
+#' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
+#' @param df (data.frame) A data.frame.
+#' @return A transposed data.frame.
+#' @export
+#' @aliases t_df
+#' @examples
+#' df_t(iris)
+df_t = function(df) {
+  library(magrittr)
+  df2 = t(df) %>% as.data.frame()
+
+  #names
+  rownames(df2) = colnames(df)
+  colnames(df2) = rownames(df)
+
+  df2
+}
+t_df = df_t

@@ -1755,6 +1755,30 @@ stopifnot({
   sapply(t6, is.character)
 })
 
+
+# proportion_true ---------------------------------------------------------
+
+#sample some logical data
+set.seed(1)
+{
+  x = sample(c(T, F), size = 100, replace = T)
+  x2 = sample(c(T, F, NA), size = 100, replace = T)
+  x3 = sample(c(1, 0), size = 100, replace = T)
+  x4 = sample(c(1L, 0L), size = 100, replace = T)
+}
+
+
+stopifnot({
+  proportion_true(x) == .52 #standard
+  proportion_true(x2) %>% round(2) %>% equals(.42) #no errors or NA output
+  proportion_true(x3) == .62 #numeric/integer
+  proportion_true(x4) == .57
+  #throws errors if it gets a nonsensical input
+  throws_error('"str" %>% proportion_true()')
+  throws_error("data.frame() %>% proportion_true()")
+  throws_error("list() %>% proportion_true()")
+})
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")
