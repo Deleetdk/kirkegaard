@@ -4,21 +4,24 @@
 \alias{GG_denhist}
 \title{Histogram with an empirical density curve and a vertical line at the mean}
 \usage{
-GG_denhist(df, var, vline = "mean", binwidth = NULL)
+GG_denhist(df, var, vline = "mean", binwidth = NULL, group)
 }
 \arguments{
 \item{df}{(data.frame or something coercible into) A data.frame with variables.}
 
-\item{var}{(character scalar) The name of the variable to use. Not needed if df is a vector.}
+\item{var}{(chr sclr) The name of the variable to use. Not needed if df is a vector.}
 
-\item{vline}{(character scalar) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean".}
+\item{vline}{(chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.}
 
-\item{binwidth}{(numeric scalar) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
+\item{binwidth}{(num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
+
+\item{group}{(chr sclr) The naem of the grouping variable to use.}
 }
 \description{
 Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
 }
 \examples{
-GG_denhist(iris, "Sepal.Length")
+GG_denhist(iris, "Sepal.Length") #plot overall distribution
+GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 }
 

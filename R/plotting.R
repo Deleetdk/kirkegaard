@@ -2,13 +2,15 @@
 #'
 #' Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
 #' @param df (data.frame or something coercible into) A data.frame with variables.
-#' @param var (character scalar) The name of the variable to use. Not needed if df is a vector.
-#' @param vline (character scalar) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean".
-#' @param binwidth (numeric scalar) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
+#' @param var (chr sclr) The name of the variable to use. Not needed if df is a vector.
+#' @param vline (chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.
+#' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
+#' @param group (chr sclr) The naem of the grouping variable to use.
 #' @export
 #' @examples
-#' GG_denhist(iris, "Sepal.Length")
-GG_denhist = function(df, var, vline = "mean", binwidth = NULL) {
+#' GG_denhist(iris, "Sepal.Length") #plot overall distribution
+#' GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
+GG_denhist = function(df, var, vline = "mean", binwidth = NULL, group) {
   library(ggplot2)
 
   #input type
@@ -22,27 +24,56 @@ GG_denhist = function(df, var, vline = "mean", binwidth = NULL) {
   if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
 
   #plot
-  g = ggplot(df, aes_string(var)) +
-    geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
-                   colour="black", fill="white", binwidth = binwidth) +
-    geom_density(alpha=.2, fill="#FF6666") # Overlay with transparent density plot
+  if (missing("group")) {
+    g = ggplot(df, aes_string(var)) +
+      geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
+                     colour="black", fill="white", binwidth = binwidth) +
+      geom_density(alpha=.2, fill="#FF6666") # Overlay with transparent density plot
+  } else {
 
-  #vline
-  if (!is.null(vline)) {
-    if (vline == "mean") {
-      g = g + geom_vline(aes_string(xintercept = mean(df[[var]], na.rm=T)),   # Ignore NA
-               color="red", linetype="dashed", size=1)
-    }
-    if (vline == "median") {
-      g = g + geom_vline(aes_string(xintercept = median(df[[var]], na.rm=T)),   # Ignore NA
-                         color="red", linetype="dashed", size=1)
-    }
+    g = ggplot(df, aes_string(var, fill = group)) +
+      geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
+                     colour="black", binwidth = binwidth, position = "dodge") +
+      geom_density(alpha=.2) # Overlay with transparent density plot
   }
 
 
+  #vline
+  if (!is.null(vline) & missing("group")) {
+    #calculate central tendency using given function
+    central_tendency = do.call(what = vline, args = list(x = df[[var]], na.rm = T))
+
+    #add it
+    g = g + geom_vline(xintercept = central_tendency,
+               color="red",
+               linetype="dashed", size=1)
+  }
+
+  if (!is.null(vline) & !missing("group")) {
+    #calculate central tendencies using given function
+    library(plyr)
+
+    #fetch the actual function
+    func = get(vline)
+    central_tendency = daply(df, .variables = group, .fun = function(block) {
+      func(block[[var]], na.rm=T)
+    })
+
+    #get the colors
+    #http://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
+    gg_color_hue <- function(n) {
+      hues = seq(15, 375, length = n + 1)
+      hcl(h = hues, l = 65, c = 100)[1:n]
+    }
+
+    colors = gg_color_hue(length(unique(df[[group]])))
+
+    #add it
+    g = g + geom_vline(xintercept = central_tendency, linetype="dashed", size=1, color = colors)
+  }
+
   return(g)
 }
-
 
 #' Scatter plot with kmeans clustering
 #'
