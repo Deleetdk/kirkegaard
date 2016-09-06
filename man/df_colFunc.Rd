@@ -5,7 +5,7 @@
 \title{Apply function to columns of a data.frame}
 \usage{
 df_colFunc(data, func, indices, pattern, pattern_inverse = F,
-  keep_unselected = T)
+  keep_unselected = T, ...)
 }
 \arguments{
 \item{data}{(an object) An object whose colnames should be changed}
@@ -19,6 +19,8 @@ df_colFunc(data, func, indices, pattern, pattern_inverse = F,
 \item{pattern_inverse}{(chr sclr) Whether to invert the match via regex pattern. Default=F.}
 
 \item{keep_unselected}{(log sclr) Whether to keep the unselected columns. Default=T.}
+
+\item{...}{Other parameters passed to func.}
 }
 \description{
 Apply functions to columns of a data.frame. This can be done selectively using colnames, logical indicates, integer indices or regex patterns. One can also pass extra arguments to the function. By default, the unselected columns are kept.

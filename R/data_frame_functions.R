@@ -413,6 +413,7 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 #' df_rowFunc(iris, func = median, standardize = T, pattern = "Petal") #standardize all columns with "Petal", then get the rowMedians
 df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T) {
   library(stringr)
+  library(plyr)
 
   #make df
   tmp_df = data.frame(...)
@@ -427,9 +428,18 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T)
     if (standardize) tmp_df = std_df(tmp_df)
 
     #get results
-    results = apply(tmp_df, 1, function(x) {
-      get("func")(x, na.rm = ignore_NA)
-    })
+
+    tryCatch({ #try to pass na.rm=T
+      results = adply(tmp_df, .margins = 1, .progress = "text", .fun = function(x) {
+        get("func")(x, na.rm = ignore_NA)
+      })},
+      error = function(e) {
+        results <<- adply(tmp_df, .margins = 1, .progress = "text", .fun = function(x) {
+          browser()
+          get("func")(x)
+        })
+      }
+    )
 
     return(results)
   }
@@ -1048,6 +1058,7 @@ add_column_affix = df_add_column_affix
 #' @param pattern (chr sclr) A regex pattern used to match column names.
 #' @param pattern_inverse (chr sclr) Whether to invert the match via regex pattern. Default=F.
 #' @param keep_unselected (log sclr) Whether to keep the unselected columns. Default=T.
+#' @param ... Other parameters passed to func.
 #' @export
 #' @examples
 #' #notice original numbers
@@ -1064,7 +1075,7 @@ add_column_affix = df_add_column_affix
 #' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
 #' #select all by not providing any selector
 #' str(df_colFunc(iris, func = as.character)) #all have been changed to chr
-df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T) {
+df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T, ...) {
 
   #checks
   check_missing(c("data", "func"))
@@ -1089,7 +1100,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 
   #loop over variables and apply func
   for (col in v_cols) {
-    data[[col]] = func(data[[col]])
+    data[[col]] = func(data[[col]], ...)
   }
 
   #keep unselected?
