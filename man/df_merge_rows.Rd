@@ -5,10 +5,10 @@
 \alias{merge_rows}
 \title{Merge rows in data.frame.}
 \usage{
-df_merge_rows(df, key, names, new_name, func = sum, numeric = TRUE)
+df_merge_rows(data, key, names, new_name, func = sum, numeric = TRUE, ...)
 }
 \arguments{
-\item{df}{(data.frame or matrix) The data object.}
+\item{data}{(data.frame or matrix) The data object.}
 
 \item{key}{(character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.}
 
@@ -18,7 +18,8 @@ df_merge_rows(df, key, names, new_name, func = sum, numeric = TRUE)
 
 \item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.}
 
-\item{numeric}{(logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.}
+\item{numeric}{(logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
+... Other parameters passed to func.}
 }
 \description{
 Find blocks of rows with a matching key or rowname, and merge them using a given function.
@@ -34,7 +35,7 @@ In a variety of circumstances it is useful to merge several rows of data into a 
 t = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t) = LETTERS[1:4]
 t
 #here the real values for the C observation are both 3, but it has accidentally been called "D".
-df_merge_rows(df = t, names = c("C", "D"), func = mean)
+df_merge_rows(t, names = c("C", "D"), func = mean)
 #suppose instead we have the names to match in a column, we can use the key parameter.
 t = data.frame(large_unit = c("a", "a", "b", "b", "c"), value = 1:5)
 t

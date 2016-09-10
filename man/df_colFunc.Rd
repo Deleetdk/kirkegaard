@@ -12,7 +12,7 @@ df_colFunc(data, func, indices, pattern, pattern_inverse = F,
 
 \item{func}{(function) A function to apply.}
 
-\item{indices}{(chr or num vector) Either a character, numeric or logical vector used to select columns.}
+\item{indices}{(chr, num, log vector) Either a character, numeric or logical vector used to select columns.}
 
 \item{pattern}{(chr sclr) A regex pattern used to match column names.}
 
@@ -28,16 +28,19 @@ Apply functions to columns of a data.frame. This can be done selectively using c
 \examples{
 #notice original numbers
 head(iris)
+multiply_by_zero = function(x) return(x*0) #auxiliary function
 #using regex
-head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length"))
 #using inverse regex
-head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Species", pattern_inverse = T))
 #using integer indices
-head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+head(df_colFunc(iris, func = multiply_by_zero, indices = 2:3))
 #using logical indices
-head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+head(df_colFunc(iris, func = multiply_by_zero, indices = c(T, F, T, F, F)))
+#using characters
+head(df_colFunc(iris, func = multiply_by_zero, indices = c("Sepal.Length", "Petal.Width")))
 #removing unselected columns
-head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length", keep_unselected = F))
 #select all by not providing any selector
 str(df_colFunc(iris, func = as.character)) #all have been changed to chr
 }

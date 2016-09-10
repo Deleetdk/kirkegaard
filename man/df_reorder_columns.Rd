@@ -29,7 +29,7 @@ all(df_reorder_columns(iris, c("Species" = 1)) == iris[c(5, 1:4)])
 #move multiple
 head(df_reorder_columns(iris, c("Species" = 1, "Petal.Length" = 2)))
 #throws error if not given a named vector
-throws_error("df_reorder_columns(iris, c1)")
+throws_error("df_reorder_columns(iris, 1)")
 #or if names are not there
 throws_error("df_reorder_columns(iris, c('abc' = 1))")
 #throws warning if one tries to move the same multiple times as this is probably not intended

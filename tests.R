@@ -1779,6 +1779,25 @@ stopifnot({
   throws_error("list() %>% proportion_true()")
 })
 
+
+# df_gather_by_pattern ----------------------------------------------------
+#some example data
+d_test = readRDS("kirkegaard/S_misc_data.RDS")
+
+#runs
+d_test_1 = df_gather_by_pattern(d_test, pattern = "\\.(\\d\\d\\d\\d)$", key_col = "year", id_col = "region")
+d_test_2 = df_gather_by_pattern(d_test, pattern = "\\.(\\d\\d\\d\\d)$", key_col = "year", id_col = "region", method = "custom")
+
+#check that the two methods give the same result, which is a decent control
+silence(stopifnot({
+  are_equal(df_gather_by_pattern(d_test, pattern = "\\.(\\d\\d\\d\\d)$", key_col = "year"),
+            df_gather_by_pattern(d_test, pattern = "\\.(\\d\\d\\d\\d)$", key_col = "year", method = "custom"))
+  "region" %in% names(d_test_1)
+  "region" %in% names(d_test_2)
+}))
+
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")

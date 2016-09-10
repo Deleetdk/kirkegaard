@@ -1,0 +1,103 @@
+---
+title: "Data.frame functions"
+author: "Emil O. W. Kirkegaaard"
+date: "September 6, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(kirkegaard)
+```
+
+# Data.frame functions
+This present document showcases a number of functions designed to work with data.frames currently residing in the *kirkegaard* package. These functions differ from well known data.frame related functions in plyr, dply, tidyr etc. in that they are usually just wrapper functions for those but help accomplish tasks that often occur in daily work. Their primary goal is saving time and reducing bugs. The functions used to have various unstandardized names, but has now all been renamed to use the predix *df_* so that they are easy to find. The old synonyms still work for now, but may be depreciated at some point.
+
+### df_colFunc
+This function can be used to quickly call a function on each or selected columns in a data.frame and save the result in the same column. The columns can be selected in multiple ways: by regex pattern of their names (with support for inverse matching), by indices (logical, integer or character). The function can also be instructed to drop the columns that weren't selected.
+
+```{r df_colFunc}
+#notice original numbers
+head(iris)
+multiply_by_zero = function(x) return(x*0) #auxiliary function
+#using regex
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length"))
+#using inverse regex
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Species", pattern_inverse = T))
+#using integer indices
+head(df_colFunc(iris, func = multiply_by_zero, indices = 2:3))
+#using logical indices
+head(df_colFunc(iris, func = multiply_by_zero, indices = c(T, F, T, F, F)))
+#using characters
+head(df_colFunc(iris, func = multiply_by_zero, indices = c("Sepal.Length", "Petal.Width")))
+#removing unselected columns
+head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length", keep_unselected = F))
+#select all by not providing any selector
+str(df_colFunc(iris, func = as.character)) #all have been changed to chr
+```
+
+### df_merge_rows
+Sometimes one needs to merge rows in a data.frame. This can be for multiple reasons. A common one for me has been that I have data at two different levels of analysis and I need to merge the lower one so it can be used with the upper one. For instance, if one has county and state-level data for the US, one can merge the rows that belong to the same states and end up with a state-level dataset. Another use case is that one has mistakenly saved data for one case under more than one name and one needs to merge the rows without data loss.
+
+```{r df_merge_rows}
+#create some data
+t = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t) = LETTERS[1:4]
+t
+#here the real values for the C observation are both 3, but it has accidentally been called "D".
+#we can merge the rows using:
+df_merge_rows(t, names = c("C", "D"), func = mean)
+#suppose instead we have the names to match in a column, we can use the key parameter.
+t = data.frame(large_unit = c("a", "a", "b", "b", "c"), value = 1:5)
+t
+df_merge_rows(t, "large_unit") #rows merged using sum by default
+df_merge_rows(t, "large_unit", func = mean) #rows merged using mean
+```
+
+### df_add_column_affix
+Sometimes we need to merge several data.frames, but find that they have overlapping names. In this case, it is nice to be able to easily add affixes to their names. This function does that.
+
+```{r df_add_column_affix}
+#small test dataset
+test_iris = iris[1:10, ]
+#ad P_ prefix
+df_add_column_affix(test_iris, prefix = "P_") 
+colnames(test_iris)
+#ad _S suffix
+df_add_column_affix(test_iris, suffix = "_S") 
+colnames(test_iris)
+#one can also use assign
+test_iris2 = df_add_column_affix(iris, prefix = "A_", suffix = "_B", quick_assign = F)
+colnames(test_iris2)
+```
+
+### df_reorder_columns
+Reorder columns in a data.frame by name using a named vector.
+
+```{r df_reorder_columns, error = TRUE}
+#remove Species to front
+head(df_reorder_columns(iris, c("Species" = 1)))
+#move multiple at once
+head(df_reorder_columns(iris, c("Species" = 1, "Petal.Length" = 2)))
+#throws sensible errors
+#if not given a named vector
+df_reorder_columns(iris, 1)
+#or if names are not there
+df_reorder_columns(iris, c('abc' = 1))
+#throws warning if one tries to move the same multiple times as this is probably not intended
+df_reorder_columns(iris, c("Species" = 1, "Species" = 2))
+```
+
+### df_gather_by_pattern
+Tidy data -- data that have a variable in each column and a case in each row -- are easier to work with. Sometimes, often, data came in a form that isn't tidy and one has to tidy it up before one can analyze it. A particularly common pattern is that variables come in multiple variants such as by gender or by year each of which has their own columns, but which we would rather share a column and use an ID column to note which gender or year the datapoint concerns. This function does just that, and all one has to do is give it a regex pattern that matches the way the varying part of the column name is given.
+
+```{r df_gather_by_pattern, warning = F}
+#example data
+set.seed(1)
+d_gender = data.frame("income_men" = rnorm(4, mean = 100, sd = 10), "income_women" = rnorm(4, mean = 80, sd = 10), height_men = rnorm(4, mean = 180, sd = 7), height_women = rnorm(4, mean = 167, sd = 6));rownames(d_gender) = LETTERS[1:4]
+#inspect data
+d_gender
+#reshape
+df_gather_by_pattern(d_gender, pattern = "_(.*)", key_col = "gender")
+```
+
+Now we see that there are two columns that have variable data (height, income), there is an ID column for what used to be the rownames (which don't allow for duplicates) and there is a column for the varying part of the column names (gender).

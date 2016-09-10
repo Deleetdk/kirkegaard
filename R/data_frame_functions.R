@@ -569,12 +569,13 @@ residualize_DF = df_residualize
 #' Find blocks of rows with a matching key or rowname, and merge them using a given function.
 #'
 #' In a variety of circumstances it is useful to merge several rows of data into a single row. For instance, if one dataset uses covers the same data but one uses a smaller unit than the other, then one may want to merge the smaller units so they correspond to the larger units. Alternative, if one has saved data for one unit under two different names by accident, one wants to merge these two (or more) rows without losing data.
-#' @param df (data.frame or matrix) The data object.
+#' @param data (data.frame or matrix) The data object.
 #' @param key (character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.
 #' @param names (character vector) The rownames to merge.
 #' @param new_name (character scalar) The new rownames to use. Defaults to the first member of the names parameter.
 #' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.
 #' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
+#' ... Other parameters passed to func.
 #' @export merge_rows df_merge_rows
 #' @aliases merge_rows
 #' @examples
@@ -585,19 +586,19 @@ residualize_DF = df_residualize
 #' t = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t) = LETTERS[1:4]
 #' t
 #' #here the real values for the C observation are both 3, but it has accidentally been called "D".
-#' df_merge_rows(df = t, names = c("C", "D"), func = mean)
+#' df_merge_rows(t, names = c("C", "D"), func = mean)
 #' #suppose instead we have the names to match in a column, we can use the key parameter.
 #' t = data.frame(large_unit = c("a", "a", "b", "b", "c"), value = 1:5)
 #' t
 #' df_merge_rows(t, "large_unit") #rows merged by sum by default
 #' df_merge_rows(t, "large_unit", func = mean) #rows merged by mean
-df_merge_rows = function(df, key, names, new_name, func = sum, numeric = TRUE) {
+df_merge_rows = function(data, key, names, new_name, func = sum, numeric = TRUE, ...) {
   library(plyr)
   library(stringr)
 
   #checks
-  if (missing("df")) stop("df must be given!")
-  df = as.data.frame(df)
+  if (missing("data")) stop("data must be given!")
+  df = as.data.frame(data)
   if (missing("names") & missing("key")) stop("At least key or names parameters must be given!")
   if (!missing("names") & !missing("key")) stop("Both key and names were given. Only one of these can be given!")
   if (!missing("names")) {
@@ -624,7 +625,7 @@ df_merge_rows = function(df, key, names, new_name, func = sum, numeric = TRUE) {
 
       #compute
       row_new = row[1, ] #copy content of the first row in the block
-      row_new[v_numeric] = apply(row[v_numeric], 2, func, na.rm = TRUE) #subset to numerics, use func
+      row_new[v_numeric] = apply(row[v_numeric], 2, func, na.rm = TRUE, ...) #subset to numerics, use func
       row_new #save the new row
     })
 
@@ -638,8 +639,8 @@ df_merge_rows = function(df, key, names, new_name, func = sum, numeric = TRUE) {
     #make new df with rownames column
     df2 = cbind(df, "rownames__" = v_key)
 
-    #call merge_rows
-    df2 = merge_rows(df2, key = "rownames__", func = func, numeric = numeric)
+    #call self on the data with created key
+    df2 = merge_rows(df2, key = "rownames__", func = func, numeric = numeric, ...)
 
     #restore rownames
     rownames(df2) = df2$rownames__
@@ -974,7 +975,7 @@ df_remove_vars = function(data, names) {
 #' #move multiple
 #' head(df_reorder_columns(iris, c("Species" = 1, "Petal.Length" = 2)))
 #' #throws error if not given a named vector
-#' throws_error("df_reorder_columns(iris, c1)")
+#' throws_error("df_reorder_columns(iris, 1)")
 #' #or if names are not there
 #' throws_error("df_reorder_columns(iris, c('abc' = 1))")
 #' #throws warning if one tries to move the same multiple times as this is probably not intended
@@ -1054,7 +1055,7 @@ add_column_affix = df_add_column_affix
 #' Apply functions to columns of a data.frame. This can be done selectively using colnames, logical indicates, integer indices or regex patterns. One can also pass extra arguments to the function. By default, the unselected columns are kept.
 #' @param data (an object) An object whose colnames should be changed
 #' @param func (function) A function to apply.
-#' @param indices (chr or num vector) Either a character, numeric or logical vector used to select columns.
+#' @param indices (chr, num, log vector) Either a character, numeric or logical vector used to select columns.
 #' @param pattern (chr sclr) A regex pattern used to match column names.
 #' @param pattern_inverse (chr sclr) Whether to invert the match via regex pattern. Default=F.
 #' @param keep_unselected (log sclr) Whether to keep the unselected columns. Default=T.
@@ -1063,49 +1064,71 @@ add_column_affix = df_add_column_affix
 #' @examples
 #' #notice original numbers
 #' head(iris)
+#' multiply_by_zero = function(x) return(x*0) #auxiliary function
 #' #using regex
-#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+#' head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length"))
 #' #using inverse regex
-#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+#' head(df_colFunc(iris, func = multiply_by_zero, pattern = "Species", pattern_inverse = T))
 #' #using integer indices
-#' head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+#' head(df_colFunc(iris, func = multiply_by_zero, indices = 2:3))
 #' #using logical indices
-#' head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+#' head(df_colFunc(iris, func = multiply_by_zero, indices = c(T, F, T, F, F)))
+#' #using characters
+#' head(df_colFunc(iris, func = multiply_by_zero, indices = c("Sepal.Length", "Petal.Width")))
 #' #removing unselected columns
-#' head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+#' head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length", keep_unselected = F))
 #' #select all by not providing any selector
 #' str(df_colFunc(iris, func = as.character)) #all have been changed to chr
 df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T, ...) {
+  library(stringr)
 
   #checks
   check_missing(c("data", "func"))
   data = as.data.frame(data)
   if (!missing(pattern) & !missing("indices")) stop("Only one of indices or pattern can be given!")
-  if (missing("pattern") & missing("indices")) v_cols = names(data)
+  if (missing("pattern") & missing("indices")) indices = names(data)
 
   #which cols?
   if (!missing("pattern")) {
     #find names by regex
     library(stringr)
-    v_cols = str_detect2(names(data), pattern = pattern, value = T)
+    indices = str_detect2(names(data), pattern = pattern, value = T)
     #inverse if desired
-    if (pattern_inverse) v_cols = setdiff(names(data), v_cols)
+    if (pattern_inverse) indices = setdiff(names(data), indices)
   }
 
   if (!missing("indices")) {
-    if (is.logical(indices)) indices = which(indices) #conver to integers
-    if (!all(is_whole_number(indices))) stop("indices must be integers! (or numeric converible to integers without loss)")
-    v_cols = names(data)[indices]
+    #chr indices
+    if (is.character(indices)) {
+      if (!all(indices %in% names(data))) {
+        v_missing_names = setdiff(indices, names(data)) %>% str_c(collapse = ", ")
+        stop("Some colnames did not exist in the data.frame!: " + v_missing_names)
+      }
+    }
+    #logical indices
+    if (is.logical(indices)) {
+      #check length
+      if (length(indices) != length(names(data))) stop("The length of the logical indices did not match the data.frame!")
+      indices = names(data)[indices] #convert to chr indices
+    }
+    #integer indices
+    if (is.numeric(indices)) {
+      #check if are integers
+      if (!all(is_whole_number(indices))) stop("Numeric indices must be integers or converible to integers without loss!")
+      #check if all exist
+      if (!all(indices %in% seq_along(data))) stop("Numeric indices must not be larger than the data.frame!")
+      indices = names(data)[indices] #convert to chr indices
+    }
   }
 
   #loop over variables and apply func
-  for (col in v_cols) {
+  for (col in indices) {
     data[[col]] = func(data[[col]], ...)
   }
 
   #keep unselected?
   if (!keep_unselected) {
-    data = df_remove_vars(data, setdiff(names(data), v_cols))
+    data = df_remove_vars(data, setdiff(names(data), indices))
   }
 
   data
@@ -1131,3 +1154,119 @@ df_t = function(df) {
   df2
 }
 t_df = df_t
+
+#' Gather by pattern
+#'
+#' Makes a data.frame tidyr by gathering columns that are variants of each other, such as for different years.
+#' @param data (data.frame) A data.frame to tidy.
+#' @param pattern (chr sclr) The regex pattern to group variables by.
+#' @param varying_name (chr sclr) A name to use for the column of varying part of the name, e.g. the year. Defaults to ".varying".
+#' @return A tidy data.frame.
+#' @export
+#' @examples
+#'
+df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".id", method = "pure_tidyr") {
+  library(tidyr)
+
+  #convert class if needed
+  data = as.data.frame(data)
+  is_(key_col, class = "character", size = 1, error_on_false = T)
+  is_(method, class = "character", size = 1, error_on_false = T)
+  if (!method %in% c("pure_tidyr", "custom")) stop("The selected method does not exist!")
+  #the pattern input will be checked by the sub-function
+
+  #determine the groups of variables
+  colnames_data = colnames(data)
+  l_memberships = group_by_pattern(colnames_data, pattern = pattern)
+  #remove the varying part
+  colnames_remainder = stringr::str_replace(colnames_data, pattern = pattern, replacement = "")
+
+  if (method == "custom") {
+    #combine the groups using gather
+    l_combined = mapply(members = l_memberships, name = names(l_memberships), FUN = function(members, name) {
+      # browser()
+      #gather members of this group
+      d_gathered = gather_(data, key_col = key_col, value_col = ".value", gather_cols = colnames_data[members]) %>%
+        extract_last(margin_2 = 1:2) #extract last two columns
+
+      #get the varying part
+      colnames_varying = stringr::str_match(d_gathered[[key_col]], pattern = pattern)[, 2]
+
+      #insert the better varying values
+      d_gathered[[key_col]] = colnames_varying
+
+      #insert id
+      d_gathered[[id_col]] = rownames(data)
+
+      #insert variable
+      d_gathered$.var = name
+
+      d_gathered
+    }, SIMPLIFY = F)
+
+    #bind by row
+    # browser()
+    d_long = ldf_to_df(l_combined, add_by = F)
+
+    #spread
+    d_wide = spread_(d_long, key_col = ".var", value_col = ".value")
+
+    #return
+    return(d_wide)
+  }
+
+  if (method == "pure_tidyr") {
+    #gather all values into one very long data.frame
+    d_tmp_a = gather_(data, key_col = ".varying", value_col = ".value", gather_cols = colnames_data)
+    #add two missing columns
+    d_tmp_a$.varying = str_replace(d_tmp_a$.varying, pattern = pattern, replacement = "|||\\1")
+    d_tmp_a[[id_col]] = rownames(data)
+    #separate the constant from the varying part of the variable names
+    d_tmp_b = separate_(d_tmp_a, col = ".varying", into = c(".variable", key_col), sep = "\\|\\|\\|")
+    #finally, spread out the variables
+    d_tmp_c = spread_(d_tmp_b, key_col = ".variable", value_col = ".value")
+
+    #return
+    return(d_tmp_c)
+  }
+
+  stop("You somehow managed to break this function!")
+}
+
+#' Group by pattern
+#'
+#' Determines groups of strings using a regex pattern.
+#' @param x (chr vctr) A character vector of values to group.
+#' @param pattern (chr sclr) The regex pattern to group variables by.
+#' @return A list of integer vectors. Each vector is the indices of the variables that belong to each group.
+#' @export
+#' @examples
+#'
+group_by_pattern = function(x, pattern) {
+  library(stringr)
+
+  #check x input
+  is_(x, class = "character", error_on_false = T)
+
+  #check if pattern input is right size and type
+  is_(pattern, class = "character", size = 1, error_on_false = T)
+  #check if pattern input has a capturing group as required
+  if (!(str_detect(pattern, pattern = "\\(") & str_detect(pattern, pattern = "\\)"))) stop("The given pattern did not have a capturing group!")
+
+  ### determine the groups of variables
+  #remove the varying part
+  x_remainder = stringr::str_replace(x, pattern = pattern, replacement = "")
+  #get the varying part
+  x_varying = stringr::str_match(x, pattern = pattern)[, 2]
+
+  #group memberships
+  l_memberships = lapply(unique(x_remainder), FUN = function(x) {
+    which(x_remainder == x)
+  })
+  names(l_memberships) = unique(x_remainder)
+
+  #return list
+  l_memberships
+}
+
+
