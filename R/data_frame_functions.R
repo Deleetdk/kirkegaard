@@ -1139,7 +1139,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 #' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
 #' @param df (data.frame) A data.frame.
 #' @return A transposed data.frame.
-#' @export
+#' @export t_df df_t
 #' @aliases t_df
 #' @examples
 #' df_t(iris)
