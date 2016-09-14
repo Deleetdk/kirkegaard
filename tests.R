@@ -789,23 +789,23 @@ stopifnot({
 
 
 
-# df_func ------------------------------------------------------------------------
+# df_rowFunc ------------------------------------------------------------------------
 
 #tests
 t_list = list(
-  df_func(iris[1:4]),
-  df_func(iris[1], iris[2], iris[3], iris[4]),
-  df_func(iris[1:4], func = median),
-  df_func(iris[1:4], standardize = T),
-  df_func(iris[1:4], standardize = T, func = median),
-  df_func(iris, pattern = "al"),
-  df_func(iris, pattern = "al", func = median, standardize = T)
+  df_rowFunc(iris[1:4]),
+  df_rowFunc(iris[1], iris[2], iris[3], iris[4]),
+  df_rowFunc(iris[1:4], func = median),
+  df_rowFunc(iris[1:4], standardize = T),
+  df_rowFunc(iris[1:4], standardize = T, func = median),
+  df_rowFunc(iris, pattern = "al"),
+  df_rowFunc(iris, pattern = "al", func = median, standardize = T)
 )
 
 #errors
 e_list = list(
-  try({df_func(iris)}, T),
-  try({df_func(iris, pattern = "sadaiasd")}, T)
+  try({df_rowFunc(iris)}, T),
+  try({df_rowFunc(iris, pattern = "sadaiasd")}, T)
 )
 
 #check
@@ -1797,6 +1797,22 @@ silence(stopifnot({
 }))
 
 
+# rescale -----------------------------------------------------------------
+#tests without checking, just to see if function errors
+
+stopifnot({
+  round(kirkegaard::rescale(1:10, new_min = 0, new_max = 1), 2) == round(seq(0, 1, length.out = 10), 2)
+  round(kirkegaard::rescale(1:10, new_min = 0, new_max = 5), 2) == round(seq(0, 5, length.out = 10), 2)
+  kirkegaard::rescale(c(.1, .5, 1), new_min = 10, new_max = 20, old_min = 0, old_max = 1) == c(11, 15, 20)
+
+  #input errors
+  throws_error("kirkegaard::rescale('x')") # class failure
+  throws_error("kirkegaard::rescale(1, new_min = '')") #class failure
+
+  #errors on impossible min  max values
+  throws_error("kirkegaard::rescale(1, old_max = 0, new_min = 0, new_max = 1)")
+  throws_error("kirkegaard::rescale(1, old_min = 2, new_min = 0, new_max = 1)")
+})
 
 # done --------------------------------------------------------------------
 

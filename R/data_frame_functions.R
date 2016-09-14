@@ -431,12 +431,11 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T)
 
     tryCatch({ #try to pass na.rm=T
       results = adply(tmp_df, .margins = 1, .progress = "text", .fun = function(x) {
-        get("func")(x, na.rm = ignore_NA)
+        get("func")(x %>% unlist, na.rm = ignore_NA)
       })},
       error = function(e) {
         results <<- adply(tmp_df, .margins = 1, .progress = "text", .fun = function(x) {
-          browser()
-          get("func")(x)
+          get("func")(x %>% unlist)
         })
       }
     )

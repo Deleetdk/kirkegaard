@@ -258,3 +258,50 @@ proportion_true = function(x) {
   x = na.omit(x)
   sum(x) / length(x)
 }
+
+
+#' Rescale numbers
+#'
+#' Rescales numbers from one scale to another. By default, assumes that the old scale has min and max values represented in the vector, but this can be overwritten.
+#' @param x (num vectr) A vector of values.
+#' @param new_min (num sclr) The new scale minimum.
+#' @param new_max (num sclr) The new scale maximum.
+#' @param old_min (num sclr) The old scale minimum. Default: min(x).
+#' @param old_max (num sclr) The old scale maximum. Default: max(x).
+#' @export
+#' @examples
+#' rescale(1:10, new_min = 0, new_max = 1) #converts to 0, ..., 1
+#' rescale(1:10, new_min = 0, new_max = 5) #converts to 0, ..., 5
+#' rescale(rnorm(10), new_min = 1, new_max = 100) %>% sort #converts to 1, ..., 1
+#' rescale(c(.1, .5, 1), new_min = 10, new_max = 20, old_min = 0, old_max = 1) #assume old numbers belong to scale 0-1, rescale to 10-20 scale, i.e. 11, 15, 20
+rescale = function(x, new_min, new_max, old_min = min(x), old_max = max(x)) {
+  #check input
+  is_(x, class = "numeric", error_on_false = T)
+  is_(new_min, class = "numeric", size = 1, error_on_false = T)
+  is_(new_max, class = "numeric", size = 1, error_on_false = T)
+  is_(old_min, class = "numeric", size = 1, error_on_false = T)
+  is_(old_min, class = "numeric", size = 1, error_on_false = T)
+
+  #check if impossible old_min or old_max given
+  if (min(x) < old_min) stop(sprintf("The min value in x is smaller than the minimum possible value given!: old_min = %f vs. min(x) = %f", old_min, min(x)))
+  if (max(x) > old_max) stop(sprintf("The max value in x is larger than the maximum possible value given!: old_max = %f vs. max(x) = %f", old_max, max(x)))
+
+  #calculate ranges
+  old_range = old_max - old_min
+  new_range = new_max - new_min
+
+  #subtract old min
+  x = x - old_min
+
+  #divide by old_range; convert to proportion of old range
+  x = x / old_range
+
+  #multiply by new range; stretch to new range
+  x = x * new_range
+
+  #add new min
+  x = x + new_min
+
+  #return
+  x
+}
