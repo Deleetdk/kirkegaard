@@ -351,7 +351,7 @@ averages = function(x,
   if ("mode" %in% types) res = c(res, "mode" = Mode(x))
   if ("median" %in% types) res = c(res, "median" = median(x, na.rm=T))
   if ("trimmed" %in% types) res = c(res, "trimmed" = mean(x, na.rm=T, trim = trim))
-  if ("midrange" %in% types) res = c(res, "midrange" = (max(x, na.rm=T) - min(x, na.rm=T)) / 2)
+  if ("midrange" %in% types) res = c(res, "midrange" = ((max(x, na.rm=T) - min(x, na.rm=T)) / 2) + min(x, na.rm=T))
 
   #return
   res
