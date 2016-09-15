@@ -305,3 +305,54 @@ rescale = function(x, new_min, new_max, old_min = min(x), old_max = max(x)) {
   #return
   x
 }
+
+
+#' Averages
+#'
+#' Calculates a number of different types of averages for a vector.
+#' @param x (num vectr) A vector of values.
+#' @param trim (num vectr) Used for trimmed means. Default = .10.
+#' @param types (chr vectr) Which types of averages to calculate?
+#' @export
+#' @examples
+#' #simualte some data
+#' set.seed(1)
+#' x = sample(1:10, replace = T, size = 1000, prob = seq(.1, .5, length.out = 10))
+#' #look at it
+#' GG_denhist(x, vline = NULL)
+#' #calcualte averages
+#' averages(x)
+#' #normal data
+#' set.seed(1)
+#' averages(rnorm(1000)) #some functions give warnings when there are negative numbers
+averages = function(x,
+                    trim = .1,
+                    types = c("arithmetic", "geometric", "harmonic", "mode", "median", "trimmed", "midrange")) {
+  library(psych)
+
+  #check input
+  is_(x, class = "numeric", error_on_false = T)
+  is_(trim, class = "numeric", size = 1, error_on_false = T)
+  if (!is_between(trim, 0, .5)) stop("trim must be between 0.0 and 0.5!")
+  is_(types, class = "character", error_on_false = T)
+
+  #Mode func
+  Mode <- function(x) {
+  ux <- unique(na.omit(x))
+  ux[which.max(tabulate(match(x, ux)))]
+  }
+
+  #calculate
+  res = numeric()
+
+  if ("arithmetic" %in% types) res = c(res, "arithmetic" = mean(x, na.rm=T))
+  if ("geometric" %in% types) res = c(res, "geometric" = psych::geometric.mean(x, na.rm=T))
+  if ("harmonic" %in% types) res = c(res, "harmonic" = psych::harmonic.mean(x, na.rm=T))
+  if ("mode" %in% types) res = c(res, "mode" = Mode(x))
+  if ("median" %in% types) res = c(res, "median" = median(x, na.rm=T))
+  if ("trimmed" %in% types) res = c(res, "trimmed" = mean(x, na.rm=T, trim = trim))
+  if ("midrange" %in% types) res = c(res, "midrange" = (max(x, na.rm=T) - min(x, na.rm=T)) / 2)
+
+  #return
+  res
+}

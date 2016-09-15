@@ -1,0 +1,78 @@
+---
+title: "String functions"
+author: "Emil O. W. Kirkegaard"
+date: "15 sep 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Optimal string matching example
+In this example, we match up two vectors of strings in an optimal way using the **stringdist** package. This is a common task when working with sociological data at the country-level or for lower administrative divisions such as US states.
+
+First we load some libraries:
+
+```{r libs}
+# libs --------------------------------------------------------------------
+library(pacman)
+p_load(stringdist, reshape2, dplyr)
+```
+
+Then we make up some example data. I've picked five countries that have names that usually differ somewhat between Danish and English, sometimes not at all, and sometimes a lot.
+
+```{r data}
+# data --------------------------------------------------------------------
+#EN names
+EN = c("Denmark", "Norway", "USA", "Russia", "Germany")
+#DA names
+DA = c("Danmark", "Norge", "USA", "Rusland", "Tyskland")
+```
+
+Next we calculate the distances between strings across vectors and reshape the data a bit:
+
+```{r dists}
+# distances ----------------------------------------------------------------
+#matrix
+dst = stringdist::stringdistmatrix(EN, DA)
+#names
+rownames(dst) = EN; colnames(dst) = DA
+dst
+
+#conver to 2-column data.frame
+dst_df = melt(dst, c("EN", "DA"))
+dst_df
+
+#sort
+dst_df = dplyr::arrange(dst_df, value)
+dst_df
+
+#save copy
+dst_df_orig = dst_df
+```
+
+Finally, we loop around this object and pick the best matches one by one:
+
+```{r matchup}
+# match -------------------------------------------------------------------
+#storing best matches
+best_matches = matrix(nrow=0, ncol=3)
+
+#keep matching and removing pairs until we run out of data
+while (nrow(dst_df) > 0) {
+  #top value is always the best match because we sorted the data initially
+  best_matches = rbind(best_matches, dst_df[1, ])
+  
+  #remove rows with the same names
+  #i.e. keep only those that have non-identical names in both columns to the ones we saved
+  dst_df = dplyr::filter(dst_df, (!dst_df[1, 1] == dst_df[, 1]) & (!dst_df[1, 2] == dst_df[, 2]))
+}
+
+#view matches
+best_matches
+```
+
+As can be seen, all the pairs were matched up correctly. Even Germany which has a totally dissimilar name to the Danish one (which is related to the German and Dutch names: *Deutschland*, *Duitsland*).
+
+One can modify this setup so that it stops when distances becomes too large, like the *join* functions in the **fuzzyjoin** package. One can also use other string distance measures. Here we used the default one from **stringdist** package, but it has a number of other ones that may be more suitable.
