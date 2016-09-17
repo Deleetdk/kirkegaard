@@ -687,7 +687,9 @@ g = list(GG_denhist(iris, "Sepal.Length"),
          GG_denhist(Sepal_Length),
          GG_denhist(Sepal_Length, vline = "mean"),
          GG_denhist(Sepal_Length, vline = "median"),
-         GG_denhist(Sepal_Length, vline = NULL))
+         GG_denhist(Sepal_Length, vline = NULL),
+         GG_denhist(iris, "Sepal.Length", group = "Species")
+         )
 
 stopifnot({
   sapply(g, function(x) class(x)) %in% c("gg", "ggplot")

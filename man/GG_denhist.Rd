@@ -15,7 +15,7 @@ GG_denhist(df, var, vline = "mean", binwidth = NULL, group)
 
 \item{binwidth}{(num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
 
-\item{group}{(chr sclr) The naem of the grouping variable to use.}
+\item{group}{(chr sclr) The name of the grouping variable to use.}
 }
 \description{
 Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.

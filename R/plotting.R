@@ -5,14 +5,14 @@
 #' @param var (chr sclr) The name of the variable to use. Not needed if df is a vector.
 #' @param vline (chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.
 #' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
-#' @param group (chr sclr) The naem of the grouping variable to use.
+#' @param group (chr sclr) The name of the grouping variable to use.
 #' @export
 #' @examples
 #' GG_denhist(iris, "Sepal.Length") #plot overall distribution
 #' GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 GG_denhist = function(df, var, vline = "mean", binwidth = NULL, group) {
   library(ggplot2)
-
+  # browser()
   #input type
   if (is_simple_vector(df)) {
     var = deparse(substitute(df))
@@ -22,6 +22,15 @@ GG_denhist = function(df, var, vline = "mean", binwidth = NULL, group) {
 
   #check if var is in df
   if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
+
+  #remove NA group
+  if (!missing("group")) {
+    #any miss?
+    if (anyNA(df[[group]])) {
+          df = df[!is.na(df[[group]]), ]
+    warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
+    }
+  }
 
   #plot
   if (missing("group")) {
@@ -45,8 +54,8 @@ GG_denhist = function(df, var, vline = "mean", binwidth = NULL, group) {
 
     #add it
     g = g + geom_vline(xintercept = central_tendency,
-               color="red",
-               linetype="dashed", size=1)
+                       color="red",
+                       linetype="dashed", size=1)
   }
 
   if (!is.null(vline) & !missing("group")) {
