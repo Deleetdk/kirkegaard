@@ -180,3 +180,6 @@ str_detect_replace = function(string, pattern, replacement) {
 
   string
 }
+
+
+

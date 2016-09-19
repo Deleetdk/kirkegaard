@@ -1816,6 +1816,50 @@ stopifnot({
   throws_error("kirkegaard::rescale(1, old_min = 2, new_min = 0, new_max = 1)")
 })
 
+
+# pu_translate ------------------------------------------------------------
+#lots of things to test
+v_argentinian_provinces = c("Buenos Aires", "Buenos Aires City (DC)", "Catamarca", "Chaco",
+                            "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy",
+                            "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro",
+                            "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero",
+                            "Tierra del Fuego", "Tucumán")
+v_argentina_abbrev = structure(c("ARG_B", "ARG_C", "ARG_K", "ARG_H", "ARG_U", "ARG_X",
+                                 "ARG_W", "ARG_E", "ARG_P", "ARG_Y", "ARG_L", "ARG_F", "ARG_M",
+                                 "ARG_N", "ARG_Q", "ARG_R", "ARG_A", "ARG_J", "ARG_D", "ARG_Z",
+                                 "ARG_S", "ARG_G", "ARG_G", "ARG_T"), .Names = c("Buenos Aires",
+                                                                                 "Buenos Aires City (DC)", "Catamarca", "Chaco", "Chubut", "Córdoba",
+                                                                                 "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja",
+                                                                                 "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan",
+                                                                                 "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero",
+                                                                                 "Tierra del Fuego", "Tucumán"))
+#translate back names
+v_abbrevs = c("DNK", "THA", "USA", "GBR", "SWE", "NOR", "DEU", "VEN", "TUR", "NLD")
+v_abbrevs_reversed = c("Denmark", "Thailand", "USA", "United Kingdom", "Sweden", "Norway", "Germany", "Venezuela", "Turkey", "Netherlands")
+
+v_odd_names = c("Danmark", "Viet Nam", "Belgia", "Bolivia, Plurinational State of")
+v_nonodd_names = c("Denmark", "Vietnam", "Belgium", "Bolivia")
+
+v_notquiteright = c("USa", "Dnmark", "Viitnam", "Bolgium", "Boliviam")
+v_quiteright = c("USA", "Denmark", "Vietnam", "Belgium", "Bolivia")
+
+stopifnot({
+  #test argentina results
+  pu_translate(v_argentinian_provinces, superunit = "ARG", messages = 0) == v_argentina_abbrev
+
+  #reverse
+  pu_translate(v_abbrevs, messages = 0, reverse = T) == v_abbrevs_reversed
+
+  #standardize odd names by exact match
+  pu_translate(v_odd_names, messages = 0, standardize_name = T) == v_nonodd_names
+
+  #fuzzy match
+  pu_translate(v_notquiteright, messages = 0) == c("USA", "DNK", "VNM", "BEL", "BOL")
+  pu_translate(v_notquiteright, messages = 0, standardize_name = T) == v_quiteright
+})
+
+
+
 # done --------------------------------------------------------------------
 
 message("DONE! If you see this, there were no errors. Hopefully!")

@@ -233,8 +233,159 @@ best_matches</code></pre>
 ## 3  Norway    Norge     3
 ## 4  Russia  Rusland     4
 ## 5 Germany Tyskland     6</code></pre>
-<p>As can be seen, all the pairs were matched up correctly. Even Germany which has a totally dissimilar name to the Danish one (which is related to the German and Dutch names: <em>Deutschland</em>, <em>Duitsland</em>).</p>
+<p>As can be seen, all the pairs were matched up correctly. Even Germany which has a totally dissimilar name to the Danish one (which is related to the German and Dutch names: <em>Deutschland</em>, <em>Duitsland</em>). The reason is simply that it was the last pair in the dataset, so it got paired up no matter how distant. This can cause trouble if one ends up with two a group of names with no sensible matches, so beware of the matching produced.</p>
 <p>One can modify this setup so that it stops when distances becomes too large, like the <em>join</em> functions in the <strong>fuzzyjoin</strong> package. One can also use other string distance measures. Here we used the default one from <strong>stringdist</strong> package, but it has a number of other ones that may be more suitable.</p>
+</div>
+<div id="standardized-names-of-political-units" class="section level1">
+<h1>Standardized names of political units</h1>
+<p>Working with data about political units – countries, states, counties, communes, provinces, regions, etc. – is a bit of a nightmare. The names of the units frequently have variations and so one has to either be clever or spend a lot of time manually matching them up. Such work is error-prone and demotivating, so we want to be smart instead. The solution is standardization. However, since we cannot get people to agree to use the same spellings of everything, especially people who speak different languages, we have to go to the next level: abbreviations. There are already ISO abbreviations for political units (<a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3">ISO-3166</a>), but I’m not aware of any R way to use them efficiently. So I developed my own method. It consists of two things: a large dataset of names of political units and the matching abbreviations (currently based on 3166-1 alpha-3, but I should switch to 3166-2 which already has all the first-level administrative divisions of all countries in the world, N=3600), and a clever function for working with them. Let’s see some examples:</p>
+<pre class="r"><code>#try an Argentinian provinces
+v_argentinian_provinces</code></pre>
+<pre><code>##  [1] &quot;Buenos Aires&quot;           &quot;Buenos Aires City (DC)&quot;
+##  [3] &quot;Catamarca&quot;              &quot;Chaco&quot;                 
+##  [5] &quot;Chubut&quot;                 &quot;Córdoba&quot;               
+##  [7] &quot;Corrientes&quot;             &quot;Entre Ríos&quot;            
+##  [9] &quot;Formosa&quot;                &quot;Jujuy&quot;                 
+## [11] &quot;La Pampa&quot;               &quot;La Rioja&quot;              
+## [13] &quot;Mendoza&quot;                &quot;Misiones&quot;              
+## [15] &quot;Neuquén&quot;                &quot;Río Negro&quot;             
+## [17] &quot;Salta&quot;                  &quot;San Juan&quot;              
+## [19] &quot;San Luis&quot;               &quot;Santa Cruz&quot;            
+## [21] &quot;Santa Fe&quot;               &quot;Santiago del Estero&quot;   
+## [23] &quot;Tierra del Fuego&quot;       &quot;Tucumán&quot;</code></pre>
+<pre class="r"><code>pu_translate(v_argentinian_provinces, messages = 2)</code></pre>
+<pre><code>## Loading required package: XLConnectJars</code></pre>
+<pre><code>## XLConnect 0.2-12 by Mirai Solutions GmbH [aut],
+##   Martin Studer [cre],
+##   The Apache Software Foundation [ctb, cph] (Apache POI, Apache Commons
+##     Codec),
+##   Stephen Colebourne [ctb, cph] (Joda-Time Java library),
+##   Graph Builder [ctb, cph] (Curvesapi Java library)</code></pre>
+<pre><code>## http://www.mirai-solutions.com ,
+## http://miraisolutions.wordpress.com</code></pre>
+<pre><code>## Exact match: Buenos Aires -&gt; ARG_B</code></pre>
+<pre><code>## Exact match: Buenos Aires City (DC) -&gt; ARG_C</code></pre>
+<pre><code>## Exact match: Catamarca -&gt; ARG_K</code></pre>
+<pre><code>## Exact match: Chaco -&gt; ARG_H</code></pre>
+<pre><code>## Exact match: Chubut -&gt; ARG_U</code></pre>
+<pre><code>## Error: More than one exact match for Córdoba. Perhaps you want to use a superunit to limit the options? Matches were: COL_COR | ARG_X</code></pre>
+<p>Here we get an error because the name we are trying to translate to an abbreviation matches multiple candidates and the algorithm doesn’t konw which one to pick. But since we know that these are all Argentinian units, we can limit our search to Argentinian units:</p>
+<pre class="r"><code>#limit to Argentinian political units
+pu_translate(v_argentinian_provinces, messages = 2, superunit = &quot;ARG&quot;)</code></pre>
+<pre><code>## Subsetting to subunits of Argentina [ARG].</code></pre>
+<pre><code>## Exact match: Buenos Aires -&gt; ARG_B</code></pre>
+<pre><code>## Exact match: Buenos Aires City (DC) -&gt; ARG_C</code></pre>
+<pre><code>## Exact match: Catamarca -&gt; ARG_K</code></pre>
+<pre><code>## Exact match: Chaco -&gt; ARG_H</code></pre>
+<pre><code>## Exact match: Chubut -&gt; ARG_U</code></pre>
+<pre><code>## Exact match: Córdoba -&gt; ARG_X</code></pre>
+<pre><code>## Exact match: Corrientes -&gt; ARG_W</code></pre>
+<pre><code>## Exact match: Entre Ríos -&gt; ARG_E</code></pre>
+<pre><code>## Exact match: Formosa -&gt; ARG_P</code></pre>
+<pre><code>## Exact match: Jujuy -&gt; ARG_Y</code></pre>
+<pre><code>## Exact match: La Pampa -&gt; ARG_L</code></pre>
+<pre><code>## Exact match: La Rioja -&gt; ARG_F</code></pre>
+<pre><code>## Exact match: Mendoza -&gt; ARG_M</code></pre>
+<pre><code>## Exact match: Misiones -&gt; ARG_N</code></pre>
+<pre><code>## Exact match: Neuquén -&gt; ARG_Q</code></pre>
+<pre><code>## Exact match: Río Negro -&gt; ARG_R</code></pre>
+<pre><code>## Exact match: Salta -&gt; ARG_A</code></pre>
+<pre><code>## Exact match: San Juan -&gt; ARG_J</code></pre>
+<pre><code>## Exact match: San Luis -&gt; ARG_D</code></pre>
+<pre><code>## Exact match: Santa Cruz -&gt; ARG_Z</code></pre>
+<pre><code>## Exact match: Santa Fe -&gt; ARG_S</code></pre>
+<pre><code>## Exact match: Santiago del Estero -&gt; ARG_G</code></pre>
+<pre><code>## Exact match: Tierra del Fuego -&gt; ARG_G</code></pre>
+<pre><code>## Exact match: Tucumán -&gt; ARG_T</code></pre>
+<pre><code>##           Buenos Aires Buenos Aires City (DC)              Catamarca 
+##                &quot;ARG_B&quot;                &quot;ARG_C&quot;                &quot;ARG_K&quot; 
+##                  Chaco                 Chubut                Córdoba 
+##                &quot;ARG_H&quot;                &quot;ARG_U&quot;                &quot;ARG_X&quot; 
+##             Corrientes             Entre Ríos                Formosa 
+##                &quot;ARG_W&quot;                &quot;ARG_E&quot;                &quot;ARG_P&quot; 
+##                  Jujuy               La Pampa               La Rioja 
+##                &quot;ARG_Y&quot;                &quot;ARG_L&quot;                &quot;ARG_F&quot; 
+##                Mendoza               Misiones                Neuquén 
+##                &quot;ARG_M&quot;                &quot;ARG_N&quot;                &quot;ARG_Q&quot; 
+##              Río Negro                  Salta               San Juan 
+##                &quot;ARG_R&quot;                &quot;ARG_A&quot;                &quot;ARG_J&quot; 
+##               San Luis             Santa Cruz               Santa Fe 
+##                &quot;ARG_D&quot;                &quot;ARG_Z&quot;                &quot;ARG_S&quot; 
+##    Santiago del Estero       Tierra del Fuego                Tucumán 
+##                &quot;ARG_G&quot;                &quot;ARG_G&quot;                &quot;ARG_T&quot;</code></pre>
+<p>And we get the right results. What about translating back into names from abbreviations? We can do that too. There is support for multiple languages, but by default the top name for that abbreviation in the dataset is used which is the preferred English one. If it can’t find a local variant, it defaults to the English one. In many cases, these are the same:</p>
+<pre class="r"><code>#translate back names
+v_abbrevs = c(&quot;DNK&quot;, &quot;THA&quot;, &quot;USA&quot;, &quot;GBR&quot;, &quot;SWE&quot;, &quot;NOR&quot;, &quot;DEU&quot;, &quot;VEN&quot;, &quot;TUR&quot;, &quot;NLD&quot;)
+
+#transback back in EN
+pu_translate(v_abbrevs, messages = 2, reverse = T)</code></pre>
+<pre><code>##              DNK              THA              USA              GBR 
+##        &quot;Denmark&quot;       &quot;Thailand&quot;            &quot;USA&quot; &quot;United Kingdom&quot; 
+##              SWE              NOR              DEU              VEN 
+##         &quot;Sweden&quot;         &quot;Norway&quot;        &quot;Germany&quot;      &quot;Venezuela&quot; 
+##              TUR              NLD 
+##         &quot;Turkey&quot;    &quot;Netherlands&quot;</code></pre>
+<pre class="r"><code>#transback back in DA
+pu_translate(v_abbrevs, messages = 2, reverse = T, lang = &quot;da&quot;)</code></pre>
+<pre><code>## There was no match in language da for THA</code></pre>
+<pre><code>## There was no match in language da for USA</code></pre>
+<pre><code>## There was no match in language da for VEN</code></pre>
+<pre><code>##              DNK              THA              USA              GBR 
+##        &quot;Danmark&quot;       &quot;Thailand&quot;            &quot;USA&quot; &quot;Storbritannien&quot; 
+##              SWE              NOR              DEU              VEN 
+##        &quot;Sverige&quot;          &quot;Norge&quot;       &quot;Tyskland&quot;      &quot;Venezuela&quot; 
+##              TUR              NLD 
+##        &quot;Tyrkiet&quot;        &quot;Holland&quot;</code></pre>
+<p>One can comebine the two methods to standardize names, i.e. change all name variants to the standard spellling. Here I’ve mixed Danish, Italian and some less common English variants:</p>
+<pre class="r"><code>#standardize names
+v_odd_names = c(&quot;Danmark&quot;, &quot;Viet Nam&quot;, &quot;Belgia&quot;, &quot;Bolivia, Plurinational State of&quot;)
+pu_translate(v_odd_names, messages = 2, standardize_name = T)</code></pre>
+<pre><code>## Exact match: Danmark -&gt; DNK</code></pre>
+<pre><code>## Exact match: Viet Nam -&gt; VNM</code></pre>
+<pre><code>## Exact match: Belgia -&gt; BEL</code></pre>
+<pre><code>## Exact match: Bolivia, Plurinational State of -&gt; BOL</code></pre>
+<pre><code>##                         Danmark                        Viet Nam 
+##                       &quot;Denmark&quot;                       &quot;Vietnam&quot; 
+##                          Belgia Bolivia, Plurinational State of 
+##                       &quot;Belgium&quot;                       &quot;Bolivia&quot;</code></pre>
+<p>What if there is no exact match in the dataset? We default back to fuzzy matcthing using the <strong>stringdist</strong> package. Let’s try some almost right names:</p>
+<pre class="r"><code>v_notquiteright = c(&quot;USa&quot;, &quot;Dnmark&quot;, &quot;Viitnam&quot;, &quot;Bolgium&quot;, &quot;Boliviam&quot;)
+pu_translate(v_notquiteright, messages = 2)</code></pre>
+<pre><code>## No exact match: USa</code></pre>
+<pre><code>## No exact match: Dnmark</code></pre>
+<pre><code>## No exact match: Viitnam</code></pre>
+<pre><code>## No exact match: Bolgium</code></pre>
+<pre><code>## No exact match: Boliviam</code></pre>
+<pre><code>## Best fuzzy match found: USa -&gt; USA with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Dnmark -&gt; Denmark with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Viitnam -&gt; Vietnam with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Bolgium -&gt; Belgium with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Boliviam -&gt; Bolivia with distance 1.00</code></pre>
+<pre><code>##      USa   Dnmark  Viitnam  Bolgium Boliviam 
+##    &quot;USA&quot;    &quot;DNK&quot;    &quot;VNM&quot;    &quot;BEL&quot;    &quot;BOL&quot;</code></pre>
+<pre class="r"><code>pu_translate(v_notquiteright, messages = 2, standardize_name = T)</code></pre>
+<pre><code>## No exact match: USa</code></pre>
+<pre><code>## No exact match: Dnmark</code></pre>
+<pre><code>## No exact match: Viitnam</code></pre>
+<pre><code>## No exact match: Bolgium</code></pre>
+<pre><code>## No exact match: Boliviam</code></pre>
+<pre><code>## Best fuzzy match found: USa -&gt; USA with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Dnmark -&gt; Denmark with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Viitnam -&gt; Vietnam with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Bolgium -&gt; Belgium with distance 1.00</code></pre>
+<pre><code>## Best fuzzy match found: Boliviam -&gt; Bolivia with distance 1.00</code></pre>
+<pre><code>##       USa    Dnmark   Viitnam   Bolgium  Boliviam 
+##     &quot;USA&quot; &quot;Denmark&quot; &quot;Vietnam&quot; &quot;Belgium&quot; &quot;Bolivia&quot;</code></pre>
+<p>And in each case we manage to get the right one. What happens if we punch our keyboards at random and try to get matches?</p>
+<pre class="r"><code>v_totallywrong = c(&quot;jinsa&quot;, &quot;aska&quot;, &quot;bombom!&quot;)
+pu_translate(v_totallywrong, messages = 2)</code></pre>
+<pre><code>## No exact match: jinsa</code></pre>
+<pre><code>## No exact match: aska</code></pre>
+<pre><code>## No exact match: bombom!</code></pre>
+<pre><code>## Best fuzzy match found: jinsa -&gt; Cina with distance 2.00</code></pre>
+<pre><code>## Best fuzzy match found: aska -&gt; Alaska with distance 2.00</code></pre>
+<pre><code>## Error: There were more than one equally good matches that did not agree for bombom!: Roraima | Cambodia | Cambodja | Cambogia | Cocoa | Tolima | Comoros | Congo | Kongo | Gabon | Gambia | Kosovo | Colima | Sonora | Moldova | Romania | Samoa | Sao Tome | Somalia | Togo | Alabama | Zambia | Formosa. All with distance 5.00</code></pre>
+<p>So even random strings can produce sensible matches. The function looks for trouble. If there’s more than one match that’s equally distant which gives inconsistent results, we get an error.</p>
 </div>
 
 
