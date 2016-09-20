@@ -194,9 +194,9 @@ is_ = function(x, class, size, type, error_on_false = F) {
 
   #error?
   if (error_on_false) {
-    if (!v_size_check) stop("Object " + deparse(substitute(x)) + " was not of the right size!")
-    if (!v_type_check) stop("Object " + deparse(substitute(x)) + " was not of the right type!")
-    if (!v_class_check) stop("Object " + deparse(substitute(x)) + " was not of the right class!")
+    if (!v_size_check) stop("Object " + deparse(substitute(x)) + " was not of the right size!", call. = F)
+    if (!v_type_check) stop("Object " + deparse(substitute(x)) + " was not of the right type!", call. = F)
+    if (!v_class_check) stop("Object " + deparse(substitute(x)) + " was not of the right class!", call. = F)
   }
 
   v_size_check & v_type_check & v_class_check
