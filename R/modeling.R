@@ -497,6 +497,11 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T
   is_(dependent, class="character", size = 1, error_on_false = T)
   if (dependent %in% predictors) stop(sprintf("The dependent variable cannot be a predictor! %s was both", dependent))
 
+  #check variables exist in data
+  sapply(c(dependent, predictors), FUN = function(var) {
+    if (!var %in% names(data)) stop(sprintf("Some variables were not in the supplied data: %s", var), call. = F)
+  })
+
   #rename data
   df = data; rm(data)
 
