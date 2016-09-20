@@ -6,7 +6,7 @@
 \title{Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.}
 \usage{
 MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
-  kfold = T, folds = 10, ...)
+  kfold = T, folds = 10, runs = 20, ...)
 }
 \arguments{
 \item{fitted_model}{(lm or glm) The fitted model.}
@@ -20,6 +20,8 @@ MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
 \item{kfold}{(log scalar) Whether to also calculate a k fold cross-validated r2 value (default true).}
 
 \item{folds}{(num scalar) The number of folds to use if using cross-validation.}
+
+\item{runs}{(int scalar) The number of runs to use for cross-validation. Default is 20.}
 
 \item{...}{(other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.}
 }

@@ -132,6 +132,7 @@ lm_beta_matrix = MOD_APSLM
 #' @param standardize (log scalar) Whether to report standardized betas (default true).
 #' @param kfold (log scalar) Whether to also calculate a k fold cross-validated r2 value (default true).
 #' @param folds (num scalar) The number of folds to use if using cross-validation.
+#' @param runs (int scalar) The number of runs to use for cross-validation. Default is 20.
 #' @param ... (other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.
 #' @export MOD_summary lm_CI
 #' @aliases lm_CI
@@ -144,7 +145,7 @@ lm_beta_matrix = MOD_APSLM
 #' MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
 #' MOD_summary(fit2, standardize = F) #std data., don't std. betas
 #' MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
-MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, ...) {
+MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
   library(magrittr)
 
   #fetch data
@@ -181,7 +182,7 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
 
     #cross validate?
     if (kfold) {
-      model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, ...)[2])
+      model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, runs = runs, ...)[2])
       names(model_meta) = c("N", "R2", "R2 adj.", "R2 " + folds + "-fold cv")
     }
 
