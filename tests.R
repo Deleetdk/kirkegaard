@@ -300,7 +300,7 @@ stopifnot({
 
 # FA_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F))
+t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(5, 1)

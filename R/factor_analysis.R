@@ -463,32 +463,37 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' Repeated splithalf reliability with factor analysis
 #'
 #' Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
-#' @param df (data.frame) The data.
+#' @param data (data.frame or matrix) The data.
 #' @param runs (integer scalar) The number of runs to do.
 #' @param save_scores (boolean scalar) Whether to save scores. Default=F.
-#' @param ... Extra parameters to pass to fa().
-#' @keywords ggplot2, plot, density, histogram
+#' @param messages (lgl scalar) Whether to display messages, default yes.
+#' @param progress (lgl scalar) Whether to display progress bar, default yes.
+#' @param ... Extra parameters to pass to psych::fa().
 #' @export
 #' @examples
-#' hist(FA_splitsample_repeat(iris[-5]))
-FA_splitsample_repeat = function(df, runs = 100, save_scores = F, messages = TRUE, ...){
+#' FA_splitsample_repeat(iris[-5]))
+FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T, progress = T, ...){
   library(psych)
   library(stringr)
 
+  #rename input
+  df = data; rm(data)
+
   #input test
-  if (!class(df) %in% c("data.frame", "matrix")) stop("df was not a data.frame or matrix")
+  if (!inherits(df, c("data.frame", "matrix"))) stop("data was not a data.frame or matrix", call. = F)
   df = as.data.frame(df)
 
   #missing values?
-  if (any(is.na(df))) warning("cases with missing values were removed")
+  if (any(is.na(df))) if (messages) messages("Cases with missing values were removed.")
   df = na.omit(df)
 
   #results
   results_scores = list()
 
   #loop
+  if (progress) pb <- txtProgressBar(min = 1, max = runs, initial = 1, style = 3)
   for (run in 1:runs){
-    if (messages) message(str_c("run ", run, " of ", runs))
+    if (progress) setTxtProgressBar(pb, value = run)
 
     #reorder df
     df = sample(df) #reorder at random
@@ -514,6 +519,7 @@ FA_splitsample_repeat = function(df, runs = 100, save_scores = F, messages = TRU
     if (save_scores) results_scores[[run]] = scores
     else results_scores[[run]] = cor(scores)[1, 2]
   }
+  if (progress) close(pb)
 
   #simplify to vector if just saving correlations
   if(!save_scores) results_scores = data.frame(r = unlist(results_scores))

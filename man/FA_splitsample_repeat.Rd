@@ -4,26 +4,26 @@
 \alias{FA_splitsample_repeat}
 \title{Repeated splithalf reliability with factor analysis}
 \usage{
-FA_splitsample_repeat(df, runs = 100, save_scores = F, messages = TRUE,
-  ...)
+FA_splitsample_repeat(data, runs = 100, save_scores = F, messages = T,
+  progress = T, ...)
 }
 \arguments{
-\item{df}{(data.frame) The data.}
+\item{data}{(data.frame or matrix) The data.}
 
 \item{runs}{(integer scalar) The number of runs to do.}
 
 \item{save_scores}{(boolean scalar) Whether to save scores. Default=F.}
 
-\item{...}{Extra parameters to pass to fa().}
+\item{messages}{(lgl scalar) Whether to display messages, default yes.}
+
+\item{progress}{(lgl scalar) Whether to display progress bar, default yes.}
+
+\item{...}{Extra parameters to pass to psych::fa().}
 }
 \description{
 Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
 }
 \examples{
-hist(FA_splitsample_repeat(iris[-5]))
+FA_splitsample_repeat(iris[-5]))
 }
-\keyword{density,}
-\keyword{ggplot2,}
-\keyword{histogram}
-\keyword{plot,}
 
