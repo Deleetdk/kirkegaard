@@ -1086,6 +1086,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
   data = as.data.frame(data)
   if (!missing(pattern) & !missing("indices")) stop("Only one of indices or pattern can be given!")
   if (missing("pattern") & missing("indices")) indices = names(data)
+  if (!missing("indices")) is_(indices, class = c("character", "logical", "numeric"), error_on_false = T)
 
   #which cols?
   if (!missing("pattern")) {
