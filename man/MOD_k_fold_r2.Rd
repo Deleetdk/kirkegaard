@@ -4,7 +4,7 @@
 \alias{MOD_k_fold_r2}
 \title{Calculate k fold cross validated r2}
 \usage{
-MOD_k_fold_r2(lmfit, folds = 10, runs = 20, seed = 1)
+MOD_k_fold_r2(lmfit, folds = 10, runs = 20, seed = 1, progress = T)
 }
 \arguments{
 \item{lmfit}{(lm fit) A lm fit object.}
@@ -14,6 +14,8 @@ MOD_k_fold_r2(lmfit, folds = 10, runs = 20, seed = 1)
 \item{runs}{(int scalar) The number of runs (default 20).}
 
 \item{seed}{(int scalar) The seed for the random number generator (default 1). This ensures reproducible results.}
+
+\item{progress}{(lgl scalar) Whether to show a progress bar, default yes.}
 }
 \description{
 Using k fold cross-validation, estimate the true r2 in a new sample. This is better than using adjusted r2 values.

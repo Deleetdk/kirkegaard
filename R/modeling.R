@@ -620,13 +620,14 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 #' @param folds (whole number scalar) The number of folds to use (default 10).
 #' @param runs (int scalar) The number of runs (default 20).
 #' @param seed (int scalar) The seed for the random number generator (default 1). This ensures reproducible results.
+#' @param progress (lgl scalar) Whether to show a progress bar, default yes.
 #' @export
 #' @examples
 #' fit = lm("Petal.Length ~ Sepal.Length", data = iris) #a fit
 #' fit_wtd = lm("Petal.Length ~ Sepal.Length", data = iris, weight = Sepal.Width) #with weights
 #' MOD_k_fold_r2(fit) #raw r2 and cv r2
 #' MOD_k_fold_r2(fit_wtd) #different r2 due to weights
-MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
+MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = T) {
   library(magrittr)
 
   #get data
@@ -635,7 +636,9 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
   #seed
   if (!is.na(seed)) set.seed(seed)
 
+  if (progress) pb <- txtProgressBar(min = 1, max = runs, initial = 1, style = 3)
   v_runs = sapply(1:runs, FUN = function(run) {
+    if (progress) setTxtProgressBar(pb, value = run)
     #Randomly shuffle the data
     data2 = data[sample(nrow(data)), ]
 
@@ -651,7 +654,6 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
 
     #Perform n fold cross validation
     sapply(1:folds, function(i) {
-
 
       #Segement your data by fold using the which() function
       test_idx = which(folds_idx == i, arr.ind = TRUE)
@@ -681,6 +683,7 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1) {
     }) %>%
       mean(, na.rm=T)
   })
+  if (progress) close(pb)
 
   #return
   c("raw_r2" = summary(lmfit)$r.squared, "cv_r2" = mean(v_runs, na.rm=T))
