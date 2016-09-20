@@ -468,16 +468,20 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' @param save_scores (boolean scalar) Whether to save scores. Default=F.
 #' @param messages (lgl scalar) Whether to display messages, default yes.
 #' @param progress (lgl scalar) Whether to display progress bar, default yes.
+#' @param seed (num scalar) Seed to use for reproducible results. Default=1.
 #' @param ... Extra parameters to pass to psych::fa().
 #' @export
 #' @examples
-#' FA_splitsample_repeat(iris[-5]))
-FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T, progress = T, ...){
+#' FA_splitsample_repeat(iris[-5])
+FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T, progress = T, seed = 1, ...) {
   library(psych)
   library(stringr)
 
   #rename input
   df = data; rm(data)
+
+  #seed
+  set.seed(seed)
 
   #input test
   if (!inherits(df, c("data.frame", "matrix"))) stop("data was not a data.frame or matrix", call. = F)

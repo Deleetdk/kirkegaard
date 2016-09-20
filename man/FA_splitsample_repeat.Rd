@@ -5,7 +5,7 @@
 \title{Repeated splithalf reliability with factor analysis}
 \usage{
 FA_splitsample_repeat(data, runs = 100, save_scores = F, messages = T,
-  progress = T, ...)
+  progress = T, seed = 1, ...)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data.}
@@ -18,12 +18,14 @@ FA_splitsample_repeat(data, runs = 100, save_scores = F, messages = T,
 
 \item{progress}{(lgl scalar) Whether to display progress bar, default yes.}
 
+\item{seed}{(num scalar) Seed to use for reproducible results. Default=1.}
+
 \item{...}{Extra parameters to pass to psych::fa().}
 }
 \description{
 Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
 }
 \examples{
-FA_splitsample_repeat(iris[-5]))
+FA_splitsample_repeat(iris[-5])
 }
 
