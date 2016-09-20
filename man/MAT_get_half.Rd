@@ -17,10 +17,7 @@ MAT_get_half(x, lower = T, diag = F)
 Returns a vector with the values in one half of the matrix. Which half and whether diagonal values are included can be specified.
 }
 \examples{
-MAT_get_half()
+cor(iris[-5]) #can't summarize this data due to diagonal
+MAT_get_half(cor(iris[-5])) #this data we can
 }
-\keyword{half}
-\keyword{lower,}
-\keyword{matrix,}
-\keyword{upper,}
 

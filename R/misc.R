@@ -95,6 +95,7 @@ get_dims = function(x) {
 #' n
 copy_names = function(x, y, partialmatching = T) {
   library(stringr)
+
   #find object dimensions
   x_dims = get_dims(x)
   y_dims = get_dims(y)
@@ -116,10 +117,11 @@ copy_names = function(x, y, partialmatching = T) {
   #if using partial matching and dimensions match in number
   if (same_n_dimensions && partialmatching) {
     #loop over each dimension
-    for (dim in 1:length(dimnames(x))) {
+    for (dim in seq_along(dimnames(x))) {
       #do lengths match?
-      if (x_dims[dim] == y_dims[dim]) {
-        dimnames(y)[[dim]] = dimnames(x)[[dim]]
+      if (are_equal(x_dims[dim], y_dims[dim])) {
+        trial = try({dimnames(y)[[dim]] = dimnames(x)[[dim]]}, silent = T)
+        if (is_error(trial)) dimnames(y)[[dim]] = seq_along(dimnames(y)[[dim]])
       }
     }
   }
@@ -127,8 +129,6 @@ copy_names = function(x, y, partialmatching = T) {
   #assign in the outer envir
   assign(y_obj_name, value = y, envir = parent.frame())
 }
-
-
 
 
 #' Fill in values in a vector

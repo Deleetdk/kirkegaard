@@ -62,10 +62,10 @@ MAT_vector2full = function(x, diag = FALSE, byrow = FALSE, diag_value = 0) {
 #' @param x A matrix or matrix-coercable object.
 #' @param lower Whether to extract the lower half. Defaults to T. If F, then the upper half is extracted.
 #' @param diag Whether the diagonal values should be included or not. Defaults to F.
-#' @keywords matrix, lower, upper, half
 #' @export
 #' @examples
-#' MAT_get_half()
+#' cor(iris[-5]) #can't summarize this data due to diagonal
+#' MAT_get_half(cor(iris[-5])) #this data we can
 MAT_get_half = function(x, lower = T, diag = F) {
   #coerce to matrix
   x = as.matrix(x)
@@ -79,4 +79,46 @@ MAT_get_half = function(x, lower = T, diag = F) {
 
   #return
   return(x)
+}
+
+
+#' Divide a matrix or df row-wise by a vector
+#'
+#' The default use of / divides column-wise, but sometimes row-wise is needed. This function restores the dimnames.
+#' @param data (mat or df) Data to divide.
+#' @param divisor (num/int vectr) Divisor to use.
+#' @export
+#' @return Returns a data.frame/matrix with the orignal dimnames.
+#' @examples
+#' m = matrix(1:10, ncol=2)
+#' m
+#' m/c(1, 2) #divide column-wise
+#' MAT_divide_rowwise(m, c(1, 2)) #row-wise
+#' #works on data.frames too
+#' MAT_divide_rowwise(iris[-5], c(1, 999, 1, 999)) %>% head
+MAT_divide_rowwise = function(data, divisor) {
+  #check input
+  is_(data, class = c("data.frame", "matrix"), error_on_false = T)
+  is_(divisor, class = c("numeric", "integer"), error_on_false = T)
+
+  #divide
+  #sensible method
+  # d2 = data %>%
+  #   t %>%
+  #   divide_by(divisor) %>%
+  #   t %>%
+  #   as.data.frame
+
+  #fastest but unclear
+  #http://stackoverflow.com/questions/20596433/how-to-divide-each-row-of-a-matrix-by-elements-of-a-vector-in-r
+  d2 = (as.matrix(data) %*% diag(1/divisor))
+
+  #set names
+  copy_names(data, d2)
+
+  #if data.frame
+  if (is.data.frame(data)) d2 = as.data.frame(d2)
+
+  #return
+  d2
 }
