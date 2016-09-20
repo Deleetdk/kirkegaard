@@ -4,12 +4,12 @@
 \alias{GG_denhist}
 \title{Histogram with an empirical density curve and a vertical line at the mean}
 \usage{
-GG_denhist(df, var, vline = "mean", binwidth = NULL, group)
+GG_denhist(data, var, vline = "mean", binwidth = NULL, group)
 }
 \arguments{
-\item{df}{(data.frame or something coercible into) A data.frame with variables.}
+\item{data}{(data.frame or something coercible into) A data.frame with variables.}
 
-\item{var}{(chr sclr) The name of the variable to use. Not needed if df is a vector.}
+\item{var}{(chr sclr) The name of the variable to use. Not needed if data is a vector. Not needed if data has 1 column.}
 
 \item{vline}{(chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.}
 
@@ -23,5 +23,9 @@ Plots a histogram with an empirical density curve and a vertical line at the mea
 \examples{
 GG_denhist(iris, "Sepal.Length") #plot overall distribution
 GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
+#also accepts vectors
+GG_denhist(iris[[1]])
+#also accepts 1-column data.frames, but throws a warning
+GG_denhist(iris[1])
 }
 
