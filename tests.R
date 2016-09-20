@@ -1596,18 +1596,32 @@ stopifnot({
 
 
 
-# df_rename_vars -----------------------------------------------------
+# df_rename -----------------------------------------------------
+
+iris_copy1 = names(df_rename(iris, "Species", "SPECIES"))
+iris_copy2 = names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
 
 stopifnot({
-  (df_rename_vars(iris, current_names = "Sepal.Length", new_names = "Sepal_length") %>% colnames()) == c("Sepal_length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")
-  (df_rename_vars(iris, current_names = colnames(iris) %>% rev(), new_names = letters[1:5]) %>% colnames()) == letters[1:5]
+  #one
+  names(iris_copy1) == c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width",
+                         "SPECIES")
+  #two
+  names(iris_copy2) == c("SEPAL_LENGTH", "Sepal.Width", "Petal.Length", "Petal.Width",
+                         "SPECIES")
 })
 
 
-# df_remove_vars ----------------------------------------------------------
+# df_remove ----------------------------------------------------------
 
 stopifnot({
-  df_remove_vars(iris, "Species") == iris[-5]
+  #one
+  all(df_remove(iris, "Species") == iris[-5])
+  #two
+  all(names(df_remove(iris, c("Sepal.Length", "Species"))) == names(iris[-c(1, 5)]))
+  #remove same twice?
+  silence(all(df_remove(iris, c("Species", "Species")) == iris[-5]))
+  #remove all
+  are_equal(df_remove(iris, names(iris)), iris[-c(1:5)])
 })
 
 

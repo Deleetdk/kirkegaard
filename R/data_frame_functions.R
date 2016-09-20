@@ -906,55 +906,89 @@ add_id = df_add_id
 #' @param data (data.frame) The data.frame.
 #' @param current_names (chr vector) The current names of the variables.
 #' @param new_names (chr scalar) The new names of the variables.
-#' @export
+#' @export df_rename df_rename_vars
+#' @aliases df_rename_vars
 #' @examples
-#' names(df_rename_vars(iris, "Sepal.Length", "Sepal_Length")) #rename one variable
-#' names(df_rename_vars(iris, c("Sepal.Length", "Sepal.Width"), c("Sepal_Length", "Sepal_Width"))) #rename multiple variables
-df_rename_vars = function(data, current_names, new_names) {
+#' #rename one variable
+#' names(df_rename(iris, "Sepal.Length", "Sepal_Length"))
+#' #rename multiple variables
+#' names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
+#' #randomly rename iris
+#' df_rename(iris, current_names = names(iris), new_names = rev(names(iris)[sample(1:5)])) %>% names
+df_rename = function(data, current_names, new_names) {
   library(magrittr)
 
-  #data.frame input
-  data = as.data.frame(data)
-  #check that input are character vectors
-  if (!(is.character(current_names) & is.character(new_names))) {
-    stop("Both current_names and new_names must be character vectors!")
-  }
+  #check input
+  is_(data, class="data.frame", error_on_false = T)
+  is_(current_names, class="character", error_on_false = T)
+  is_(new_names, class="character", error_on_false = T)
+
   #check that lengths match
   if (length(current_names) != length(new_names)) {
     stop("The vectors of names must be equally long!")
   }
+
+  #check not too long
+  if (any(duplicated(current_names))) stop("There were duplicate names in current_names!")
+  if (any(duplicated(new_names))) stop("There were duplicate names in new_names!")
+
   #check if variables exist
-  sapply(current_names, function(name) {
-    if (!name %in% colnames(data)) {
-      stop("The variable " + name + " was not in the data.frame!")
-    }
+  sapply(current_names, function(x) {
+    if (!x %in% names(data)) stop(sprintf("%s was not in the data!", x))
   })
 
   #main loop
+  old_names = names(data)
   for (i in seq_along(current_names)) {
-    #current position
-    colnames(data)[i] = new_names[i]
+    # browser()
+    cur = current_names[i]
+    new = new_names[i]
+    pos = which(old_names == cur)
+
+    #rename
+    names(data)[pos] = new
   }
 
+  #return
   data
 }
+df_rename_vars = df_rename
 
 
-#' Rename variables from a data.frame by name
+
+#' Remove variables from a data.frame
 #'
-#' Remove variables from a data.frame by name.
-#' @param data (data.frame) The data.frame.
-#' @param names (chr vector) The variables to remove.
-#' @export
+#' Remove variables from a data.frame by name, position or logical.
+#' @param data (data.frame) A data.frame.
+#' @param vars (vector) The variables to remove. Can be logical, character or integer.
+#' @export df_remove_vars df_remove
+#' @aliases df_remove_vars
 #' @examples
-#' str(df_remove_vars(iris, c("Sepal.Length", "Species")))
-df_remove_vars = function(data, names) {
-  for (name in names) {
-    data[[name]] = NULL #remove
+#' #remove two variables by name
+#' #does not work in base r by expected syntax:
+#' #iris[-c("Sepal.Length", "Species")]
+#' names(df_remove(iris, c("Sepal.Length", "Species")))
+df_remove = function(data, vars) {
+  #check input
+  is_(data, class = "data.frame", error_on_false = T)
+  is_(vars, class = c("character", "logical", "numeric"), error_on_false = T)
+
+  #convert vars to names
+  if (is.numeric(vars)) vars = names(data)[vars]
+  if (is.logical(vars)) vars = names(data)[vars]
+
+  #loop over and remove
+  for (var in vars) {
+    #not there or already removed?
+    if (is.null(data[[var]])) warning(sprintf("Variable %s was either removed twice or was not there to begin with.", var))
+    #remove
+    data[[var]] = NULL
   }
 
   data
 }
+df_remove_vars = df_remove
+
 
 #' Reorder columns in a data.frame by name
 #'
