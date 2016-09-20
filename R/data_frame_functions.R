@@ -1139,7 +1139,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 #' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
 #' @param df (data.frame) A data.frame.
 #' @return A transposed data.frame.
-#' @export t_df df_t
+#' @export df_t t_df
 #' @aliases t_df
 #' @examples
 #' df_t(iris)
@@ -1240,8 +1240,6 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
 #' @param pattern (chr sclr) The regex pattern to group variables by.
 #' @return A list of integer vectors. Each vector is the indices of the variables that belong to each group.
 #' @export
-#' @examples
-#'
 group_by_pattern = function(x, pattern) {
   library(stringr)
 
@@ -1269,4 +1267,50 @@ group_by_pattern = function(x, pattern) {
   l_memberships
 }
 
+#' Subset by pattern
+#'
+#' Subset a data.frame or matrix by a pattern in the column names. A simple wrapper using str_detect().
+#'
+#' Subsets using [] and with drop=FALSE.
+#' @param data (data.frame or matrix) Object to subset.
+#' @param pattern (character scalar) A regex pattern.
+#' @param inverse (logical scalar) Whther to keep the non-matches instead.
+#' @return Returns the subset of the object.
+#' @export df_subset_by_pattern subset_by_pattern
+#' @aliases subset_by_pattern
+#' @examples
+#' df_subset_by_pattern(iris, "Length") # length columns
+#' df_subset_by_pattern(iris, "Length", T) # non-length columns
+df_subset_by_pattern = function(data, pattern, inverse = FALSE) {
+  library(stringr)
+
+  if (!inverse) return(data[, str_detect(colnames(data), as.character(pattern)), drop = FALSE])
+  if (inverse) return(data[, !str_detect(colnames(data), as.character(pattern)), drop = FALSE])
+}
+subset_by_pattern = df_subset_by_pattern
+
+#' Remove NA columns
+#'
+#' Detect variables with no data in a data.frame and remove them. Can be given a vector of names or indices of columns to keep no matter what.
+#' @param data (data.frame) Data to subset.
+#' @param keep (num or chr vector) A vector of names of columns to keep no matter what. Can also be numeric indices which are then replaced with the colnames.
+#' @return Returns the subset of the object.
+#' @export remove_NA_vars df_remove_NA_vars
+#' @aliases remove_NA_vars
+df_remove_NA_vars = function(data, keep) {
+  #keep vector
+  if (missing("keep")) keep = ""
+  keep = sapply(keep, FUN = function(i) {
+    #if its a number string
+    if (!is.na(as.numeric(i))) {
+      colnames(data)[i] #convert to the nth colname
+    }
+  })
+
+  v_remove = sapply(data, FUN = function(x) {
+    all(is.na(x))
+  })
+  data[!v_remove | colnames(data) %in% keep]
+}
+remove_NA_vars = df_remove_NA_vars
 

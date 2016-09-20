@@ -17,7 +17,4 @@ A list of integer vectors. Each vector is the indices of the variables that belo
 \description{
 Determines groups of strings using a regex pattern.
 }
-\examples{
-
-}
 

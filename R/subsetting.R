@@ -167,46 +167,4 @@ extract_last = function(x, margin_1, margin_2, drop = FALSE) {
 }
 
 
-#' Subset by pattern
-#'
-#' Subset a data.frame or matrix by a pattern in the column names. A simple wrapper using str_detect().
-#'
-#' Subsets using [] and with drop=FALSE.
-#' @param data (data.frame or matrix) Object to subset.
-#' @param pattern (character scalar) A regex pattern.
-#' @param inverse (logical scalar) Whther to keep the non-matches instead.
-#' @return Returns the subset of the object.
-#' @export
-#' @examples
-#' subset_by_pattern(iris, "Length") # length columns
-#' subset_by_pattern(iris, "Length", T) # non-length columns
-subset_by_pattern = function(data, pattern, inverse = FALSE) {
-  library(stringr)
 
-  if (!inverse) return(data[, str_detect(colnames(data), as.character(pattern)), drop = FALSE])
-  if (inverse) return(data[, !str_detect(colnames(data), as.character(pattern)), drop = FALSE])
-}
-
-
-#' Remove NA columns
-#'
-#' Detect variables with no data in a data.frame and exclude them. Can be given a vector of names or indices of columns to keep no matter what.
-#' @param data (data.frame) Object to subset.
-#' @param keep (num or chr vector) A vector of names of columns to keep no matter what. Can also be numeric indices which are then replaced with the colnames.
-#' @return Returns the subset of the object.
-#' @export
-remove_NA_vars = function(data, keep) {
-  #keep vector
-  if (missing("keep")) keep = ""
-  keep = sapply(keep, FUN = function(i) {
-    #if its a number string
-    if (!is.na(as.numeric(i))) {
-      colnames(data)[i] #convert to the nth colname
-    }
-  })
-
-  v_remove = sapply(data, FUN = function(x) {
-    all(is.na(x))
-  })
-  data[!v_remove | colnames(data) %in% keep]
-}

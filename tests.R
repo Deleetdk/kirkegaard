@@ -63,11 +63,11 @@ stopifnot({
 })
 
 
-# std_df ------------------------------------------------------------------
+# df_standardize ------------------------------------------------------------------
 set.seed(1)
-l_t = list(t1 = std_df(iris, messages = F),
-           t2 = std_df(iris, exclude_factors = F, messages = F),
-           t3 = std_df(iris, w = runif(150), messages = F))
+l_t = list(t1 = df_standardize(iris, messages = F),
+           t2 = df_standardize(iris, exclude_factors = F, messages = F),
+           t3 = df_standardize(iris, w = runif(150), messages = F))
 
 stopifnot({
   #inequalities
@@ -122,7 +122,7 @@ if (!Sys.info()['sysname'] == "Linux") {
 fit = lm("Petal.Length ~ Species", data = iris)
 
 stopifnot({
-  round(MOD_k_fold_r2(fit), 5) - round(c(0.9413717, 0.9380666), 5) == 0
+  round(MOD_k_fold_r2(fit, progress = F), 5) - round(c(0.9413717, 0.9380666), 5) == 0
 })
 
 
@@ -136,49 +136,49 @@ stopifnot(lm_best(t) == 4)
 
 #fit two models
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df(messages = F))
+fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% df_standardize(messages = F))
 
 #weights
 v_weights = runif(150, 1, 10)
 fit3 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris, weights = v_weights)
-fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", std_df(iris), weights = v_weights))
+fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", df_standardize(iris), weights = v_weights))
 fit4 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris)
-fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris, messages = F))
+fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = df_standardize(iris, messages = F))
 fit5 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris, weights = 1:150)
-fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = std_df(iris, messages = F), weights = 1:150)
+fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = df_standardize(iris, messages = F), weights = 1:150)
 
 #missing data
-fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary()
-fit6_miss = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris)) %>% MOD_summary()
-fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris), weight = Sepal.Length) %>% MOD_summary()
+fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary(progress = F)
+fit6_miss = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris)) %>% MOD_summary(progress = F)
+fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris), weight = Sepal.Length) %>% MOD_summary(progress = F)
 
 #glm
 fit7_c = glm("Sepal.Length ~ Sepal.Width + Species", iris, family = gaussian())
-fit7_c_std = glm("Sepal.Length ~ Sepal.Width + Species", std_df(iris, messages = F), family = gaussian())
+fit7_c_std = glm("Sepal.Length ~ Sepal.Width + Species", df_standardize(iris, messages = F), family = gaussian())
 
 iris2 = mutate(iris, virginica = as.factor(Species == "virginica"))
 fit7_d = glm("virginica ~ Sepal.Width + Sepal.Length", iris2, family = binomial())
-fit7_d_std = glm("virginica ~ Sepal.Width + Sepal.Length", std_df(iris2, messages = F), family = binomial())
+fit7_d_std = glm("virginica ~ Sepal.Width + Sepal.Length", df_standardize(iris2, messages = F), family = binomial())
 
 stopifnot({
   #then we test and make sure all the numbers are right
-  MOD_summary(fit1, standardize = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
-  MOD_summary(fit1, standardize = T)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
-  MOD_summary(fit2, standardize = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
-  MOD_summary(fit2, standardize = T)$coefs$Beta == c(.31, 1.01) #std data., std. betas
+  MOD_summary(fit1, standardize = F, progress = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
+  MOD_summary(fit1, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
+  MOD_summary(fit2, standardize = F, progress = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
+  MOD_summary(fit2, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #std data., std. betas
 
   #weights
-  MOD_summary(fit3)$coef == MOD_summary(fit3_std, standardize = F)$coef
+  MOD_summary(fit3, progress = F)$coef == MOD_summary(fit3_std, standardize = F, progress = F)$coef
 
   #factor variable
-  MOD_summary(fit4)$coefs == MOD_summary(fit4_std, standardize = F)$coefs
+  MOD_summary(fit4, progress = F)$coefs == MOD_summary(fit4_std, standardize = F, progress = F)$coefs
 
   #factor variable and weights
-  MOD_summary(fit5)$coefs == MOD_summary(fit5_std, standardize = F)$coefs
+  MOD_summary(fit5, progress = F)$coefs == MOD_summary(fit5_std, standardize = F, progress = F)$coefs
 
   #glm
-  all(MOD_summary(fit7_c)$coefs == MOD_summary(fit7_c_std, standardize = F)$coefs, na.rm=T)
-  all(MOD_summary(fit7_d)$coefs == MOD_summary(fit7_d_std, standardize = F)$coefs, na.rm=T)
+  all(MOD_summary(fit7_c, progress = F)$coefs == MOD_summary(fit7_c_std, standardize = F, progress = F)$coefs, na.rm=T)
+  all(MOD_summary(fit7_d, progress = F)$coefs == MOD_summary(fit7_d_std, standardize = F, progress = F)$coefs, na.rm=T)
 })
 
 #check old name
