@@ -341,6 +341,8 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #' Plot multiple factor loadings in one plot.
 #'
 #' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
+#'
+#' Non-overlapping indicates are put in the bottom.
 #' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.
 #' @param fa_labels (chr vector) Names of the analyses. Defaults to fa.1, fa.2, etc..
 #' @param reverse_vector (num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
@@ -348,22 +350,35 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #' @export
 #' @examples
 #' library(psych)
-#' plot_loadings_multi(fa(iris[-5])) #extract a factor and reverse
+#' plot_loadings_multi(fa(iris[-5])) #extract a factor and plot
+#' #list of FAs
+#' fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
+#'                 part2 = fa(iris[51:100, -c(2, 5)]),
+#'                 part3 = fa(iris[101:150, -c(3, 5)]))
+#' #notice that it handles non-overlapping indicators
+#' plot_loadings_multi(fa_list2)
+#' #reorder by a particular FA
+#' plot_loadings_multi(fa_list2, reorder = 1)
 plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "mean") {
   library("stringr")
   library("ggplot2")
   library("plyr")
 
+
+  #how many?
   fa_num = length(fa_objects)
   fa_names = str_c("fa.", 1:fa_num)
-  if (!is.list(fa_objects)) {
-    stop("fa_objects parameter is not a list.")
-  }
+
+  #is fa_objects a single fa?
   if (all(class(fa_objects) %in% c("psych", "fa"))) {
     fa_objects = list(fa_objects)
     fa_num = length(fa_objects)
     fa_names = str_c("fa.", 1:fa_num)
+  } else {
+    is_(fa_objects, class = "list", error_on_false = T)
   }
+
+  #labels to use
   if (missing("fa_labels")) {
     if (!is.null(names(fa_objects))) {
       fa_labels = names(fa_objects)
@@ -372,15 +387,20 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
       fa_labels = fa_names
     }
   }
+
+  #if given labels, check their length
   if (length(fa_labels) != fa_num) {
     stop("Factor analysis labels length is not identical to number of analyses.")
   }
+
+  #check reverse_vector
   if (all(is.na(reverse_vector))) {
     reverse_vector = rep(1, fa_num)
-  }
-  else if (length(reverse_vector) != fa_num) {
+  } else if (length(reverse_vector) != fa_num) {
     stop("Length of reversing vector does not match number of factor analyses.")
   }
+
+  #extract data
   d = data.frame()
   for (fa.idx in 1:fa_num) {
     loads = fa_objects[[fa.idx]]$loadings * reverse_vector[fa.idx]
@@ -392,6 +412,8 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
       d = merge_datasets(d, loads, 1)
     })
   }
+
+  #reshape data to long form
   d2 = reshape(d, varying = 1:fa_num, direction = "long", ids = rownames(d))
   d2$time = as.factor(d2$time)
   d2$id = as.factor(d2$id)
@@ -400,6 +422,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
   #reorder factor?
   if (!is.na(reorder)) {
     if (reorder == "all") {
+      message("reorder = all is depreciated. You probably want to use reorder = mean")
       library("plotflow")
 
       silence({
@@ -407,7 +430,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
       })
     } else if (reorder == "mean") {
       v_aggregate_values = daply(d2, .(id), function(x) {
-        mean(x$fa)
+        mean(x$fa, na.rm=T)
       })
 
       #re-level
@@ -415,20 +438,21 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 
     } else if (reorder == "median") {
       v_aggregate_values = daply(d2, .(id), function(x) {
-        median(x$fa)
+        median(x$fa, na.rm=T)
       })
 
       #re-level
       d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
 
     } else {
+      # browser()
       d2_sub = d2[d2$time == reorder, ] #subset the analysis whose loading is to be used for the reorder
 
       #get vector of the chosen analysis
       v_values = d2_sub$fa; names(v_values) = d2_sub$id
 
       #re-level
-      d2$id = factor(d2$id, levels = names(sort(v_values, decreasing = F)))
+      d2$id = factor(d2$id, levels = names(sort(v_values, decreasing = F, na.last = F)))
     }
   }
 
@@ -449,6 +473,7 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 
   return(g)
 }
+
 
 
 #' ggplot2 with group means and error bars.

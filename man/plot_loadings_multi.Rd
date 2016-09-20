@@ -19,8 +19,19 @@ plot_loadings_multi(fa_objects, fa_labels, reverse_vector = NA,
 \description{
 Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
 }
+\details{
+Non-overlapping indicates are put in the bottom.
+}
 \examples{
 library(psych)
-plot_loadings_multi(fa(iris[-5])) #extract a factor and reverse
+plot_loadings_multi(fa(iris[-5])) #extract a factor and plot
+#list of FAs
+fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
+                part2 = fa(iris[51:100, -c(2, 5)]),
+                part3 = fa(iris[101:150, -c(3, 5)]))
+#notice that it handles non-overlapping indicators
+plot_loadings_multi(fa_list2)
+#reorder by a particular FA
+plot_loadings_multi(fa_list2, reorder = 1)
 }
 
