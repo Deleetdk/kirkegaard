@@ -5,10 +5,13 @@
 \alias{MOD_repeat_cv_glmnet}
 \title{Repeatedly run glmnet.cv()}
 \usage{
-MOD_LASSO(df, dependent, predictors, weights_ = NA, standardize = T,
-  runs = 100, alpha_ = 1, NA_ignore = T, messages = T, seed = 1)
+MOD_LASSO(data, dependent, predictors, weights_ = NA, standardize = T,
+  runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages = T,
+  progress = T)
 }
 \arguments{
+\item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}
+
 \item{dependent}{(chr scalar) The name of the dependent variable.}
 
 \item{predictors}{(chr vector) The names of the predictor variables.}
@@ -23,14 +26,17 @@ MOD_LASSO(df, dependent, predictors, weights_ = NA, standardize = T,
 
 \item{NA_ignore}{(log scalar) Whether to remove cases with missing data. Defaults to T.}
 
-\item{messages}{(log scalar) Whether to send messages to the user.}
-
 \item{seed}{(int scalar) The seed to use (default 1). For reproducible results.}
 
-\item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}
+\item{messages}{(log scalar) Whether to show messages. Default yes.}
+
+\item{progress}{(log scalar) Whether to show a progress bar. Default yes.}
 }
 \description{
 Returns a data frame of beta coefficients from glmnet.cv() fits.
+}
+\details{
+The messages parameter is depreceated in favor of the progress parameter.
 }
 \examples{
 MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])

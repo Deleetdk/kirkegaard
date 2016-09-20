@@ -1,0 +1,207 @@
+---
+title: "Optimal 1-to-1 string joirning"
+author: "Emil O. W. Kirkegaard"
+date: "19 sep 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Optimal string joining example
+In this example, we match up two vectors of strings in an optimal way using the **stringdist** package. This is a common task when working with sociological data at the country-level or for lower administrative divisions such as US states.
+
+First we load some libraries:
+
+```{r libs}
+# libs --------------------------------------------------------------------
+library(pacman)
+p_load(stringdist, reshape2, dplyr)
+```
+
+Then we make up some example data. I've picked five countries that have names that usually differ somewhat between Danish and English, sometimes not at all, and sometimes a lot.
+
+```{r data}
+# data --------------------------------------------------------------------
+#EN names
+EN = c("Denmark", "Norway", "USA", "Russia", "Germany")
+#DA names
+DA = c("Danmark", "Norge", "USA", "Rusland", "Tyskland")
+```
+
+Next we calculate the distances between strings across vectors and reshape the data a bit:
+
+```{r dists}
+# distances ----------------------------------------------------------------
+#matrix
+dst = stringdist::stringdistmatrix(EN, DA)
+#names
+rownames(dst) = EN; colnames(dst) = DA
+dst
+
+#conver to 2-column data.frame
+dst_df = melt(dst, c("EN", "DA"))
+dst_df
+
+#sort
+dst_df = dplyr::arrange(dst_df, value)
+dst_df
+
+#save copy
+dst_df_orig = dst_df
+```
+
+Finally, we loop around this object and pick the best matches one by one:
+
+```{r matchup}
+# match -------------------------------------------------------------------
+#storing best matches
+best_matches = matrix(nrow=0, ncol=3)
+
+#keep matching and removing pairs until we run out of data
+while (nrow(dst_df) > 0) {
+  #top value is always the best match because we sorted the data initially
+  best_matches = rbind(best_matches, dst_df[1, ])
+  
+  #remove rows with the same names
+  #i.e. keep only those that have non-identical names in both columns to the ones we saved
+  dst_df = dplyr::filter(dst_df, (!dst_df[1, 1] == dst_df[, 1]) & (!dst_df[1, 2] == dst_df[, 2]))
+}
+
+#view matches
+best_matches
+```
+
+As can be seen, all the pairs were matched up correctly. Even Germany which has a totally dissimilar name to the Danish one (which is related to the German and Dutch names: *Deutschland*, *Duitsland*). The reason is simply that it was the last pair in the dataset, so it got paired up no matter how distant. This can cause trouble if one ends up with two a group of names with no sensible matches, so beware of the matching produced.
+
+One can modify this setup so that it stops when distances becomes too large, like the *join* functions in the **fuzzyjoin** package. One can also use other string distance measures. Here we used the default one from **stringdist** package, but it has a number of other ones that may be more suitable.
+
+# A join function
+```{r exampledatasets, echo = F}
+d1 = structure(list(Province = c("Buenos Aires", "Buenos Aires City (DC)", 
+                                 "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", 
+                                 "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", 
+                                 "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", 
+                                 "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán"
+), European = c(0.76, 0.8, 0.5, 0.66, 0.54, 0.65, 0.69, 0.78, 
+                0.68, 0.31, 0.81, 0.5, 0.7, 0.71, 0.72, 0.69, 0.31, 0.62, 0.67, 
+                0.55, 0.8, 0.43, 0.55, 0.61)), .Names = c("Province", "European"
+                ), class = "data.frame", row.names = c(NA, -24L))
+
+d2 = structure(list(Province = c("Buenos Aires", "Catamarca", "Chaco", 
+                                 "Chubut", "Ciudad de Buenos Aires", "Cordoba", "Corrientes", 
+                                 "Entre Rios", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", 
+                                 "Misiones", "Neuquen", "Rio Negro", "Salta", "San Juan", "San Luis", 
+                                 "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", 
+                                 "Tucuman"), Latitude = c(34.92, 28.47, 27.45, 43.3, 34.6, 31.42, 
+                                                          27.47, 31.74, 26.19, 24.19, 36.62, 29.41, 32.89, 27.36, 38.95, 
+                                                          40.81, 24.78, 31.54, 33.3, 51.62, 31.61, 27.78, 54.8, 26.81)), .Names = c("Province", 
+                                                                                                                                    "Latitude"), class = "data.frame", row.names = c(NA, -24L))
+```
+
+Finally, an example implementation of the above system using **stringdist** and **dplyr** as the main workhorses. Our test tables consist of partial, but real dataset from [my latest project on Argentina](https://osf.io/etuy8/):
+
+```{r argentina_data}
+d1
+d2
+```
+
+We see that the names generally, but not entirely match up. There are some missing diacritics and the capital has divergent names. The join function looks like this:
+
+```{r joinfunction}
+stringdist_optimal_join = function(x, y, x_col, y_col, preview = F, ...) {
+  library(reshape2); library(dplyr); library(fuzzyjoin); library(kirkegaard)
+  #devtools::install_github("deleetdk/kirkegaard")
+  
+  #check x, y
+  is_(x, class = "data.frame", error_on_false = T)
+  is_(y, class = "data.frame", error_on_false = T)
+  is_(preview, class = "logical", error_on_false = T)
+  
+  if (missing(x_col) & missing(y_col)) {
+    #extract vctrs
+    x_names = rownames(x)
+    y_names = rownames(y)
+    message("x_col or y_col not given, using rownames from both")
+  } else {
+    #extract vctrs
+    x_names = x[[x_col]]
+    y_names = y[[y_col]]
+  }
+
+  #check factors
+  if (is.factor(x_names)) {
+    x_names %<>% as.character()
+    warning("x input has a fctr column. This was converted to a chr column.")
+  }
+  if (is.factor(y_names)) {
+    y_names %<>%  as.character()
+    warning("y input has a fctr column. This was converted to a chr column.")
+  }
+  
+  #check duplicates
+  if (any(duplicated(x_names))) stop("Duplicate names in x!")
+  if (any(duplicated(y_names))) stop("Duplicate names in y!")
+  
+  #distances
+  dst = stringdist::stringdistmatrix(x_names, y_names, ...)
+  
+  #names
+  rownames(dst) = x_names; colnames(dst) = y_names
+
+  #conver to 2-column data.frame
+  dst_df = melt(dst, c("x", "y"))
+
+  #sort
+  dst_df = dplyr::arrange(dst_df, value)
+
+  #storing best matches
+  best_matches = matrix(nrow=0, ncol=3)
+  
+  #keep matching and removing pairs until we run out of data
+  while (nrow(dst_df) > 0) {
+    #top value is always the best match because we sorted the data initially
+    best_matches = rbind(best_matches, dst_df[1, ])
+    
+    #remove rows with the same names
+    #i.e. keep only those that have non-identical names in both columns to the ones we saved
+    dst_df = dplyr::filter(dst_df, (!dst_df[1, 1] == dst_df[, 1]) & (!dst_df[1, 2] == dst_df[, 2]))
+  }
+  
+  #return just match info?
+  if (preview) return(best_matches)
+  
+  #make rownames to reorder with
+  rownames(x) = x_names
+  rownames(y) = y_names
+  
+  #reorder x, y
+  x = x[best_matches$x, ]
+  y = y[best_matches$y, ]
+  
+  #insert matching columns
+  x$..names = best_matches$x
+  y$..names = best_matches$x
+  
+  #join
+  d_out = dplyr::full_join(x, y, by = c("..names" = "..names"))
+  
+  #remove matching columns
+  d_out$..names = NULL
+  
+  #insert stringdist value
+  d_out$.stringdist = best_matches$value
+  
+  #return
+  d_out
+}
+
+```
+
+And then we join the tables:
+
+```{r testjoin}
+stringdist_optimal_join(d1, d2, "Province", "Province")
+```
+

@@ -1,0 +1,76 @@
+---
+title: "Joining tables of political units data using ISO names"
+author: "Emil O. W. Kirkegaard"
+date: "19 sep 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Standardized names of political units
+Working with data about political units -- countries, states, counties, communes, provinces, regions, etc. -- is a bit of a nightmare. The names of the units frequently have variations and so one has to either be clever or spend a lot of time manually matching them up. Such work is error-prone and demotivating, so we want to be smart instead. The solution is standardization. However, since we cannot get people to agree to use the same spellings of everything, especially people who speak different languages, we have to go to the next level: abbreviations. There are already ISO abbreviations for political units ([ISO-3166](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3)), but I'm not aware of any R way to use them efficiently. So I developed my own method. It consists of two things: a large dataset of names of political units and the matching abbreviations (currently based on 3166-1 alpha-3, but I should switch to 3166-2 which already has all the first-level administrative divisions of all countries in the world, N=3600), and a clever function for working with them. Let's see some examples:
+
+```{r setup2, echo=F, message=F}
+v_argentinian_provinces = c("Buenos Aires", "Buenos Aires City (DC)", "Catamarca", "Chaco", 
+"Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", 
+"La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", 
+"Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", 
+"Tierra del Fuego", "Tucumán")
+
+library(kirkegaard)
+```
+
+
+```{r pu_argentina1, error=TRUE}
+#try an Argentinian provinces
+v_argentinian_provinces
+pu_translate(v_argentinian_provinces, messages = 2)
+```
+
+Here we get an error because the name we are trying to translate to an abbreviation matches multiple candidates and the algorithm doesn't konw which one to pick. But since we know that these are all Argentinian units, we can limit our search to Argentinian units:
+
+```{r pu_argentina2}
+#limit to Argentinian political units
+pu_translate(v_argentinian_provinces, messages = 2, superunit = "ARG")
+```
+
+And we get the right results. What about translating back into names from abbreviations? We can do that too. There is support for multiple languages, but by default the top name for that abbreviation in the dataset is used which is the preferred English one. If it can't find a local variant, it defaults to the English one. In many cases, these are the same:
+
+```{r pu_back}
+#translate back names
+v_abbrevs = c("DNK", "THA", "USA", "GBR", "SWE", "NOR", "DEU", "VEN", "TUR", "NLD")
+
+#transback back in EN
+pu_translate(v_abbrevs, messages = 2, reverse = T)
+
+#transback back in DA
+pu_translate(v_abbrevs, messages = 2, reverse = T, lang = "da")
+```
+
+One can comebine the two methods to standardize names, i.e. change all name variants to the standard spellling. Here I've mixed Danish, Italian and some less common English variants:
+
+```{r pu_standardize}
+#standardize names
+v_odd_names = c("Danmark", "Viet Nam", "Belgia", "Bolivia, Plurinational State of")
+pu_translate(v_odd_names, messages = 2, standardize_name = T)
+```
+
+What if there is no exact match in the dataset? We default back to fuzzy matcthing using the **stringdist** package. Let's try some almost right names:
+
+```{r pu_fuzzy1}
+v_notquiteright = c("USa", "Dnmark", "Viitnam", "Bolgium", "Boliviam")
+pu_translate(v_notquiteright, messages = 2)
+pu_translate(v_notquiteright, messages = 2, standardize_name = T)
+```
+
+And in each case we manage to get the right one. What happens if we punch our keyboards at random and try to get matches?
+
+```{r pu_fuzzy2, error=T}
+v_totallywrong = c("jinsa", "aska", "bombom!")
+pu_translate(v_totallywrong, messages = 2)
+```
+
+So even random strings can produce sensible matches. The function looks for trouble. If there's more than one match that's equally distant which gives inconsistent results, we get an error.
+

@@ -1,0 +1,8 @@
+name: Publish Document
+title:
+account: rpubs
+server: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/210669/ed2036f4af714c67b3ab1067110021b1
+bundleId: https://api.rpubs.com/api/v1/document/210669/ed2036f4af714c67b3ab1067110021b1
+url: http://rpubs.com/EmilOWK/210669
+when: 1474321906.28572

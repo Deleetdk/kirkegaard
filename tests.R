@@ -221,16 +221,16 @@ stopifnot({
 })
 
 
-# MOD_repeat_glmnet_cv ----------------------------------------------------
+# MOD_LASSO ----------------------------------------------------
 #using the iris dataset
-t = silence(MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F))
+t = silence(MOD_LASSO(iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F))
 stopifnot({
   dim(t) == c(5, 4)
   class(t) == "data.frame"
 })
 
 #weights
-t_w = silence(MOD_repeat_cv_glmnet(df = iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)), messages = F))
+t_w = silence(MOD_LASSO(iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, weights_ = runif(nrow(iris)), messages = F))
 
 
 # MOD_summarize_models ----------------------------------------------------
@@ -708,6 +708,12 @@ g_2 = plot_loadings_multi(fa_list, reorder = 2);g_2
 g_3 = plot_loadings_multi(fa_list, reorder = 3);g_3
 #monoanalysis
 g_4 = plot_loadings_multi(fa_list[[1]]);g_4
+
+#non-overlapping indicators
+fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
+                part2 = fa(iris[51:100, -c(2, 5)]),
+                part3 = fa(iris[101:150, -c(3, 5)]))
+plot_loadings_multi(fa_list2)
 
 stopifnot({
   sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))

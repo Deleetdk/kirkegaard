@@ -468,6 +468,8 @@ lm_best = function(model_list) {
 #' Repeatedly run glmnet.cv()
 #'
 #' Returns a data frame of beta coefficients from glmnet.cv() fits.
+#'
+#' The messages parameter is depreceated in favor of the progress parameter.
 #' @param data (data.frame) A data.frame with the data. Must contain dependent and predictor variables.
 #' @param dependent (chr scalar) The name of the dependent variable.
 #' @param predictors (chr vector) The names of the predictor variables.
@@ -476,16 +478,27 @@ lm_best = function(model_list) {
 #' @param runs (int scalar) Number of times to run. Defaults to 100.
 #' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
 #' @param NA_ignore (log scalar) Whether to remove cases with missing data. Defaults to T.
-#' @param messages (log scalar) Whether to send messages to the user.
+#' @param messages (log scalar) Whether to show messages. Default yes.
+#' @param progress (log scalar) Whether to show a progress bar. Default yes.
 #' @param seed (int scalar) The seed to use (default 1). For reproducible results.
 #' @export MOD_LASSO MOD_repeat_cv_glmnet
 #' @aliases MOD_repeat_cv_glmnet
 #' @examples
 #' MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
-MOD_LASSO = function(df, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, messages = T, seed = 1) {
-  #load lib
+MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages=T, progress=T) {
+  #load libs
   library(glmnet)
   library(stringr)
+
+  #check input
+  check_missing(c("data", "dependent", "predictors", "standardize", "runs", "alpha_", "NA_ignore"))
+  if (length(predictors) < 2) stop("There must be at least two predictors. This is a limitation of glmnet::glmnet.")
+  is_(data, class="data.frame", error_on_false = T)
+  is_(dependent, class="character", size = 1, error_on_false = T)
+  if (dependent %in% predictors) stop(sprintf("The dependent variable cannot be a predictor! %s was both", dependent))
+
+  #rename data
+  df = data; rm(data)
 
   #set seed
   if (!is.na(seed)) set.seed(seed)
@@ -512,20 +525,18 @@ MOD_LASSO = function(df, dependent, predictors, weights_ = NA, standardize = T, 
   }
 
   #standardize
-  df = df
   if (standardize) {
-    df = std_df(df, exclude = "weights_", messages = messages)
-    message("Data standardized.")
+    df = df_standardize(df, exclude = "weights_", messages = messages)
+    if (messages) message("Data standardized.")
   }
-
-  #fit lasso
 
   #save object
   results_df = data.frame(matrix(nrow = runs, ncol = 0))
 
   #loop
+  if (progress) pb <- txtProgressBar(min = 1, max = runs, initial = 1, style = 3)
   for (run in 1:runs) {
-    if (messages) message(str_c("Run ", run, " of ", runs))
+    if (progress) setTxtProgressBar(pb, value = run)
 
     #fit lasso
     fit_cv = cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix
@@ -542,13 +553,13 @@ MOD_LASSO = function(df, dependent, predictors, weights_ = NA, standardize = T, 
       results_df[run, pred_names[beta_idx]] = pred_betas[beta_idx] #save it
     }
   }
+  if (progress) close(pb)
 
   return(results_df)
 }
 
 #old name
 MOD_repeat_cv_glmnet = MOD_LASSO
-
 
 #' Summarize model coefficients
 #'
