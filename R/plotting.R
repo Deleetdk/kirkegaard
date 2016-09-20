@@ -1,8 +1,8 @@
 #' Histogram with an empirical density curve and a vertical line at the mean
 #'
 #' Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
-#' @param df (data.frame or something coercible into) A data.frame with variables.
-#' @param var (chr sclr) The name of the variable to use. Not needed if df is a vector.
+#' @param data (data.frame or something coercible into) A data.frame with variables.
+#' @param var (chr sclr) The name of the variable to use. Not needed if data is a vector. Not needed if data has 1 column.
 #' @param vline (chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.
 #' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
 #' @param group (chr sclr) The name of the grouping variable to use.
@@ -10,14 +10,26 @@
 #' @examples
 #' GG_denhist(iris, "Sepal.Length") #plot overall distribution
 #' GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
-GG_denhist = function(df, var, vline = "mean", binwidth = NULL, group) {
+#' #also accepts vectors
+#' GG_denhist(iris[[1]])
+#' #also accepts 1-column data.frames, but throws a warning
+#' GG_denhist(iris[1])
+GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
   library(ggplot2)
-  # browser()
+
   #input type
-  if (is_simple_vector(df)) {
-    var = deparse(substitute(df))
-    df = data.frame(df)
-    colnames(df) = var
+  if (is_simple_vector(data)) {
+    var = deparse(substitute(data))
+    data = data.frame(data)
+    colnames(data) = var
+  }
+
+  df = data; rm(data)
+
+  #1 column df
+  if (is.data.frame(df) & ncol(df) == 1 & missing("var")) {
+    var = names(df)
+    warning("received a data.frame but no var: used the only available column")
   }
 
   #check if var is in df
