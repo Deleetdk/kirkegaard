@@ -3,9 +3,10 @@
 \name{df_rowFunc}
 \alias{df_func}
 \alias{df_rowFunc}
-\title{Calculate summary statistics by row from multiple columns in a data.frame.}
+\title{Calculate summary statistics by rows in a data.frame.}
 \usage{
-df_rowFunc(..., standardize = F, func = mean, pattern, ignore_NA = T)
+df_rowFunc(..., standardize = F, func = mean, pattern, ignore_NA = T,
+  progress = "text")
 }
 \arguments{
 \item{...}{(data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.}
@@ -17,14 +18,15 @@ df_rowFunc(..., standardize = F, func = mean, pattern, ignore_NA = T)
 \item{pattern}{(string) A pattern to use for finding the columns names.}
 
 \item{ignore_NA}{(boolean) Whether to ignore missing data. Defaults to T.}
+
+\item{progress}{(chr scalar) Progress parameter passed to aaply. Default is text.}
 }
 \description{
-Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default. Can also subset columns from a data.frame using regex of the colnames.
+Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default.
 }
 \examples{
 df_rowFunc(iris[-5]) #get means by row
 all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
 df_rowFunc(iris[-5], func = median) #rowMedians
-df_rowFunc(iris, func = median, standardize = T, pattern = "Petal") #standardize all columns with "Petal", then get the rowMedians
 }
 

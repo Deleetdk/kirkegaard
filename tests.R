@@ -801,19 +801,16 @@ stopifnot({
 
 #tests
 t_list = list(
-  df_rowFunc(iris[1:4]),
-  df_rowFunc(iris[1], iris[2], iris[3], iris[4]),
-  df_rowFunc(iris[1:4], func = median),
-  df_rowFunc(iris[1:4], standardize = T),
-  df_rowFunc(iris[1:4], standardize = T, func = median),
-  df_rowFunc(iris, pattern = "al"),
-  df_rowFunc(iris, pattern = "al", func = median, standardize = T)
+  df_rowFunc(iris[1:4], progress = "text"),
+  df_rowFunc(iris[1], iris[2], iris[3], iris[4], progress = "none"),
+  df_rowFunc(iris[1:4], func = median, progress = "none"),
+  df_rowFunc(iris[1:4], standardize = T, progress = "none"),
+  df_rowFunc(iris[1:4], standardize = T, func = median, progress = "none")
 )
 
 #errors
 e_list = list(
-  try({df_rowFunc(iris)}, T),
-  try({df_rowFunc(iris, pattern = "sadaiasd")}, T)
+  try({df_rowFunc(iris)}, T)
 )
 
 #check
@@ -823,12 +820,12 @@ stopifnot({
 })
 
 
-# sort_df ---------------------------------------------------------------
-t1 = sort_df(iris, "Sepal.Length")
-t2 = sort_df(iris, "Sepal.Length", decreasing = T)
-t3 = sort_df(iris, 1)
-t4 = sort_df(iris, 2)
-t5 = sort_df(iris, 5)
+# df_sort ---------------------------------------------------------------
+t1 = df_sort(iris, "Sepal.Length")
+t2 = df_sort(iris, "Sepal.Length", decreasing = T)
+t3 = df_sort(iris, 1)
+t4 = df_sort(iris, 2)
+t5 = df_sort(iris, 5)
 
 stopifnot({
   cor(t1$Sepal.Length, t2$Sepal.Length) < -.9
@@ -1710,9 +1707,9 @@ stopifnot({
 
 stopifnot({
   last_value(1:3) == 3
-last_value(c(1:3, NA)) == 3
-is.na(last_value(c(1:3, NA), na.rm=F))
-is.na(last_value(rep(NA, 3)))
+  last_value(c(1:3, NA)) == 3
+  is.na(last_value(c(1:3, NA), na.rm=F))
+  is.na(last_value(rep(NA, 3)))
 })
 
 

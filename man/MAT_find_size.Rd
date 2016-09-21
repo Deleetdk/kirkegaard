@@ -15,11 +15,6 @@ MAT_find_size(x, diag = F)
 Returns a single number which is the length of the sides of the original matrix.
 }
 \examples{
-MAT_find_size()
+MAT_find_size(3)
 }
-\keyword{lower,}
-\keyword{matrix,}
-\keyword{size,}
-\keyword{symmetric,}
-\keyword{upper}
 

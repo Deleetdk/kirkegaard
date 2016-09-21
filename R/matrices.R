@@ -3,10 +3,9 @@
 #' Returns a single number which is the length of the sides of the original matrix.
 #' @param x The length of the vector of one half of the matrix.
 #' @param diag Whether the diagonal values are included or not. Defaults to F.
-#' @keywords matrix, size, symmetric, lower, upper
 #' @export
 #' @examples
-#' MAT_find_size()
+#' MAT_find_size(3)
 MAT_find_size = function(x, diag=F) {
   #this is based on the equations
   #k = length of
