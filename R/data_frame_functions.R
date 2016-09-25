@@ -557,7 +557,7 @@ residualize_DF = df_residualize
 #' @param key (character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.
 #' @param names (character vector) The rownames to merge.
 #' @param new_name (character scalar) The new rownames to use. Defaults to the first member of the names parameter.
-#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.
+#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to sum with na.rm=T.
 #' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
 #' ... Other parameters passed to func.
 #' @export merge_rows df_merge_rows
@@ -576,7 +576,7 @@ residualize_DF = df_residualize
 #' t
 #' df_merge_rows(t, "large_unit") #rows merged by sum by default
 #' df_merge_rows(t, "large_unit", func = mean) #rows merged by mean
-df_merge_rows = function(data, key, names, new_name, func = sum, numeric = TRUE, ...) {
+df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, na.rm=T), numeric = TRUE, ...) {
   library(plyr)
   library(stringr)
 
@@ -609,7 +609,7 @@ df_merge_rows = function(data, key, names, new_name, func = sum, numeric = TRUE,
 
       #compute
       row_new = row[1, ] #copy content of the first row in the block
-      row_new[v_numeric] = apply(row[v_numeric], 2, func, na.rm = TRUE, ...) #subset to numerics, use func
+      row_new[v_numeric] = apply(row[v_numeric], 2, func, ...) #subset to numerics, use func
       row_new #save the new row
     })
 

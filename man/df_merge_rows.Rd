@@ -5,7 +5,8 @@
 \alias{merge_rows}
 \title{Merge rows in data.frame.}
 \usage{
-df_merge_rows(data, key, names, new_name, func = sum, numeric = TRUE, ...)
+df_merge_rows(data, key, names, new_name, func = purrr::partial(sum, na.rm =
+  T), numeric = TRUE, ...)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data object.}
@@ -16,7 +17,7 @@ df_merge_rows(data, key, names, new_name, func = sum, numeric = TRUE, ...)
 
 \item{new_name}{(character scalar) The new rownames to use. Defaults to the first member of the names parameter.}
 
-\item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.  Defaults to sum.}
+\item{func}{(function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to sum with na.rm=T.}
 
 \item{numeric}{(logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
 ... Other parameters passed to func.}
