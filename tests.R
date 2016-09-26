@@ -1398,11 +1398,11 @@ t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1
 t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
 
 stopifnot({
-  merge_rows_by_name(df = t1, names = c("C", "D"), func = mean) == t1_cor
+  #merge
+  df_merge_rows(data = t1, names = c("C", "D")) == t1_cor
+
   #another new_name
-  merge_rows_by_name(df = t1, names = c("C", "D"), func = mean, new_name = "D") %>% rownames %>% equals(c("A", "B", "D"))
-  #sum instead (no difference in this case)
-  merge_rows_by_name(df = t1, names = c("C", "D"), func = sum) == t1_cor
+  df_merge_rows(t1, names = c("C", "D"), new_name = "D") %>% rownames %>% equals(c("A", "B", "D"))
 })
 
 
@@ -1875,6 +1875,18 @@ stopifnot({
   pu_translate(v_notquiteright, messages = 0, standardize_name = T) == v_quiteright
 })
 
+
+# df_flexsubset -----------------------------------------------------------
+
+stopifnot({
+  #subset a single variable, no drop
+  df_flexsubset(iris, c("Species")) == iris["Species"]
+  #subset two variables
+  df_flexsubset(iris, c("Species", "Sepal.Length")) == iris[c("Species", "Sepal.Length")]
+  #subset two variables, one doesn't exist
+  df_flexsubset(iris, c("Species", "test"), messages = F) == iris["Species"]
+  silence(are_equal(df_flexsubset(iris, c("test")), as.data.frame(matrix(nrow=150, ncol=0)), check.attributes = F))
+})
 
 
 # done --------------------------------------------------------------------

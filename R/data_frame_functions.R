@@ -1321,3 +1321,45 @@ df_remove_NA_vars = function(data, keep) {
 }
 remove_NA_vars = df_remove_NA_vars
 
+
+#' Subset a data.frame flexibilly
+#'
+#' Subsets a data.frame by a vector of variables given as names. Only subsets the ones found in the data.
+#'
+#' Subsets the intersection of vars and the columns in the data. Throws a warning if no overlap. Subsets using drop=F.
+#' @param data (data.frame) Data to subset.
+#' @param vars (chr vectr) Variables to subset.
+#' @return Returns a data.frame that is a subset of the original.
+#' @export
+#' @examples
+#'df_flexsubset(iris, c("Species")) %>% str
+#'df_flexsubset(iris, c("Species", "Sepal.Length")) %>% str
+#'df_flexsubset(iris, c("Species", "test")) %>% str
+#'df_flexsubset(iris, c("test")) %>% str
+df_flexsubset = function(data, vars, messages = T) {
+  #check input
+  is_(data, class = "data.frame", error_on_false = T)
+  is_(vars, class = "character", error_on_false = T)
+  is_(messages, class = "logical", size = 1, error_on_false = T)
+
+  #determine overlap
+  # vars_overlap = intersect(names(data), vars) #this changes the order
+  vars_overlap = sapply(vars, function(x) {
+    if (x %in% names(data)) return(x)
+    NA
+  }) %>% na.omit %>% as.vector
+  # vars_nonoverlap = setdiff(vars, names(data))
+  vars_nonoverlap = sapply(vars, function(x) {
+    if (!x %in% names(data)) return(x)
+    NA
+  }) %>% na.omit %>% as.vector
+
+  #warning on 0
+  if (length(vars_overlap) == 0) warning("There was no overlap in columns! Returning a 0-column data.frame. This may be an error.")
+
+  #messages
+  if (messages & length(vars_nonoverlap) > 0) message("The following variables were not found: " + str_c(vars_nonoverlap, collapse = ", "))
+
+  #return
+  data[, vars_overlap, drop = F]
+}
