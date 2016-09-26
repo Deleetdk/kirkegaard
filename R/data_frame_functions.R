@@ -1040,32 +1040,20 @@ reorder_columns = df_reorder_columns
 #' @param data (an object) An object whose colnames should be changed
 #' @param prefix (str) A prefix to add.
 #' @param suffix (str) A suffix to add.
-#' @param quick_assign (log scl) Whether to assign silently in place (default=T).
-#' @export df_add_column_affix add_column_affix
-#' @aliases add_column_affix
+#' @export
 #' @examples
 #' test_iris = iris[1:10, ] #small test dataset
-#' df_add_column_affix(test_iris, prefix = "P_") #ad P_ prefix
-#' colnames(test_iris)
-#' df_add_column_affix(test_iris, suffix = "_S") #ad _S suffix
-#' colnames(test_iris)
-#' #one can also use assign
-#' test_iris2 = df_add_column_affix(iris, prefix = "A_", suffix = "_B")
-#' colnames(test_iris2)
-df_add_column_affix = function(data, prefix, suffix, quick_assign = T) {
-  #name of obj
-  data_name = deparse(substitute(data))
+#' df_add_affix(test_iris, prefix = "P_") #ad P_ prefix
+#' df_add_affix(test_iris, suffix = "_S") #ad _S suffix
+df_add_affix = function(data, prefix, suffix) {
   #missing input
   if (missing(prefix)) prefix = ""
   if (missing(suffix)) suffix = ""
   #rename
   colnames(data) = paste0(prefix, colnames(data), suffix)
-  #assign in outer envir
-  if (quick_assign) assign(data_name, value = data, envir = parent.frame())
-  #silent return
-  return(invisible(data))
+  #return
+  data
 }
-add_column_affix = df_add_column_affix
 
 
 #' Apply function to columns of a data.frame
