@@ -4,7 +4,7 @@
 \alias{wtd_sd}
 \title{Calculate weighted standard deviation}
 \usage{
-wtd_sd(x, w, sample = T)
+wtd_sd(x, w, sample = T, error = T)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}
@@ -12,6 +12,8 @@ wtd_sd(x, w, sample = T)
 \item{w}{(num vector) A vector of weights.}
 
 \item{sample}{(log scalar) Whether this is a sample as opposed to a population (default true).}
+
+\item{error}{(lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.}
 }
 \description{
 Calculated the weighted standard deviation using a vector of values and a vector of weights.

@@ -808,6 +808,7 @@ homogeneity = function(x, reverse = F, summary = F) {
 #' @param x (num vector) A vector of values.
 #' @param w (num vector) A vector of weights.
 #' @param sample (log scalar) Whether this is a sample as opposed to a population (default true).
+#' @param error (lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -817,9 +818,16 @@ homogeneity = function(x, reverse = F, summary = F) {
 #' sd(X) #0.898
 #' wtd_sd(X, W) #0.894, slightly different
 #' wtd_sd(X) #0.898, not using weights
-wtd_sd = function(x, w, sample = T) {
+wtd_sd = function(x, w, sample = T, error = T) {
   #if missing, use 1's
   if (missing("w")) w = rep(1, length(x))
+
+  #make temp df
+  d = data.frame(x = x, w = w) %>% na.omit()
+
+  #check sample
+  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
+  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
 
   #weighted mean
   wtd_mean = wtd_mean(x, w)
@@ -843,6 +851,7 @@ wtd_sd = function(x, w, sample = T) {
 #' The original function returns \code{NA} when there are missing values in the weights vector despite na.rm=T. This function avoids that problem. It also returns a useful error message if there are no complete cases. The function wraps base-r's function.
 #' @param x (num vector) A vector of values.
 #' @param w (num vector) A vector of weights.
+#' @param error (lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -852,7 +861,7 @@ wtd_sd = function(x, w, sample = T) {
 #' wtd_mean(X) # not using weights
 #' mean(X) #same as above
 #' wtd_mean(X, W) #slightly different
-wtd_mean = function(x, w) {
+wtd_mean = function(x, w, error=T) {
   library(magrittr)
 
   #no weights?
@@ -865,7 +874,8 @@ wtd_mean = function(x, w) {
   d = data.frame(x = x, w = w) %>% na.omit()
 
   #check sample
-  if (nrow(d) == 0) stop("There were no pairwise complete cases!")
+  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
+  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
 
   #else
   weighted.mean(x = d$x, w = d$w)
@@ -878,6 +888,7 @@ wtd_mean = function(x, w) {
 #' It automatically handles missing data. It returns a useful error message if there are no complete cases.
 #' @param x (num vector) A vector of values.
 #' @param w (num vector) A vector of weights.
+#' @param error (lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -887,7 +898,7 @@ wtd_mean = function(x, w) {
 #' wtd_sum(X) # not using weights
 #' sum(X) #same as above
 #' wtd_sum(X, W) #different
-wtd_sum = function(x, w) {
+wtd_sum = function(x, w, error=T) {
   #no weights?
   if (missing("w")) w = rep(1, length(x))
 
@@ -898,7 +909,8 @@ wtd_sum = function(x, w) {
   d = data.frame(x = x, w = w) %>% na.omit()
 
   #check sample
-  if (nrow(d) == 0) stop("There were no pairwise complete cases!")
+  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
+  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
 
   #calculate
   x_w = sum(d$x * d$w, na.rm = T) # sum of x * w

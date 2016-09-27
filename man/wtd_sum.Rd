@@ -4,12 +4,14 @@
 \alias{wtd_sum}
 \title{Calculate a weighted sum}
 \usage{
-wtd_sum(x, w)
+wtd_sum(x, w, error = T)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}
 
 \item{w}{(num vector) A vector of weights.}
+
+\item{error}{(lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.}
 }
 \description{
 This is an improvement on \code{\link{sum}} in \code{base-r}.

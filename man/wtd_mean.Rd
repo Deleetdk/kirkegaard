@@ -4,12 +4,14 @@
 \alias{wtd_mean}
 \title{Calculate a weighted mean}
 \usage{
-wtd_mean(x, w)
+wtd_mean(x, w, error = T)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}
 
 \item{w}{(num vector) A vector of weights.}
+
+\item{error}{(lgl scalr) Whether to throw an error if there is no data at all or no pairwise complete cases. Default yes.}
 }
 \description{
 This is an improvement on \code{\link{weighted.mean}} in \code{base-r}.
