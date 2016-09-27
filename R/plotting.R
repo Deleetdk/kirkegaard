@@ -495,10 +495,16 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
 #'
 #' #subgroups too
 #' iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type")
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "point")
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
 GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
   library(psych)
   library(stringr)
@@ -514,7 +520,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     #checks
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
     if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!type %in% c("bar", "point", "points", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
 
     #subset
     df = df[c(var, groupvar)]
@@ -563,6 +569,23 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
+    if (type == "violin") {
+      g = ggplot() +
+        geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
+        scale_fill_discrete(guide = F) +
+        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
+        geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    }
+
+    if (type == "violin2") {
+      g = ggplot() +
+        geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
+        geom_count(data = df, aes_string(groupvar, var)) +
+        scale_fill_discrete(guide = F) +
+        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
+        geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+    }
+
     if (split_group_labels) {
       g = g + scale_x_discrete(labels = levels(g$data$group1) %>% add_newlines(line_length = line_length))
     }
@@ -578,7 +601,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
     if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
     if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!type %in% c("bar", "point", "points", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
 
     #subset
     df = df[c(var, groupvar, subgroupvar)]
@@ -642,6 +665,21 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
         geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
 
+    }
+
+    if (type == "violin") {
+      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+        geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9)) +
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
+        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+    }
+
+    if (type == "violin2") {
+      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+        geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9), alpha = .5) +
+        geom_count(data = df, aes(groupvar, y = var, group = subgroupvar), position = position_dodge(width = .9)) +
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5) +
+        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2, color = "red")
     }
 
     if (split_group_labels) {
