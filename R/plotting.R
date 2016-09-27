@@ -570,7 +570,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     }
 
     if (type == "violin") {
-      g = ggplot() +
+      g = ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
@@ -578,7 +578,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     }
 
     if (type == "violin2") {
-      g = ggplot() +
+      g = ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
         geom_count(data = df, aes_string(groupvar, var)) +
         scale_fill_discrete(guide = F) +
