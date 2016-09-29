@@ -200,14 +200,15 @@ get_each_subset_minus_1 = function(df){
   return_list
 }
 
+
 #' Convert convertible columns in a data.frame to numeric.
 #'
 #' Attempts to convert all columns in a data.frame to numeric. If that fails, keeps the original.
 #' @param df A data.frame.
 #' @param stringsAsFactors Whether to convert strings to factors. Default is F.
-#' @param smart_factor_conversion Whether to automatically detect numeric factors. Default=T. This is dony by checking whether the levels can be converted to numeric values. If they can, the factor is converted.
-#' @param always_skip_factors Whether to always skip factors. Default=F.
-#' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.
+#' @param smart_factor_conversion Whether to automatically detect numeric factors. Default=T. This is done by checking whether the levels can be converted to numeric values. If they can, the factor is converted.
+#' @param always_skip_factors Whether to always skip non-ordered factors. Default=F.
+#' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion to numeric fail. Defaults to T.
 #' @param skip_factors Depreciated.
 #' @export as_num_df df_as_num
 #' @aliases as_num_df
@@ -248,14 +249,15 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
   new_df = lapply(df, function(x) {
     #skip because always skip?
     if (always_skip_factors) {
-      if (class(x) == "factor") {
+      #skip it if it is unordered
+      if (is_unordered_factor(x)) {
         return(x)
       }
     }
 
     #smart check
     if (smart_factor_conversion) {
-      if (class(x) == "factor") {
+      if (is_unordered_factor(x)) {
         trial = tryCatch(as.numeric(levels(x)),
                          warning = function(w) {
                            w

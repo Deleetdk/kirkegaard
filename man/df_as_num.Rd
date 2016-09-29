@@ -13,11 +13,11 @@ df_as_num(df, stringsAsFactors = F, smart_factor_conversion = T,
 
 \item{stringsAsFactors}{Whether to convert strings to factors. Default is F.}
 
-\item{smart_factor_conversion}{Whether to automatically detect numeric factors. Default=T. This is dony by checking whether the levels can be converted to numeric values. If they can, the factor is converted.}
+\item{smart_factor_conversion}{Whether to automatically detect numeric factors. Default=T. This is done by checking whether the levels can be converted to numeric values. If they can, the factor is converted.}
 
-\item{always_skip_factors}{Whether to always skip factors. Default=F.}
+\item{always_skip_factors}{Whether to always skip non-ordered factors. Default=F.}
 
-\item{remove_commas}{Whether to remove commas from the cells first. If present, they will make the conversion fail. Defaults to T.}
+\item{remove_commas}{Whether to remove commas from the cells first. If present, they will make the conversion to numeric fail. Defaults to T.}
 
 \item{skip_factors}{Depreciated.}
 }

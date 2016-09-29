@@ -2,7 +2,6 @@
 #'
 #' A simple wrapper for is.vector and is.list. The normal is.vector function returns true for lists which is undesirable. Returns a boolean.
 #' @param x (any object) An object to test.
-#' @keywords vector, list
 #' @export
 #' @examples
 #' l = list(1:10)
@@ -13,6 +12,19 @@
 #' is_simple_vector(l)
 is_simple_vector = function(x) {
   is.vector(x) & !is.list(x)
+}
+
+
+#' Is object an unordered factor?
+#'
+#' A simple wrapper for is.factor and is.ordered.
+#' @param x (any object) An object to test.
+#' @export
+#' @examples
+#' is_unordered_factor(factor(1:3))
+#' is_unordered_factor(ordered(1:3))
+is_unordered_factor = function(x) {
+  is.factor(x) & !is.ordered(x)
 }
 
 
@@ -250,3 +262,4 @@ all_elements_the_same = function(list) {
   }
   T
 }
+
