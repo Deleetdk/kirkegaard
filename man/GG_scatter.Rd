@@ -20,7 +20,7 @@ GG_scatter(df, x_var, y_var, weights, text_pos, case_names = T,
 
 \item{case_names}{(log scalar) Whether to add case names or not (default true).}
 
-\item{case_names_vector}{(chr vector) The case names to use. If missing, uses row names.}
+\item{case_names_vector}{(chr vector) The case names to use. If missing, uses row names. If length one, is taken to be a variable in the data.}
 
 \item{CI}{(num scalar) interval. Defaults to .95. Set to NULL to disable.}
 
@@ -34,6 +34,7 @@ Plots a scatterplot with a regression line and correlation information. Returns 
 \examples{
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = "Species") #casenames from variable
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names

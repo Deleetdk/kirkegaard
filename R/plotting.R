@@ -145,7 +145,7 @@ plot_kmeans = GG_kmeans
 #' @param weights (num scalar) A set of weights to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (log scalar) Whether to add case names or not (default true).
-#' @param case_names_vector (chr vector) The case names to use. If missing, uses row names.
+#' @param case_names_vector (chr vector) The case names to use. If missing, uses row names. If length one, is taken to be a variable in the data.
 #' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
 #' @param clean_names (log scalar) Whether to clean the axes names using str_clean(). Default=T.
 #' @param check_overlap (log scalar) Whether to avoid overplotting names. Default=T.
@@ -153,6 +153,7 @@ plot_kmeans = GG_kmeans
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = "Species") #casenames from variable
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
@@ -171,8 +172,13 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
 
   #case names?
   if (!missing(case_names_vector)) {
-    if (!lengths_match(df, case_names_vector)) stop("Vector of case names is of the wrong length!")
-    df$.label = case_names_vector #use supplied names
+    if (!(lengths_match(df, case_names_vector) | length(case_names_vector) == 1)) stop("Vector of case names is of the wrong length!")
+    if (lengths_match(df, case_names_vector)) {
+      df$.label = case_names_vector #use supplied names
+    } else {
+      if (!case_names_vector %in% names(df)) stop(sprintf("Variable %s wasn't in the data.frame!", case_names_vector))
+      df$.label = df[[case_names_vector]]
+    }
   } else {
     df$.label = rownames(df) #use rownames
   }
