@@ -341,13 +341,13 @@ format_digits = function(x, digits = 2) {
 #' Write session information to a file.
 #'
 #' A wrapper for writeLines() and capture.output().
-#' @param filename (character scalar) The filename of the file to write to.
+#' @param filename (chr scalar) The filename of the file to write to. Default is "sessions_info.txt".
 #' @param print (logical scalar) Whether to also print the output. Default=FALSE.
 #' @return Logical scalar.
 #' @export
 #' @examples
 #' write_sessioninfo("session_info.txt", print = TRUE)
-write_sessioninfo = function(filename, print = FALSE) {
+write_sessioninfo = function(filename = "sessions_info.txt", print = FALSE) {
   writeLines(capture.output(sessionInfo()), con = filename)
 }
 

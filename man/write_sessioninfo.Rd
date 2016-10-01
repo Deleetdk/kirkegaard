@@ -4,10 +4,10 @@
 \alias{write_sessioninfo}
 \title{Write session information to a file.}
 \usage{
-write_sessioninfo(filename, print = FALSE)
+write_sessioninfo(filename = "sessions_info.txt", print = FALSE)
 }
 \arguments{
-\item{filename}{(character scalar) The filename of the file to write to.}
+\item{filename}{(chr scalar) The filename of the file to write to. Default is "sessions_info.txt".}
 
 \item{print}{(logical scalar) Whether to also print the output. Default=FALSE.}
 }
