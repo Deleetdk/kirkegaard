@@ -1,0 +1,175 @@
+---
+title: "ggplot2 functions in kirkegaard package"
+author: "Emil O. W. Kirkegaard"
+date: "5 okt 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE, message=F}
+knitr::opts_chunk$set(echo = TRUE)
+library(kirkegaard); library(metafor)
+```
+
+# Introduction
+The kirkegaard package contains a number of helper function for ggplot2. These are designed to save time, but do not genrally expand the capabilities of what a skilled ggplot2 user can do. As such, they do not constitute [an extension](https://www.ggplot2-exts.org/). This documents gives some examples of the functions. All the functions begin with `GG_` so they are easy to find.
+
+## GG_scatter
+This is a convenience function to easily make scatterplots that add useful information such as the observed correlation in the plot and case names. To use it, give it a data.frame and the names of the two variables:
+
+```{r, message=F}
+GG_scatter(iris, "Petal.Length", "Sepal.Width")
+```
+
+By default, the rownames are used as case names. We can turn this off with `case_names = F`:
+
+```{r, message=F}
+GG_scatter(iris, "Petal.Length", "Sepal.Width", case_names = F)
+```
+
+The correlation, its confidence interval and the sample size is automatically shown in the corner where the data is least likely to be. One can control the position using `text_pos`:
+
+```{r, message=F}
+GG_scatter(iris, "Petal.Length", "Sepal.Width", case_names = F, text_pos = "bl")
+```
+
+One can add weights which are automatically mapped to the size of the points using `weights`:
+
+```{r, message=F}
+set.seed(1)
+GG_scatter(iris, "Petal.Length", "Sepal.Width", case_names = F, weights = runif(150))
+```
+
+Note that the correlation is a weighted correlation and automatically uses the supplied weights as well.
+
+If we want to use other case names, they can be supplied using `case_names_vector`:
+
+```{r, message=F}
+set.seed(1)
+GG_scatter(iris, "Petal.Length", "Sepal.Width", case_names_vector = sample(letters, replace = T, size = 150))
+```
+
+We can use another confidence interval by passing it to `CI`:
+
+```{r, message=F}
+GG_scatter(iris, "Petal.Length", "Sepal.Width", case_names = F, CI = .99)
+```
+
+## GG_denhist
+It is frequently desired to make density or histograms of data distributions. `GG_denhist` makes both and combines them:
+
+```{r, message=F}
+GG_denhist(iris, "Sepal.Length")
+```
+
+Currently, the y scale is nonsensical and only the relative differences are meaningful. In the future, the y scale will be the proportion.
+
+A vertical one is automatically plotted for the mean. We can supply another function to `vline` if we want another kind of average:
+
+```{r, message=F}
+GG_denhist(iris, "Sepal.Length", vline = median)
+```
+
+We can supply a groping variable if we want to compare groups:
+
+```{r, message=F}
+GG_denhist(iris, "Sepal.Length", group = "Species")
+```
+
+## GG_group_means
+Examining group averages is a frequent task. `GG_group_means` makes this easier, supply a data.frame, the name of the data variable and the name of the grouping variable:
+
+```{r, message=F}
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species")
+```
+
+There are a number of built in visualizations which can be controlled by `type`:
+
+```{r, message=F}
+#bar (default)
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "bar")
+#point
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "point")
+#points
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "points")
+#violin
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "violin")
+#violin2
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "violin2")
+```
+
+Confidence intervals are automatically shown. These can be controlled with `CI`:
+
+```{r, message=F}
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "violin", CI = .99999)
+```
+
+We can also supply subgroups using `subgroup`:
+
+```{r, message=F}
+#make up some subgroup data
+set.seed(1)
+iris$letter = sample(letters[1:2], replace = T, size = 150)
+
+#bar (default)
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "bar", subgroup = "letter")
+#point
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "point", subgroup = "letter")
+#points
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "points", subgroup = "letter")
+#violin
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "violin", subgroup = "letter")
+#violin2
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", type = "violin2", subgroup = "letter")
+```
+
+## GG_kmeans
+`GG_kmeans` is a simple function to perform k-means cluster analysis on a dataset and plot the results:
+
+```{r, message=F}
+GG_kmeans(iris[1:4], clusters = 3)
+```
+
+## GG_forest
+The popular package metafor is used to meta-analyze data. However, the built in plotting functions are ugly and based on base-r graphics:
+
+```{r, message=F}
+#load built in dataset about European genomic ancestry and socioeconomic outcomes across the Americas
+data(european_ancestry)
+#meta-analysis
+meta = rma(yi = european_ancestry$r, sei = european_ancestry$SE_r)
+#plot
+forest(meta)
+```
+I really dislike base-r plots. To make a ggplot2 plot, simply call `GG_forest` on the analysis:
+
+```{r, message=F}
+GG_forest(meta)
+```
+
+It doesn't seem that the names of the analyses are saved in the `rma` object, so we have to supply them to `.names` if they are desired:
+
+```{r, message=F}
+GG_forest(meta, .names = european_ancestry$Author_sample)
+```
+
+## GG_funnel
+As with forest plots, metafor comes with a built in funnel plot:
+
+```{r, message=F}
+funnel(meta)
+```
+
+GG_funnel is an intended ggplot2-based replacement of this:
+
+```{r, message=F}
+GG_funnel(meta)
+```
+
+Outlying studies are automatically colored red. In the future, automatic labeling of (outlying/all) points will be added, but it can currently be done manually using standard ggplot2 functions:
+
+```{r, message=F}
+#use ggrepel
+library(ggrepel)
+GG_funnel(meta) +
+  ggrepel::geom_label_repel(data = european_ancestry, aes(r, SE_r, label = Author_sample), size = 2)
+```

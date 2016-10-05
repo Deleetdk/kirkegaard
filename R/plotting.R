@@ -876,3 +876,121 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
     scale_fill_continuous(name = "Proportion") +
     ylab(substitute(var1)) + xlab(substitute(var2))
 }
+
+
+
+#' Plot a contingency table with ggplot2
+#'
+#' Makes a pretty contingency table with ggplot2 using geom_tile.
+#' @param .analysis (rma object) The rma analysis from metafor.
+#' @param .names (chr vector) An optional vector of names to use.
+#' @export
+GG_forest = function(.analysis, .names) {
+  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
+  sapply(c("tibble", "ggplot2", "forcats"), library, character.only = T)
+
+  #extract effect sizes and SEs
+  d = data_frame(es = .analysis$yi, var = .analysis$vi, se = sqrt(var), meta = "study")
+
+  #names
+  if (!missing(.names)) {
+    d$names = .names
+  } else {
+    d$names = "Study " + 1:nrow(d)
+  }
+
+  #extract main effect
+  d_meta = data_frame(es = .analysis$b %>% as.vector,
+                      var = .analysis$se %>% sqrt,
+                      se = .analysis$se,
+                      meta = "meta",
+                      names = "Main effect")
+
+  #horizontal space case
+  d_hline = data_frame(es = .analysis$b %>% as.vector,
+                       var = .analysis$se %>% sqrt,
+                       se = .analysis$se,
+                       meta = "invis",
+                       names = "")
+
+  #add main effect to d
+  d = rbind(d, d_meta, d_hline)
+
+  #make sure meta effect is in the bottom
+  d$names %<>% factor() %>% fct_relevel(c("Main effect", ""))
+
+  #plot
+  ggplot(d, aes(es, names, color = meta)) +
+    geom_point() +
+    geom_errorbarh(aes(xmin = es - se * 1.96,
+                       xmax = es + se * 1.96)) +
+    geom_hline(yintercept = 2, linetype = "dashed") +
+    theme_bw() +
+    scale_y_discrete(name = NULL) +
+    scale_colour_manual(values = c("white", "black", "black"), guide = F) +
+    xlab("Effect size") +
+    xlim(-1, 1)
+}
+
+
+#' Plot a contingency table with ggplot2
+#'
+#' Makes a pretty contingency table with ggplot2 using geom_tile.
+#' @param .analysis (rma object) The rma analysis from metafor.
+#' @param .CI (chr vector) Confidence interval to use. Default = .95.
+#' @param .study_CI (lgl vector) Whether to plot confidence intervals for individual studies. Default no.
+#' @export
+GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
+  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
+  sapply(c("tibble", "ggplot2"), library, character.only = T)
+
+  #convert CI to se z
+  se_z = qnorm(1 - (1-.CI)/2)
+
+  #extract main effect
+  d_meta = data_frame(es = .analysis$b %>% as.vector,
+                      var = .analysis$se %>% sqrt,
+                      se = .analysis$se
+  )
+
+  #extract effect sizes and SEs
+  d = data_frame(es = .analysis$yi,
+                 var = .analysis$vi,
+                 se = sqrt(var),
+                 upper = d_meta$es + se_z * se,
+                 lower = d_meta$es - se_z * se,
+                 outlier = !is_between(es, lower, upper)
+  )
+
+  #calculate funnel
+  d_funnel = data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
+                        upper = d_meta$es + se * se_z,
+                        lower = d_meta$es - se * se_z)
+
+  d_polygon = data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
+                         y = c(max(d_funnel$se), 0, max(d_funnel$se)))
+
+  #plot
+  gg = ggplot() +
+    geom_line(data = d_funnel, aes(upper, se)) +
+    geom_line(data = d_funnel, aes(lower, se)) +
+    geom_polygon(data = d_polygon, aes(x, y), fill = "grey") +
+    geom_vline(linetype = "dashed", xintercept = d_meta$es) +
+    geom_point(data = d, aes(es, se, color = outlier)) +
+    scale_color_manual(guide = F, values = c("black", "red")) +
+    scale_y_reverse() +
+    theme_bw() +
+    xlab("Effect size")
+
+  #study CIs
+  if (.study_CI) {
+    gg = gg +
+      geom_errorbarh(data = d, aes(xmin = es - se_z * se,
+                                   xmax = es + se_z * se,
+                                   x = es,
+                                   y = se))
+  }
+
+  gg
+}
+
