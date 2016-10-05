@@ -64,7 +64,6 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclu
 #'
 #' A generalization of which.max() that works on matrices and data.frames too.
 #' @param x a numeric vector, matrix or data.frame.
-#' @keywords max, index
 #' @export
 #' @examples
 #' m = matrix(runif(9), nrow=3)
@@ -93,7 +92,6 @@ which_max2 = function(x) {
 #'
 #' A generalization of which.min() that works on matrices and data.frames too.
 #' @param x a numeric vector, matrix or data.frame.
-#' @keywords min, index
 #' @export
 #' @examples
 #' m = matrix(runif(9), nrow=3)
@@ -121,7 +119,6 @@ which_min2 = function(x) {
 #'
 #' Tests via x = is.integer(x).
 #' @param x (numeric vector) A numeric vector.
-#' @keywords vector, whole number, integer
 #' @export
 #' @examples
 #' is_whole_number(1L)
@@ -136,7 +133,6 @@ is_whole_number = function(x) {
 #'
 #' A wrapper for "<0", returns a boolean. Vectorized.
 #' @param x (any object compatible with <) Some values to test.
-#' @keywords negative, value, boolean
 #' @export
 #' @examples
 #' is_negative()
@@ -151,7 +147,6 @@ is_negative = function(x) {
 #'
 #' A wrapper for ">0", returns a boolean. Vectorized.
 #' @param x (any object compatible with <) Some values to test.
-#' @keywords positive, value, boolean
 #' @export
 #' @examples
 #' is_positive()
@@ -167,10 +162,10 @@ is_positive = function(x) {
 #'
 #' A wrapper for "==0", returns a boolean. Vectorized.
 #' @param x (any object compatible with <) Some values to test.
-#' @keywords zero, value, boolean
 #' @export
 #' @examples
-#' is_zero()
+#' is_zero(0)
+#' is_zero(1)
 is_zero = function(x) {
   vapply(x, function(y) {
     y == 0
@@ -186,17 +181,14 @@ is_zero = function(x) {
 #' @param b (numeric scalar) The upper limit.
 #' @param include_lower (boolean) Whether to include the lower limit itself. Defaults to TRUE.
 #' @param include_upper (boolean) Whether to include the upper limit itself. Defaults to TRUE.
-#' @keywords limit, between
 #' @export
 #' @examples
 #' is_between(1:10, 3, 6)
 is_between = function(x, a, b, include_lower = TRUE, include_upper = TRUE) {
-  vapply(x, FUN = function(x) {
-    if (include_lower && include_upper) return(x >= a && x <= b)
-    if (include_lower && !include_upper) return(x >= a && x < b)
-    if (!include_lower && include_upper) return(x > a && x <= b)
-    if (!include_lower && !include_upper) return(x > a && x < b)
-  }, FUN.VALUE = logical(1))
+  if (include_lower && include_upper) return(x >= a & x <= b)
+  if (include_lower && !include_upper) return(x >= a & x < b)
+  if (!include_lower && include_upper) return(x > a & x <= b)
+  if (!include_lower && !include_upper) return(x > a & x < b)
 }
 
 

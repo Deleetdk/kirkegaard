@@ -17,6 +17,4 @@ m = matrix(runif(9), nrow=3)
 m
 which_min2(m)
 }
-\keyword{index}
-\keyword{min,}
 

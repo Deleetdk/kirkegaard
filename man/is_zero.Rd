@@ -13,9 +13,7 @@ is_zero(x)
 A wrapper for "==0", returns a boolean. Vectorized.
 }
 \examples{
-is_zero()
+is_zero(0)
+is_zero(1)
 }
-\keyword{boolean}
-\keyword{value,}
-\keyword{zero,}
 

@@ -15,7 +15,4 @@ A wrapper for ">0", returns a boolean. Vectorized.
 \examples{
 is_positive()
 }
-\keyword{boolean}
-\keyword{positive,}
-\keyword{value,}
 

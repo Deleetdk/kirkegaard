@@ -17,6 +17,4 @@ m = matrix(runif(9), nrow=3)
 m
 which_max2(m)
 }
-\keyword{index}
-\keyword{max,}
 

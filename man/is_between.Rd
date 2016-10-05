@@ -23,6 +23,4 @@ Returns a logical vector of the same length as x. Can use inclusive or exclusive
 \examples{
 is_between(1:10, 3, 6)
 }
-\keyword{between}
-\keyword{limit,}
 
