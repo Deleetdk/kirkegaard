@@ -94,7 +94,7 @@ stopifnot({
 # write_clipboard ---------------------------------------------------------
 #skip these tests on linux
 if (!Sys.info()['sysname'] == "Linux") {
-  write_clipboard(iris, 0)
+  write_clipboard(iris, 0, .rownames = F)
 
   stopifnot({
     read.delim("clipboard")[38, 1] == 5
@@ -105,7 +105,7 @@ if (!Sys.info()['sysname'] == "Linux") {
   write_clipboard(iris[1:5, ], digits = 5)
   write_clipboard(iris[1:5, ], clean_names = T)
   write_clipboard(iris[1:5, ], clean_names = T, clean_what = "Q")
-  write_clipboard(iris[1:5, ], print = T)
+  write_clipboard(iris[1:5, ])
 
   #write NAs
   write_clipboard(miss_add_random(iris))

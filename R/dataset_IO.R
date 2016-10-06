@@ -223,15 +223,16 @@ as_long = function(x) {
 #' A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 #' @param x (any object that works with write.table) Something to write to the clipboard.
 #' @param digits (int scalar) A number of digits to round the data to.
-#' @param clean_names (log scalar) Whether to clean the names. Default=F.
+#' @param clean_names (log scalar) Whether to clean the names. Default=T.
 #' @param clean_what (chr vector) Which things to clean. Defaults to underscores and dots.
 #' @param pad_digits (log scalar) Whether to pad zeros to the digits (for prettier tables; default = T).
-#' @param print (log scalar) Whether to also print the output in R (default F).
+#' @param print (log scalar) Whether to also print the output in R (default T).
+#' @param .rownames (lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.
 #' @export
 #' @examples
 #' write_clipboard(cor(iris[-5]))
 #' write_clipboard(miss_add_random(iris))
-write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "\\."), pad_digits = T, print = F) {
+write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
   library("stringr")
   library("magrittr")
 
@@ -264,13 +265,16 @@ write_clipboard = function(x, digits = 2, clean_names = F, clean_what = c("_", "
   if (print) print(x)
 
   if (Sys.info()['sysname'] == "Linux") {
-    write.table(x, pipe("xclip -i", "w"))
+    if (.rownames) write.table(cbind(".rownames" = rownames(x), x), pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
+    if (!.rownames) write.table(x, pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
+
     #was it written?
     if (!are_equal(silence(read.table("clipboard")), x)) {
-      warning("write.table does not work on linux by default. A workaround involves using xclip. See this for details http://stackoverflow.com/questions/10959521/how-to-write-to-clipboard-on-ubuntu-linux-in-r")
+      warning("write.table does not work on linux. I have not found a method to get it to work.")
     }
   } else {
-    write.table(x, "clipboard", sep = "\t", na = "")
+    if (.rownames) write.table(cbind(".rownames" = rownames(x), x), "clipboard", sep = "\t", na = "", row.names = F)
+    if (!.rownames) write.table(x, "clipboard", sep = "\t", na = "", row.names = F)
   }
 
   #silently return the output too
