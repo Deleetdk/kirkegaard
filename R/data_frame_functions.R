@@ -902,6 +902,8 @@ add_id = df_add_id
 #' names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
 #' #randomly rename iris
 #' df_rename(iris, current_names = names(iris), new_names = rev(names(iris)[sample(1:5)])) %>% names
+#' #warning on non-existent names
+#' head(df_rename(iris, "bleh", "blah"))
 df_rename = function(data, current_names, new_names) {
   library(magrittr)
 
@@ -921,15 +923,19 @@ df_rename = function(data, current_names, new_names) {
 
   #check if variables exist
   sapply(current_names, function(x) {
-    if (!x %in% names(data)) stop(sprintf("%s was not in the data!", x))
+    if (!x %in% names(data)) warning(sprintf("Variable %s was not in the data.", x), call. = F)
   })
 
   #main loop
   old_names = names(data)
   for (i in seq_along(current_names)) {
-    # browser()
     cur = current_names[i]
     new = new_names[i]
+
+    #skip if not present
+    if (!cur %in% names(data)) next
+
+    #position
     pos = which(old_names == cur)
 
     #rename

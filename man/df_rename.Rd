@@ -24,5 +24,7 @@ names(df_rename(iris, "Sepal.Length", "Sepal_Length"))
 names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
 #randomly rename iris
 df_rename(iris, current_names = names(iris), new_names = rev(names(iris)[sample(1:5)])) \%>\% names
+#warning on non-existent names
+head(df_rename(iris, "bleh", "blah"))
 }
 
