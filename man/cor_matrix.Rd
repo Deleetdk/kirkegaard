@@ -4,14 +4,16 @@
 \alias{cor_matrix}
 \title{Correlation matrix}
 \usage{
-cor_matrix(data, weights, CI, CI_template = "\%r [\%lower \%upper]",
-  skip_nonnumeric = T, CI_round = 2, p_val, p_template = "\%r [p=\%p]",
-  p_round = 3)
+cor_matrix(data, weights, reliabilities, CI,
+  CI_template = "\%r [\%lower \%upper]", skip_nonnumeric = T,
+  CI_round = 2, p_val, p_template = "\%r [p=\%p]", p_round = 3)
 }
 \arguments{
 \item{data}{(data.frame or coercible into data.frame) The data.}
 
 \item{weights}{(numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).}
+
+\item{reliabilities}{(num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.}
 
 \item{CI}{(numeric scalar) The confidence level to use as a fraction.}
 
@@ -28,7 +30,14 @@ cor_matrix(data, weights, CI, CI_template = "\%r [\%lower \%upper]",
 \item{p_round}{(int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.}
 }
 \description{
-Outputs a correlation matrix. Supports weights, confidence intervals and rounding.
+Outputs a correlation matrix. Supports weights, confidence intervals, correcting for measurement error and rounding.
+}
+\details{
+Correction for measurement error is done using the standard Pearson formula: r_true = r_observed / sqrt(reliability_x * reliability_y).
+
+Weighted correlations are calculated using wtd.cor or wtd.cors from weights package.
+
+Confidence intervals are analytic confidence intervals based on the standard error.
 }
 \examples{
 cor_matrix(iris) #just correlations
@@ -36,5 +45,6 @@ cor_matrix(iris, CI = .95) #with confidence intervals
 cor_matrix(iris, CI = .99) #with 99\% confidence intervals
 cor_matrix(iris, p_val = .95) #with p values
 cor_matrix(iris, p_val = .95, p_template = "\%r (\%p)") #with p values, with an alternative template
+cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
 }
 

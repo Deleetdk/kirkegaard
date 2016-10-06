@@ -18,9 +18,16 @@ rcorr2 = function(x, ...) {
 
 #' Correlation matrix
 #'
-#' Outputs a correlation matrix. Supports weights, confidence intervals and rounding.
+#' Outputs a correlation matrix. Supports weights, confidence intervals, correcting for measurement error and rounding.
+#'
+#' Correction for measurement error is done using the standard Pearson formula: r_true = r_observed / sqrt(reliability_x * reliability_y).
+#'
+#' Weighted correlations are calculated using wtd.cor or wtd.cors from weights package.
+#'
+#' Confidence intervals are analytic confidence intervals based on the standard error.
 #' @param data (data.frame or coercible into data.frame) The data.
 #' @param weights (numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).
+#' @param reliabilities (num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.
 #' @param CI (numeric scalar) The confidence level to use as a fraction.
 #' @param CI_template (character scalar) A template to use for formatting the confidence intervals. Defaults to "\%r [\%lower \%upper]".
 #' @param skip_nonnumeric (logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.
@@ -35,8 +42,9 @@ rcorr2 = function(x, ...) {
 #' cor_matrix(iris, CI = .99) #with 99% confidence intervals
 #' cor_matrix(iris, p_val = .95) #with p values
 #' cor_matrix(iris, p_val = .95, p_template = "%r (%p)") #with p values, with an alternative template
-cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
-  library(weights);library(stringr);library(psych);library(psychometric)
+#' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
+cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
+  library("weights"); library("stringr"); library("psych"); library("psychometric")
 
   #checks
   data = as.data.frame(data)
@@ -44,6 +52,14 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
   if (!is_numeric(data)) stop("data contains non-numeric columns!")
   if (!missing("CI") & !missing("p_val")) stop("Cannot both calculate CIs and p values!")
   v_noextras = missing("CI") & missing("p_val")
+
+  #reliabities
+  if (missing("reliabilities")) {
+    reliabilities = rep(1, ncol(data))
+  } else {
+    #check length
+    if (length(reliabilities) != ncol(data)) stop("reliabilities length incorrect")
+  }
 
   #weights not given or as character
   if (missing("weights")) weights = rep(1, nrow(data)) #fill 1's
@@ -62,6 +78,17 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
   ##simple weights and no extras?
   if (simpleweights && v_noextras) {
     m = wtd.cors(data, weight = weights)
+
+    #correct for unreliability
+    m = combine_upperlower(psych::correct.cor(m, reliabilities), psych::correct.cor(m, reliabilities) %>% t)
+
+    #remove impossible values
+    m[m > 1] = 1
+    m[m < -1] = -1
+
+    #reliabilities in diagonal
+    diag(m) = reliabilities
+
     return(m)
   }
 
@@ -78,6 +105,8 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
   }
 
 
+
+
   #make matrix
   m = matrix(ncol = ncol(data), nrow = ncol(data))
 
@@ -90,13 +119,25 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
 
       #simple weights & CI
       if (simpleweights && !missing("CI")) {
+
+        #weighted cor
         r_obj = wtd.cor(data[row], data[col], weight = weights)
+
+        #correct for unreliability
+        r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+        #sample size
         r_n = count.pairwise(data[row], data[col])
+
+        #format cor
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
+
+        #confidence interval
         r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
           winsorise(1, -1) %>% #limit CIs to between -1 and 1
           format_digits(digits = CI_round)
 
+        #format and save
         m[row, col] = str_replace(CI_template, "%r", r_r) %>%
           str_replace("%lower", r_CI[1]) %>%
           str_replace("%upper", r_CI[2])
@@ -104,10 +145,19 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
 
       #simple weights & p_val
       if (simpleweights && !missing("p_val")) {
+        #observed r
         r_obj = wtd.cor(data[row], data[col], weight = weights)
+
+        #correct for unreliability
+        r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+        #sample size
         r_n = count.pairwise(data[row], data[col])
+
+        #rounding
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
+        #format and save
         m[row, col] = str_replace(p_template, "%r", r_r) %>%
           str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
       }
@@ -117,27 +167,47 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
         v_weights = harmonic.mean((weights[c(row, col)]) %>% t)
 
         if (v_noextras) {
-          m[row, col] = wtd.cors(data[row], data[col], weight = v_weights)
+          m[row, col] = wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
         }
 
         if (!missing("CI")) {
+          #observed r
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
+
+          #correct for unreliability
+          r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+          #sample size
           r_n = count.pairwise(data[row], data[col])
+
+          #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
+
+          #CI
           r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
             winsorise(1, -1) %>% #limit CIs to between -1 and 1
             format_digits(digits = CI_round)
 
+          #format and save
           m[row, col] = str_replace(CI_template, "%r", r_r) %>%
             str_replace("%lower", r_CI[1]) %>%
             str_replace("%upper", r_CI[2])
         }
 
         if (!missing("p_val")) {
+          #observed r
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
+
+          #correct for unreliability
+          r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+          #n
           r_n = count.pairwise(data[row], data[col])
+
+          #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
+          #format and save
           m[row, col] = str_replace(p_template, "%r", r_r) %>%
             str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
         }
@@ -153,7 +223,7 @@ cor_matrix = function(data, weights, CI, CI_template = "%r [%lower %upper]", ski
   rownames(m) = colnames(m) = colnames(data)
 
   #diag
-  diag(m) = 1
+  diag(m) = reliabilities
 
   m
 }
