@@ -885,6 +885,10 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #' @param .analysis (rma object) The rma analysis from metafor.
 #' @param .names (chr vector) An optional vector of names to use.
 #' @export
+#' @examples
+#' library(metafor); data(european_ancestry)
+#' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
+#' GG_forest(meta, .names = european_ancestry$Author_sample)
 GG_forest = function(.analysis, .names) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
   sapply(c("tibble", "ggplot2", "forcats"), library, character.only = T)

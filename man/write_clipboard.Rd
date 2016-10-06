@@ -4,21 +4,23 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x, digits = 2, clean_names = F, clean_what = c("_",
-  "\\\\."), pad_digits = T, print = F)
+write_clipboard(x, digits = 2, clean_names = T, clean_what = c("_",
+  "\\\\."), pad_digits = T, print = T, .rownames = T)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}
 
 \item{digits}{(int scalar) A number of digits to round the data to.}
 
-\item{clean_names}{(log scalar) Whether to clean the names. Default=F.}
+\item{clean_names}{(log scalar) Whether to clean the names. Default=T.}
 
 \item{clean_what}{(chr vector) Which things to clean. Defaults to underscores and dots.}
 
 \item{pad_digits}{(log scalar) Whether to pad zeros to the digits (for prettier tables; default = T).}
 
-\item{print}{(log scalar) Whether to also print the output in R (default F).}
+\item{print}{(log scalar) Whether to also print the output in R (default T).}
+
+\item{.rownames}{(lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.}
 }
 \description{
 A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.

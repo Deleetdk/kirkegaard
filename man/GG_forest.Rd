@@ -14,4 +14,9 @@ GG_forest(.analysis, .names)
 \description{
 Makes a pretty contingency table with ggplot2 using geom_tile.
 }
+\examples{
+library(metafor); data(european_ancestry)
+meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
+GG_forest(meta, .names = european_ancestry$Author_sample)
+}
 
