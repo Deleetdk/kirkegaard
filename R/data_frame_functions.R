@@ -819,7 +819,7 @@ df_to_ldf = function(data, by, remove_by = T) {
 #' ldf_to_df(iris_list) #note the missing data and column order
 ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames", messages = T) {
   library(magrittr)
-  library(data.table)
+  loadNamespace("data.table")
 
   #are there list names? if not, set them
   if (is.null(names(list))) names(list) = 1:length(list)
