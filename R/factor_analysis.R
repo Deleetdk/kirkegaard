@@ -488,7 +488,7 @@ FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T
   df = as.data.frame(df)
 
   #missing values?
-  if (any(is.na(df))) if (messages) messages("Cases with missing values were removed.")
+  if (any(is.na(df))) if (messages) message("Cases with missing values were removed.")
   df = na.omit(df)
 
   #results
