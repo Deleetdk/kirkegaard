@@ -43,8 +43,9 @@ rcorr2 = function(x, ...) {
 #' cor_matrix(iris, p_val = .95) #with p values
 #' cor_matrix(iris, p_val = .95, p_template = "%r (%p)") #with p values, with an alternative template
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
+#' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
-  library("weights"); library("stringr"); library("psych"); library("psychometric")
+  library("weights"); library("stringr"); library("psych"); library("psychometric"); library("magrittr")
 
   #checks
   data = as.data.frame(data)
@@ -124,7 +125,10 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
         r_obj = wtd.cor(data[row], data[col], weight = weights)
 
         #correct for unreliability
-        r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+        r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+        #winsorize
+        r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
         r_n = count.pairwise(data[row], data[col])
@@ -149,7 +153,10 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
         r_obj = wtd.cor(data[row], data[col], weight = weights)
 
         #correct for unreliability
-        r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+        r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+        #winsorize
+        r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
         r_n = count.pairwise(data[row], data[col])
@@ -175,7 +182,10 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
 
           #correct for unreliability
-          r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+          r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+          #winsorize
+          r_obj[1] %<>% winsorise(1, -1)
 
           #sample size
           r_n = count.pairwise(data[row], data[col])
@@ -199,7 +209,10 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
           r_obj = wtd.cor(data[row], data[col], weight = v_weights)
 
           #correct for unreliability
-          r_obj[1] %>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+          r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+          #winsorize
+          r_obj[1] %<>% winsorise(1, -1)
 
           #n
           r_n = count.pairwise(data[row], data[col])

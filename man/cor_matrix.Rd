@@ -46,5 +46,6 @@ cor_matrix(iris, CI = .99) #with 99\% confidence intervals
 cor_matrix(iris, p_val = .95) #with p values
 cor_matrix(iris, p_val = .95, p_template = "\%r (\%p)") #with p values, with an alternative template
 cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
+cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 }
 
