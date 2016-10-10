@@ -348,7 +348,7 @@ plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
 #'
 #' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
 #'
-#' Non-overlapping indicates are put in the bottom.
+#' Non-overlapping indicates are put in the bottom. Note that internally, x and y coods have been flipped, so to modify the scales, use the opposite command, e.g. ylim to modify x axis limits.
 #' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.
 #' @param fa_labels (chr vector) Names of the analyses. Defaults to fa.1, fa.2, etc..
 #' @param reverse_vector (num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
