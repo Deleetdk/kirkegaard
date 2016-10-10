@@ -94,7 +94,7 @@ filter_by_missing_values = function(data, missing = 0) {
   data = as.data.frame(data)
 
   #keep cases with that number of missing datapoints or fewer
-  data = data[miss_case(data) <= missing, ]
+  data = data[miss_by_case(data) <= missing, ]
   return(data)
 }
 

@@ -81,15 +81,6 @@ stopifnot({
 })
 
 
-# rank_df -----------------------------------------------------------------
-t = data.frame(letters = letters[1:10],
-               norm = rnorm(10),
-               unif = runif(10))
-stopifnot({
-  class(t) == "data.frame"
-  dim(t) == c(10, 3)
-})
-
 
 # write_clipboard ---------------------------------------------------------
 #skip these tests on linux
@@ -203,12 +194,12 @@ stopifnot({
   nrow(t[[1]]) == 7
 })
 
-# round_df ----------------------------------------------------------------
+# df_round ----------------------------------------------------------------
 stopifnot({
   set.seed(1)
-  round_df(matrix(rnorm(30), ncol=3))[6, 1] == -0.820
+  df_round(matrix(rnorm(30), ncol=3))[6, 1] == -0.820
   set.seed(1)
-  round_df(matrix(rnorm(30), ncol=3), 0)[6, 1] == -1
+  df_round(matrix(rnorm(30), ncol=3), 0)[6, 1] == -1
 })
 
 
@@ -1697,7 +1688,7 @@ stopifnot({
 # transpose ---------------------------------------------------------------
 
 stopifnot({
-  are_equal(t_df(iris),
+  are_equal(df_t(iris),
             iris %>% t %>% as.data.frame %>% set_colnames(rownames(iris)) %>% set_rownames(colnames(iris)))
 })
 
