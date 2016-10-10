@@ -2,7 +2,6 @@
 % Please edit documentation in R/missing_data.R
 \name{miss_by_case}
 \alias{miss_by_case}
-\alias{miss_case}
 \title{Missing datapoint counter, case-level}
 \usage{
 miss_by_case(x)

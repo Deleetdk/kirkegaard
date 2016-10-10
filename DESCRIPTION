@@ -1,6 +1,6 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2016.10.06
+Version: 2016.10.10
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
@@ -12,4 +12,6 @@ RoxygenNote: 5.0.1
 Imports:
     plyr,
     stringr,
-    magrittr
+    magrittr,
+    ggplot2,
+    forcats

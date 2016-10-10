@@ -4,8 +4,7 @@
 #'
 #' Counts the number of missing datapoints per case
 #' @param x (data.frame/matrix) The data.
-#' @export miss_case miss_by_case
-#' @aliases miss_case
+#' @export
 #' @examples
 #' miss_by_case(miss_add_random(iris))
 miss_by_case = function(x){
@@ -14,14 +13,15 @@ miss_by_case = function(x){
   return(y)
 }
 
-miss_case = miss_by_case
+miss_case = function(...) {
+  stop("miss_case has been renamed to miss_by_case")
+}
 
 #' Missing datapoint counter, variable-level
 #'
 #' Counts the number of missing datapoints per variable
 #' @param x a matrix or data.frame
-#' @export miss_by_var miss_table
-#' @aliases miss_table
+#' @export
 #' @examples
 #' miss_by_var(miss_add_random(iris))
 miss_by_var = function(x){
@@ -30,7 +30,9 @@ miss_by_var = function(x){
   return(y)
 }
 
-miss_table = miss_by_var
+miss_table = function(...) {
+  stop("miss_table has been renamed to miss_by_var.")
+}
 
 #' Count missing data
 #'
@@ -47,47 +49,77 @@ count_NA = function(x, reverse = F) {
   sum(is.na(x))
 }
 
-#' Missing data histogram with ggplot2.
+#' Missing data barplot with ggplot2.
 #'
-#' Returns a ggplot2 histogram plot.
-#' @param df a data.frame.
-#' @param percent whether to use percent or not. Defaults to true.
+#' Returns a ggplot2 object of the missing data.
+#' @param data (data.frame) Data.frame.
+#' @param percent (lgl scalar) Whether to use percent or raw counts. Default true.
+#' @param case (lgl scalar) Whether to plot missingness for cases or variables. Default cases.
 #' @export miss_plot plot_miss
 #' @aliases plot_miss
 #' @examples
-#' miss_plot(miss_add_random(iris))
-miss_plot = function(df, percent=T, case=T) {
-  library(ggplot2)
+#' test_data = miss_add_random(iris)
+#' miss_plot(test_data)
+#' miss_plot(test_data, percent = F) #raw count
+#' miss_plot(test_data, case = F) #variables
+#' miss_plot(test_data, case = F, percent = F) #variables, raw
+miss_plot = function(data, percent=T, case=T) {
+  # browser()
+  #cases or vars?
   if (case) {
-    m = miss_by_case(df)
+    m = miss_by_case(data)
+    d = table(m) %>% as.data.frame()
+    names(d) = c("number_miss", "count")
   } else {
-    m = miss_by_var(df)
+    m = miss_by_var(data)
+    d = data.frame(number_miss = m, var = names(m))
   }
 
-  d = data.frame(number.of.NA = m)
+  #summarize
   max.miss = max(m)
   min.miss = min(m)
 
-  if (percent) {
-    d$percent = (d$number.of.NA/sum(d$number.of.NA))*100
-    g = ggplot(data = d, aes(x = factor(number.of.NA))) +
-      geom_bar(aes(y = ((..count..)/sum(..count..))*100)) +
-      scale_y_continuous('percent') +
-      xlab("Number of NAs") +
-      scale_x_discrete(breaks=min.miss:max.miss)
-    return(g)
+  #plot
+  if (case) {
+    #percent?
+    if (percent) d$count %<>% divide_by(nrow(df))
+
+    g = ggplot(d, aes(number_miss, count)) +
+      geom_bar(stat = "identity") +
+      scale_x_discrete(breaks = min.miss:max.miss) + #always keep entire range
+      xlab("Number of missing values")
+
+    #percent
+    if (percent) g = g + scale_y_continuous(labels = scales::percent, name = "Percent")
+    if (!percent) g = g + ylab("Count")
+
+  } else {
+    #percent?
+    if (percent) d$number_miss %<>% divide_by(nrow(df))
+
+    #reorder factor by missing
+    d$var %<>% fct_reorder(-d$number_miss)
+
+    #plot
+    g = ggplot(d, aes(var, number_miss)) +
+      geom_bar(stat = "identity") +
+      xlab("Variable")
+
+    #percent
+    if (percent) {
+      g = g + scale_y_continuous(name = "Percent missing values", labels = scales::percent)
+    } else {
+      g = g + scale_y_continuous(name = "Number of missing values")
+    }
   }
-  else {
-    g = ggplot(data = d, aes(x = factor(number.of.NA))) +
-      geom_histogram() +
-      xlab("Number of NAs") +
-      scale_x_discrete(breaks=min.miss:max.miss)
-    return(g)
-  }
+
+  #return
+  g
 }
 
 #old name
 plot_miss = miss_plot
+
 
 #' Wrapper for matrixplot()
 #'
@@ -259,3 +291,56 @@ miss_add_random =  function(df, prop = .1){
 
 #old name
 df_addNA = miss_add_random
+
+
+#' Impute data using VIM::irmi
+#'
+#' Useful wrapper for VIM's irmi function. Can skip cases without changing case order depending on the number of missing values
+#' @param data (data.frame) A data.frame.
+#' @param max_na (num scalar) The maximum number of missing datapoints per case.
+#' @return A data.frame with missing data imputed for the desired cases.
+#' @export
+#' @examples
+#' df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
+#' miss_impute(df) #impute missing
+miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
+  #tibbles do not work here
+  data = as.data.frame(data)
+  #exclude?
+  case_na = miss_by_case(data)
+  exclusion = any(case_na > max_na)
+  if (exclusion) {
+    #cases excluded
+    cases_excl = case_na > max_na
+
+    #add id
+    case_ids = (1:nrow(data)) %>% as.character()
+    # data$.tmpid = case_ids
+    # rownames(data) = case_ids
+
+    #save excluded cases
+    data_excl = data[cases_excl, ]
+
+    #non-excluded cases
+    data = data[!cases_excl, ]
+  }
+
+  #impute
+  data = VIM::irmi(data, noise = noise)
+
+  #add back
+  if (exclusion) {
+    #rbind
+    data = rbind(data, data_excl)
+
+    #sort by ids
+    data$.tmpid = as.numeric(c(case_ids[!cases_excl], case_ids[cases_excl]))
+    data = df_sort(data, vars = ".tmpid", decreasing = F)
+
+    #remove ids
+    data$.tmpid = NULL
+  }
+
+  #return
+  data
+}

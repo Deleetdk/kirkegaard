@@ -2,7 +2,6 @@
 % Please edit documentation in R/missing_data.R
 \name{miss_by_var}
 \alias{miss_by_var}
-\alias{miss_table}
 \title{Missing datapoint counter, variable-level}
 \usage{
 miss_by_var(x)

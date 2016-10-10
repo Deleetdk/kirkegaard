@@ -3,19 +3,25 @@
 \name{miss_plot}
 \alias{miss_plot}
 \alias{plot_miss}
-\title{Missing data histogram with ggplot2.}
+\title{Missing data barplot with ggplot2.}
 \usage{
-miss_plot(df, percent = T, case = T)
+miss_plot(data, percent = T, case = T)
 }
 \arguments{
-\item{df}{a data.frame.}
+\item{data}{(data.frame) Data.frame.}
 
-\item{percent}{whether to use percent or not. Defaults to true.}
+\item{percent}{(lgl scalar) Whether to use percent or raw counts. Default true.}
+
+\item{case}{(lgl scalar) Whether to plot missingness for cases or variables. Default cases.}
 }
 \description{
-Returns a ggplot2 histogram plot.
+Returns a ggplot2 object of the missing data.
 }
 \examples{
-miss_plot(miss_add_random(iris))
+test_data = miss_add_random(iris)
+miss_plot(test_data)
+miss_plot(test_data, percent = F) #raw count
+miss_plot(test_data, case = F) #variables
+miss_plot(test_data, case = F, percent = F) #variables, raw
 }
 
