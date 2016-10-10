@@ -64,7 +64,7 @@ count_NA = function(x, reverse = F) {
 #' miss_plot(test_data, case = F) #variables
 #' miss_plot(test_data, case = F, percent = F) #variables, raw
 miss_plot = function(data, percent=T, case=T) {
-  # browser()
+  library("magrittr"); library("ggplot2"); library("forcats")
   #cases or vars?
   if (case) {
     m = miss_by_case(data)
@@ -82,7 +82,7 @@ miss_plot = function(data, percent=T, case=T) {
   #plot
   if (case) {
     #percent?
-    if (percent) d$count %<>% divide_by(nrow(df))
+    if (percent) d$count %<>% divide_by(nrow(data))
 
     g = ggplot(d, aes(number_miss, count)) +
       geom_bar(stat = "identity") +
@@ -95,7 +95,7 @@ miss_plot = function(data, percent=T, case=T) {
 
   } else {
     #percent?
-    if (percent) d$number_miss %<>% divide_by(nrow(df))
+    if (percent) d$number_miss %<>% divide_by(nrow(data))
 
     #reorder factor by missing
     d$var %<>% fct_reorder(-d$number_miss)
