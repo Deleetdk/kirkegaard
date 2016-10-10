@@ -6,7 +6,7 @@
 \title{Fit all possible simple linear models}
 \usage{
 MOD_APSLM(dependent, predictors, data, standardized = T, .weights = NA,
-  messages = T)
+  messages = F, progress = T, cv_runs = 20)
 }
 \arguments{
 \item{dependent}{(chr scalar) The name of the dependent variable.}
@@ -19,7 +19,11 @@ MOD_APSLM(dependent, predictors, data, standardized = T, .weights = NA,
 
 \item{.weights}{(num vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.}
 
-\item{messages}{(log scalar) Whether to show messages. Default=TRUE.}
+\item{messages}{(log scalar) Whether to show messages with the models. Default no.}
+
+\item{progress}{(lgl scalar) Whether to show a progress bar. Default yes.}
+
+\item{cv_runs}{(num scalar) How many runs to use in cross-validation. Default 20. Increase this value for smaller datasets to get more reliable results.}
 }
 \value{
 Returns a list with two elements: 1) A data.frame with betas and other summary statistics from the models. 2) A list with all the models.

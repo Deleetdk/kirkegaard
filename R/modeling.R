@@ -11,24 +11,26 @@
 #' @param data (data.frame) A data.frame with the variables.
 #' @param standardized (log scalar) Whether to standardize the results. Defaults to true.
 #' @param .weights (num vector) A numeric vector of weights to use. Defaults to NA, which causes it to use unit weights for all cases.
-#' @param messages (log scalar) Whether to show messages. Default=TRUE.
+#' @param messages (log scalar) Whether to show messages with the models. Default no.
+#' @param progress (lgl scalar) Whether to show a progress bar. Default yes.
+#' @param cv_runs (num scalar) How many runs to use in cross-validation. Default 20. Increase this value for smaller datasets to get more reliable results.
 #' @export MOD_APSLM lm_beta_matrix
 #' @aliases lm_beta_matrix
 #' @examples
 #' #try all models in iris dataset to predict sepal length
 #' MOD_APSLM(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
-MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = NA, messages = T) {
-  library(gtools) #for combinations()
-  library(stringr) #for str_c()
+MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = NA, messages = F, progress = T, cv_runs = 20) {
+  library("gtools") #for combinations()
+  library("stringr") #for str_c()
 
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
   num.cases = nrow(data) #how many cases?
-  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "R", "R.adj.", "N")
+  model_fit_names = c("AIC", "BIC", "r2", "r2.adj.", "r2_cv", "R", "R.adj.", "N")
 
   #standardize?
   if (standardized == T) {
-    data = std_df(data, messages = messages)
+    data = df_standardize(data[c(dependent, predictors)], messages = messages)
   }
 
   sets = list() #list of all combinations
@@ -63,15 +65,23 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
   #run each model
   betas = data.frame(matrix(ncol = length(model_fit_names), nrow = length(models))) #DF for betas
   model.fits = list()
+
   #number of cols is the predictors +1 because the last is R2 adj.
   colnames(betas) = model_fit_names #colnames
-  for (model.idx in 1:length(models)) { #loop over the index of each model
+
+  #progress bar
+  if (progress) pb <- txtProgressBar(min = 1, max = length(models), initial = 1, style = 3)
+  for (model.idx in seq_along(models)) { #loop over the index of each model
     #progress
+    if (progress) setTxtProgressBar(pb, value = model.idx)
     if (messages) message(str_c("Model ", model.idx, " of ", length(models)))
 
     #fit model and extract betas
     lm.fit = lm(models[model.idx], data, weights = .weights) #fit the model
     model.fits[[model.idx]] = lm.fit
+
+    #cross validated r2
+    v_cv_r2 = MOD_k_fold_r2(lm.fit, runs = cv_runs, progress = F)
 
     #get betas, remove intercept
     lm.fit.betas = lm.fit$coefficients[-1]
@@ -98,6 +108,9 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
     #insert r2 adj.
     r_sq_adj = summary(lm.fit)$adj.r.squared
     betas[model.idx, "r2.adj."] = r_sq_adj
+
+    #insert r2_cv
+    betas[model.idx, "r2_cv"] = v_cv_r2[2]
 
     #insert R
     betas[model.idx, "R"] = sqrt(r_sq)
