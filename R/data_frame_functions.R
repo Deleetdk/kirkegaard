@@ -495,6 +495,9 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
   #save rownames
   v_rownames = rownames(data)
 
+  #check names
+  if (all(make.names(colnames(data)) != colnames(data))) stop("This function requires the data to have syntactically valid names. See ?make.names")
+
   #weights
   if (length(weights) == 1) {
     if (is.na(weights)) {
