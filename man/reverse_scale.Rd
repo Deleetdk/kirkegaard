@@ -4,14 +4,14 @@
 \alias{reverse_scale}
 \title{Reverse a scale}
 \usage{
-reverse_scale(x, .min = min(x), .max = max(x))
+reverse_scale(x, .min = min(x, na.rm = T), .max = max(x, na.rm = T))
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}
 
-\item{.min}{(numeric scalar) The scale maximum.}
+\item{.min}{(numeric scalar) The scale maximum. Defaults to the observed minimum.}
 
-\item{.max}{(numeric scalar) The scale minimum.}
+\item{.max}{(numeric scalar) The scale minimum. Defaults to the observed maximum.}
 }
 \description{
 Reverses a scale so that the largest number becomes the smallest, next largest becomes next smallest, etc. Can be given scale limits but will determine them empirically if not given.

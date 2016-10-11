@@ -212,15 +212,15 @@ winsorise = function(x, upper, lower) {
 #'
 #' Reverses a scale so that the largest number becomes the smallest, next largest becomes next smallest, etc. Can be given scale limits but will determine them empirically if not given.
 #' @param x (numeric vector) A vector of values.
-#' @param .min (numeric scalar) The scale maximum.
-#' @param .max (numeric scalar) The scale minimum.
+#' @param .min (numeric scalar) The scale maximum. Defaults to the observed minimum.
+#' @param .max (numeric scalar) The scale minimum. Defaults to the observed maximum.
 #' @export
 #' @examples
 #' x = c(2, 1, 3, 0, -1) #some scale ranging from -1 to 3
 #' reverse_scale(x) #reverse scores: 3 becomes -3
 #' x == reverse_scale(reverse_scale(x)) #reverse twice and get back
 #' reverse_scale(x, .min = -3, .max = 10) #supply other min/max
-reverse_scale = function(x, .min = min(x), .max = max(x)) {
+reverse_scale = function(x, .min = min(x, na.rm=T), .max = max(x, na.rm=T)) {
   (.max - x) + .min
 }
 
