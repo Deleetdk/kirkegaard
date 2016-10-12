@@ -4,12 +4,14 @@
 \alias{GG_forest}
 \title{Plot a contingency table with ggplot2}
 \usage{
-GG_forest(.analysis, .names)
+GG_forest(.analysis, .names, .alphabetic_sort_names = T)
 }
 \arguments{
 \item{.analysis}{(rma object) The rma analysis from metafor.}
 
 \item{.names}{(chr vector) An optional vector of names to use.}
+
+\item{.alphabetic_sort_names}{(lgl sclar) Alphabetically sort names? Default yes.}
 }
 \description{
 Makes a pretty contingency table with ggplot2 using geom_tile.

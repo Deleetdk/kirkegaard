@@ -884,12 +884,13 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #' Makes a pretty contingency table with ggplot2 using geom_tile.
 #' @param .analysis (rma object) The rma analysis from metafor.
 #' @param .names (chr vector) An optional vector of names to use.
+#' @param .alphabetic_sort_names (lgl sclar) Alphabetically sort names? Default yes.
 #' @export
 #' @examples
 #' library(metafor); data(european_ancestry)
 #' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 #' GG_forest(meta, .names = european_ancestry$Author_sample)
-GG_forest = function(.analysis, .names) {
+GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
   sapply(c("tibble", "ggplot2", "forcats"), library, character.only = T)
 
@@ -901,6 +902,11 @@ GG_forest = function(.analysis, .names) {
     d$names = .names
   } else {
     d$names = "Study " + 1:nrow(d)
+  }
+
+  #sort?
+  if (.alphabetic_sort_names) {
+    d$names %<>% factor() %>% fct_rev()
   }
 
   #extract main effect
