@@ -11,7 +11,6 @@
 #' @examples
 #' str_clean(colnames(iris))
 str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F, multi_dots = T) {
-  library(stringr)
 
   if (spacing_dots) string = stringr::str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
   if (underscores) string = stringr::str_replace_all(string, "_", " ")

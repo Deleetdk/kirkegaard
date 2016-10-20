@@ -8,7 +8,6 @@
 #' @param lat_var A numeric vector with the latitudes.
 #' @param lon_var A numeric vector with the longitudes.
 #' @param output A character vector stating which output form is desired. Can be either vector or matrix. Vector results in a vector of all the unique combinations of distances, which is n*(n-1)/2, where n is the number of cases. Matrix results in the full distance matrix with every permutation including diagonals, which are always 0.
-#' @keywords spatial autocorrelation, latitude, longitude, distance
 #' @export
 get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "vector", remove_diag = T) {
   #assumes that the latitude and longitude vars are called lat and lon, otherwise set their names
@@ -16,12 +15,6 @@ get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "v
   #missing data
   if (any(is.na(df))) warning("Warning, data.frame contained cases with missing values which were excluded!")
   df = na.omit(df)
-
-  #loads the library needed to calculate distances
-  library(geosphere)
-
-  #loads combinatorics library
-  library(gtools)
 
   #subset
   df = df[c(lat_var, lon_var)]
@@ -33,10 +26,10 @@ get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "v
   #vector output
   if (output == "vector") {
     #find combinations
-    combs = combinations(nrow(df), 2) #pick 2 out of nrow without order
+    combs = gtools::combinations(nrow(df), 2) #pick 2 out of nrow without order
 
     #find distances
-    geo_dist = as.vector(distCosine(df[combs[, 1], 2:1], df[combs[, 2], 2:1]))
+    geo_dist = as.vector(geosphere::distCosine(df[combs[, 1], 2:1], df[combs[, 2], 2:1]))
     #bizarrely, the authors of the distCosine has swapped the order of lat and lon which made me waste 30 mins bug hunting!
 
     #return
@@ -49,7 +42,7 @@ get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "v
     combs = expand.grid(1:nrow(df), 1:nrow(df)) #all permutations
 
     #find distances
-    geo_dist = matrix(distCosine(df[combs[, 1], 2:1], df[combs[, 2], 2:1]), nrow=nrow(df))
+    geo_dist = matrix(geosphere::distCosine(df[combs[, 1], 2:1], df[combs[, 2], 2:1]), nrow=nrow(df))
     #bizarrely, the authors of the distCosine has swapped the order of lat and lon which made me waste 30 mins bug hunting!
 
     #remove diag?
@@ -965,7 +958,6 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 #' @param control_approach Which control approaches to use. Options are partial and mr. Defaults to partial.
 #' @export
 SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods = c("KNSNR", "SLR"), standardize = T, control_approach = c("partial")) {
-  library(stringr)
 
   #check input
   #is df

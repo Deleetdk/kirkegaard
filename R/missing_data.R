@@ -125,8 +125,7 @@ miss_plot = function(data, percent=T, case=T) {
 #' @examples
 #' matrixplot2(miss_add_random(iris))
 matrixplot2 = function(df) {
-	library(VIM) #load VIM if not already loaded
-  	return(matrixplot(df, labels=substr(colnames(df), 1, 8)))
+  	return(VIM::matrixplot(df, labels=substr(colnames(df), 1, 8)))
 }
 
 

@@ -1,6 +1,6 @@
 # some libs ---------------------------------------------------------------
 library(pacman)
-p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
+p_load(kirkegaard, psych, plyr, MASS, assertthat)
 
 #otherwise get error
 options("expressions" = 10000)
@@ -1462,7 +1462,6 @@ stopifnot({
 
 
 # split unsplit functions -----------------------------------------------------------------
-library(magrittr)
 
 #complex example: same as above but delete some columns
 iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns

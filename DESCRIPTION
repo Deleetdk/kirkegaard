@@ -31,3 +31,7 @@ Suggests:
     geosphere,
     ape,
     compute.es
+Depends:
+    ggplot2,
+    stringr,
+    magrittr
