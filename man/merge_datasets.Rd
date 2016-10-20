@@ -2,27 +2,26 @@
 % Please edit documentation in R/dataset_IO.R
 \name{merge_datasets}
 \alias{merge_datasets}
-\title{Dataset merger function}
+\title{Improved dataset merger function}
 \usage{
-merge_datasets(DF1, DF2, main = 1, time = F, join = "both")
+merge_datasets(DF1, DF2, join = "both", overwrite_NA = FALSE,
+  restore_factors = FALSE)
 }
 \arguments{
-\item{DF1}{the first data.frame}
+\item{DF1}{(data.frame) A data.frame to merge into.}
 
-\item{DF2}{the second data.frame}
+\item{DF2}{(data.frame) A data.frame with the new data.}
 
-\item{main}{which data.frame should be used as the main? Choose the larger one if working with large datasets. Default to using neither.}
+\item{join}{(character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.}
 
-\item{join}{(character scalar) Which data.frames to use cases from. Defaults to "both". Can be: both, left, right.}
+\item{overwrite_NA}{(logical scalar) Whether to overwrite with NA values. Default = FALSE.}
+
+\item{restore_factors}{(logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.}
 }
 \description{
-This function allows you to merge two data.frames by their overlapping rownames.
+This function allows you to merge two data.frames by their overlapping rownames. About 15 times faster than the earlier version.
 }
 \examples{
-merge_datasets()
+merge_datasets(iris[1:4], iris[1:5]) #merge together two parts of iris
 }
-\keyword{combining}
-\keyword{data.frame}
-\keyword{datasets}
-\keyword{merging}
 

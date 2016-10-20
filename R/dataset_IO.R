@@ -1,117 +1,5 @@
 ## DATASET AND I/O FUNCTIONS
 
-#' Dataset merger function
-#'
-#' This function allows you to merge two data.frames by their overlapping rownames.
-#' @param DF1 the first data.frame
-#' @param DF2 the second data.frame
-#' @param main which data.frame should be used as the main? Choose the larger one if working with large datasets. Default to using neither.
-#' @param join (character scalar) Which data.frames to use cases from. Defaults to "both". Can be: both, left, right.
-#' @keywords merging combining datasets data.frame
-#' @export
-#' @examples
-#' merge_datasets()
-merge_datasets = function (DF1, DF2, main=1, time=F, join = "both"){
-  #time if desired
-  if (time) {time1 = proc.time()} #start timer
-
-
-  #checks
-  if (!main %in% 0:2){ #check for valid input
-    stop("Invalid input to main parameter provided!")
-  }
-  if (!join %in% c("both", "left", "right")) stop("Invalid join parameter!")
-
-
-  #main setting decides how to combine
-  if (join == "left") {
-    DF2 = DF2[intersect(rownames(DF1), rownames(DF2)), , drop = F] #subset to overlap with DF1
-  }
-  if (join == "right") {
-    DF1 = DF1[intersect(rownames(DF1), rownames(DF2)), , drop = F] #subset to overlap with DF2
-  }
-
-  #if nothing to join
-  if (nrow(DF1) == 0) {
-    message("Warning, nothing joined! No case in DF1 matches any in DF2!")
-    return(DF2)
-  }
-  if (nrow(DF2) == 0) {
-    message("Warning, nothing joined! No case in DF2 matches any in DF1!")
-    return(DF1)
-  }
-
-  #combined dataset
-  if (main==0){ #create a combined dataset
-    #colnames, remove duplicates
-    total.colnames = c(colnames(DF1), colnames(DF2))
-    total.colnames.unique = unique(total.colnames)
-
-    #rownames, remove duplicates
-    total.rownames = c(rownames(DF1), rownames(DF2))
-    total.rownames.unique = unique(total.rownames)
-
-    #make DF3
-  	DF3 = as.data.frame(matrix(nrow = length(total.rownames.unique),
-                               ncol = length(total.colnames.unique)))
-  	rownames(DF3) = sort(total.rownames.unique)
-  	colnames(DF3) = total.colnames.unique
-  }
-  if (main==1){ #use first DF as main
-	  DF3 = DF1
-  }
-  if (main==2){ #use second DF as main
-	  DF3 = DF2
-  }
-
-  if (main!=2){
-  	#loop over input dataset 2
-  	for (variable in 1:length(colnames(DF2))){ #loop over variables/cols
-  		for (case in 1:length(rownames(DF2))){ #loop over cases/rows
-  		  if (is.na(DF2[case, variable])){ #skip if datapoint is missing
-  			  next
-  		  }
-  		  DF3[rownames(DF2)[case], colnames(DF2)[variable]] = DF2[case, variable]
-  		  #print(DF3[rownames(DF2)[case], colnames(DF2)[variable]]) #used for debugging
-  		}
-  	}
-  }
-  if (main!=1){ #if DF2 is main
-	    #loop over input dataset 1
-		for (variable in 1:length(colnames(DF1))){ #loop over variables/cols
-			for (case in 1:length(rownames(DF1))){ #loop over cases/rows
-			  if (is.na(DF1[case, variable])){ #skip if datapoint is missing
-				next
-			  }
-		    DF3[rownames(DF1)[case], colnames(DF1)[variable]] = DF1[case, variable]
-			#print(DF3[rownames(DF1)[case], colnames(DF1)[variable]]) #used for debugging
-			}
-		}
-	}
-
-  #output time
-  if (time) {
-    time2 = proc.time() - time1 #end timer
-    message(time2) #print time
-  }
-
-  return(DF3)
-}
-
-
-#' Dataset merger function for multiple data.frames.
-#'
-#' This is a wrapper for merge_datasets().
-#' @param ... (data.frames) Two or more data.frames to merge.
-#' @keywords merging, combining, datasets, data.frame, multi, wrapper
-#' @export
-#' @examples
-#' merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
-merge_datasets_multi = function(...) {
-  #wrap with Reduce
-  Reduce(function(x, y) merge_datasets(x, y), list(...))
-}
-
 
 #these two functions are wrappers intended to make it easier to work with the megadataset
 
@@ -119,7 +7,6 @@ merge_datasets_multi = function(...) {
 #'
 #' This is a convenient wrapper for read.csv()
 #' @param filename the file to be read
-#' @keywords wrapper read.csv
 #' @export
 #' @examples
 #' read_mega()
@@ -133,7 +20,6 @@ read_mega = function(filename){
 #' This is a convenient wrapper for write.csv()
 #' @param object the object to be written to a file
 #' @param filename the name of the file you want to write to
-#' @keywords wrapper, write.csv
 #' @export
 #' @examples
 #' write_mega()
@@ -151,7 +37,6 @@ write_mega = function(object, filename){
 #' @param df a data frame.
 #' @param var a string with the name of the variable to write.
 #' @param var a string with the desired filename to write to.
-#' @keywords convenience, output
 #' @export
 #' @examples
 #' output_sorted_var()
@@ -170,7 +55,6 @@ output_sorted_var = function(df, var, filename) {
 #'
 #' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
 #' @param names A character vector of the full names of countries and regions.
-#' @keywords abbreviate, names, shorten; ISO
 #' @export
 #' @examples
 #' as_abbrev()
@@ -199,19 +83,17 @@ as_abbrev = function(names, georgia = "country"){
 #'
 #' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
 #' @param x (character vector) The ISO-3 codes.
-#' @keywords names, ISO
 #' @export
 #' @examples
 #' as_long()
 as_long = function(x) {
-  library(stringr)
   d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
 
   sapply(x, function(i) {
     indice = (d_names$Codes == i) %>% #find matches
       which %>% #their indices
       `[`(1) #get the first
-    if(is.na(indice)) message(str_c(i, " could not be found!"))
+    if(is.na(indice)) message(stringr::str_c(i, " could not be found!"))
 
     return(d_names$Names[indice])
   })
@@ -233,11 +115,9 @@ as_long = function(x) {
 #' write_clipboard(cor(iris[-5]))
 #' write_clipboard(miss_add_random(iris))
 write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
-  library("stringr")
-  library("magrittr")
 
   #round
-  x = as.data.frame(x) %>% round_df(digits)
+  x = as.data.frame(x) %>% df_round(digits)
 
   #format if desired
   if (pad_digits) {
@@ -251,12 +131,12 @@ write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "
   if (clean_names) {
     for (char in clean_what) {
       if (is.data.frame(x) | is.matrix(x)) {
-        rownames(x) = str_replace_all(rownames(x), char, " ")
-        colnames(x) = str_replace_all(colnames(x), char, " ")
+        rownames(x) = stringr::str_replace_all(rownames(x), char, " ")
+        colnames(x) = stringr::str_replace_all(colnames(x), char, " ")
       }
 
       if (is.vector(x)) {
-        names(x) = str_replace_all(names(x), "_", " ")
+        names(x) = stringr::str_replace_all(names(x), "_", " ")
       }
     }
   }
@@ -290,7 +170,6 @@ write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "
 #' @param pad_columns (logical) Whether to pad empty columns to the data if the data and column dimensions do fit divide into a whole number. Defaults to TRUE.
 #' @param include_colnames (logical) Whether to include the column names in the output. Defaults to TRUE.
 #' @param rownames_colnames (character scalar) If adding colnames in rows, which rownames should these be given? Defaults to "name".
-#' @keywords reshape, stack, column, matrix, data.frame
 #' @export
 #' @examples
 #' df = split_every_k(1:12, 2) %>% as.data.frame
@@ -298,14 +177,12 @@ write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "
 #' stack_into_n_columns(df, 3)
 #' stack_into_n_columns(df, 4)
 stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colnames = TRUE, rowname_colnames = "name") {
-  library("stringr")
-  library("assertthat")
 
   #checks
   data = as.matrix(data)
-  assert_that(is.matrix(data))
-  assert_that(is_whole_number(columns))
-  assert_that(is.logical(pad_columns))
+  assertthat::assert_that(is.matrix(data))
+  assertthat::assert_that(is_whole_number(columns))
+  assertthat::assert_that(is.logical(pad_columns))
 
   #already the case?
   if (ncol(data) == columns) {
@@ -320,11 +197,11 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
 
       #pad cols
       v_n_to_pad = columns - (ncol(data) %% columns)
-      data = cbind(data, matrix(NA, ncol=v_n_to_pad, nrow=nrow(data)))
+      data = cbind(data, matrix(NA, ncol = v_n_to_pad, nrow = nrow(data)))
     }
   } else {
     if (ncol(data) %% columns != 0) {
-      stop(str_c("data isn't integer divisible into ", columns, " columns!", ncol(data), "/", columns, "=", ncol(data) %% columns))
+      stop(stringr::str_c("data isn't integer divisible into ", columns, " columns!", ncol(data), "/", columns, "=", ncol(data) %% columns))
     }
   }
 
@@ -383,7 +260,6 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
 #' split_into_n_columns(df, 3) #ok
 #' split_into_n_columns(df, 4) #stupid but no error!
 split_into_n_columns = function(data, split_times, pad_rows = T, include_rownames = T, rownames_var = "name", include_colnames = T) {
-  library(magrittr)
 
   #types
   data = as.data.frame(data)
@@ -455,9 +331,8 @@ split_into_n_columns = function(data, split_times, pad_rows = T, include_rowname
 #' @param restore_factors (logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.
 #' @export
 #' @examples
-#' merge_datasets2(iris[1:4], iris[1:5]) #merge together two parts of iris
-merge_datasets2 = function (DF1, DF2, join = "both", overwrite_NA = FALSE, restore_factors = FALSE){
-  library(magrittr)
+#' merge_datasets(iris[1:4], iris[1:5]) #merge together two parts of iris
+merge_datasets = function (DF1, DF2, join = "both", overwrite_NA = FALSE, restore_factors = FALSE){
 
   #checks
   if (!join %in% c("both", "left", "right")) stop("Invalid join parameter!")
@@ -549,18 +424,16 @@ merge_datasets2 = function (DF1, DF2, join = "both", overwrite_NA = FALSE, resto
 
 #' Merge multiple datasets at once, improved version.
 #'
-#' This is a wrapper for merge_datasets2().
+#' This is a wrapper for merge_datasets().
 #' @param ... (data.frames) Two or more data.frames to merge.
 #' @param join (character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.
 #' @param overwrite_NA (logical scalar) Whether to overwrite with NA values. Default = FALSE.
 #' @param restore_factors (logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.
 #' @export
 #' @examples
-#' merge_datasets2_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
-merge_datasets2_multi = function(..., join = "both", overwrite_NA = FALSE, restore_factors = FALSE) {
+#' merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
+merge_datasets_multi = function(..., join = "both", overwrite_NA = FALSE, restore_factors = FALSE) {
   #wrap with Reduce
-  Reduce(function(x, y) merge_datasets2(x, y, join=join, overwrite_NA = overwrite_NA, restore_factors = restore_factors), list(...))
+  Reduce(function(x, y) merge_datasets(x, y, join=join, overwrite_NA = overwrite_NA, restore_factors = restore_factors), list(...))
 }
-
-
 

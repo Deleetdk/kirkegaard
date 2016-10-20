@@ -25,12 +25,4 @@ get_Morans_I_multi(df, vars, dists, lat_var, lon_var, distance_method,
 \description{
 Returns a numeric vector with Moran's I coefficients.
 }
-\keyword{I,}
-\keyword{Moran's}
-\keyword{autocorrelation,}
-\keyword{distance,}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{spatial}
-\keyword{wrapper}
 

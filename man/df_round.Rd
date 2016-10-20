@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_round}
 \alias{df_round}
-\alias{round_df}
 \title{Round numeric variables of a data frame.}
 \usage{
 df_round(df, digits = 3)
@@ -19,6 +18,4 @@ Returns a data.frame where numeric variables have been rounded to the desired nu
 head(df_round(iris)) #round isis. Automatically skips non-numeric columns.
 head(df_round(iris, 0)) #round isis to 0 digits.
 }
-\keyword{data.frame}
-\keyword{round,}
 

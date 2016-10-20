@@ -1,21 +1,6 @@
 ## STATISTICS functions
 
 
-#' Wrapper for rcorr()
-#'
-#' A wrapper for rcorr() that takes data.frames or matrices as opposed to only matrices.
-#' @param x a matrix or data.frame
-#' @export
-#' @examples
-#' rcorr2(iris[-5])
-rcorr2 = function(x, ...) {
-  library(Hmisc) #for rcorr()
-  x = as.matrix(x)
-  x = rcorr(x, ...)
-  return(x)
-}
-
-
 #' Correlation matrix
 #'
 #' Outputs a correlation matrix. Supports weights, confidence intervals, correcting for measurement error and rounding.
@@ -45,7 +30,6 @@ rcorr2 = function(x, ...) {
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
-  library("weights"); library("stringr"); library("psych"); library("psychometric"); library("magrittr")
 
   #checks
   data = as.data.frame(data)
@@ -78,7 +62,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
 
   ##simple weights and no extras?
   if (simpleweights && v_noextras) {
-    m = wtd.cors(data, weight = weights)
+    m = weights::wtd.cors(data, weight = weights)
 
     #correct for unreliability
     m = combine_upperlower(psych::correct.cor(m, reliabilities), psych::correct.cor(m, reliabilities) %>% t)
@@ -122,7 +106,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
       if (simpleweights && !missing("CI")) {
 
         #weighted cor
-        r_obj = wtd.cor(data[row], data[col], weight = weights)
+        r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
         #correct for unreliability
         r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
@@ -131,18 +115,18 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
         r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
-        r_n = count.pairwise(data[row], data[col])
+        r_n = psych::count.pairwise(data[row], data[col])
 
         #format cor
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
         #confidence interval
-        r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
+        r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
           winsorise(1, -1) %>% #limit CIs to between -1 and 1
           format_digits(digits = CI_round)
 
         #format and save
-        m[row, col] = str_replace(CI_template, "%r", r_r) %>%
+        m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
           str_replace("%lower", r_CI[1]) %>%
           str_replace("%upper", r_CI[2])
       }
@@ -150,7 +134,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
       #simple weights & p_val
       if (simpleweights && !missing("p_val")) {
         #observed r
-        r_obj = wtd.cor(data[row], data[col], weight = weights)
+        r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
         #correct for unreliability
         r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
@@ -159,27 +143,27 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
         r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
-        r_n = count.pairwise(data[row], data[col])
+        r_n = psych::count.pairwise(data[row], data[col])
 
         #rounding
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
         #format and save
-        m[row, col] = str_replace(p_template, "%r", r_r) %>%
+        m[row, col] = stringr::str_replace(p_template, "%r", r_r) %>%
           str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
       }
 
       #complex weights
       if (!simpleweights) {
-        v_weights = harmonic.mean((weights[c(row, col)]) %>% t)
+        v_weights = psych::harmonic.mean((weights[c(row, col)]) %>% t)
 
         if (v_noextras) {
-          m[row, col] = wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
+          m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
         }
 
         if (!missing("CI")) {
           #observed r
-          r_obj = wtd.cor(data[row], data[col], weight = v_weights)
+          r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
           #correct for unreliability
           r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
@@ -188,25 +172,25 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
           r_obj[1] %<>% winsorise(1, -1)
 
           #sample size
-          r_n = count.pairwise(data[row], data[col])
+          r_n = psych::count.pairwise(data[row], data[col])
 
           #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
           #CI
-          r_CI = CIr(r = r_obj[1], n = r_n, level = CI) %>%
+          r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
             winsorise(1, -1) %>% #limit CIs to between -1 and 1
             format_digits(digits = CI_round)
 
           #format and save
-          m[row, col] = str_replace(CI_template, "%r", r_r) %>%
+          m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
             str_replace("%lower", r_CI[1]) %>%
             str_replace("%upper", r_CI[2])
         }
 
         if (!missing("p_val")) {
           #observed r
-          r_obj = wtd.cor(data[row], data[col], weight = v_weights)
+          r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
           #correct for unreliability
           r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
@@ -215,14 +199,14 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
           r_obj[1] %<>% winsorise(1, -1)
 
           #n
-          r_n = count.pairwise(data[row], data[col])
+          r_n = psych::count.pairwise(data[row], data[col])
 
           #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
           #format and save
-          m[row, col] = str_replace(p_template, "%r", r_r) %>%
-            str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
+          m[row, col] = stringr::str_replace(p_template, "%r", r_r) %>%
+            stringr::str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
         }
 
       }
@@ -249,7 +233,6 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
 #' @param df a data.frame.
 #' @param num.to.remove the number of variables to remove.
 #' @param remove.method the method to use to remove variables. Methods are "c", "l", "r", "f" and "s": conversative, liberal, random, first or second.
-#' @keywords psychometrics, psychology, latent variable, factor analysis, redundant
 #' @export
 #' @examples
 #' remove_redundant_vars()
@@ -326,7 +309,6 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
 #' @param threshold (numeric scalar) A threshold above which intercorrelations are removed. Defaults to .9.
 #' @param cor_method (character scalar) The correlation method to use. Parameter is fed to cor(). Defaults to "pearson".
 #' @param messages (boolean) Whether to print diagnostic messages.
-#' @keywords psychometrics, latent variable, factor analysis, redundant, variable
 #' @export
 #' @examples
 #' remove_redundant_vars()
@@ -365,11 +347,11 @@ remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson", me
   #over threshold message
   m_long_threshold = m_long[m_long$r >= threshold | m_long$r <= -threshold, ]
   if(nrow(m_long_threshold) != 0) {
-    suppressor({message("The following variable pairs had stronger intercorrelations than |", threshold, "|:")}, messages = messages)
+    silence({message("The following variable pairs had stronger intercorrelations than |", threshold, "|:")}, messages = messages)
     if (messages) round_df(m_long_threshold) %>% print #round and print
 
   } else {
-    suppressor({message("No variables needed to be excluded.")}, messages = messages)
+    silence({message("No variables needed to be excluded.")}, messages = messages)
 
     return(df)
   }
@@ -391,8 +373,8 @@ remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson", me
   }
 
   #exclude variables
-  suppressor({message(str_c("The following variables were excluded:"))}, messages = messages)
-  suppressor({message(str_c(vars_to_exclude, collapse = ", "))}, messages = messages)
+  silence({message(str_c("The following variables were excluded:"))}, messages = messages)
+  silence({message(str_c(vars_to_exclude, collapse = ", "))}, messages = messages)
   df = df[!colnames(df) %in% vars_to_exclude]
 
   #return reduced df
@@ -410,12 +392,10 @@ remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson", me
 #' @param y A numeric vector to correlate with x after partialing out z.
 #' @param z A numeric vector to partial out of y.
 #' @param weights A numeric vector of weights to use. If none given, will return unweighted results.
-#' @keywords psychometrics, partial, semi-partial, correlation, weights
 #' @export
 #' @examples
 #' semi_par()
 semi_par = function(x, y, z, weights = NA, complete_cases = T) {
-  library(weights)
 
   #if no weights, set to vector of 1's
   if (length(weights) == 1) {
@@ -437,8 +417,8 @@ semi_par = function(x, y, z, weights = NA, complete_cases = T) {
 
   #model
   df$y_res = resid(lm(y ~ z, weights = w, data = df))
-  r_sp = wtd.cor(df$x, df$y_res, weight = df$w)
-  r = wtd.cor(df$x, df$y, weight = df$w)
+  r_sp = weights::wtd.cor(df$x, df$y_res, weight = df$w)
+  r = weights::wtd.cor(df$x, df$y, weight = df$w)
   return(list(normal = r,
               semi_partial = r_sp))
 }
@@ -454,13 +434,10 @@ semi_par = function(x, y, z, weights = NA, complete_cases = T) {
 #' @param secondaries A character vector with the names of the secondary predictor variables.
 #' @param weights A string with the name of the variable to use for weights.
 #' @param standardize Whether to standardize the data frame before running results. The weights variable will not be standardized.
-#' @keywords psychometrics, partial, semi-partial, correlation, weights
 #' @export
 #' @examples
 #' semi_par_serial()
 semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, standardize=T) {
-  library(weights) #for weighted correlations
-  library(stringr) #strings
 
   #subset and deal with lack of weights
   if (is.na(weights)) {
@@ -477,10 +454,10 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
   df = na.omit(df)
 
   #standardize
-  if (standardize) df = std_df(df, exclude = weights)
+  if (standardize) df = df_standardize(df, exclude = weights)
 
   #primary
-  r_prim = round(wtd.cor(df[, dependent], df[, primary], weight = df[, weights]), 2)
+  r_prim = round(weights::wtd.cor(df[, dependent], df[, primary], weight = df[, weights]), 2)
 
   #make results object
   results = data.frame(matrix(nrow = length(secondaries), ncol = 2))
@@ -493,16 +470,16 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
     tmp_secondary = secondaries[sec_idx]
 
     #make the model
-    tmp_model = str_c(dependent, " ~ ", primary)
+    tmp_model = stringr::str_c(dependent, " ~ ", primary)
 
     #regress
     df$tmp_resids = resid(lm(as.formula(tmp_model), weights = df[, weights], data = df))
 
     #secondary original
-    r_sec = wtd.cor(df[, dependent], df[, tmp_secondary], weight = df[, weights])[1]
+    r_sec = weights::wtd.cor(df[, dependent], df[, tmp_secondary], weight = df[, weights])[1]
 
     #semi-partial
-    r_sec_sp = wtd.cor(df$tmp_resids, df[, tmp_secondary], weight = df[, weights])[1]
+    r_sec_sp = weights::wtd.cor(df$tmp_resids, df[, tmp_secondary], weight = df[, weights])[1]
 
     #save
     results[sec_idx, ] = c(r_sec, r_sec_sp)
@@ -520,13 +497,10 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
 #' @param df A data.frame.
 #' @param weight_var A character vector of the name of the weights variable.
 #' @param weights A numeric vector of the weights to use.
-#' @keywords correlation, matrix, weights
 #' @export
 #' @examples
 #' cor_matrix_weights()
 cor_matrix_weights = function(df, weight_var, weights) {
-  library(weights)
-  #for weights
 
   #if weights are in the data.frame
   if (!missing("weight_var")) {
@@ -541,8 +515,8 @@ cor_matrix_weights = function(df, weight_var, weights) {
   if (length(weights) != nrow(df)) stop("Lengths of weights vector and data.frame don't match!")
 
   #get cors
-  r = wtd.cors(df)
-  r_wt = wtd.cors(df, weight = weights)
+  r = weights::wtd.cors(df)
+  r_wt = weights::wtd.cors(df, weight = weights)
 
   #combine
   r_combined = combine_upperlower(r, r_wt)
@@ -560,13 +534,10 @@ cor_matrix_weights = function(df, weight_var, weights) {
 #' @param y String with the name of the second variable.
 #' @param z String with the name of the control variable.
 #' @param weights String with the name of the weights variable. Can be left out.
-#' @keywords correlation, partial, weights
 #' @export
 #' @examples
 #' MOD_partial()
 MOD_partial = function(df, x, y, z, weights_var) {
-  library(stringr)
-  library(weights)
 
   #check input
   if (missing("df") | missing("x") | missing("y") | missing("z")) stop("df, x, y or z is missing!")
@@ -580,8 +551,8 @@ MOD_partial = function(df, x, y, z, weights_var) {
   weights_var = "weights___"
 
   #build models
-  mod1 = str_c(x, " ~ ", str_c(z, collapse = " + "))
-  mod2 = str_c(y, " ~ ", str_c(z, collapse = " + "))
+  mod1 = stringr::str_c(x, " ~ ", str_c(z, collapse = " + "))
+  mod2 = stringr::str_c(y, " ~ ", str_c(z, collapse = " + "))
 
   #fit models
   fit1 = lm(mod1, data = df, weights = weights___, na.action = na.exclude)
@@ -593,14 +564,10 @@ MOD_partial = function(df, x, y, z, weights_var) {
   resid2 = resid(fit2)
 
   #correlate
-  r = wtd.cor(resid1, resid2, weight = df$weights___)
+  r = weights::wtd.cor(resid1, resid2, weight = df$weights___)
 
   return(r[1])
 }
-
-
-
-
 
 
 
@@ -721,7 +688,6 @@ get_t_value = function(conf, df, ...) {
 #' v_test_group = c(rep(1, 3), rep(2, 4), rep(3, 2), rep(4, 5), rep(5, 5))
 #' pool_sd(v_test_vals, v_test_group)
 pool_sd = function(x, group) {
-  library(plyr)
 
   #validate input
   if (!is_simple_vector(x)) stop("x must be a vector!")
@@ -732,7 +698,7 @@ pool_sd = function(x, group) {
   d = data.frame("x" = x, "group" = group)
 
   #summarize
-  d_sum = ddply(d, "group", plyr::summarize,
+  d_sum = plyr::ddply(d, "group", plyr::summarize,
                 df = sum(!is.na(x)) - 1,
                 var = var(x, na.rm = TRUE)) %>%
     na.omit() #missing data groups
@@ -756,8 +722,6 @@ pool_sd = function(x, group) {
 #' @examples
 #' SMD_matrix(iris$Sepal.Length, iris$Species)
 SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all", ...) {
-  library(plyr)
-  library(magrittr)
 
   #df form
   d_x = data.frame(x = x, group = as.factor(group))
@@ -799,12 +763,12 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
       } else if (dispersion == "mad") {
         #mean of medians, robust
         if (dispersion_method == "all") {
-          disp = daply(d_x, "group", function(part) {
+          disp = plyr::daply(d_x, "group", function(part) {
             stats::mad(part$x, na.rm = TRUE)
           }) %>% mean
         }
         if (dispersion_method == "pair") {
-          disp = daply(d_comb, "group", function(part) {
+          disp = plyr::daply(d_comb, "group", function(part) {
             stats::mad(part$x, na.rm = TRUE)
           }) %>% mean
         }
@@ -847,7 +811,6 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
 #' homogeneity(c(.7, .2, .1), summary = T)
 #' homogeneity(c(80, 15, 5), summary = T)
 homogeneity = function(x, reverse = F, summary = F) {
-  library(magrittr)
 
   #not using summary statistics
   if (!summary) {
@@ -945,7 +908,6 @@ wtd_sd = function(x, w, sample = T, error = T) {
 #' mean(X) #same as above
 #' wtd_mean(X, W) #slightly different
 wtd_mean = function(x, w, error=T) {
-  library(magrittr)
 
   #no weights?
   if (missing("w")) w = rep(1, length(x))

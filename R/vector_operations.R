@@ -101,8 +101,7 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
   #fix labels
   if (midpoints) {
     #some code here
-    library(stringr)
-    str_match_all(string = y, pattern = "[\\d\\.]+")
+    stringr::str_match_all(string = y, pattern = "[\\d\\.]+")
   }
 
   y
@@ -118,7 +117,6 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
 #' @examples
 #' mean_abs_diff(iris[[1]])
 mean_abs_diff = function(x, na.rm = T) {
-  library(magrittr)
   dist(unlist(as.vector(x))) %>% as.vector() %>% mean(., na.rm = na.rm)
 }
 

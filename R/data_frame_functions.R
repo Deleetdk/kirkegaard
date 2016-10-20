@@ -6,8 +6,7 @@
 #' @param messages (log scalar) Whether to output messages (default T).
 #' @param exclude_factors (log scalar) Whether to exclude factors (default T).
 #' @param w (num vector) Weights to use, if any.
-#' @export std_df df_standardize
-#' @aliases std_df
+#' @export
 #' @return Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
 #' @examples
 #' head(iris) #not standardized
@@ -15,8 +14,6 @@
 #' head(df_standardize(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
 #' head(df_standardize(iris, w = runif(150))) #standardized with weights
 df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w) {
-  library(stringr);library(magrittr)
-
   #no weights
   if (missing("w")) w = rep(1, nrow(df))
 
@@ -52,8 +49,11 @@ df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w
 
   return(df)
 }
+
 #old name
-std_df = df_standardize
+std_df = function(...) {
+  stop("std_df is depreciated, please see df_standardize")
+}
 
 
 #' Round numeric variables of a data frame.
@@ -61,9 +61,7 @@ std_df = df_standardize
 #' Returns a data.frame where numeric variables have been rounded to the desired number of digits.
 #' @param df A data.frame or matrix.
 #' @param digits The number of digits to round to.
-#' @keywords round, data.frame
-#' @export df_round round_df
-#' @aliases round_df
+#' @export
 #' @examples
 #' head(df_round(iris)) #round isis. Automatically skips non-numeric columns.
 #' head(df_round(iris, 0)) #round isis to 0 digits.
@@ -79,7 +77,10 @@ df_round = function(df, digits=3) {
   return(df)
 }
 
-round_df = df_round
+#old name
+round_df = function(...) {
+  stop("round_df is depreciated, please see df_round")
+}
 
 
 #' Rank numeric variables of a data frame.
@@ -87,13 +88,10 @@ round_df = df_round
 #' Returns a data.frame where numeric variables have been converted to their ranks.
 #' @param df A data.frame.
 #' @param ... Other parameters for \code{\link{rank}}.
-#' @export rank_df df_rank
-#' @aliases rank_df
+#' @export
 #' @examples
 #' head(df_rank(iris)) #rank iris data. Automatically skips non-numeric columns.
 df_rank = function(df, ...) {
-  library(stringr)
-
   #for each column
   df2 = lapply(df, function(x) {
     #check what class it is, if numeric, then rank, otherwise, leave it as it is
@@ -103,7 +101,10 @@ df_rank = function(df, ...) {
   return(df2)
 }
 
-rank_df = df_rank
+#old name
+rank_df = function(...) {
+  stop("rank_df is depreciated, please see df_round")
+}
 
 
 #' Convert a data.frame to a numeric matrix, including factors.
@@ -222,8 +223,6 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
     stop("This parameter is depreciated. Use one of the two new ones.")
   }
 
-  library(stringr)
-
   #convert to df from whatever
   df = as.data.frame(df)
 
@@ -237,8 +236,8 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
   #commas?
   if (remove_commas) {
     df = lapply(df, function(x) {
-      if (str_detect(x, ",") %>% any(., na.rm = T)) { #if commas present
-        return(str_replace_all(x, ",", "")) #replace commas
+      if (stringr::str_detect(x, ",") %>% any(., na.rm = T)) { #if commas present
+        return(stringr::str_replace_all(x, ",", "")) #replace commas
       } else { #if not
         return(x) #return as it was
       }
@@ -310,8 +309,6 @@ as_num_df = df_as_num
 #' #add delta variables to iris between Sepal.Length and all other numerical variables
 #' head(df_add_delta(iris, primary_var = 1))
 df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep = "_", subtract_from_primary = T, standardize = F) {
-  library(stringr)
-  #browser()
   #checks
   df = as.data.frame(df)
   if (missing("primary_var")) stop("Primary var not given!")
@@ -375,7 +372,7 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 
   #add delta vars
   for (var in secondary_vars) {
-    tmp_delta_name = str_c(prefix, sep, primary_var, sep, var)
+    tmp_delta_name = stringr::str_c(prefix, sep, primary_var, sep, var)
 
     #method
     if (!standardize) {
@@ -414,9 +411,6 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 #' all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
 #' df_rowFunc(iris[-5], func = median) #rowMedians
 df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T, progress = "text") {
-  library(stringr)
-  library(plyr)
-
   if (!missing("pattern")) stop("pattern is depreciated. Use df_subset_by_pattern")
 
   #make df
@@ -490,7 +484,7 @@ sort_df = df_sort
 #' df_residualize(df, resid.vars = "c") #without weights
 #' df_residualize(df, resid.vars = "c", weights = weightsvar) #with weights
 df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T, return.resid.vars = T, print.models = F, exclude_vars = NULL, weights = NA) {
-  library("stringr")
+
 
   #save rownames
   v_rownames = rownames(data)
@@ -524,7 +518,7 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 
   for (colname in colnames(data)) { #loop over colnames
     if (!colname %in% v_excluded) { #if colname isn't excluded
-      form = str_c(colname, " ~ ", paste0(resid.vars)) %>% as.formula() #make formula
+      form = stringr::str_c(colname, " ~ ", paste0(resid.vars)) %>% as.formula() #make formula
       if (print.models) message(form) #message if desired
 
       #get resids
@@ -582,8 +576,6 @@ residualize_DF = df_residualize
 #' df_merge_rows(t, "large_unit") #rows merged by sum by default
 #' df_merge_rows(t, "large_unit", func = mean) #rows merged by mean
 df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, na.rm=T), numeric = TRUE, ...) {
-  library(plyr)
-  library(stringr)
 
   #checks
   if (missing("data")) stop("data must be given!")
@@ -666,8 +658,7 @@ merge_rows = df_merge_rows
 #' merge_rows_by_name(df = t1, names = c("C", "D"), func = mean)
 merge_rows_by_name = function(df, names, new_name, func = mean, numeric = TRUE) {
   message("This function is depreciated. Use df_merge_rows.")
-  library(stringr)
-  library(plyr)
+
 
   #checks
   if (missing("df")) stop("df must be given!")
@@ -723,8 +714,7 @@ df_copy_columns = function(from, to, columns, pattern) {
 
   #pattern
   if (!missing("pattern")) {
-    library(stringr)
-    columns = colnames(from)[str_detect(string = colnames(from), pattern = pattern)]
+    columns = colnames(from)[stringr::str_detect(string = colnames(from), pattern = pattern)]
   }
 
   #columns
@@ -821,7 +811,6 @@ df_to_ldf = function(data, by, remove_by = T) {
 #' #then merge to one data.frame
 #' ldf_to_df(iris_list) #note the missing data and column order
 ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, rownames_name = "rownames", messages = T) {
-  library(magrittr)
   loadNamespace("data.table")
 
   #are there list names? if not, set them
@@ -908,7 +897,6 @@ add_id = df_add_id
 #' #warning on non-existent names
 #' head(df_rename(iris, "bleh", "blah"))
 df_rename = function(data, current_names, new_names) {
-  library(magrittr)
 
   #check input
   is_(data, class="data.frame", error_on_false = T)
@@ -1097,7 +1085,6 @@ df_add_affix = function(data, prefix, suffix) {
 #' #select all by not providing any selector
 #' str(df_colFunc(iris, func = as.character)) #all have been changed to chr
 df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T, ...) {
-  library(stringr)
 
   #checks
   check_missing(c("data", "func"))
@@ -1109,7 +1096,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
   #which cols?
   if (!missing("pattern")) {
     #find names by regex
-    library(stringr)
+
     indices = str_detect2(names(data), pattern = pattern, value = T)
     #inverse if desired
     if (pattern_inverse) indices = setdiff(names(data), indices)
@@ -1119,7 +1106,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
     #chr indices
     if (is.character(indices)) {
       if (!all(indices %in% names(data))) {
-        v_missing_names = setdiff(indices, names(data)) %>% str_c(collapse = ", ")
+        v_missing_names = setdiff(indices, names(data)) %>% stringr::str_c(collapse = ", ")
         stop("Some colnames did not exist in the data.frame!: " + v_missing_names)
       }
     }
@@ -1162,7 +1149,6 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 #' @examples
 #' df_t(iris)
 df_t = function(df) {
-  library(magrittr)
   df2 = t(df) %>% as.data.frame()
 
   #names
@@ -1184,7 +1170,6 @@ t_df = df_t
 #' @examples
 #'
 df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".id", method = "pure_tidyr") {
-  library(tidyr)
 
   #convert class if needed
   data = as.data.frame(data)
@@ -1204,7 +1189,7 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
     l_combined = mapply(members = l_memberships, name = names(l_memberships), FUN = function(members, name) {
       # browser()
       #gather members of this group
-      d_gathered = gather_(data, key_col = key_col, value_col = ".value", gather_cols = colnames_data[members]) %>%
+      d_gathered = tidyr::gather_(data, key_col = key_col, value_col = ".value", gather_cols = colnames_data[members]) %>%
         extract_last(margin_2 = 1:2) #extract last two columns
 
       #get the varying part
@@ -1227,7 +1212,7 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
     d_long = ldf_to_df(l_combined, add_by = F)
 
     #spread
-    d_wide = spread_(d_long, key_col = ".var", value_col = ".value")
+    d_wide = tidyr::spread_(d_long, key_col = ".var", value_col = ".value")
 
     #return
     return(d_wide)
@@ -1235,14 +1220,14 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
 
   if (method == "pure_tidyr") {
     #gather all values into one very long data.frame
-    d_tmp_a = gather_(data, key_col = ".varying", value_col = ".value", gather_cols = colnames_data)
+    d_tmp_a = tidyr::gather_(data, key_col = ".varying", value_col = ".value", gather_cols = colnames_data)
     #add two missing columns
-    d_tmp_a$.varying = str_replace(d_tmp_a$.varying, pattern = pattern, replacement = "|||\\1")
+    d_tmp_a$.varying = stringr::str_replace(d_tmp_a$.varying, pattern = pattern, replacement = "|||\\1")
     d_tmp_a[[id_col]] = rownames(data)
     #separate the constant from the varying part of the variable names
-    d_tmp_b = separate_(d_tmp_a, col = ".varying", into = c(".variable", key_col), sep = "\\|\\|\\|")
+    d_tmp_b = tidyr::separate_(d_tmp_a, col = ".varying", into = c(".variable", key_col), sep = "\\|\\|\\|")
     #finally, spread out the variables
-    d_tmp_c = spread_(d_tmp_b, key_col = ".variable", value_col = ".value")
+    d_tmp_c = tidyr::spread_(d_tmp_b, key_col = ".variable", value_col = ".value")
 
     #return
     return(d_tmp_c)
@@ -1259,15 +1244,13 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
 #' @return A list of integer vectors. Each vector is the indices of the variables that belong to each group.
 #' @export
 group_by_pattern = function(x, pattern) {
-  library(stringr)
-
   #check x input
   is_(x, class = "character", error_on_false = T)
 
   #check if pattern input is right size and type
   is_(pattern, class = "character", size = 1, error_on_false = T)
   #check if pattern input has a capturing group as required
-  if (!(str_detect(pattern, pattern = "\\(") & str_detect(pattern, pattern = "\\)"))) stop("The given pattern did not have a capturing group!")
+  if (!(stringr::str_detect(pattern, pattern = "\\(") & stringr::str_detect(pattern, pattern = "\\)"))) stop("The given pattern did not have a capturing group!")
 
   ### determine the groups of variables
   #remove the varying part
@@ -1294,18 +1277,16 @@ group_by_pattern = function(x, pattern) {
 #' @param pattern (character scalar) A regex pattern.
 #' @param inverse (logical scalar) Whther to keep the non-matches instead.
 #' @return Returns the subset of the object.
-#' @export df_subset_by_pattern subset_by_pattern
-#' @aliases subset_by_pattern
+#' @export
 #' @examples
 #' df_subset_by_pattern(iris, "Length") # length columns
 #' df_subset_by_pattern(iris, "Length", T) # non-length columns
 df_subset_by_pattern = function(data, pattern, inverse = FALSE) {
-  library(stringr)
-
-  if (!inverse) return(data[, str_detect(colnames(data), as.character(pattern)), drop = FALSE])
-  if (inverse) return(data[, !str_detect(colnames(data), as.character(pattern)), drop = FALSE])
+  if (!inverse) return(data[, stringr::str_detect(colnames(data), as.character(pattern)), drop = FALSE])
+  if (inverse) return(data[, !stringr::str_detect(colnames(data), as.character(pattern)), drop = FALSE])
 }
-subset_by_pattern = df_subset_by_pattern
+
+
 
 #' Remove NA columns
 #'
@@ -1313,8 +1294,7 @@ subset_by_pattern = df_subset_by_pattern
 #' @param data (data.frame) Data to subset.
 #' @param keep (num or chr vector) A vector of names of columns to keep no matter what. Can also be numeric indices which are then replaced with the colnames.
 #' @return Returns the subset of the object.
-#' @export remove_NA_vars df_remove_NA_vars
-#' @aliases remove_NA_vars
+#' @export
 df_remove_NA_vars = function(data, keep) {
   #keep vector
   if (missing("keep")) keep = ""
@@ -1330,7 +1310,6 @@ df_remove_NA_vars = function(data, keep) {
   })
   data[!v_remove | colnames(data) %in% keep]
 }
-remove_NA_vars = df_remove_NA_vars
 
 
 #' Subset a data.frame flexibilly
@@ -1369,7 +1348,7 @@ df_flexsubset = function(data, vars, messages = T) {
   if (length(vars_overlap) == 0) warning("There was no overlap in columns! Returning a 0-column data.frame. This may be an error.")
 
   #messages
-  if (messages & length(vars_nonoverlap) > 0) message("The following variables were not found: " + str_c(vars_nonoverlap, collapse = ", "))
+  if (messages & length(vars_nonoverlap) > 0) message("The following variables were not found: " + stringr::str_c(vars_nonoverlap, collapse = ", "))
 
   #return
   data[, vars_overlap, drop = F]

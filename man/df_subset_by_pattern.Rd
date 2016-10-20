@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_subset_by_pattern}
 \alias{df_subset_by_pattern}
-\alias{subset_by_pattern}
 \title{Subset by pattern}
 \usage{
 df_subset_by_pattern(data, pattern, inverse = FALSE)

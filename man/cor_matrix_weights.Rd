@@ -19,7 +19,4 @@ Inputs a data.frame and a set of weights. The weights can be given either as the
 \examples{
 cor_matrix_weights()
 }
-\keyword{correlation,}
-\keyword{matrix,}
-\keyword{weights}
 

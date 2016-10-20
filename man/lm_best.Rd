@@ -15,9 +15,4 @@ Returns the index of the model with the highest R2 adj. value.
 \examples{
 lm_best()
 }
-\keyword{R2}
-\keyword{adj.,}
-\keyword{best}
-\keyword{fit,}
-\keyword{model,}
 

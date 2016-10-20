@@ -44,13 +44,12 @@ combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
 #' @examples
 #' get_prop_table(iris$Sepal.Length)
 get_prop_table = function(x, breaks_ = 20){
-  library(magrittr)
-  library(plyr)
+
   x_prop_table = cut(x, 20) %>% table(.) %>% prop.table %>% data.frame
   colnames(x_prop_table) = c("interval", "density")
   intervals = x_prop_table$interval %>% as.character
-  fetch_numbers = str_extract_all(intervals, "\\d\\.\\d*")
-  x_prop_table$means = laply(fetch_numbers, function(x) {
+  fetch_numbers = stringr::str_extract_all(intervals, "\\d\\.\\d*")
+  x_prop_table$means = plyr::laply(fetch_numbers, function(x) {
     x %>% as.numeric %>% mean
   })
   return(x_prop_table)
@@ -64,7 +63,6 @@ get_prop_table = function(x, breaks_ = 20){
 #'
 #' Returns the dimensions of an object. Also works on atomic (1-d) objects for which base-r dim() returns NULL.
 #' @param x (an object) An object.
-#' @keywords dim, dimensions
 #' @export
 #' @examples
 #' v = 1:10
@@ -94,7 +92,6 @@ get_dims = function(x) {
 #' copy_names(m, n)
 #' n
 copy_names = function(x, y, partialmatching = T) {
-  library(stringr)
 
   #find object dimensions
   x_dims = get_dims(x)
@@ -110,7 +107,7 @@ copy_names = function(x, y, partialmatching = T) {
     if (all(x_dims == y_dims)) {
       attr(y, "dimnames") = attr(x, "dimnames")
     } else {
-      stop(str_c("Dimensions did not match! ", x_dims, " vs. ", y_dims))
+      stop(stringr::str_c("Dimensions did not match! ", x_dims, " vs. ", y_dims))
     }
   }
 
@@ -137,7 +134,6 @@ copy_names = function(x, y, partialmatching = T) {
 #' @param x (an object) An object whose dimnames should be copied.
 #' @param length (numeric scalar) The desired length.
 #' @param value (numeric/character/logical scalar) The value to fill in.
-#' @keywords vector, fill
 #' @export
 #' @examples
 #' fill_in(1:5, 10)
@@ -161,19 +157,16 @@ fill_in = function(x, length, value = NA) {
 #' split_every_k(1:12, 4)
 #' split_every_k(1:11, 4) #last group isnt as large as the others
 split_every_k = function(x, k, uneven = T) {
-  library("stringr")
-  library("assertthat")
-  library("magrittr")
 
   #input checks
-  assert_that(is.vector(x))
-  assert_that(is_whole_number(k))
-  assert_that(is.logical(uneven))
+  assertthat::assert_that(is.vector(x))
+  assertthat::assert_that(is_whole_number(k))
+  assertthat::assert_that(is.logical(uneven))
 
   #check length
   if (!uneven) {
     if (length(x) %% k != 0) {
-      stop(str_c("The length of n was not integer disible by n! ", length(x), "%%", k, "=", length(x) %% k))
+      stop(stringr::str_c("The length of n was not integer disible by n! ", length(x), "%%", k, "=", length(x) %% k))
     }
   }
 
@@ -200,11 +193,8 @@ split_every_k = function(x, k, uneven = T) {
 #' l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
 #' named_vectors_to_df(l)
 named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_value") {
-  library("magrittr")
-  library("stringr")
 
   #checks
-
   #how many vectors
   v_vectors = length(list)
 
@@ -216,7 +206,7 @@ named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_val
 
   #make data.frame
   df = matrix(ncol = 2*v_vectors, nrow = v_max) %>% as.data.frame
-  v_names = str_c(rep(names(list), each = 2), c(name_suffix, value_suffix))
+  v_names = stringr::str_c(rep(names(list), each = 2), c(name_suffix, value_suffix))
   colnames(df) = v_names
 
   #fill out values
@@ -234,8 +224,7 @@ named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_val
 #' @param expr (expression) Some expression to run.
 #' @param warnings (logical) Show warnings? Default=F.
 #' @param messages (logical) Show messages? Default=F.
-#' @export silence suppressor
-#' @aliases suppressor
+#' @export
 #' @examples
 #' silence(warning())
 #' silence(log(-1))
@@ -264,15 +253,11 @@ silence = function(expr, warnings = F, messages = F, startupmessages = F) {
 
 }
 
-suppressor = silence #old name
-
-
 
 #' Merge vectors by alternating elements.
 #'
 #' Inputs a list of equal length vectors, outputs a vector which is the merged vector by picking elements from each vector in alternating fashion.
 #' @param x (a list of vectors) The list of vectors.
-#' @keywords vector, merge, alternate, intertwine
 #' @export
 #' @examples
 #' alternate(list(1:3, letters[1:3]))
@@ -301,17 +286,6 @@ alternate = function(x) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 #' Format number of digits
 #'
 #' A wrapper for \code{\link{format}} and \code{\link{round}} that makes sure that a certain number of digits are shown after rounding. Useful for outputting numbers for tables. Vectorized.
@@ -334,16 +308,11 @@ format_digits = function(x, digits = 2) {
 #function from http://stackoverflow.com/questions/4730551/making-a-string-concatenation-operator-in-r
 
 
-
-
-
-
 #' Write session information to a file.
 #'
 #' A wrapper for writeLines() and capture.output().
 #' @param filename (chr scalar) The filename of the file to write to. Default is "sessions_info.txt".
 #' @param print (logical scalar) Whether to also print the output. Default=FALSE.
-#' @return Logical scalar.
 #' @export
 #' @examples
 #' write_sessioninfo("session_info.txt", print = TRUE)

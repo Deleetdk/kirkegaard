@@ -21,8 +21,4 @@ Examines how the exclusion of each particular case influences the factor loading
 \examples{
 FA_robust_cormatrix()
 }
-\keyword{analysis.}
-\keyword{factor}
-\keyword{psychometrics,}
-\keyword{robust,}
 

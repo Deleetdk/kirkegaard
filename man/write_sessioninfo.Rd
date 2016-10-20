@@ -11,9 +11,6 @@ write_sessioninfo(filename = "sessions_info.txt", print = FALSE)
 
 \item{print}{(logical scalar) Whether to also print the output. Default=FALSE.}
 }
-\value{
-Logical scalar.
-}
 \description{
 A wrapper for writeLines() and capture.output().
 }

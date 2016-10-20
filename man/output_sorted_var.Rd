@@ -19,6 +19,4 @@ This is a convenience function for outputting lists
 \examples{
 output_sorted_var()
 }
-\keyword{convenience,}
-\keyword{output}
 

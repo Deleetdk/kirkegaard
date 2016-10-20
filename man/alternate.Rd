@@ -15,8 +15,4 @@ Inputs a list of equal length vectors, outputs a vector which is the merged vect
 \examples{
 alternate(list(1:3, letters[1:3]))
 }
-\keyword{alternate,}
-\keyword{intertwine}
-\keyword{merge,}
-\keyword{vector,}
 

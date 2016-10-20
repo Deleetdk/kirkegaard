@@ -15,7 +15,4 @@ Takes an input either a list of factor analysis objects from fa() (psych package
 \examples{
 FA_congruence_matrix()
 }
-\keyword{congruence,}
-\keyword{factor,}
-\keyword{matrix}
 

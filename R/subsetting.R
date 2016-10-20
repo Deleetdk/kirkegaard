@@ -12,13 +12,10 @@
 #' @param func_str (character scalar) A string to make a function from using math_to_function().
 #' @param new_value (scalar vector) A value to use in the cases.
 #' @param handle_NA (boolean) Whether to handle missing values. Default=T.
-#' @keywords conditional, change, value
 #' @export
 #' @examples
 #' conditional_change()
 conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
-  #libs
-  library(plyr)
 
   #checks
   if (missing("x")) stop("x is missing!")
@@ -48,7 +45,7 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
     v_targets = func(x)
 
     #handle NA?
-    if (handle_NA) v_targets = mapvalues(v_targets, NA, F, warn_missing = F) #map NA to F
+    if (handle_NA) v_targets = plyr::mapvalues(v_targets, NA, F, warn_missing = F) #map NA to F
   }, silent = T)
   #fails for lists
 
@@ -76,41 +73,6 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
   return(x)
 }
 
-
-#' Filter data by missing values per row.
-#'
-#' Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
-#' @param data (data.frame or something coersible to a data.frame) The data.
-#' @param missing (whole number scalar) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
-#' @keywords missing values, subset
-#' @export
-#' @examples
-#' df = data.frame(1:10, letters[1:10])
-#' df = miss_add_random(df)
-#' filter_by_missing_values(df)
-filter_by_missing_values = function(data, missing = 0) {
-  #initial
-  if (!is_whole_number(missing)) stop("missing must be a whole number!")
-  data = as.data.frame(data)
-
-  #keep cases with that number of missing datapoints or fewer
-  data = data[miss_by_case(data) <= missing, ]
-  return(data)
-}
-
-
-#' Extract numerical variables
-#'
-#' Extract the numerical variables from a data.frame or matrix.
-#' @param data (data.frame or matrix) The data.
-#' @return Returns the subset of the data while keeping the type (using drop = FALSE).
-#' @export
-#' @examples
-#' extract_num_vars(iris)
-extract_num_vars = function(data) {
-  v_numerical = sapply(data, is.numeric)
-  data[, v_numerical, drop = FALSE]
-}
 
 
 #' Extract non-numerical variables
@@ -167,4 +129,16 @@ extract_last = function(x, margin_1, margin_2, drop = FALSE) {
 }
 
 
+#' Extract numerical variables
+#'
+#' Extract the numerical variables from a data.frame or matrix.
+#' @param data (data.frame or matrix) The data.
+#' @return Returns the subset of the data while keeping the type (using drop = FALSE).
+#' @export
+#' @examples
+#' extract_num_vars(iris)
+extract_num_vars = function(data) {
+  v_numerical = sapply(data, is.numeric)
+  data[, v_numerical, drop = FALSE]
+}
 

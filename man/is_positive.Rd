@@ -2,17 +2,19 @@
 % Please edit documentation in R/simple_math.R
 \name{is_positive}
 \alias{is_positive}
-\title{Are valyes positive?}
+\title{Are values positive?}
 \usage{
 is_positive(x)
 }
 \arguments{
-\item{x}{(any object compatible with <) Some values to test.}
+\item{x}{(numeric vector) Some values to test.}
 }
 \description{
-A wrapper for ">0", returns a boolean. Vectorized.
+A wrapper for "> 0".
 }
 \examples{
-is_positive()
+is_positive(1)
+is_positive(0)
+is_positive(-1)
 }
 

@@ -26,10 +26,4 @@ get_distances(df, dists, lat_var, lon_var, distance_method, weights_var = "",
 Inputs a data.frame and outputs a data.frame with distances between all possible case pairs for each variable. One can specify that a pair of variables are spherical coordinates which are then treated in a special fashion using get_spherical_dists(). One can also specify a variable that is weights and for which a suitable mean will be calculated.
 The function requires either that it is given a distance matrix or that it can find variables to calculate distances with.
 }
-\keyword{autocorrelation,}
-\keyword{distance,}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{spatial}
-\keyword{weights}
 

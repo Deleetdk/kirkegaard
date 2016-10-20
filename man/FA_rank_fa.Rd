@@ -17,9 +17,4 @@ Runs factor analysis on a rank-ordered dataset which prevents outliers from havi
 \examples{
 FA_rank_fa()
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{psychometrics,}
-\keyword{rank}
-\keyword{robust,}
 

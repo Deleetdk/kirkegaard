@@ -15,8 +15,4 @@ Performs a robust factor analysis. It is done using the output from FA_robust_co
 \examples{
 FA_robust_cormatrix()
 }
-\keyword{analysis.}
-\keyword{factor}
-\keyword{psychometrics,}
-\keyword{robust,}
 

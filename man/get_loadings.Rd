@@ -17,7 +17,4 @@ library("psych")
 iris_fa = fa(iris[-5])
 get_loadings(iris_fa)
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{loadings}
 

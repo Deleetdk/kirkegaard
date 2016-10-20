@@ -23,7 +23,4 @@ Calculates the partial correlation.
 \examples{
 MOD_partial()
 }
-\keyword{correlation,}
-\keyword{partial,}
-\keyword{weights}
 

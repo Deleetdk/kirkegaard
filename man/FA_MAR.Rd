@@ -17,11 +17,4 @@ Extracts the first factor, then uses the factor scores to predict the indicator 
 \examples{
 FA_MAR(iris[-5])
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{latent}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{residuals}
-\keyword{variable,}
 

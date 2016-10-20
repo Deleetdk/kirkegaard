@@ -5,7 +5,6 @@
 #'
 #' Converts an object to a string using deparse and substitute.
 #' @param x (an object) An object to convert to a string.
-#' @keywords object, call, string, convert
 #' @export
 #' @examples
 #' object_to_string()
@@ -26,23 +25,22 @@ object_to_string = function(x) {
 #' math_to_function("<0")(-1) #check if -1<0
 #' math_to_function("=0")(1234) #check if 1235=0
 math_to_function = function(str, convert_equal = T, silent_try = T, test_function = T) {
-  library(stringr)
 
   #deak with =
   #here we assume that the user meant ==, i.e. is equal to rather than the assign operator
   if (convert_equal) {
     equal_count = str_count(str, "=")
     if (equal_count == 1) {
-      str = str_replace(str, "=", "==")
+      str = stringr::str_replace(str, "=", "==")
     }
   }
 
   #fetch
-  number = str_match(str, "\\d+")
-  operator = str_match(str, "\\D+")
+  number = stringr::str_match(str, "\\d+")
+  operator = stringr::str_match(str, "\\D+")
 
   #change string
-  str2 = str_c("x ", operator, " ", number)
+  str2 = stringr::str_c("x ", operator, " ", number)
 
   #make function
   trial = try({

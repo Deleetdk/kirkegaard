@@ -17,8 +17,4 @@ Returns a correlation matrix with robust correlations. These are derived from ei
 \examples{
 FA_robust_cormatrix()
 }
-\keyword{correlation,}
-\keyword{matrix}
-\keyword{psychometrics,}
-\keyword{robust,}
 

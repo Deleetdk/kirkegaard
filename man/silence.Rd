@@ -2,7 +2,6 @@
 % Please edit documentation in R/misc.R
 \name{silence}
 \alias{silence}
-\alias{suppressor}
 \title{Silence warnings or messages from expression via parameter.}
 \usage{
 silence(expr, warnings = F, messages = F, startupmessages = F)

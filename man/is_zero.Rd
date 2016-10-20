@@ -7,10 +7,10 @@
 is_zero(x)
 }
 \arguments{
-\item{x}{(any object compatible with <) Some values to test.}
+\item{x}{(numeric vector) Some values to test.}
 }
 \description{
-A wrapper for "==0", returns a boolean. Vectorized.
+A wrapper for "== 0".
 }
 \examples{
 is_zero(0)

@@ -19,10 +19,4 @@ Returns a numerical vector of the change in the size of the first factor by remo
 \examples{
 FA_CFS(iris[-5])
 }
-\keyword{analysis}
-\keyword{factor}
-\keyword{latent}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{variable,}
 

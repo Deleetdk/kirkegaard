@@ -27,25 +27,6 @@ stopifnot({
   iris == merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
 })
 
-#merge_datasets2
-t = merge_datasets2(d1, d2) #merge into one
-t2 = silence(merge_datasets2(d1, d2, join = "left"))
-t3 = silence(merge_datasets2(d1, d2, join = "right"))
-t4 = merge_datasets2(iris[1], iris[2:5])
-t5 = merge_datasets2(d2, d2_na) #test overwriting of NAs
-
-stopifnot({
-  t == iris #because everything went back to original position
-  t2 == d1 #because nothing was joined
-  t3 == d2 #because nothing was joined
-  t4 == iris #if not, likely that drop=F is needed!
-  t5 == d2   #because NAs should not be overwritten on top of values
-})
-
-#multi version
-stopifnot({
-  iris == merge_datasets2_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
-})
 
 # FA_all_methods & FA_congruence_mat --------------------------------------------------------
 t = FA_all_methods(iris[-5], skip_methods = "pa", messages = F)
@@ -300,7 +281,6 @@ stopifnot({
 
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
-library(ggplot2)
 mpg_na = miss_add_random(mpg) #missing data
 
 l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
@@ -470,7 +450,7 @@ stopifnot({
 })
 
 
-# add_SAC & Morans_I & Morans_I_multi & SAC_knsn_reg & SAC_measures ----------------------------
+# add_SAC & Morans_I & Morans_I_multi & SAC_knsnr & SAC_measures ----------------------------
 n=10
 set.seed(1)
 t0 = data.frame(x = runif(n, 1, 100),
@@ -503,16 +483,16 @@ stopifnot({
 })
 
 #test correlations
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "cor")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "cor")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "cor")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "cor")
 
 stopifnot({
   knsn_3_0 < knsn_3_1
 })
 
 #test scores
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "scores")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "scores")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "scores")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "scores")
 
 stopifnot({
   nrow(knsn_3_0) == nrow(knsn_3_0)
@@ -521,8 +501,8 @@ stopifnot({
 })
 
 #test resids
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "resids")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "resids")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "resids")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "resids")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -532,8 +512,8 @@ stopifnot({
 })
 
 #test resids_cor
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", predictor = "test", output = "resids_cor")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_0 = SAC_knsnr(t0, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_1 = SAC_knsnr(t1, "outcome", predictor = "test", output = "resids_cor")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -566,9 +546,9 @@ stopifnot({
 })
 
 #test outcome options
-t = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "scores")
-t_cor = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "cor")
-t_resids = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "resids")
+t = SAC_knsnr(t1, "outcome", dists=dists_y, output = "scores")
+t_cor = SAC_knsnr(t1, "outcome", dists=dists_y, output = "cor")
+t_resids = SAC_knsnr(t1, "outcome", dists=dists_y, output = "resids")
 
 #test other functions
 t_xy = find_neighbors(df = t0)
@@ -670,8 +650,6 @@ stopifnot({
 
 # GG_denhist --------------------------------------------------------------
 p_load(MASS)
-p_load(ggplot2)
-p_load(magrittr)
 
 Sepal_Length = iris$Sepal.Length
 g = list(GG_denhist(iris, "Sepal.Length"),
@@ -687,24 +665,24 @@ stopifnot({
 })
 
 
-# plot_loadings_multi FA_rank_fa -----------------------------------------------------
+# FA_plot_loadings FA_rank_fa -----------------------------------------------------
 library(psych)
 fa_list = list(part1 = fa(iris[1:50, -5]),
                part2 = fa(iris[51:100, -5]),
                part3 = fa(iris[101:150, -5]))
 #multianalysis plots, different orderings
-g = plot_loadings_multi(fa_list);g
-g_1 = plot_loadings_multi(fa_list, reorder = 1);g_1
-g_2 = plot_loadings_multi(fa_list, reorder = 2);g_2
-g_3 = plot_loadings_multi(fa_list, reorder = 3);g_3
+g = FA_plot_loadings(fa_list);g
+g_1 = FA_plot_loadings(fa_list, reorder = 1);g_1
+g_2 = FA_plot_loadings(fa_list, reorder = 2);g_2
+g_3 = FA_plot_loadings(fa_list, reorder = 3);g_3
 #monoanalysis
-g_4 = plot_loadings_multi(fa_list[[1]]);g_4
+g_4 = FA_plot_loadings(fa_list[[1]]);g_4
 
 #non-overlapping indicators
 fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
                 part2 = fa(iris[51:100, -c(2, 5)]),
                 part3 = fa(iris[101:150, -c(3, 5)]))
-plot_loadings_multi(fa_list2)
+FA_plot_loadings(fa_list2)
 
 stopifnot({
   sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
@@ -1251,7 +1229,7 @@ stopifnot({
 })
 
 
-# filter_by_missing_values ------------------------------------------------
+# miss_filter ------------------------------------------------
 #filters data by number of missing values per case
 
 df = data.frame(1:10, letters[1:10])
@@ -1259,7 +1237,7 @@ set.seed(1)
 df = miss_add_random(df)
 
 stopifnot({
-  filter_by_missing_values(df) %>% nrow %>% equals(8)
+  miss_filter(df) %>% nrow %>% equals(8)
 })
 
 
@@ -1412,13 +1390,13 @@ stopifnot({
 })
 
 
-# subset_by_pattern -------------------------------------------------------
+# df_subset_by_pattern -------------------------------------------------------
 #subset using regex for column names
 
 stopifnot({
-  subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
-  subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
-  subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
+  df_subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
+  df_subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
+  df_subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
 })
 
 
@@ -1426,9 +1404,9 @@ stopifnot({
 
 t1 = c(NA, 2, 3, NA)
 t2 = c(1, NA, NA, 4)
-t1_n = c(NA, 2, 3, NA);names(t1_n) = letters[1:4]
-t2_n = c(1, NA, NA, 4);names(t2_n) = letters[1:4]
-t3_n = c(1, NA, NA, 4, 5);names(t3_n) = letters[1:5]
+t1_n = c(NA, 2, 3, NA); names(t1_n) = letters[1:4]
+t2_n = c(1, NA, NA, 4); names(t2_n) = letters[1:4]
+t3_n = c(1, NA, NA, 4, 5); names(t3_n) = letters[1:5]
 
 
 stopifnot({

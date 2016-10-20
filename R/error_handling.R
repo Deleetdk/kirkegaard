@@ -4,7 +4,6 @@
 #'
 #' Checks whether an object is a try-error. Returns a boolean.
 #' @param x (an object) An object to check.
-#' @keywords try, error
 #' @export
 #' @examples
 #' is_error()

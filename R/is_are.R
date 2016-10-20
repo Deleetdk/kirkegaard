@@ -140,7 +140,6 @@ has_names = function(x) {
 #' lengths_match(iris, iris[1:2]) #same nrow
 #' lengths_match(iris, iris[1:2], dimension = 2) #different ncol
 lengths_match = function(..., dimension = 1) {
-  library(magrittr)
 
   #try to get the nth dimension lengths
   trial = try({
@@ -263,3 +262,43 @@ all_elements_the_same = function(list) {
   T
 }
 
+#' Is scalar?
+#'
+#' Check whether an object is a scalar
+#' @param x (obj) An object to check.
+#' @param erro_on_null (lgl) Whether to throw an error on NULL, or treat as TRUE.
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' is_scalar(1)
+#' is_scalar(1:3)
+#' is_scallar(NULL, error_on_null = F)
+is_scalar = function(x, error_on_null = T) {
+  #deal with NULL
+  if (is.null(x)) {
+    if (error_on_null) stop("x was NULL") else x = NA
+  }
+  #main
+  is.atomic(x) && length(x) == 1
+}
+
+#' Is scalar NA?
+#'
+#' Check whether an object is a scalar NA
+#' @param x (obj) An object to check.
+#' @param erro_on_null (lgl) Whether to throw an error on NULL, or treat as TRUE.
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' is_scalar_NA(NA)
+#' is_scalar(1:3)
+#' is_scalar_NA(c(1, NA))
+#' is_scalar_NA(c(NA, 1))
+is_scalar_NA = function(x, error_on_null = T) {
+  #deal with NULL
+  if (is.null(x)) {
+    if (error_on_null) stop("x was NULL") else x = NA
+  }
+  #main
+  is.atomic(x) && length(x) == 1 && is.na(x)
+}

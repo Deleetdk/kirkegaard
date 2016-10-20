@@ -19,11 +19,4 @@ Removes the n top variables that highly correlated with another variable so as t
 \examples{
 remove_redundant_vars()
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{latent}
-\keyword{psychology,}
-\keyword{psychometrics,}
-\keyword{redundant}
-\keyword{variable,}
 

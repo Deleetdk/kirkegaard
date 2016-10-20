@@ -27,9 +27,4 @@ stack_into_n_columns(df, 2)
 stack_into_n_columns(df, 3)
 stack_into_n_columns(df, 4)
 }
-\keyword{column,}
-\keyword{data.frame}
-\keyword{matrix,}
-\keyword{reshape,}
-\keyword{stack,}
 

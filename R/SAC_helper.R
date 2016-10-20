@@ -70,7 +70,6 @@ check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, aut
 #'
 #' Returns a vector of the autodetected values or raises an error if it fails.
 #' @param df A data.frame with variables.
-#' @keywords latitude, longitude, distance
 #' @export
 #' @examples
 #' distance_method_detector()

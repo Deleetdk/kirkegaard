@@ -64,7 +64,6 @@ count_NA = function(x, reverse = F) {
 #' miss_plot(test_data, case = F) #variables
 #' miss_plot(test_data, case = F, percent = F) #variables, raw
 miss_plot = function(data, percent=T, case=T) {
-  library("magrittr"); library("ggplot2"); library("forcats")
   #cases or vars?
   if (case) {
     m = miss_by_case(data)
@@ -84,7 +83,7 @@ miss_plot = function(data, percent=T, case=T) {
     #percent?
     if (percent) d$count %<>% divide_by(nrow(data))
 
-    g = ggplot(d, aes(number_miss, count)) +
+    g = ggplot2::ggplot(d, aes(number_miss, count)) +
       geom_bar(stat = "identity") +
       scale_x_discrete(breaks = min.miss:max.miss) + #always keep entire range
       xlab("Number of missing values")
@@ -98,10 +97,10 @@ miss_plot = function(data, percent=T, case=T) {
     if (percent) d$number_miss %<>% divide_by(nrow(data))
 
     #reorder factor by missing
-    d$var %<>% fct_reorder(-d$number_miss)
+    d$var %<>% forcats::fct_reorder(-d$number_miss)
 
     #plot
-    g = ggplot(d, aes(var, number_miss)) +
+    g = ggplot2::ggplot(d, aes(var, number_miss)) +
       geom_bar(stat = "identity") +
       xlab("Variable")
 
@@ -116,9 +115,6 @@ miss_plot = function(data, percent=T, case=T) {
   #return
   g
 }
-
-#old name
-plot_miss = miss_plot
 
 
 #' Wrapper for matrixplot()
@@ -216,10 +212,8 @@ miss_complexity = function(data) {
 #' @return A data.frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
 #' @export
 #' @examples
-#' miss_complexity(miss_add_random(iris))
+#' miss_analyze(miss_add_random(iris))
 miss_analyze = function(data, robust = F) {
-  library(plyr); library(lsr); library(compute.es)
-
   #data
   data = as.data.frame(data)
 
@@ -227,7 +221,7 @@ miss_analyze = function(data, robust = F) {
   m_d = miss_matrix(data)
 
   #for each variable, analyze relationship each other variable
-  d_NA_diffs = ldply(.data = colnames(data), .fun = function(var) {
+  d_NA_diffs = plyr::ldply(.data = colnames(data), .fun = function(var) {
     #for each variable
     sapply(colnames(data), FUN = function(var2) {
       #if same
@@ -239,7 +233,7 @@ miss_analyze = function(data, robust = F) {
       #if factor, use cramer's V
       if (data[[var2]] %>% is.factor()) {
 
-        return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>% res(r = ., n = 100, verbose = F)) %>% extract("d") %>% unlist() %>% as.vector()) #silence to avoid chi sq warnings
+        return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>% compute.es::res(r = ., n = 100, verbose = F)) %>% extract("d") %>% unlist() %>% as.vector()) #silence to avoid chi sq warnings
       }
 
       #if numeric, use standardized mean difference
@@ -288,9 +282,6 @@ miss_add_random =  function(df, prop = .1){
   )
   return(df)
 }
-
-#old name
-df_addNA = miss_add_random
 
 
 #' Impute data using VIM::irmi
@@ -344,3 +335,28 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
   #return
   data
 }
+
+
+#' Filter data by missing values per row.
+#'
+#' Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
+#' @param data (data.frame or something coersible to a data.frame) The data.
+#' @param missing (whole number scalar) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
+#' @export
+#' @examples
+#' df = data.frame(1:10, letters[1:10])
+#' df = miss_add_random(df)
+#' miss_filter(df)
+miss_filter = function(data, missing = 0) {
+  #initial
+  if (!is_whole_number(missing)) stop("missing must be a whole number!")
+  is_(data, "data.frame", error_on_false = T)
+
+  #keep cases with that number of missing datapoints or fewer
+  data = data[miss_by_case(data) <= missing, ]
+  return(data)
+}
+
+
+
+

@@ -2,7 +2,6 @@
 % Please edit documentation in R/SAC.R
 \name{SAC_measures}
 \alias{SAC_measures}
-\alias{get_SAC_measures}
 \title{Calculate multiple spatial autocorrelation measures.}
 \usage{
 SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,

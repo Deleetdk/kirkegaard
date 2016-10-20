@@ -15,7 +15,6 @@
 #' @examples
 #' pu_translate("DNK", reverse = T)
 pu_translate = function(x, superunit, fuzzy = T, reverse=F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params, standardize_name = F) {
-  library(stringr); library(magrittr); library(XLConnect)
   #check input
   is_(x, class = "character", error_on_false = T)
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
@@ -64,7 +63,7 @@ pu_translate = function(x, superunit, fuzzy = T, reverse=F, lang = "en", superun
       if (sum(s == units$Names) > 1) {
         s_match = units$Abbreviation[which(s == units$Names)]
         str = sprintf("More than one exact match for %s. Perhaps you want to use a superunit to limit the options? Matches were: ", s)
-        str = str + str_c(s_match, collapse = " | ")
+        str = str + stringr::str_c(s_match, collapse = " | ")
         stop(str, call. = F)
       }
 
