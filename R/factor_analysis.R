@@ -624,7 +624,8 @@ FA_nfactors = function(.fa) {
 #' @export
 #' @examples
 #' library(psych)
-#' FA_plot_loadings(fa(iris[-5])) #extract a factor and plot
+#' FA_plot_loadings(fa(iris[-5])) #extract 1 factor and plot
+#' FA_plot_loadings(fa(iris[-5], 2)) #extract 2 factors and plot
 #' #list of FAs
 #' fa_list = list(part1 = fa(iris[1:50, -c(1, 5)]),
 #'                 part2 = fa(iris[51:100, -c(2, 5)]),
@@ -774,7 +775,11 @@ FA_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
 
     #reorder indicators
     if (!is_scalar_NA(reorder)) {
-      d$indicator %<>% forcats::fct_reorder(d$loading, fun = sd, .desc = T)
+      #sort by mean abs loading
+      #this orders the indicators by their importance, overall
+      d$indicator %<>% forcats::fct_reorder(d$loading, fun = function(x) {
+        mean(abs(x))
+      })
     }
 
     #factor names

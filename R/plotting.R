@@ -23,7 +23,9 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
     colnames(data) = var
   }
 
-  df = data; rm(data)
+  #rename
+  df = data
+  rm(data)
 
   #1 column df
   if (is.data.frame(df) & ncol(df) == 1 & missing("var")) {
@@ -74,7 +76,7 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
 
     #fetch the actual function
     func = get(vline)
-    central_tendency = daply(df, .variables = group, .fun = function(block) {
+    central_tendency = plyr::daply(df, .variables = group, .fun = function(block) {
       func(block[[var]], na.rm=T)
     })
 
@@ -101,8 +103,7 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
 #' @param clusters The number of clusters to find.
 #' @param runs Number of runs to use. The best run is used in the plot.
 #' @param standardize Whether to standardize the data first. Defaults to TRUE.
-#' @export GG_kmeans plot_kmeans
-#' @aliases plot_kmeans
+#' @export
 #' @examples
 #' GG_kmeans(iris[-5], 3)
 GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
@@ -112,7 +113,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 
   #standardize?
   if (standardize)
-    df = std_df(df)
+    df = df_standardize(df)
 
   #analyze
   tmp_k = kmeans(df, centers = clusters, nstart = runs)
@@ -127,9 +128,6 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
                              vjust = 1, color = "black")
   return(g)
 }
-
-#old name
-plot_kmeans = GG_kmeans
 
 
 #' Scatter plot with regression line and correlation information using ggplot2
@@ -669,7 +667,10 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
 
   #extract effect sizes and SEs
-  d = data_frame(es = .analysis$yi, var = .analysis$vi, se = sqrt(var), meta = "study")
+  d = tibble::data_frame(es = .analysis$yi,
+                         var = .analysis$vi,
+                         se = sqrt(var),
+                         meta = "study")
 
   #names
   if (!missing(.names)) {
@@ -678,20 +679,29 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
     d$names = "Study " + 1:nrow(d)
   }
 
+  #make names unique if necessary
+  if (any(duplicated(d$names))) {
+    d = plyr::ddply(d, .variables = "names", .fun = function(x) {
+      if (nrow(x) == 1) return(x)
+      x$names = sprintf(x$names + " (%d)", 1:nrow(x))
+      x
+    })
+  }
+
   #sort?
   if (.alphabetic_sort_names) {
-    d$names %<>% factor() %>% fct_rev()
+    d$names %<>% factor() %>% forcats::fct_rev()
   }
 
   #extract main effect
-  d_meta = data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
                       var = .analysis$se %>% sqrt,
                       se = .analysis$se,
                       meta = "meta",
                       names = "Main effect")
 
   #horizontal space case
-  d_hline = data_frame(es = .analysis$b %>% as.vector,
+  d_hline = tibble::data_frame(es = .analysis$b %>% as.vector,
                        var = .analysis$se %>% sqrt,
                        se = .analysis$se,
                        meta = "invis",
@@ -701,7 +711,7 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
   d = rbind(d, d_meta, d_hline)
 
   #make sure meta effect is in the bottom
-  d$names %<>% factor() %>% fct_relevel(c("Main effect", ""))
+  d$names %<>% factor() %>% forcats::fct_relevel(c("Main effect", ""))
 
   #plot
   ggplot2::ggplot(d, aes(es, names, color = meta)) +
@@ -731,13 +741,13 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   se_z = qnorm(1 - (1-.CI)/2)
 
   #extract main effect
-  d_meta = data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
                       var = .analysis$se %>% sqrt,
                       se = .analysis$se
   )
 
   #extract effect sizes and SEs
-  d = data_frame(es = .analysis$yi,
+  d = tibble::data_frame(es = .analysis$yi,
                  var = .analysis$vi,
                  se = sqrt(var),
                  upper = d_meta$es + se_z * se,
@@ -746,11 +756,11 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   )
 
   #calculate funnel
-  d_funnel = data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
+  d_funnel = tibble::data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
                         upper = d_meta$es + se * se_z,
                         lower = d_meta$es - se * se_z)
 
-  d_polygon = data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
+  d_polygon = tibble::data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
                          y = c(max(d_funnel$se), 0, max(d_funnel$se)))
 
   #plot

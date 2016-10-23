@@ -2,7 +2,6 @@
 % Please edit documentation in R/plotting.R
 \name{GG_kmeans}
 \alias{GG_kmeans}
-\alias{plot_kmeans}
 \title{Scatter plot with kmeans clustering}
 \usage{
 GG_kmeans(df, clusters, runs = 100, standardize = T)
