@@ -28,15 +28,15 @@ stopifnot({
 })
 
 
-# FA_all_methods & FA_congruence_mat --------------------------------------------------------
-t = FA_all_methods(iris[-5], skip_methods = "pa", messages = F)
+# fa_all_methods & fa_congruence_mat --------------------------------------------------------
+t = fa_all_methods(iris[-5], skip_methods = "pa", messages = F)
 
-# FA_congruence_mat -------------------------------------------------------
+# fa_congruence_mat -------------------------------------------------------
 stopifnot({
   dim(cor(t$scores))==c(12, 12)
   t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
-  t = FA_congruence_matrix(t$loadings)
-  t2 = FA_congruence_matrix(t2)
+  t = fa_congruence_matrix(t$loadings)
+  t2 = fa_congruence_matrix(t2)
   class(t) == "matrix"
   class(t2) == "matrix"
   dim(t) == c(3, 3)
@@ -67,6 +67,7 @@ stopifnot({
 #skip these tests on linux
 if (!Sys.info()['sysname'] == "Linux") {
   write_clipboard(iris, 0, .rownames = F)
+  Sys.sleep(.5)
 
   stopifnot({
     read.delim("clipboard")[38, 1] == 5
@@ -81,6 +82,7 @@ if (!Sys.info()['sysname'] == "Linux") {
 
   #write NAs
   write_clipboard(miss_add_random(iris))
+  Sys.sleep(.5)
 
   stopifnot({
     read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
@@ -226,34 +228,30 @@ stopifnot({
 })
 
 
-# Jensen_plot -------------------------------------------------------------
-p_load(psych)
+# fa_Jensens_method -------------------------------------------------------------
 #this extract GFP and checks whether the gender difference is GFP-loaded
-t = fa(bfi[1:25])
-t2 = cor(bfi, use = "p")
+gfp_fa = fa(bfi[1:25])
 stopifnot({
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = T)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender")
   class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", reverse_factor = T)
   class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, var_names = F)
-  class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, check_overlap = F)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", loading_reversing = F)
   class(g) == c("gg", "ggplot")
 })
 
 
 
-# FA_residuals ------------------------------------------------------------
-t = FA_residuals(swiss)
+# fa_residuals ------------------------------------------------------------
+t = fa_residuals(swiss)
 stopifnot({
   dim(t) == c(47, 6)
   class(t) == "data.frame"
 })
 
-# FA_MAR ------------------------------------------------------------------
-t = FA_MAR(swiss, scores = "Bartlett")
-t2 = FA_MAR(swiss)
+# fa_MAR ------------------------------------------------------------------
+t = fa_MAR(swiss, scores = "Bartlett")
+t2 = fa_MAR(swiss)
 stopifnot({
   dim(t) == c(47, 1)
   class(t) == "data.frame"
@@ -261,8 +259,8 @@ stopifnot({
 })
 
 
-# FA_mixedness ------------------------------------------------------------
-t = FA_mixedness(swiss)
+# fa_mixedness ------------------------------------------------------------
+t = fa_mixedness(swiss)
 stopifnot({
   dim(t) == c(47, 4)
   class(t) == "data.frame"
@@ -270,9 +268,9 @@ stopifnot({
 
 
 
-# FA_splitsample_repeat ---------------------------------------------------------------------
+# fa_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
+t = silence(fa_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(5, 1)
@@ -305,17 +303,6 @@ t = list(GG_contingency_table(mpg, "drv", "cyl"),
 stopifnot({
   sapply(t, is.ggplot)
 })
-
-
-
-# Jensens_method ----------------------------------------------------------
-p_load(psych)
-t = fa(bfi[1:25])
-t2 = Jensens_method(t, bfi, "gender");t2
-stopifnot({
-  class(t2) == c("gg", "ggplot")
-})
-
 
 
 # get_spherical_dists -----------------------------------------------------
@@ -591,15 +578,12 @@ stopifnot({
 })
 
 
-# GG_scatter &  Jensens_method --------------------------------------------------------------
+# GG_scatter --------------------------------------------------------------
 p_load(psych)
 
 g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
 g = GG_scatter(longley, "Unemployed", "GNP");g
 
-fa = fa(swiss[-c(3, 5)])
-Jensens_method(fa, swiss, "Examination", reverse_factor = T)
-Jensens_method(fa, swiss, "Examination", reverse_factor = F)
 
 
 # MAT_ --------------------------------------------------------------------
@@ -665,24 +649,24 @@ stopifnot({
 })
 
 
-# FA_plot_loadings FA_rank_fa -----------------------------------------------------
+# fa_plot_loadings fa_rank_fa -----------------------------------------------------
 library(psych)
 fa_list = list(part1 = fa(iris[1:50, -5]),
                part2 = fa(iris[51:100, -5]),
                part3 = fa(iris[101:150, -5]))
 #multianalysis plots, different orderings
-g = FA_plot_loadings(fa_list);g
-g_1 = FA_plot_loadings(fa_list, reorder = 1);g_1
-g_2 = FA_plot_loadings(fa_list, reorder = 2);g_2
-g_3 = FA_plot_loadings(fa_list, reorder = 3);g_3
+g = fa_plot_loadings(fa_list);g
+g_1 = fa_plot_loadings(fa_list, reorder = 1);g_1
+g_2 = fa_plot_loadings(fa_list, reorder = 2);g_2
+g_3 = fa_plot_loadings(fa_list, reorder = 3);g_3
 #monoanalysis
-g_4 = FA_plot_loadings(fa_list[[1]]);g_4
+g_4 = fa_plot_loadings(fa_list[[1]]);g_4
 
 #non-overlapping indicators
 fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
                 part2 = fa(iris[51:100, -c(2, 5)]),
                 part3 = fa(iris[101:150, -c(3, 5)]))
-FA_plot_loadings(fa_list2)
+fa_plot_loadings(fa_list2)
 
 stopifnot({
   sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
@@ -1855,6 +1839,18 @@ stopifnot({
   df_flexsubset(iris, c("Species", "test"), messages = F) == iris["Species"]
   silence(are_equal(df_flexsubset(iris, c("test")), as.data.frame(matrix(nrow=150, ncol=0)), check.attributes = F))
 })
+
+
+# str_uniquify ------------------------------------------------------------
+x = sample(LETTERS[1:10], size = 20, replace = T)
+
+stopifnot({
+  #uniquify normally
+  x %>% str_uniquify %>% duplicated %>% any %>% `!`
+  #custom suffix using a second %d.
+  x %>% str_uniquify(" [%d/%d]") %>% duplicated %>% any %>% `!`
+})
+
 
 
 # done --------------------------------------------------------------------

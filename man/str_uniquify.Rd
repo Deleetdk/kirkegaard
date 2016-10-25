@@ -9,7 +9,7 @@ str_uniquify(string, suffix = " (\%d)")
 \arguments{
 \item{string}{(chr vector) A character vector.}
 
-\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain %d.}
+\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain \%d.}
 }
 \value{
 A character vector.

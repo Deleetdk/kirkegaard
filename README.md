@@ -7,7 +7,7 @@ There are functions for areas including:
 * `MOD_`: Convenience Functions for statistical modeling such as best subset and penalized (LASSO) regression.
 * `SAC_`: Spatial statistics, including new methods for measuring and controlling for autocorrelation.
 * `MAT_`: Elementary matrix operations such as getting a half and restoring a symmetrical matrix from a half.
-* `FA_`: Factor analysis, including new methods for checking for method variance, finding odd cases, using Jensen's method and plotting loadings.
+* `fa_`: Factor analysis, including new methods for checking for method variance, finding odd cases, using Jensen's method and plotting loadings.
 * `GG_`: Convenience functions for plotting with ggplot2. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/ggplot2.html).
 * `pu_`: A function that deals with names of political units by converting to and from standardized abbreviations. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/political_units_names.html).
 * Various other functions that I often use.

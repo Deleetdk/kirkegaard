@@ -178,11 +178,10 @@ str_detect_replace = function(string, pattern, replacement) {
 #' Make strings unique
 #'
 #' Detects duplicate strings and makes them unique by adding a number at the end.
-#'
-#' This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
 #' @param string (chr vector) A character vector.
-#' @param suffix (chr vector) A character to use to make unique suffixes. Must contain %d.
+#' @param suffix (chr vector) A character to use to make unique suffixes. Must contain \%d.
 #' @return A character vector.
+#' @details This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
 #' @export
 #' @examples
 #' Example vector with some duplicates
