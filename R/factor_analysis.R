@@ -710,7 +710,7 @@ FA_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
 
     #reorder factor?
     if (reorder == "mean") {
-      v_aggregate_values = plyr::daply(d2, .(id), function(x) {
+      v_aggregate_values = plyr::daply(d2, .variables = "id", function(x) {
         mean(x$fa, na.rm=T)
       })
 
@@ -807,14 +807,3 @@ FA_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
 
   return(g)
 }
-
-# FA_plot_loadings(fa(iris[-5]))
-# FA_plot_loadings(fa(iris[-5], 2))
-# fa_list = list(full = fa(iris[-5]),
-#                part1 = fa(iris[1:50, -c(1, 5)]),
-#                part2 = fa(iris[51:100, -c(2, 5)]),
-#                part3 = fa(iris[101:150, -c(3, 5)]))
-# FA_plot_loadings(fa_list)
-# fa_list2 = list(a = fa(iris[-5], 2),
-#                 b = fa(iris[-(1:75), -5], 2))
-# FA_plot_loadings(fa_list2)
