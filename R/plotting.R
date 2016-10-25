@@ -681,11 +681,7 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
 
   #make names unique if necessary
   if (any(duplicated(d$names))) {
-    d = plyr::ddply(d, .variables = "names", .fun = function(x) {
-      if (nrow(x) == 1) return(x)
-      x$names = sprintf(x$names + " (%d)", 1:nrow(x))
-      x
-    })
+    d$names %<>% str_uniquify
   }
 
   #sort?
