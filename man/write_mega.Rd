@@ -17,6 +17,4 @@ This is a convenient wrapper for write.csv()
 \examples{
 write_mega()
 }
-\keyword{wrapper,}
-\keyword{write.csv}
 

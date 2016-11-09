@@ -2,7 +2,6 @@
 % Please edit documentation in R/SAC.R
 \name{SAC_control}
 \alias{SAC_control}
-\alias{SAC_control_all_methods}
 \title{Control for spatial autocorrelation with multiple methods}
 \usage{
 SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,

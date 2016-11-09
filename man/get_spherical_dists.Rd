@@ -19,9 +19,4 @@ get_spherical_dists(df, lat_var = "lat", lon_var = "lon",
 \description{
 Returns a vector with the pairwise spherical distances for all pairs. The calculation method used is "great circle method" using distCosine() from package geosphere.
 }
-\keyword{autocorrelation,}
-\keyword{distance}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{spatial}
 

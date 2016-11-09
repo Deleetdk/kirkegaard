@@ -2,12 +2,19 @@
 % Please edit documentation in R/dataset_IO.R
 \name{merge_datasets_multi}
 \alias{merge_datasets_multi}
-\title{Dataset merger function for multiple data.frames.}
+\title{Merge multiple datasets at once, improved version.}
 \usage{
-merge_datasets_multi(...)
+merge_datasets_multi(..., join = "both", overwrite_NA = FALSE,
+  restore_factors = FALSE)
 }
 \arguments{
 \item{...}{(data.frames) Two or more data.frames to merge.}
+
+\item{join}{(character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.}
+
+\item{overwrite_NA}{(logical scalar) Whether to overwrite with NA values. Default = FALSE.}
+
+\item{restore_factors}{(logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.}
 }
 \description{
 This is a wrapper for merge_datasets().
@@ -15,10 +22,4 @@ This is a wrapper for merge_datasets().
 \examples{
 merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
 }
-\keyword{combining,}
-\keyword{data.frame,}
-\keyword{datasets,}
-\keyword{merging,}
-\keyword{multi,}
-\keyword{wrapper}
 

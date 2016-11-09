@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_rank}
 \alias{df_rank}
-\alias{rank_df}
 \title{Rank numeric variables of a data frame.}
 \usage{
 df_rank(df, ...)

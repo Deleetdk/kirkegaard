@@ -15,6 +15,4 @@ To enable easier merging of datasets of international data. You need to download
 \examples{
 as_long()
 }
-\keyword{ISO}
-\keyword{names,}
 

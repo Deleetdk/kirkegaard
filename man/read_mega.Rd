@@ -15,6 +15,4 @@ This is a convenient wrapper for read.csv()
 \examples{
 read_mega()
 }
-\keyword{read.csv}
-\keyword{wrapper}
 

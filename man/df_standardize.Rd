@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_standardize}
 \alias{df_standardize}
-\alias{std_df}
 \title{Standardize data.frame}
 \usage{
 df_standardize(df, exclude = "", messages = T, exclude_factors = T, w)

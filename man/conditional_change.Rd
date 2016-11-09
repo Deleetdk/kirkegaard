@@ -23,7 +23,4 @@ Change values based on a condition given as a function.
 \examples{
 conditional_change()
 }
-\keyword{change,}
-\keyword{conditional,}
-\keyword{value}
 

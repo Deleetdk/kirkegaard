@@ -21,9 +21,4 @@ Returns the semi-partial correlation. Weights may be used.
 \examples{
 semi_par()
 }
-\keyword{correlation,}
-\keyword{partial,}
-\keyword{psychometrics,}
-\keyword{semi-partial,}
-\keyword{weights}
 

@@ -33,12 +33,4 @@ add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, dists, lat_var, lon_var,
 \description{
 Adds spatial autocorrelation to a variable using the k nearest spatial neighbor method.
 }
-\keyword{autocorrelation,}
-\keyword{distance,}
-\keyword{knn,}
-\keyword{knsn,}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{simulation}
-\keyword{spatial}
 

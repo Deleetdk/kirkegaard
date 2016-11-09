@@ -19,6 +19,4 @@ Fill in values in a vector until it reaches a specific length.
 \examples{
 fill_in(1:5, 10)
 }
-\keyword{fill}
-\keyword{vector,}
 

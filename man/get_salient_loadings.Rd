@@ -17,9 +17,4 @@ Find indicators that load above a given threshold for each factor. Can also forc
 \examples{
 get_salient_loadings()
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{loadings,}
-\keyword{salient,}
-\keyword{threshold}
 

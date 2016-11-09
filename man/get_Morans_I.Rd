@@ -25,11 +25,4 @@ get_Morans_I(df, var, dists, lat_var, lon_var, distance_method,
 \description{
 Returns Moran's I coefficient and related NHST statistics. Excludes cases with missing data.
 }
-\keyword{I}
-\keyword{Moran's}
-\keyword{autocorrelation,}
-\keyword{distance,}
-\keyword{latitude,}
-\keyword{longitude,}
-\keyword{spatial}
 

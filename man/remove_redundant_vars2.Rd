@@ -22,11 +22,4 @@ Remove redundant variables from a data.frame based on a threshold value. This is
 \examples{
 remove_redundant_vars()
 }
-\keyword{analysis,}
-\keyword{factor}
-\keyword{latent}
-\keyword{psychometrics,}
-\keyword{redundant,}
-\keyword{variable}
-\keyword{variable,}
 

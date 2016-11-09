@@ -15,6 +15,4 @@ Checks whether an object is a try-error. Returns a boolean.
 \examples{
 is_error()
 }
-\keyword{error}
-\keyword{try,}
 
