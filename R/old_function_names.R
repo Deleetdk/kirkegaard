@@ -18,3 +18,22 @@ SAC_control_all_methods = function(...) stop("This function has been moved to SA
 plot_kmeans = function(...) stop("This function has been moved to GG_kmeans")
 Jensen_plot = function(...) stop("This function has been deleted, use fa_Jensens_method")
 Jensens_method = function(...) stop("This function has been moved to fa_Jensens_method")
+
+
+
+# old FA_ -----------------------------------------------------------------
+#these all changed a prefix
+FA_MAR = function(...) stop("All FA_ function have been changed to fa_")
+FA_residuals = FA_MAR
+FA_CFS = FA_MAR
+FA_all_methods = FA_MAR
+FA_mixedness = FA_MAR
+FA_rank_fa = FA_MAR
+FA_robust_cormatrix = FA_MAR
+FA_robust_fa = FA_MAR
+FA_CAFL = FA_MAR
+FA_splitsample_repeat = FA_MAR
+FA_congruence_matrix = FA_MAR
+FA_plot_loadings = FA_MAR
+FA_Jensens_method = FA_MAR
+
