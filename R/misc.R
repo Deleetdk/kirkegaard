@@ -8,7 +8,6 @@
 #' @param .upper.tri a matrix or data.frame for the upper trianagle.
 #' @param .lower.tri a matrix or data.frame for the lower trianagle.
 #' @param .diag a value to insert in the diagonal. Defaults to NA.
-#' @keywords combine, matrix, data.frame, upper, lower
 #' @export
 #' @examples
 #' combine_upperlower()
@@ -151,7 +150,6 @@ fill_in = function(x, length, value = NA) {
 #' @param x (vector) A vector to split.
 #' @param k (whole number scalar) Split every k elements.
 #' @param uneven (logical scalar) Whether to accept a split that would be uneven. If yes, the last group will be smaller than the others. Defaults to TRUE.
-#' @keywords vector, split
 #' @export
 #' @examples
 #' split_every_k(1:12, 4)
