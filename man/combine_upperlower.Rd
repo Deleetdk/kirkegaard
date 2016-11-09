@@ -19,9 +19,4 @@ Returns a matrix composed of an upper and a upper part.
 \examples{
 combine_upperlower()
 }
-\keyword{combine,}
-\keyword{data.frame,}
-\keyword{lower}
-\keyword{matrix,}
-\keyword{upper,}
 
