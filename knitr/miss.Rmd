@@ -1,0 +1,35 @@
+---
+title: "Missing data functions"
+author: "Emil O. W. Kirkegaard"
+date: "19 okt 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pacman)
+p_load(dplyr, kirkegaard)
+```
+
+# `miss_add_random`: Add random missing data to a data frame
+
+```{r miss_add_random}
+(df = data_frame(numbers = 1:10, letters = letters[1:10]))
+(df = miss_add_random(df))
+```
+
+#`miss_amount`: How much data is missing?
+`miss_amount` returns three simple metrics for the amount of missing data: by cell, by case and by variable.
+
+```{r miss_amount}
+miss_amount(df)
+```
+
+# `miss_filter`: Filter data frame by missing rows
+`miss_filter` provides an easy way to filter a data frame by the amount of missing data in the rows.
+
+```{r miss_filter}
+miss_filter(df) #default is filter all cases with missing, same as na.omit
+```
+
+# 

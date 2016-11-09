@@ -1,6 +1,6 @@
 # some libs ---------------------------------------------------------------
 library(pacman)
-p_load(kirkegaard, psych, plyr, stringr, MASS, assertthat)
+p_load(kirkegaard, psych, plyr, MASS, assertthat)
 
 #otherwise get error
 options("expressions" = 10000)
@@ -27,35 +27,16 @@ stopifnot({
   iris == merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
 })
 
-#merge_datasets2
-t = merge_datasets2(d1, d2) #merge into one
-t2 = silence(merge_datasets2(d1, d2, join = "left"))
-t3 = silence(merge_datasets2(d1, d2, join = "right"))
-t4 = merge_datasets2(iris[1], iris[2:5])
-t5 = merge_datasets2(d2, d2_na) #test overwriting of NAs
 
-stopifnot({
-  t == iris #because everything went back to original position
-  t2 == d1 #because nothing was joined
-  t3 == d2 #because nothing was joined
-  t4 == iris #if not, likely that drop=F is needed!
-  t5 == d2   #because NAs should not be overwritten on top of values
-})
+# fa_all_methods & fa_congruence_mat --------------------------------------------------------
+t = fa_all_methods(iris[-5], skip_methods = "pa", messages = F)
 
-#multi version
-stopifnot({
-  iris == merge_datasets2_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
-})
-
-# FA_all_methods & FA_congruence_mat --------------------------------------------------------
-t = FA_all_methods(iris[-5], skip_methods = "pa", messages = F)
-
-# FA_congruence_mat -------------------------------------------------------
+# fa_congruence_mat -------------------------------------------------------
 stopifnot({
   dim(cor(t$scores))==c(12, 12)
   t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
-  t = FA_congruence_matrix(t$loadings)
-  t2 = FA_congruence_matrix(t2)
+  t = fa_congruence_matrix(t$loadings)
+  t2 = fa_congruence_matrix(t2)
   class(t) == "matrix"
   class(t2) == "matrix"
   dim(t) == c(3, 3)
@@ -86,6 +67,7 @@ stopifnot({
 #skip these tests on linux
 if (!Sys.info()['sysname'] == "Linux") {
   write_clipboard(iris, 0, .rownames = F)
+  Sys.sleep(.5)
 
   stopifnot({
     read.delim("clipboard")[38, 1] == 5
@@ -100,6 +82,7 @@ if (!Sys.info()['sysname'] == "Linux") {
 
   #write NAs
   write_clipboard(miss_add_random(iris))
+  Sys.sleep(.5)
 
   stopifnot({
     read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
@@ -245,34 +228,30 @@ stopifnot({
 })
 
 
-# Jensen_plot -------------------------------------------------------------
-p_load(psych)
+# fa_Jensens_method -------------------------------------------------------------
 #this extract GFP and checks whether the gender difference is GFP-loaded
-t = fa(bfi[1:25])
-t2 = cor(bfi, use = "p")
+gfp_fa = fa(bfi[1:25])
 stopifnot({
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = T)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender")
   class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", reverse_factor = T)
   class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, var_names = F)
-  class(g) == c("gg", "ggplot")
-  g = Jensen_plot(as.numeric(t$loadings), t2[26, 1:25], reverse = F, check_overlap = F)
+  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", loading_reversing = F)
   class(g) == c("gg", "ggplot")
 })
 
 
 
-# FA_residuals ------------------------------------------------------------
-t = FA_residuals(swiss)
+# fa_residuals ------------------------------------------------------------
+t = fa_residuals(swiss)
 stopifnot({
   dim(t) == c(47, 6)
   class(t) == "data.frame"
 })
 
-# FA_MAR ------------------------------------------------------------------
-t = FA_MAR(swiss, scores = "Bartlett")
-t2 = FA_MAR(swiss)
+# fa_MAR ------------------------------------------------------------------
+t = fa_MAR(swiss, scores = "Bartlett")
+t2 = fa_MAR(swiss)
 stopifnot({
   dim(t) == c(47, 1)
   class(t) == "data.frame"
@@ -280,8 +259,8 @@ stopifnot({
 })
 
 
-# FA_mixedness ------------------------------------------------------------
-t = FA_mixedness(swiss)
+# fa_mixedness ------------------------------------------------------------
+t = fa_mixedness(swiss)
 stopifnot({
   dim(t) == c(47, 4)
   class(t) == "data.frame"
@@ -289,9 +268,9 @@ stopifnot({
 
 
 
-# FA_splitsample_repeat ---------------------------------------------------------------------
+# fa_splitsample_repeat ---------------------------------------------------------------------
 library(psych)
-t = silence(FA_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
+t = silence(fa_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
 stopifnot({
   class(t) == "data.frame"
   dim(t) == c(5, 1)
@@ -300,7 +279,6 @@ stopifnot({
 
 # GG_scatter --------------------------------------------------------------
 #easy scatterplots with ggplot2
-library(ggplot2)
 mpg_na = miss_add_random(mpg) #missing data
 
 l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
@@ -325,17 +303,6 @@ t = list(GG_contingency_table(mpg, "drv", "cyl"),
 stopifnot({
   sapply(t, is.ggplot)
 })
-
-
-
-# Jensens_method ----------------------------------------------------------
-p_load(psych)
-t = fa(bfi[1:25])
-t2 = Jensens_method(t, bfi, "gender");t2
-stopifnot({
-  class(t2) == c("gg", "ggplot")
-})
-
 
 
 # get_spherical_dists -----------------------------------------------------
@@ -470,7 +437,7 @@ stopifnot({
 })
 
 
-# add_SAC & Morans_I & Morans_I_multi & SAC_knsn_reg & SAC_measures ----------------------------
+# add_SAC & Morans_I & Morans_I_multi & SAC_knsnr & SAC_measures ----------------------------
 n=10
 set.seed(1)
 t0 = data.frame(x = runif(n, 1, 100),
@@ -503,16 +470,16 @@ stopifnot({
 })
 
 #test correlations
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "cor")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "cor")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "cor")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "cor")
 
 stopifnot({
   knsn_3_0 < knsn_3_1
 })
 
 #test scores
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "scores")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "scores")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "scores")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "scores")
 
 stopifnot({
   nrow(knsn_3_0) == nrow(knsn_3_0)
@@ -521,8 +488,8 @@ stopifnot({
 })
 
 #test resids
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", output = "resids")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", output = "resids")
+knsn_3_0 = SAC_knsnr(t0, "outcome", output = "resids")
+knsn_3_1 = SAC_knsnr(t1, "outcome", output = "resids")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -532,8 +499,8 @@ stopifnot({
 })
 
 #test resids_cor
-knsn_3_0 = SAC_knsn_reg(t0, "outcome", predictor = "test", output = "resids_cor")
-knsn_3_1 = SAC_knsn_reg(t1, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_0 = SAC_knsnr(t0, "outcome", predictor = "test", output = "resids_cor")
+knsn_3_1 = SAC_knsnr(t1, "outcome", predictor = "test", output = "resids_cor")
 
 stopifnot({
   class(knsn_3_0) == "numeric"
@@ -566,9 +533,9 @@ stopifnot({
 })
 
 #test outcome options
-t = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "scores")
-t_cor = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "cor")
-t_resids = SAC_knsn_reg(t1, "outcome", dists=dists_y, output = "resids")
+t = SAC_knsnr(t1, "outcome", dists=dists_y, output = "scores")
+t_cor = SAC_knsnr(t1, "outcome", dists=dists_y, output = "cor")
+t_resids = SAC_knsnr(t1, "outcome", dists=dists_y, output = "resids")
 
 #test other functions
 t_xy = find_neighbors(df = t0)
@@ -611,15 +578,12 @@ stopifnot({
 })
 
 
-# GG_scatter &  Jensens_method --------------------------------------------------------------
+# GG_scatter --------------------------------------------------------------
 p_load(psych)
 
 g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
 g = GG_scatter(longley, "Unemployed", "GNP");g
 
-fa = fa(swiss[-c(3, 5)])
-Jensens_method(fa, swiss, "Examination", reverse_factor = T)
-Jensens_method(fa, swiss, "Examination", reverse_factor = F)
 
 
 # MAT_ --------------------------------------------------------------------
@@ -670,8 +634,6 @@ stopifnot({
 
 # GG_denhist --------------------------------------------------------------
 p_load(MASS)
-p_load(ggplot2)
-p_load(magrittr)
 
 Sepal_Length = iris$Sepal.Length
 g = list(GG_denhist(iris, "Sepal.Length"),
@@ -687,24 +649,24 @@ stopifnot({
 })
 
 
-# plot_loadings_multi FA_rank_fa -----------------------------------------------------
+# fa_plot_loadings fa_rank_fa -----------------------------------------------------
 library(psych)
 fa_list = list(part1 = fa(iris[1:50, -5]),
                part2 = fa(iris[51:100, -5]),
                part3 = fa(iris[101:150, -5]))
 #multianalysis plots, different orderings
-g = plot_loadings_multi(fa_list);g
-g_1 = plot_loadings_multi(fa_list, reorder = 1);g_1
-g_2 = plot_loadings_multi(fa_list, reorder = 2);g_2
-g_3 = plot_loadings_multi(fa_list, reorder = 3);g_3
+g = fa_plot_loadings(fa_list);g
+g_1 = fa_plot_loadings(fa_list, reorder = 1);g_1
+g_2 = fa_plot_loadings(fa_list, reorder = 2);g_2
+g_3 = fa_plot_loadings(fa_list, reorder = 3);g_3
 #monoanalysis
-g_4 = plot_loadings_multi(fa_list[[1]]);g_4
+g_4 = fa_plot_loadings(fa_list[[1]]);g_4
 
 #non-overlapping indicators
 fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
                 part2 = fa(iris[51:100, -c(2, 5)]),
                 part3 = fa(iris[101:150, -c(3, 5)]))
-plot_loadings_multi(fa_list2)
+fa_plot_loadings(fa_list2)
 
 stopifnot({
   sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
@@ -1251,7 +1213,7 @@ stopifnot({
 })
 
 
-# filter_by_missing_values ------------------------------------------------
+# miss_filter ------------------------------------------------
 #filters data by number of missing values per case
 
 df = data.frame(1:10, letters[1:10])
@@ -1259,7 +1221,7 @@ set.seed(1)
 df = miss_add_random(df)
 
 stopifnot({
-  filter_by_missing_values(df) %>% nrow %>% equals(8)
+  miss_filter(df) %>% nrow %>% equals(8)
 })
 
 
@@ -1412,13 +1374,13 @@ stopifnot({
 })
 
 
-# subset_by_pattern -------------------------------------------------------
+# df_subset_by_pattern -------------------------------------------------------
 #subset using regex for column names
 
 stopifnot({
-  subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
-  subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
-  subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
+  df_subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
+  df_subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
+  df_subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
 })
 
 
@@ -1426,9 +1388,9 @@ stopifnot({
 
 t1 = c(NA, 2, 3, NA)
 t2 = c(1, NA, NA, 4)
-t1_n = c(NA, 2, 3, NA);names(t1_n) = letters[1:4]
-t2_n = c(1, NA, NA, 4);names(t2_n) = letters[1:4]
-t3_n = c(1, NA, NA, 4, 5);names(t3_n) = letters[1:5]
+t1_n = c(NA, 2, 3, NA); names(t1_n) = letters[1:4]
+t2_n = c(1, NA, NA, 4); names(t2_n) = letters[1:4]
+t3_n = c(1, NA, NA, 4, 5); names(t3_n) = letters[1:5]
 
 
 stopifnot({
@@ -1484,7 +1446,6 @@ stopifnot({
 
 
 # split unsplit functions -----------------------------------------------------------------
-library(magrittr)
 
 #complex example: same as above but delete some columns
 iris_set = iris[iris$Species == "setosa", -c(1, 5)] #create 3 lists with partly missing columns
@@ -1878,6 +1839,18 @@ stopifnot({
   df_flexsubset(iris, c("Species", "test"), messages = F) == iris["Species"]
   silence(are_equal(df_flexsubset(iris, c("test")), as.data.frame(matrix(nrow=150, ncol=0)), check.attributes = F))
 })
+
+
+# str_uniquify ------------------------------------------------------------
+x = sample(LETTERS[1:10], size = 20, replace = T)
+
+stopifnot({
+  #uniquify normally
+  x %>% str_uniquify %>% duplicated %>% any %>% `!`
+  #custom suffix using a second %d.
+  x %>% str_uniquify(" [%d/%d]") %>% duplicated %>% any %>% `!`
+})
+
 
 
 # done --------------------------------------------------------------------

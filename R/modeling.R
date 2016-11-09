@@ -20,8 +20,6 @@
 #' #try all models in iris dataset to predict sepal length
 #' MOD_APSLM(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
 MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = NA, messages = F, progress = T, cv_runs = 20) {
-  library("gtools") #for combinations()
-  library("stringr") #for str_c()
 
   #find all the combinations
   num.inde = length(predictors) #how many indeps?
@@ -35,7 +33,7 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
 
   sets = list() #list of all combinations
   for (num.choose in 1:num.inde) { #loop over numbers of variables to choose
-    temp.sets = combinations(num.inde, num.choose) #all combinations of picking r out of n
+    temp.sets = gtools::combinations(num.inde, num.choose) #all combinations of picking r out of n
     temp.sets = split(temp.sets, seq.int(nrow(temp.sets))) #as a list
     sets = c(sets, temp.sets)
   }
@@ -74,7 +72,7 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
   for (model.idx in seq_along(models)) { #loop over the index of each model
     #progress
     if (progress) setTxtProgressBar(pb, value = model.idx)
-    if (messages) message(str_c("Model ", model.idx, " of ", length(models)))
+    if (messages) message(stringr::str_c("Model ", model.idx, " of ", length(models)))
 
     #fit model and extract betas
     lm.fit = lm(models[model.idx], data, weights = .weights) #fit the model
@@ -159,7 +157,6 @@ lm_beta_matrix = MOD_APSLM
 #' MOD_summary(fit2, standardize = F) #std data., don't std. betas
 #' MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
 MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
-  library(magrittr)
 
   #fetch data
   model_data = fitted_model$model
@@ -174,7 +171,7 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
   })
 
   #get predictors
-  predictor_data = model_data[-1] %>% subset_by_pattern(pattern = "(weights)", inverse = T)
+  predictor_data = model_data[-1] %>% df_subset_by_pattern(pattern = "(weights)", inverse = T)
 
 
   if (all(class(fitted_model) == "lm")) {
@@ -469,7 +466,6 @@ lm_get_fits = function(model_list) {
 #'
 #' Returns the index of the model with the highest R2 adj. value.
 #' @param model_list A list of model fits e.g. from lm().
-#' @keywords model, fit, R2 adj., best
 #' @export
 #' @examples
 #' lm_best()
@@ -495,14 +491,10 @@ lm_best = function(model_list) {
 #' @param messages (log scalar) Whether to show messages. Default yes.
 #' @param progress (log scalar) Whether to show a progress bar. Default yes.
 #' @param seed (int scalar) The seed to use (default 1). For reproducible results.
-#' @export MOD_LASSO MOD_repeat_cv_glmnet
-#' @aliases MOD_repeat_cv_glmnet
+#' @export
 #' @examples
 #' MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
 MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages=T, progress=T) {
-  #load libs
-  library(glmnet)
-  library(stringr)
 
   #check input
   check_missing(c("data", "dependent", "predictors", "standardize", "runs", "alpha_", "NA_ignore"))
@@ -558,7 +550,7 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T
     if (progress) setTxtProgressBar(pb, value = run)
 
     #fit lasso
-    fit_cv = cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix
+    fit_cv = glmnet::cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix
                        y = as_num_matrix(df[dependent]), #dep var matrix
                        weights = df$weights_, #weights
                        alpha = alpha_) #type of shrinkage
@@ -577,8 +569,6 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T
   return(results_df)
 }
 
-#old name
-MOD_repeat_cv_glmnet = MOD_LASSO
 
 #' Summarize model coefficients
 #'
@@ -591,8 +581,6 @@ MOD_repeat_cv_glmnet = MOD_LASSO
 #' @examples
 #' MOD_summarize_models()
 MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd", "mad", "fraction_zeroNA"), include_intercept = F) {
-  #libs
-  library(psych)
 
   #zero coefs
   df_zero = df == 0
@@ -641,7 +629,6 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 #' MOD_k_fold_r2(fit) #raw r2 and cv r2
 #' MOD_k_fold_r2(fit_wtd) #different r2 due to weights
 MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = T) {
-  library(magrittr)
 
   #get data
   data = lmfit$model

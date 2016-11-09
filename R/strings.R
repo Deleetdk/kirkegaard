@@ -11,13 +11,12 @@
 #' @examples
 #' str_clean(colnames(iris))
 str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, all_dots = F, multi_dots = T) {
-  library(stringr)
 
-  if (spacing_dots) string = str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
-  if (underscores) string = str_replace_all(string, "_", " ")
-  if (all_dots) string = str_replace_all(string, "\\.", " ")
-  if (multi_dots) string = str_replace_all(string, "\\.+", ".")
-  if (end_dots) string = str_replace_all(string, "\\.$", "")
+  if (spacing_dots) string = stringr::str_replace_all(string, "(\\w)\\.(\\w)", "\\1 \\2")
+  if (underscores) string = stringr::str_replace_all(string, "_", " ")
+  if (all_dots) string = stringr::str_replace_all(string, "\\.", " ")
+  if (multi_dots) string = stringr::str_replace_all(string, "\\.+", ".")
+  if (end_dots) string = stringr::str_replace_all(string, "\\.$", "")
 
   return(string)
 }
@@ -30,16 +29,14 @@ str_clean = function(string, underscores = T, spacing_dots = T, end_dots = T, al
 #' @param patterns (a character vector) A character vector of things to clean. Regex.
 #' @param replacement (a character scalar) What to replace matches with.
 #' @param all (boolean) Whether to clean all instances or just the first. Default=T.
-#' @keywords string, character. replace, vectorized
 #' @export
 #' @examples
 #' str_replace_multi()
 str_replace_multi = function(string, patterns, replacement, all = T) {
-  library(stringr)
 
   for (pattern in patterns) {
-    if (all) string = str_replace_all(string, pattern, replacement)
-    if (!all) string = str_replace(string, pattern, replacement)
+    if (all) string = stringr::str_replace_all(string, pattern, replacement)
+    if (!all) string = stringr::str_replace(string, pattern, replacement)
   }
 
   return(string)
@@ -56,10 +53,9 @@ str_replace_multi = function(string, patterns, replacement, all = T) {
 #' set.seed(2)
 #' new_lines_adder(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""), interval = 30)
 new_lines_adder = function(x, interval) {
-  library(stringr)
 
   #add spaces after /
-  x = str_replace_all(x, "/", "/ ")
+  x = stringr::str_replace_all(x, "/", "/ ")
 
   #split at spaces
   x.split = strsplit(x, " ")[[1]]
@@ -79,10 +75,10 @@ new_lines_adder = function(x, interval) {
   result <- paste(x.lines, collapse="")
 
   #remove spaces we added after /
-  result = str_replace_all(result, "/ ", "/")
+  result = stringr::str_replace_all(result, "/ ", "/")
 
   #remove ending newline
-  result = str_sub(result, start = 1, end = -2)
+  result = stringr::str_sub(result, start = 1, end = -2)
 
   return(result)
 }
@@ -125,10 +121,9 @@ add_newlines = function(x, line_length = 95) {
 #' #longer than length 1
 #' 1:2 + "a"
 "+" = function(x, y) {
-  library("stringr")
 
   if(is.character(x) || is.character(y)) {
-    return(str_c(x, y))
+    return(stringr::str_c(x, y))
   } else {
     .Primitive("+")(x, y)
   }
@@ -147,10 +142,8 @@ add_newlines = function(x, line_length = 95) {
 #' str_detect2(letters[1:10], pattern = "[acbde]")
 #' str_detect2(letters[1:10], pattern = "[acbde]", value = T)
 str_detect2 = function(string, pattern, value = F) {
-  library(stringr)
-
   #get results
-  v = str_detect(string = string, pattern = pattern)
+  v = stringr::str_detect(string = string, pattern = pattern)
 
   #return values or logicals?
   if (value) return(string[v])
@@ -175,11 +168,46 @@ str_detect_replace = function(string, pattern, replacement) {
 
   #loop over pattern-replacements
   for (i in seq_along(pattern)) {
-    string[str_detect(string, pattern = pattern[i])] = replacement[i] #detect and replace
+    string[stringr::str_detect(string, pattern = pattern[i])] = replacement[i] #detect and replace
   }
 
   string
 }
 
 
+#' Make strings unique
+#'
+#' Detects duplicate strings and makes them unique by adding a number at the end.
+#' @param string (chr vector) A character vector.
+#' @param suffix (chr vector) A character to use to make unique suffixes. Must contain \%d.
+#' @return A character vector.
+#' @details This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
+#' @export
+#' @examples
+#' Example vector with some duplicates
+#' (x = sample(LETTERS[1:10], size = 20, replace = T))
+#' #uniquify
+#' x %>% str_uniquify
+#' #custom suffix using a second %d.
+#' x %>% str_uniquify(" [%d/%d]")
+str_uniquify = function(string, suffix = " (%d)") {
+  #make a df
+  d = data.frame(names = string,
+                 n = seq_along(string))
+
+  #loop over groups
+  if (any(duplicated(d$names))) {
+    d = plyr::ddply(d, .variables = "names", .fun = function(x) {
+      if (nrow(x) == 1) return(x)
+      x$names = sprintf(x$names + suffix, 1:nrow(x), nrow(x))
+      x
+    })
+  }
+
+  #sort by n to get original order back
+  d %<>% df_sort("n")
+
+  #return
+  d$names
+}
 

@@ -15,7 +15,6 @@
 #' #also accepts 1-column data.frames, but throws a warning
 #' GG_denhist(iris[1])
 GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
-  library(ggplot2)
 
   #input type
   if (is_simple_vector(data)) {
@@ -24,7 +23,9 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
     colnames(data) = var
   }
 
-  df = data; rm(data)
+  #rename
+  df = data
+  rm(data)
 
   #1 column df
   if (is.data.frame(df) & ncol(df) == 1 & missing("var")) {
@@ -46,13 +47,13 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
 
   #plot
   if (missing("group")) {
-    g = ggplot(df, aes_string(var)) +
+    g = ggplot2::ggplot(df, aes_string(var)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                      colour="black", fill="white", binwidth = binwidth) +
       geom_density(alpha=.2, fill="#FF6666") # Overlay with transparent density plot
   } else {
 
-    g = ggplot(df, aes_string(var, fill = group)) +
+    g = ggplot2::ggplot(df, aes_string(var, fill = group)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                      colour="black", binwidth = binwidth, position = "dodge") +
       geom_density(alpha=.2) # Overlay with transparent density plot
@@ -72,11 +73,10 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
 
   if (!is.null(vline) & !missing("group")) {
     #calculate central tendencies using given function
-    library(plyr)
 
     #fetch the actual function
     func = get(vline)
-    central_tendency = daply(df, .variables = group, .fun = function(block) {
+    central_tendency = plyr::daply(df, .variables = group, .fun = function(block) {
       func(block[[var]], na.rm=T)
     })
 
@@ -103,20 +103,17 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
 #' @param clusters The number of clusters to find.
 #' @param runs Number of runs to use. The best run is used in the plot.
 #' @param standardize Whether to standardize the data first. Defaults to TRUE.
-#' @export GG_kmeans plot_kmeans
-#' @aliases plot_kmeans
+#' @export
 #' @examples
 #' GG_kmeans(iris[-5], 3)
 GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
-  library(psych)
-  library(ggplot2)
 
   #class
   df = as.data.frame(df)
 
   #standardize?
   if (standardize)
-    df = std_df(df)
+    df = df_standardize(df)
 
   #analyze
   tmp_k = kmeans(df, centers = clusters, nstart = runs)
@@ -126,14 +123,11 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
   tmp_d$fact_1 = as.numeric(tmp_f$scores[, 1])
   tmp_d$fact_2 = as.numeric(tmp_f$scores[, 2])
   tmp_d$label = rownames(df)
-  g = ggplot(tmp_d, aes(fact_1, fact_2, color = cluster)) +
+  g = ggplot2::ggplot(tmp_d, aes(fact_1, fact_2, color = cluster)) +
     geom_point() + geom_text(aes(label = label), size = 3,
                              vjust = 1, color = "black")
   return(g)
 }
-
-#old name
-plot_kmeans = GG_kmeans
 
 
 #' Scatter plot with regression line and correlation information using ggplot2
@@ -159,12 +153,6 @@ plot_kmeans = GG_kmeans
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
 GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
-  library("ggplot2")
-  library("grid")
-  library("psychometric")
-  library("psych")
-  library("stringr")
-  library("weights")
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
@@ -195,8 +183,8 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
 
   ## text
   #correlation + CI
-  cor = wtd.cors(df[1:2], weight = df$.weights)[1, 2] #get correlation
-  cor_CI = CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
+  cor = weights::wtd.cors(df[1:2], weight = df$.weights)[1, 2] #get correlation
+  cor_CI = psychometric::CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
 
   #auto detect text position
   if (missing(text_pos)) {
@@ -243,15 +231,15 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
 
 
   #text object
-  text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
-                         gp = gpar(fontsize = 11))
+  text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
+                         gp = grid::gpar(fontsize = 11))
 
   #plot
   if (missing(weights)) {
-    g = ggplot(df, aes_string(x_var, y_var)) +
+    g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
       geom_point()
   } else {
-    g = ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+    g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
       geom_point(aes(size = .weights)) +
       scale_size_continuous(guide = F)
   }
@@ -269,212 +257,6 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
   #clean?
   if (clean_names) {
     g = g + xlab(str_clean(x_var)) + ylab(str_clean(y_var))
-  }
-
-  return(g)
-}
-
-
-#' Plot factor loadings.
-#'
-#' Returns a ggplot2 plot with sorted loadings and numerical results in a corner. Supports reversing of the factor is reversed.
-#' @param fa.object a factor analysis object from the fa() function from the psych package.
-#' @param reverse whether to reverse all loadings. Default to false.
-#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
-#' @export
-#' @examples
-#' library(psych)
-#' plot_loadings(fa(iris[-5])) #plot loadings from analysis of iris data
-plot_loadings = function(fa.object, reverse = F, text_pos = "tl") {
-  library("plotflow") #needed for reordering the variables
-  library("grid") #for grob
-  if (reverse) {
-    loadings = as.vector(fa.object$loadings)*-1
-    reverse = "\nIndicators reversed"
-  }
-  else {
-    loadings = as.vector(fa.object$loadings)
-    reverse = ""
-  }
-
-  #indicator names
-  indicators = dimnames(fa.object$loadings)[[1]]
-  DF = data.frame(loadings, indicators)
-
-  #text object location
-  if (text_pos=="tl") {
-    x = .02
-    y = .98
-    hjust = 0
-    vjust = 1
-  }
-  if (text_pos=="tr") {
-    x = .98
-    y = .98
-    hjust = 1
-    vjust = 1
-  }
-  if (text_pos=="bl") {
-    x = .02
-    y = .02
-    hjust = 0
-    vjust = -.1
-  }
-  if (text_pos=="br") {
-    x = .98
-    y = .02
-    hjust = 1
-    vjust = -.1
-  }
-
-  #text
-  var.pct = round(mean(fa.object$communality),3) #the proportion of variance accounted for
-  text = paste0("proportion of variance explained ",var.pct,reverse)
-
-  #text object
-  text_object = grobTree(textGrob(text, x=x,  y=y, hjust = hjust, vjust = vjust),
-                         gp=gpar(fontsize=11))
-
-  g = ggplot(reorder_by(indicators, ~ loadings, DF), aes(loadings, indicators)) +
-    geom_point() +
-    annotation_custom(text_object) +
-    xlab("loadings") + ylab("indicators")
-
-  return(g)
-}
-
-
-#' Plot multiple factor loadings in one plot.
-#'
-#' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting. Only works for factor analyses with 1 factor solutions!
-#'
-#' Non-overlapping indicates are put in the bottom. Note that internally, x and y coods have been flipped, so to modify the scales, use the opposite command, e.g. ylim to modify x axis limits.
-#' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.
-#' @param fa_labels (chr vector) Names of the analyses. Defaults to fa.1, fa.2, etc..
-#' @param reverse_vector (num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
-#' @param reorder (chr scalar or NA) Which factor analysis to order the loadings by. Can be integers that reprensent each factor analysis. Can also be "mean", "median" to use the means and medians of the loadings. Use "all" for the old method. Default = "mean".
-#' @export
-#' @examples
-#' library(psych)
-#' plot_loadings_multi(fa(iris[-5])) #extract a factor and plot
-#' #list of FAs
-#' fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
-#'                 part2 = fa(iris[51:100, -c(2, 5)]),
-#'                 part3 = fa(iris[101:150, -c(3, 5)]))
-#' #notice that it handles non-overlapping indicators
-#' plot_loadings_multi(fa_list2)
-#' #reorder by a particular FA
-#' plot_loadings_multi(fa_list2, reorder = 1)
-plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reorder = "mean") {
-  library("stringr")
-  library("ggplot2")
-  library("plyr")
-
-
-  #how many?
-  fa_num = length(fa_objects)
-  fa_names = str_c("fa.", 1:fa_num)
-
-  #is fa_objects a single fa?
-  if (all(class(fa_objects) %in% c("psych", "fa"))) {
-    fa_objects = list(fa_objects)
-    fa_num = length(fa_objects)
-    fa_names = str_c("fa.", 1:fa_num)
-  } else {
-    is_(fa_objects, class = "list", error_on_false = T)
-  }
-
-  #labels to use
-  if (missing("fa_labels")) {
-    if (!is.null(names(fa_objects))) {
-      fa_labels = names(fa_objects)
-    }
-    else {
-      fa_labels = fa_names
-    }
-  }
-
-  #if given labels, check their length
-  if (length(fa_labels) != fa_num) {
-    stop("Factor analysis labels length is not identical to number of analyses.")
-  }
-
-  #check reverse_vector
-  if (all(is.na(reverse_vector))) {
-    reverse_vector = rep(1, fa_num)
-  } else if (length(reverse_vector) != fa_num) {
-    stop("Length of reversing vector does not match number of factor analyses.")
-  }
-
-  #extract data
-  d = data.frame()
-  for (fa.idx in 1:fa_num) {
-    loads = fa_objects[[fa.idx]]$loadings * reverse_vector[fa.idx]
-    rnames = rownames(loads)
-    loads = as.data.frame(as.vector(loads))
-    rownames(loads) = rnames
-    colnames(loads) = fa_names[fa.idx]
-    silence({
-      d = merge_datasets(d, loads, 1)
-    })
-  }
-
-  #reshape data to long form
-  d2 = reshape(d, varying = 1:fa_num, direction = "long", ids = rownames(d))
-  d2$time = as.factor(d2$time)
-  d2$id = as.factor(d2$id)
-  colnames(d2)[2] = "fa"
-
-  #reorder factor?
-  if (!is.na(reorder)) {
-    if (reorder == "all") {
-      message("reorder = all is depreciated. You probably want to use reorder = mean")
-      library("plotflow")
-
-      silence({
-        d2 = reorder_by(id, ~fa, d2)
-      })
-    } else if (reorder == "mean") {
-      v_aggregate_values = daply(d2, .(id), function(x) {
-        mean(x$fa, na.rm=T)
-      })
-
-      #re-level
-      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
-
-    } else if (reorder == "median") {
-      v_aggregate_values = daply(d2, .(id), function(x) {
-        median(x$fa, na.rm=T)
-      })
-
-      #re-level
-      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
-
-    } else {
-      # browser()
-      d2_sub = d2[d2$time == reorder, ] #subset the analysis whose loading is to be used for the reorder
-
-      #get vector of the chosen analysis
-      v_values = d2_sub$fa; names(v_values) = d2_sub$id
-
-      #re-level
-      d2$id = factor(d2$id, levels = names(sort(v_values, decreasing = F, na.last = F)))
-    }
-  }
-
-  #plot
-  if (fa_num > 1) {
-    g = ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
-      geom_point(position = position_dodge(width = 0.5)) +
-      ylab("Loading") + xlab("Indicator") +
-      scale_color_discrete(name = "Analysis", labels = fa_labels) +
-      coord_flip()
-  } else {
-    g = ggplot(d2, aes(x = id, y = fa)) +
-      geom_point(position = position_dodge(width = 0.5)) +
-      ylab("Loading") +
-      xlab("Indicator") +
-      coord_flip()
   }
 
   return(g)
@@ -512,10 +294,6 @@ plot_loadings_multi = function (fa_objects, fa_labels, reverse_vector = NA, reor
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
 GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
-  library(psych)
-  library(stringr)
-  library(ggplot2)
-  library(plyr)
 
   #convert
   df = as.data.frame(df)
@@ -535,7 +313,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     if (count_NA(df) > 0 ) {
       #remove missing?
       if (na.rm) {
-        df = filter_by_missing_values(df, missing = 0)
+        df = miss_filter(df, missing = 0)
         silence(message("Missing values were removed."), messages = msg_NA)
       } else {
         stop("There must not be missing values in the group variable when na.rm = F!")
@@ -557,26 +335,26 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
 
     #plot
     if (type == "bar") {
-      g = ggplot(df_sum, aes(group1, mean)) +
+      g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
         geom_bar(stat="identity") +
         geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (type == "point") {
-      g = ggplot(df_sum, aes(group1, mean)) +
+      g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
         geom_point() +
         geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (type == "points") {
-      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+      g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes_string(groupvar, var)) +
         geom_point(aes(group1, mean), color = "red", size = 3) +
         geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (type == "violin") {
-      g = ggplot(df_sum) +
+      g = ggplot2::ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
@@ -584,7 +362,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     }
 
     if (type == "violin2") {
-      g = ggplot(df_sum) +
+      g = ggplot2::ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
         geom_count(data = df, aes_string(groupvar, var)) +
         scale_fill_discrete(guide = F) +
@@ -616,7 +394,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     if (count_NA(df) > 0 ) {
       #remove missing?
       if (na.rm) {
-        df = filter_by_missing_values(df, missing = 0)
+        df = miss_filter(df, missing = 0)
         silence(message("Missing values were removed."), messages = msg_NA)
       } else {
         stop("There must not be missing values in the group variable when na.rm = F!")
@@ -624,7 +402,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     }
 
     #summarize
-    df_sum = ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(d_sub) {
+    df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(d_sub) {
       desc = psych::describe(d_sub[[var]])
       c("mean" = desc$mean,
         "n" = desc$n,
@@ -654,19 +432,19 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
 
     #plot
     if (type == "bar") {
-      g = ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
+      g = ggplot2::ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
         geom_bar(stat="identity", position = "dodge") +
         geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "point") {
-      g = ggplot(df_sum, aes(groupvar, mean, color = subgroupvar)) +
+      g = ggplot2::ggplot(df_sum, aes(groupvar, mean, color = subgroupvar)) +
         geom_point(position = position_dodge(width = .9)) +
         geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
     }
 
     if (type == "points") {
-      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+      g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes(groupvar, y = var, color = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
         geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
@@ -674,14 +452,14 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
     }
 
     if (type == "violin") {
-      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+      g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
         geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "violin2") {
-      g = ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
+      g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9), alpha = .5) +
         geom_count(data = df, aes(groupvar, y = var, group = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5) +
@@ -702,147 +480,6 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
 }
 
 
-
-#' Jensen method (method of correlated vectors) plot
-#'
-#' Returns a ggplot2 scatter plot with numerical results in a corner. Also supports reversing for dealing with factors that have negative indicators.
-#' @param loadings a vector of factor loadings.
-#' @param loadings a vector of correlations of the indicators with the criteria variable.
-#' @param reverse whether to reverse indicators with negative loadings. Default to true.
-#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
-#' @export
-#' @examples
-#' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE, check_overlap = TRUE){
-  #libs
-  library(ggplot2)
-  library(grid)
-
-  #initial
-  temp_loadings = as.numeric(loadings) #conver to vector
-  names(temp_loadings) = rownames(loadings) #set names again
-  loadings = temp_loadings #back to normal name
-  DF = data.frame(loadings, cors) #DF
-
-  #reverse
-  if (reverse) {
-    for (idx in 1:nrow(DF)) {
-      if (DF[idx, 1] < 0){ #if loading <0
-        DF[idx, ] = DF[idx, ] * -1 #reverse
-        rownames(DF)[idx] = paste0(rownames(DF)[idx], "_r")
-      }
-    }
-  }
-
-  #method text
-  if (reverse) {method_text = "Jensen's method with reversing\n"}
-  else {method_text = "Jensen's method without reversing\n"}
-
-  #correlation
-  cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
-
-  #auto detect text position
-  if (missing(text_pos)) {
-    if (cor>0) text_pos = "tl" else text_pos = "tr"
-  }
-
-  #text object location
-  if (text_pos == "tl") {
-    x = .02
-    y = .98
-    hjust = 0
-    vjust = 1
-  }
-  if (text_pos == "tr") {
-    x = .98
-    y = .98
-    hjust = 1
-    vjust = 1
-  }
-  if (text_pos == "bl") {
-    x = .02
-    y = .02
-    hjust = 0
-    vjust = -.1
-  }
-  if (text_pos == "br") {
-    x = .98
-    y = .02
-    hjust = 1
-    vjust = -.1
-  }
-
-  #text
-  text = paste0(method_text,
-                "r=", cor, " (orange line)",
-                "\nn=", nrow(DF))
-
-  #text object
-  text_object = grobTree(textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
-                         gp = gpar(fontsize = 11))
-
-  #regression line
-  model = lm(cors ~ loadings, DF)
-  coefs = coef(model)
-
-  #plot
-  DF$rnames = rownames(DF)
-
-  g = ggplot(data = DF, aes(x = loadings, y = cors)) +
-    geom_point() +
-    xlab("Loadings") +
-    ylab("Correlation with criteria variable") +
-    annotation_custom(text_object) +
-    geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
-
-  #add var_names if desired
-  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1.5, check_overlap = check_overlap)
-
-  return(g)
-}
-
-
-#' Scatter plot of Jensens method.
-#'
-#' Takes a factor analysis, data.frame and name of the criteria variable as inputs and returns a ggplot2 scatter plot with Jensen's method applied.
-#' @param fa A factor analysis object from fa().
-#' @param df A data.frame that contains all the variables.
-#' @param criteria A character string of the name of the criteria variable.
-#' @param reverse_factor Whether to reverse the factor first.
-#' @param loading_reversing Whether to use loading reversing to avoid inflated results. Defaults to TRUE.
-#' @param text_pos Which corner to put the text in. Defaults to "tl". Other options: tr, bl, br.
-#' @export
-#' @examples
-#' Jensens_method()
-Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversing = T, text_pos, var_names = TRUE, check_overlap = TRUE) {
-  #get loadings
-  fa_loadings = as.numeric(fa$loadings)
-
-  #reverse factor is desired
-  if (reverse_factor) fa_loadings = fa_loadings * -1
-
-  #get indicator names
-  indicator_names = rownames(fa$loadings)
-  indicator_num = length(indicator_names)
-
-  #make new df
-  df2 = df[c(indicator_names, criteria)]
-
-  #correlate
-  df2_cors = cor(df2, use = "p")
-
-  #criteria x indicator cor vector
-  criteria_indi_cor = df2_cors[1:indicator_num, (indicator_num+1)]
-
-  #call plotter
-  g = Jensen_plot(fa_loadings, cors = criteria_indi_cor, reverse = loading_reversing, text_pos = text_pos, var_names = var_names, check_overlap = check_overlap)
-
-  #return ggplot object
-  return(g)
-}
-
-
-
 #' Plot a contingency table with ggplot2
 #'
 #' Makes a pretty contingency table with ggplot2 using geom_tile.
@@ -856,7 +493,6 @@ Jensens_method = function(fa, df, criteria, reverse_factor = F, loading_reversin
 #' GG_contingency_table(mpg, "drv", "cyl", margin = 1)
 #' GG_contingency_table(mpg, "drv", "cyl", margin = 2)
 GG_contingency_table = function(data, var1, var2, margin = NULL) {
-  library(ggplot2); library(magrittr)
 
   #copy table
   data = data[c(var1, var2)]
@@ -871,7 +507,7 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
   d_table = t_table %>% as.data.frame()
 
   #plot
-  ggplot(d_table, aes(Var2, Var1)) + geom_tile(aes(fill = Freq)) +
+  ggplot2::ggplot(d_table, aes(Var2, Var1)) + geom_tile(aes(fill = Freq)) +
     geom_text(aes(label = round(Freq, 2))) +
     scale_fill_continuous(name = "Proportion") +
     ylab(substitute(var1)) + xlab(substitute(var2))
@@ -892,10 +528,12 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #' GG_forest(meta, .names = european_ancestry$Author_sample)
 GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
-  sapply(c("tibble", "ggplot2", "forcats"), library, character.only = T)
 
   #extract effect sizes and SEs
-  d = data_frame(es = .analysis$yi, var = .analysis$vi, se = sqrt(var), meta = "study")
+  d = tibble::data_frame(es = .analysis$yi,
+                         var = .analysis$vi,
+                         se = sqrt(var),
+                         meta = "study")
 
   #names
   if (!missing(.names)) {
@@ -904,20 +542,25 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
     d$names = "Study " + 1:nrow(d)
   }
 
+  #make names unique if necessary
+  if (any(duplicated(d$names))) {
+    d$names %<>% str_uniquify
+  }
+
   #sort?
   if (.alphabetic_sort_names) {
-    d$names %<>% factor() %>% fct_rev()
+    d$names %<>% factor() %>% forcats::fct_rev()
   }
 
   #extract main effect
-  d_meta = data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
                       var = .analysis$se %>% sqrt,
                       se = .analysis$se,
                       meta = "meta",
                       names = "Main effect")
 
   #horizontal space case
-  d_hline = data_frame(es = .analysis$b %>% as.vector,
+  d_hline = tibble::data_frame(es = .analysis$b %>% as.vector,
                        var = .analysis$se %>% sqrt,
                        se = .analysis$se,
                        meta = "invis",
@@ -927,10 +570,10 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
   d = rbind(d, d_meta, d_hline)
 
   #make sure meta effect is in the bottom
-  d$names %<>% factor() %>% fct_relevel(c("Main effect", ""))
+  d$names %<>% factor() %>% forcats::fct_relevel(c("Main effect", ""))
 
   #plot
-  ggplot(d, aes(es, names, color = meta)) +
+  ggplot2::ggplot(d, aes(es, names, color = meta)) +
     geom_point() +
     geom_errorbarh(aes(xmin = es - se * 1.96,
                        xmax = es + se * 1.96)) +
@@ -938,8 +581,7 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
     theme_bw() +
     scale_y_discrete(name = NULL) +
     scale_colour_manual(values = c("white", "black", "black"), guide = F) +
-    xlab("Effect size") +
-    xlim(-1, 1)
+    xlab("Effect size")
 }
 
 
@@ -952,19 +594,18 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
 #' @export
 GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
-  sapply(c("tibble", "ggplot2"), library, character.only = T)
 
   #convert CI to se z
   se_z = qnorm(1 - (1-.CI)/2)
 
   #extract main effect
-  d_meta = data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
                       var = .analysis$se %>% sqrt,
                       se = .analysis$se
   )
 
   #extract effect sizes and SEs
-  d = data_frame(es = .analysis$yi,
+  d = tibble::data_frame(es = .analysis$yi,
                  var = .analysis$vi,
                  se = sqrt(var),
                  upper = d_meta$es + se_z * se,
@@ -973,15 +614,15 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   )
 
   #calculate funnel
-  d_funnel = data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
+  d_funnel = tibble::data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
                         upper = d_meta$es + se * se_z,
                         lower = d_meta$es - se * se_z)
 
-  d_polygon = data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
+  d_polygon = tibble::data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
                          y = c(max(d_funnel$se), 0, max(d_funnel$se)))
 
   #plot
-  gg = ggplot() +
+  gg = ggplot2::ggplot() +
     geom_line(data = d_funnel, aes(upper, se)) +
     geom_line(data = d_funnel, aes(lower, se)) +
     geom_polygon(data = d_polygon, aes(x, y), fill = "grey") +

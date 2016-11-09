@@ -2,7 +2,6 @@
 % Please edit documentation in R/modeling.R
 \name{MOD_LASSO}
 \alias{MOD_LASSO}
-\alias{MOD_repeat_cv_glmnet}
 \title{Repeatedly run glmnet.cv()}
 \usage{
 MOD_LASSO(data, dependent, predictors, weights_ = NA, standardize = T,

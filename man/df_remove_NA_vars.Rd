@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_remove_NA_vars}
 \alias{df_remove_NA_vars}
-\alias{remove_NA_vars}
 \title{Remove NA columns}
 \usage{
 df_remove_NA_vars(data, keep)

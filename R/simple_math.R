@@ -12,7 +12,6 @@
 #' percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T) #reverse cutoff
 #' percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3) #ignores NA/NaN
 percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclusive = T) {
-  library(magrittr)
 
   #convert
   x = as.numeric(x)
@@ -131,45 +130,43 @@ is_whole_number = function(x) {
 
 #' Are values negative?
 #'
-#' A wrapper for "<0", returns a boolean. Vectorized.
-#' @param x (any object compatible with <) Some values to test.
+#' A wrapper for "< 0".
+#' @param x (numeric vector) Some values to test.
 #' @export
 #' @examples
-#' is_negative()
+#' is_negative(1)
+#' is_negative(0)
+#' is_negative(-1)
 is_negative = function(x) {
-  vapply(x, function(y) {
-    y < 0
-  }, FUN.VALUE = logical(1))
+  x < 0
 }
 
 
-#' Are valyes positive?
+#' Are values positive?
 #'
-#' A wrapper for ">0", returns a boolean. Vectorized.
-#' @param x (any object compatible with <) Some values to test.
+#' A wrapper for "> 0".
+#' @param x (numeric vector) Some values to test.
 #' @export
 #' @examples
-#' is_positive()
+#' is_positive(1)
+#' is_positive(0)
+#' is_positive(-1)
 is_positive = function(x) {
-  vapply(x, function(y) {
-    y > 0
-  }, FUN.VALUE = logical(1))
+  x > 0
 }
 
 
 
 #' Are values zero?
 #'
-#' A wrapper for "==0", returns a boolean. Vectorized.
-#' @param x (any object compatible with <) Some values to test.
+#' A wrapper for "== 0".
+#' @param x (numeric vector) Some values to test.
 #' @export
 #' @examples
 #' is_zero(0)
 #' is_zero(1)
 is_zero = function(x) {
-  vapply(x, function(y) {
-    y == 0
-  }, FUN.VALUE = logical(1))
+  x == 0
 }
 
 
@@ -320,7 +317,6 @@ rescale = function(x, new_min, new_max, old_min = min(x), old_max = max(x)) {
 averages = function(x,
                     trim = .1,
                     types = c("arithmetic", "geometric", "harmonic", "mode", "median", "trimmed", "midrange")) {
-  library(psych)
 
   #check input
   is_(x, class = "numeric", error_on_false = T)

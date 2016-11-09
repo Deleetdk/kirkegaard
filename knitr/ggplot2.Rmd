@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE, message=F}
 knitr::opts_chunk$set(echo = TRUE)
-library(kirkegaard); library(metafor)
+library(kirkegaard); library(metafor); library(psych)
 ```
 
 # Introduction
@@ -140,6 +140,7 @@ meta = rma(yi = european_ancestry$r, sei = european_ancestry$SE_r)
 #plot
 forest(meta)
 ```
+
 I really dislike base-r plots. To make a ggplot2 plot, simply call `GG_forest` on the analysis:
 
 ```{r, message=F}

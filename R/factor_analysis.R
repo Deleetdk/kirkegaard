@@ -6,14 +6,12 @@
 #' @param ... (arguments to fa) Further arguments to \code{\link{fa}}.
 #' @export
 #' @examples
-#' FA_residuals(iris[-5])
-FA_residuals = function(data, standardize = T, ...) {
-  library(stringr)
-  library(psych)
+#' fa_residuals(iris[-5])
+fa_residuals = function(data, standardize = T, ...) {
 
   #initial
-  data = std_df(data) #standardize
-  fa = fa(data, ...) #factor analyze
+  data = df_standardize(data) #standardize
+  fa = psych::fa(data, ...) #factor analyze
   factor.scores = as.numeric(fa$scores) #get scores
   data2 = data; data2$factor.scores = factor.scores #insert scores into copy
   resids.table = data.frame(matrix(nrow=nrow(data), ncol=ncol(data))) #make df for resids
@@ -40,12 +38,11 @@ FA_residuals = function(data, standardize = T, ...) {
 #' Extracts the first factor, then uses the factor scores to predict the indicator values for each indicator and for each case. Returns a data.frame with residuals. Then calculates the mean absolute value of these by case.
 #' @param data a data.frame.
 #' @param sort whether to sort the results or not. Defaults to true.
-#' @keywords psychometrics, psychology, latent variable, factor analysis, residuals
 #' @export
 #' @examples
-#' FA_MAR(iris[-5])
-FA_MAR = function(data, sort = T, ...) {
-  resids = FA_residuals(data, ...)
+#' fa_MAR(iris[-5])
+fa_MAR = function(data, sort = T, ...) {
+  resids = fa_residuals(data, ...)
 
   #mean absolute residuals
   mean.abs.resid = apply(resids, 1, function(x) {
@@ -70,17 +67,16 @@ FA_MAR = function(data, sort = T, ...) {
 #' @param data A data.frame.
 #' @param sort Whether to sort the results or not. Defaults to true.
 #' @param include_full_sample Whether to include the 'case' with the full sample. Defaults to true.
-#' @keywords psychometrics, psychology, latent variable, factor analysis
 #' @export
 #' @examples
-#' FA_CFS(iris[-5])
-FA_CFS = function(data, sort = T, include_full_sample = T) {
+#' fa_CFS(iris[-5])
+fa_CFS = function(data, sort = T, include_full_sample = T) {
   #initial
   prop.vars = as.data.frame(matrix(nrow=nrow(data)+1, ncol=2)) #for results
   colnames(prop.vars) = c("Prop.var%", "IPV")
 
   #all cases
-  fa = fa(data) #factor analyze
+  fa = psych::fa(data) #factor analyze
   prop.var = mean(fa$communality) #the proportion of variance accounted for
   prop.vars[nrow(prop.vars),] = c(prop.var, 0) #insert
   rownames(prop.vars)[[nrow(prop.vars)]] = "All cases"
@@ -89,7 +85,7 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
   for (case in 1:nrow(data)) {
     data2 = data[-case,] #get subset without that case
     tryCatch({
-      fa = fa(data2) #factor analyze
+      fa = psych::fa(data2) #factor analyze
       prop.var = round(mean(fa$communality),3) #the proportion of variance accounted for
       prop.var.delta = prop.var - prop.vars["All cases",1] #difference to row "all cases"
       prop.vars[case,] = c(prop.var, prop.var.delta) #insert
@@ -124,11 +120,8 @@ FA_CFS = function(data, sort = T, include_full_sample = T) {
 #' @param skip_methods A character vector of methods to skip. Defaults to none.
 #' @export
 #' @examples
-#' FA_all_methods(iris[-5])
-FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
-  #libs
-  library(stringr)
-  library(psych)
+#' fa_all_methods(iris[-5])
+fa_all_methods = function(DF, ..., skip_methods = "", messages = T) {
 
   #settings
   score.methods = c("regression", "Thurstone", "tenBerge", "Anderson", "Bartlett")
@@ -146,19 +139,19 @@ FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
     extract_meth_num = perms[row, 2]
     extract_meth_name = extraction.methods[extract_meth_num]
     name = str_c(score_meth_name, "_", extract_meth_name)
-    suppressor({message(str_c(row, " out of ", nrow(perms), " - ", name))}, messages = messages)
+    silence({message(stringr::str_c(row, " out of ", nrow(perms), " - ", name))}, messages = messages)
 
     #skip methods
     if (!skip_methods == "") {
       if (any(str_detect(name, skip_methods))) {
-        suppressor({message(str_c("Skipping method: ", name))}, messages = messages)
+        silence({message(str_c("Skipping method: ", name))}, messages = messages)
         next
       }
     }
 
     #analyze
     err = tryCatch({
-      suppressor({.fa = fa(DF, fm = extract_meth_name, scores = score_meth_name)}, messages = messages)
+      silence({.fa = psych::fa(DF, fm = extract_meth_name, scores = score_meth_name)}, messages = messages)
     },
     error = function(e) {
       scores[, name] = NA
@@ -168,19 +161,19 @@ FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
     )
     #skip on error
     if (is.character(err)) {
-      suppressor({message(str_c("Skipping ", name, " due to extraction error"))}, messages = messages)
+      silence({message(str_c("Skipping ", name, " due to extraction error"))}, messages = messages)
 
       next
     }
 
     #skip on Heywood case
     if (any(as.vector(.fa$loadings) > 1 | as.vector(.fa$loadings) < -1)) {
-      suppressor({message(str_c("Heywood case found for ", name))}, messages = messages)
+      silence({message(stringr::str_c("Heywood case found for ", name))}, messages = messages)
       next
     }
 
     #save
-    suppressor({message(str_c("Saving results from ", name))}, messages = messages)
+    silence({message(stringr::str_c("Saving results from ", name))}, messages = messages)
     scores[, name] = as.vector(.fa$scores)
     loadings[, extract_meth_name] = as.vector(.fa$loadings)
   }
@@ -205,27 +198,24 @@ FA_all_methods = function(DF, ..., skip_methods = "", messages = T) {
 #'
 #' MaxALC, max absolute loading change. Measures the maximal loading change.
 #' @param df A data.frame to calculate mixedness metrics for.
-#' @param ... Parameters to \code{\link{FA_MAR}}. These get passed on to \code{\link{fa}}.
+#' @param ... Parameters to \code{\link{fa_MAR}}. These get passed on to \code{\link{fa}}.
 #' @export
 #' @examples
-#' FA_mixedness(iris[-5])
-FA_mixedness = function(df, ...){
-  library(psych)
-  library(plyr)
-  library(stringr)
+#' fa_mixedness(iris[-5])
+fa_mixedness = function(df, ...){
 
   #check if colnames contain illegal characters
-  if (any(str_detect(colnames(df), " "))) stop("Colnames contain spaces. Remove and try again.")
-  if (any(str_detect(colnames(df), "&"))) stop("Colnames contain ambersands. Remove and try again.")
+  if (any(stringr::str_detect(colnames(df), " "))) stop("Colnames contain spaces. Remove and try again.")
+  if (any(stringr::str_detect(colnames(df), "&"))) stop("Colnames contain ambersands. Remove and try again.")
 
   #for results
   return_df = data.frame(matrix(nrow=nrow(df), ncol=0))
 
   #mean abs. resids
-  return_df$MAR = FA_MAR(df, sort = F, ...) %>% unlist %>% as.vector
+  return_df$MAR = fa_MAR(df, sort = F, ...) %>% unlist %>% as.vector
 
   #all cases
-  fa = fa(df, ...) #factor analyze
+  fa = psych::fa(df, ...) #factor analyze
   prop_var_full = mean(fa$communality)
   loads_full = as.numeric(fa$loadings)
 
@@ -236,7 +226,7 @@ FA_mixedness = function(df, ...){
   each_fa = lapply(each_subset, fa, ...)
 
   #get propVars from each fa
-  each_propVar = ldply(each_fa, function(x) {
+  each_propVar = plyr::ldply(each_fa, function(x) {
     return(as.numeric(mean(x$communality)))
   })
 
@@ -278,13 +268,10 @@ FA_mixedness = function(df, ...){
 #' Runs factor analysis on a rank-ordered dataset which prevents outliers from having strong effects.
 #' @param x A data.frame to extract factors from.
 #' @param ... Parameters to fa().
-#' @keywords psychometrics, factor analysis, robust, rank
 #' @export
 #' @examples
-#' FA_rank_fa()
-FA_rank_fa = function(x, ...) {
-  #lib
-  require(psych)
+#' fa_rank_fa()
+fa_rank_fa = function(x, ...) {
 
   #rank matrix
   rank_data = apply(x, 2, rank)
@@ -293,7 +280,7 @@ FA_rank_fa = function(x, ...) {
   colnames(rank_data) = colnames(x)
 
   #fa
-  rank_fa = fa(rank_data, ...)
+  rank_fa = psych::fa(rank_data, ...)
 
   return(rank_fa)
 }
@@ -304,19 +291,15 @@ FA_rank_fa = function(x, ...) {
 #' Returns a correlation matrix with robust correlations. These are derived from either rlm() [MASS] or lmrob() [robustbase].
 #' @param x A data.frame to correlate.
 #' @param x method Which robust method to use. Options are "lmrob" [robustbase] or "rlm" [MASS]. Defaults to the first.
-#' @keywords psychometrics, robust, correlation, matrix
 #' @export
 #' @examples
-#' FA_robust_cormatrix()
-FA_robust_cormatrix = function(x, method = "lmrob") {
-  #lib
-  require(gtools)
-
+#' fa_robust_cormatrix()
+fa_robust_cormatrix = function(x, method = "lmrob") {
   #std dataset
   x.std = as.data.frame(scale(x))
 
   #combinations
-  combos = combinations(ncol(x), 2)
+  combos = gtools::combinations(ncol(x), 2)
 
   #df for results
   r_mat = as.data.frame(matrix(nrow = ncol(x), ncol = ncol(x)))
@@ -333,15 +316,13 @@ FA_robust_cormatrix = function(x, method = "lmrob") {
 
     #fit models
     if (method == "lmrob") {
-      require(robustbase)
-      r_fit = lmrob(as.formula(model), x.std)
-      r_fit2 = lmrob(as.formula(model2), x.std)
+      r_fit = robustbase::lmrob(as.formula(model), x.std)
+      r_fit2 = robustbase::lmrob(as.formula(model2), x.std)
     }
 
     if (method == "rlm") {
-      require(MASS)
-      r_fit = rlm(as.formula(model), x.std)
-      r_fit2 = rlm(as.formula(model2), x.std)
+      r_fit = MASS::rlm(as.formula(model), x.std)
+      r_fit2 = MASS::rlm(as.formula(model2), x.std)
     }
 
     #take mean
@@ -362,18 +343,17 @@ FA_robust_cormatrix = function(x, method = "lmrob") {
 #' Robust factor analysis.
 #'
 #'
-#' Performs a robust factor analysis. It is done using the output from FA_robust_cormatrix(). Note that this uses a correlation matrix, so factor scores are not available.
+#' Performs a robust factor analysis. It is done using the output from fa_robust_cormatrix(). Note that this uses a correlation matrix, so factor scores are not available.
 #' @param x A data.frame to factor analyze.
-#' @keywords psychometrics, robust, factor analysis.
 #' @export
 #' @examples
-#' FA_robust_cormatrix()
-FA_robust_fa = function(x, ..., .method = "lmrob") {
+#' fa_robust_cormatrix()
+fa_robust_fa = function(x, ..., .method = "lmrob") {
   #get robust matrix
-  r_mat = FA_robust_cormatrix(x, method = .method)
+  r_mat = fa_robust_cormatrix(x, method = .method)
 
   #fa
-  r_fa = fa(r_mat, ...)
+  r_fa = psych::fa(r_mat, ...)
 
   return(r_fa)
 }
@@ -387,12 +367,10 @@ FA_robust_fa = function(x, ..., .method = "lmrob") {
 #' @param ... Settings for fa().
 #' @param sort Which column to sort results after. Defaults to the first column (mean absolute change). Set to anything else than 1 or 2 to avoid sorting.
 #' @param include_full_sample Whether to include the full sample as a case. Defaults to true.
-#' @keywords psychometrics, robust, factor analysis.
 #' @export
 #' @examples
-#' FA_robust_cormatrix()
-FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
-  library(plyr)
+#' fa_robust_cormatrix()
+fa_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 
   #initial fa
   full_fa = fa(x, ...)
@@ -422,7 +400,7 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 
 
   #absolute change in loadings by case
-  AC = adply(loadings, 1, function(k) {
+  AC = plyr::adply(loadings, 1, function(k) {
     return(k - loadings[nrow(loadings), ])
   })
 
@@ -472,10 +450,8 @@ FA_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' @param ... Extra parameters to pass to psych::fa().
 #' @export
 #' @examples
-#' FA_splitsample_repeat(iris[-5])
-FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T, progress = T, seed = 1, ...) {
-  library(psych)
-  library(stringr)
+#' fa_splitsample_repeat(iris[-5])
+fa_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T, progress = T, seed = 1, ...) {
 
   #rename input
   df = data; rm(data)
@@ -537,12 +513,10 @@ FA_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T
 #'
 #' Takes an input either a list of factor analysis objects from fa() (psych package) or a data.frame/matrix of loadings. Returns a matrix of congruence coefficients. These are calculated using factor.congruence() from psych package.
 #' @param x A list of factor analysis objects from fa() or a data.frame/matrix of factor loadings.
-#' @keywords factor, congruence, matrix
 #' @export
 #' @examples
-#' FA_congruence_matrix()
-FA_congruence_matrix = function(x) {
-  library(psych)
+#' fa_congruence_matrix()
+fa_congruence_matrix = function(x) {
 
   #right input type?
   if (!class(x) %in% c("list", "data.frame", "matrix")) stop("Input was not a list, data.frame or matrix!")
@@ -550,11 +524,11 @@ FA_congruence_matrix = function(x) {
   #if input is a list of fa's
   if (class(x) == "list") {
     #are they all factor analysis objects?
-    if (all(unlist(lapply(x, function(x) class(x) == c("psych", "fa"))))) {
+    if (all(unlist(lapply(x, function(x) inherits(x, "fa"))))) {
       #get loadings
       all_loadings = lapply(x, function(x) as.matrix(x$loadings))
 
-      return(factor.congruence(all_loadings)) #return congruence matrix
+      return(psych::factor.congruence(all_loadings)) #return congruence matrix
 
     } else {
       stop("Input was a list of something other than factor analysis objects!")
@@ -562,8 +536,7 @@ FA_congruence_matrix = function(x) {
   }
 
   #not a list
-  library(plyr)
-  alply(x, 2, as.matrix) %>% factor.congruence %>% return
+  plyr::alply(x, 2, as.matrix) %>% factor.congruence %>% return
   #split by column, into a list of matrices, calls the congruence function and returns
 }
 
@@ -572,7 +545,6 @@ FA_congruence_matrix = function(x) {
 #'
 #' Extract loadings from a factor analysis object of class "fa") into a data.frame.
 #' @param fa (object of class "fa") A factor analysis object.
-#' @keywords factor analysis, loadings
 #' @export
 #' @examples
 #' library("psych")
@@ -591,13 +563,10 @@ get_loadings = function(fa) {
 #' Find indicators that load above a given threshold for each factor. Can also force them into a data.frame for easy output. Uses input object from psych package's fa().
 #' @param fa (object of class "fa") A factor analysis object.
 #' @param threshold (numeric scalar) The cutoff to use for salient loadings. Default to .40.
-#' @keywords factor analysis, loadings, salient, threshold
 #' @export
 #' @examples
 #' get_salient_loadings()
 get_salient_loadings = function(fa, threshold = .40, to_df = T) {
-  library(magrittr)
-
   #checks
   if (!"fa" %in% class(fa)) stop("fa must be of class fa!")
   if (!is_between(threshold, 0, 1)) stop("threshold must be between 0 and 1!")
@@ -622,4 +591,326 @@ get_salient_loadings = function(fa, threshold = .40, to_df = T) {
   return(l_salient)
 }
 
+#' Determine number of factors
+#'
+#' Convenience function for determining the number of factors in a fa object. Vectorized.
+#' @param .fa (fa or list of fa objects) The object from which to determine the number of factors.
+#' @export
+#' @examples
+#' library(psych)
+#' fa(iris[-5]) %>% fa_nfactors
+#' fa(iris[-5], nfactors = 2) %>% fa_nfactors
+fa_nfactors = function(.fa) {
+  #single
+  if (inherits(.fa, what = "fa")) return (.fa$loadings %>% ncol)
+  #multiple
+  if (!all(sapply(.fa, inherits, what = "fa"))) stop("Input was not a single fa object or list or fa objects.")
+  sapply(.fa, function(x) x$loadings %>% ncol)
+}
 
+
+
+
+#' Plot factor loadings
+#'
+#' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting.
+#'
+#' Non-overlapping indicates are put in the bottom. Note that internally, x and y coods have been flipped, so to modify the scales, use the opposite command, e.g. ylim to modify x axis limits.
+#' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.
+#' @param fa_labels (chr vector) Names of the analyses.
+#' @param factor_names (chr vectr) Names of the factors if multiple.
+#' @param reverse_vector (num vector) Vector of numbers to use for reversing factors. Use e.g. c(1, -1) to reverse the second factor. Defaults not reversing.
+#' @param reorder (chr scalar or NA) Which factor analysis to order the loadings by. Can be integers that reprensent each factor analysis. Can also be "mean", "median" to use the means and medians of the loadings. Use "all" for the old method. Default = "mean".
+#' @export
+#' @examples
+#' library(psych)
+#' fa_plot_loadings(fa(iris[-5])) #extract 1 factor and plot
+#' fa_plot_loadings(fa(iris[-5], 2)) #extract 2 factors and plot
+#' #list of FAs
+#' fa_list = list(part1 = fa(iris[1:50, -c(1, 5)]),
+#'                 part2 = fa(iris[51:100, -c(2, 5)]),
+#'                 part3 = fa(iris[101:150, -c(3, 5)]))
+#' #notice that it handles non-overlapping indicators
+#' fa_plot_loadings(fa_list)
+#' #reorder by a particular FA
+#' fa_plot_loadings(fa_list, reorder = 1)
+fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reverse_vector = NA, reorder = "mean", clean_factor_labels = T, clean_indicator_labels = T) {
+
+  #str cleaning func
+  cleaner_func = function(x) {
+    stringr::str_replace_all(x, pattern = "[._]", replacement = " ")
+  }
+
+  #which kind of plot?
+  #1 unifactor analysis - 11
+  #1 multifactor analysis - 1m
+  #multiple unifactor analyses - m1
+  #multiple multifactor analyses - mm
+  if (inherits(fa_objects, "fa")) fa_objects = list(fa_objects) #put it in a list for consistency
+  if (!all(sapply(fa_objects, inherits, what = "fa"))) stop("Could not recognize input. Input must be a single fa object, or a list of fa objects.")
+  fa_num = length(fa_objects)
+  factor_num = sapply(fa_objects, fa_nfactors)
+
+  if (fa_num == 1 && all(1 == factor_num)) {
+    plot_type = "11"
+  } else if (fa_num == 1) {
+    plot_type = "1m"
+  } else if (all(factor_num == 1)) {
+    plot_type = "m1"
+  } else {
+    plot_type = "mm"
+  }
+
+  #labels to use?
+  fa_names = stringr::str_c("fa.", 1:fa_num)
+  if (is_scalar_NA(fa_labels)) {
+    #names on list?
+    if (!is.null(names(fa_objects))) fa_labels = names(fa_objects) else fa_labels = 1:fa_num
+  } else {
+    if (length(fa_labels) != fa_num) stop("Factor analysis labels length is not identical to number of analyses.")
+    fa_labels = fa_names
+  }
+
+  #one or more unifactor analyses
+  if (plot_type %in% c("11", "m1")) {
+
+    #check reverse_vector
+    if (anyNA(reverse_vector)) {
+      reverse_vector = rep(1, fa_num)
+    } else if (length(reverse_vector) != fa_num) {
+      stop("Length of reversing vector does not match number of factor analyses.")
+    }
+
+    #extract data
+    d = data.frame()
+    for (fa_idx in 1:fa_num) {
+      #extract and reverse loadings if necessary
+      loads = fa_objects[[fa_idx]]$loadings * reverse_vector[fa_idx]
+      #indicators names
+      rnames = rownames(loads)
+      #as df
+      loads = as.data.frame(as.vector(loads))
+      #set dimnames
+      rownames(loads) = rnames
+      colnames(loads) = fa_names[fa_idx]
+      #merge data
+      silence({
+        d = merge_datasets(d, loads)
+      })
+    }
+
+    #reshape data to long form
+    d2 = reshape(d, varying = 1:fa_num, direction = "long", ids = rownames(d))
+    d2$time = as.factor(d2$time)
+    d2$id = as.factor(d2$id)
+    colnames(d2)[2] = "fa"
+
+    #clean indicators?
+    if (clean_indicator_labels) d2$id %<>% cleaner_func
+
+    #reorder factor?
+    if (reorder == "mean") {
+      v_aggregate_values = plyr::daply(d2, .variables = "id", function(x) {
+        mean(x$fa, na.rm=T)
+      })
+
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
+
+    } else if (reorder == "median") {
+      v_aggregate_values = plyr::daply(d2, .(id), function(x) {
+        median(x$fa, na.rm=T)
+      })
+
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_aggregate_values, decreasing = F)))
+
+    } else {
+      d2_sub = d2[d2$time == reorder, ] #subset the analysis whose loading is to be used for the reorder
+
+      #get vector of the chosen analysis
+      v_values = d2_sub$fa; names(v_values) = d2_sub$id
+
+      #re-level
+      d2$id = factor(d2$id, levels = names(sort(v_values, decreasing = F, na.last = F)))
+    }
+
+    #plot
+    if (fa_num > 1) {
+      g = ggplot2::ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
+        geom_point(position = position_dodge(width = 0.5)) +
+        ylab("Loading") +
+        xlab("Indicator") +
+        scale_color_discrete(name = "Analysis", labels = fa_labels) +
+        coord_flip()
+    } else {
+      g = ggplot2::ggplot(d2, aes(x = id, y = fa)) +
+        geom_point(position = position_dodge(width = 0.5)) +
+        ylab("Loading") +
+        xlab("Indicator") +
+        coord_flip()
+    }
+  }
+
+  #1 fa with multiple factors
+  if (plot_type == "1m") {
+
+    #check reverse_vector
+    if (anyNA(reverse_vector)) {
+      reverse_vector = rep(1, fa_num)
+    } else if (length(reverse_vector) != fa_num) {
+      stop("Length of reversing vector does not match number of factor analyses.")
+    }
+
+    #extract data
+    d = fa_objects[[1]]$loadings %>% unclass %>% as.data.frame
+    #rename
+    colnames(d) = 1:ncol(d)
+    #indicator col
+    d = cbind(indicator = rownames(d), d)
+    #clean indicator labels?
+    d$indicator %<>% stringr::str_replace_all("[._]", " ")
+    #spread
+    d = tidyr::gather_(d, gather_cols = colnames(d)[-1], key_col = "factor", value_col = "loading")
+
+    #reorder indicators
+    if (!is_scalar_NA(reorder)) {
+      #sort by mean abs loading
+      #this orders the indicators by their importance, overall
+      d$indicator %<>% forcats::fct_reorder(d$loading, fun = function(x) {
+        mean(abs(x))
+      })
+    }
+
+    #factor names
+    if (is_scalar_NA(factor_names)) factor_names = 1:factor_num
+
+    #clean factor labels?
+    if (clean_factor_labels) clean_factor_labels %<>% cleaner_func
+
+    #reorder factor?
+    #not clear how to do this
+
+    #plot
+    g = ggplot2::ggplot(d, aes(x = indicator, y = loading, color = factor, group = factor)) +
+      geom_point(position = position_dodge(width = 0.1)) +
+      ylab("Loading") +
+      xlab("Indicator") +
+      scale_color_discrete(labels = factor_names, name = "Factor") +
+      coord_flip()
+  }
+
+  if (plot_type == "mm") {
+    stop("Multiple multifactor plotting is not implemented yet.")
+    }
+
+
+  return(g)
+}
+
+
+suited_for_pearson = function(x, unique_min = 5) {
+  if (inherits(x, "factor")) return(F)
+  if (inherits(x, "logical")) return(F)
+  if (length(unique(x) < unique_min)) return(F)
+  T
+}
+
+
+#' Scatter plot of Jensen's method
+#'
+#' Takes a factor analysis, data frame and name of the criterion variable as inputs and returns a ggplot2 scatter plot with Jensen's method applied.
+#'
+#' #indicator_criterion_method
+#' By default the function tries to automatically detect which kind of indicators are supplied. If indicators have any factors, logicals or numeric variables with less than 5 unique values, it it will call the hetcor function from polycor. If all are numeric with many levels, it will call the Pearson correlation (wtd.cors) from package weights with the supplied weights. Alternatively, one can input a numeric vector with the desired indicator-criterion relationships. These could be betas from complicated models.
+#' @param fa (fa obj) A factor analysis object from fa().
+#' @param df (data frame) A data frame that contains indicators and criterion.
+#' @param criterion (chr) The name of the criterion variable.
+#' @param reverse_factor (lgl) Whether to reverse the factor. Used when factor analysis results in a reversed factor.
+#' @param loading_reversing (lgl) Whether to use loading reversing to avoid inflated results. Defaults to TRUE.
+#' @param n_factor (int) Which factor to use? Default is 1st factor. Only relevant for multifactor analysis.
+#' @param indicator_criterion_method (chr / num) Which method to use to compute indicator-criterion relationships?
+#' @export
+#' @examples
+#' #load a subset of okcupid data
+#' data(okcupid_social_prudence)
+#' library(psych); library(polycor)
+#' #estimate latent correlations
+#' cors = polycor::hetcor(okcupid_social_prudence[-1]) %>% magrittr::extract2("correlations")
+#' #factor analyze normally
+#' fa = fa(cors)
+#' #apply Jensen's method
+#' fa_Jensens_method(fa, okcupid_social_prudence, criterion = "CA")
+#' #output shows that indicators with larger loadings tend to be more positively related to cognitive ability
+fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reversing = T, check_overlap = TRUE, n_factor = 1, indicator_criterion_method = "auto", .weights = NA, ...) {
+  args = list(...)
+
+  if ("criteria" %in% args) stop("'criteria' changed name to 'criterion'")
+
+  #get loadings
+  if (ncol(fa$loadings) < n_factor) stop(sprintf("You tried to extract a factor that doesn't exist. n_factor was %d but fa only has %d factors.", n_factor, ncol(fa$loadings)))
+  fa_loadings = fa$loadings %>% unclass %>% magrittr::extract(, n_factor)
+
+  #weights
+  if (is.na(.weights)) .weights = rep(1, nrow(df))
+
+  #reverse factor is desired
+  if (reverse_factor) fa_loadings = fa_loadings * -1
+
+  #indicator_criterion_method
+  if (is.numeric(indicator_criterion_method)) {
+    indicator_criterion_vals = indicator_criterion_method
+    indicator_criterion_method = "manual"
+  }
+
+  #get indicator names
+  indicator_names = rownames(fa$loadings)
+  indicator_num = length(indicator_names)
+
+  #make new df
+  df2 = df[c(indicator_names, criterion)]
+
+  #get criterion x indicator relationships
+  if (indicator_criterion_method == "auto") {
+    if (!all(sapply(df2, suited_for_pearson))) {
+      message("Using latent correlations for the criterion-indicator relationships.")
+      df2_cors = polycor::hetcor(df2) %>% magrittr::extract2("correlations")
+    } else {
+      message("Using Pearson correlations for the criterion-indicator relationships.")
+      #convert all to numeric
+      df2 = df_colFunc(df2, func = as.numeric)
+      df2_cors = weights::wtd.cors(df2, weight = .weights)
+    }
+  } else if (indicator_criterion_method == "pearson") {
+    df2 = df_colFunc(df2, func = as.numeric)
+    df2_cors = weights::wtd.cors(df2, weight = .weights)
+  } else if (indicator_criterion_method == "latent") {
+    df2_cors = polycor::hetcor(df2) %>% magrittr::extract2("correlations")
+  } else if (indicator_criterion_method == "manual") {
+    #all good
+  } else stop(sprintf("Could not recognize indicator_criterion_method: %s", indicator_criterion_method))
+
+
+  #criterion x indicator vector
+  # browser()
+  if (!exists("indicator_criterion_vals")) indicator_criterion_vals = df2_cors[1:indicator_num, (indicator_num+1)]
+
+  #make df for plotting
+  df3 = data.frame(loading = fa_loadings,
+                   crit_vals = indicator_criterion_vals)
+
+  #reverse?
+  if (loading_reversing) {
+    for (i in 1:nrow(df3)) {
+      if (df3[i, "loading"] < 0) df3[i, ] = df3[i, ] * -1
+    }
+  }
+
+  #plot
+  g = GG_scatter(df3, x_var = "loading", y_var = "crit_vals", case_names_vector = indicator_names, ...) +
+    ylab("Criterion-indicator relationship")+
+    xlab("Loading")
+
+  #return ggplot object
+  return(g)
+}
