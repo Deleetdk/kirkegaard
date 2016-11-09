@@ -184,7 +184,7 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
   ## text
   #correlation + CI
   cor = weights::wtd.cors(df[1:2], weight = df$.weights)[1, 2] #get correlation
-  cor_CI = psychometric::CIr(cor, n = count.pairwise(df)[1, 2], level = CI)
+  cor_CI = psychometric::CIr(cor, n = psych::count.pairwise(df)[1, 2], level = CI)
 
   #auto detect text position
   if (missing(text_pos)) {
