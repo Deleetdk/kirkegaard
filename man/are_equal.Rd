@@ -12,6 +12,10 @@ are_equal(x, y, ...)
 \item{y}{(any object) The second object.}
 
 \item{...}{(other named parameters) Further parameters to pass to \code{all.equal}.}
+
+\item{check.names}{(lgl) Whether to check names (default yes).}
+
+\item{check.attributes}{(lgl) Whether to check attributes (default yes).}
 }
 \value{
 Returns a logical scalar indicating whether the objects are equal.

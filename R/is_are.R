@@ -98,13 +98,15 @@ is_numeric = function(x, recursive = TRUE) {
 #' A wrapper for \code{\link{all.equal}} that returns a logical scalar.
 #' @param x (any object) The first object.
 #' @param y (any object) The second object.
+#' @param check.names (lgl) Whether to check names (default yes).
+#' @param check.attributes (lgl) Whether to check attributes (default yes).
 #' @param ... (other named parameters) Further parameters to pass to \code{all.equal}.
 #' @return Returns a logical scalar indicating whether the objects are equal.
 #' @export
 #' @examples
 #' are_equal(iris[1:4], iris[-5])
 are_equal = function(x, y, ...) {
-  test = all.equal(target = x, current = y, ...)
+  test = all.equal(target = x, current = y, check.names = T, check.attributes = T, ...)
   if (is.logical(test)) {
     return(TRUE)
   } else {
