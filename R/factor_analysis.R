@@ -874,7 +874,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
   if (indicator_criterion_method == "auto") {
     if (!all(sapply(df2, suited_for_pearson))) {
       message("Using latent correlations for the criterion-indicator relationships.")
-      df2_cors = polycor::hetcor(df2) %>% magrittr::extract2("correlations")
+      df2_cors = polycor::hetcor(df2, use = "pairwise.complete.obs") %>% magrittr::extract2("correlations")
     } else {
       message("Using Pearson correlations for the criterion-indicator relationships.")
       #convert all to numeric

@@ -425,3 +425,6 @@ table2 = function(x, prop = F, include_NA = T) {
 
   d
 }
+
+
+
