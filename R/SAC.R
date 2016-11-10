@@ -437,8 +437,13 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
   #This function is based on the code given by Hassall & Sherratt (2011)
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
 
+  #check if vars are there
+  if (!all(vars %in% names(df))) {
+    stop(sprintf("Some variables were not found in the data frame: " + stringr::str_c(vars[!vars %in% names(df)])))
+  }
+
   #autodetect distance method
-  if(!missing("dists")) auto_detect_dist_method=F
+  if(!missing("dists")) auto_detect_dist_method = F
   if(auto_detect_dist_method) {
     auto = distance_method_detector(df)
     distance_method = auto[1]
@@ -563,7 +568,7 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @export
 SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
-
+  # browser()
   #check input
   if (missing("df")) stop("df input missing!")
   if (anyNA(df)) stop("Missing values present. Remove and try again.")
@@ -638,7 +643,7 @@ SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, w
 
   #merge
   df_return = merge_datasets(df_return, as.data.frame(y_hat))
-  df_return = merge_datasets(df_return, df)
+  df_return = merge_datasets(df_return, as.data.frame(df))
 
   #output
   if (output == "scores") {
@@ -743,6 +748,7 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
   if (weights_var == "") {
     df$weights___ = rep(1, nrow(df)) #fill in 1's
   } else {
+    if (!weights_var %in% names(df)) stop(sprintf("weights_var wasn't in the data.frame!"))
     df$weights___ = df[[weights_var]] #use chosen var
   }
   weights_var = "weights___"
@@ -754,7 +760,7 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
 
   #Moran's I
   if ("Morans" %in% measures) {
-    morans = get_Morans_I_multi(df=df, vars=vars, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method)
+    morans = get_Morans_I_multi(df = df, vars = vars, dists = dists, lat_var = lat_var, lon_var = lon_var, distance_method = distance_method)
     df_ret$Morans_I = morans
   }
 
@@ -773,12 +779,12 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
     }
   }
 
-
+  # browser()
   #KNSNR
   if ("KNSNR" %in% measures) {
     for (k_ in k) {
       for (var in vars) {
-        knsnr = SAC_knsnr(df=df, dependent=var, k=k_, dists=dists, lat_var=lat_var, lon_var=lon_var, weights_var=weights_var, distance_method=distance_method, output = "cor")
+        knsnr = SAC_knsnr(df = df, dependent=var, k=k_, dists = dists, lat_var = lat_var, lon_var = lon_var, weights_var = weights_var, distance_method = distance_method, output = "cor")
         df_ret[var, stringr::str_c("knsn_", k_)] = knsnr
       }
     }
