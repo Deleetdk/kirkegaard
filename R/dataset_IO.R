@@ -117,6 +117,7 @@ as_long = function(x) {
 write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
 
   #round
+  x_orig = x
   x = as.data.frame(x) %>% df_round(digits)
 
   #format if desired
@@ -158,7 +159,7 @@ write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "
   }
 
   #silently return the output too
-  invisible(x)
+  invisible(x_orig)
 }
 
 
