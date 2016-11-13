@@ -424,11 +424,11 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T,
 
   #get results
   tryCatch({ #try to pass na.rm=T
-    results = aaply(tmp_df, .margins = 1, .progress = progress, .expand = F,.fun = function(x) {
+    results = plyr::aaply(tmp_df, .margins = 1, .progress = progress, .expand = F,.fun = function(x) {
       get("func")(x %>% unlist, na.rm = ignore_NA)
     })},
     error = function(e) {
-      results <<- aaply(tmp_df, .margins = 1, .expand = F, .progress = progress, .fun = function(x) {
+      results <<- plyr::aaply(tmp_df, .margins = 1, .expand = F, .progress = progress, .fun = function(x) {
         get("func")(x %>% unlist)
       })
     }
@@ -600,13 +600,13 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
     }
 
     #do it
-    df2 = ddply(df, key, function(row) {
+    df2 = plyr::ddply(df, key, function(row) {
       #skip if only 1 row
       if (nrow(row) == 1) return(row)
 
       #compute
       row_new = row[1, ] #copy content of the first row in the block
-      row_new[v_numeric] = apply(row[v_numeric], 2, func, ...) #subset to numerics, use func
+      row_new[v_numeric] = plyr::apply(row[v_numeric], 2, func, ...) #subset to numerics, use func
       row_new #save the new row
     })
 
