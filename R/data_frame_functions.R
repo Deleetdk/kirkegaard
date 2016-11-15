@@ -606,7 +606,7 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
 
       #compute
       row_new = row[1, ] #copy content of the first row in the block
-      row_new[v_numeric] = plyr::apply(row[v_numeric], 2, func, ...) #subset to numerics, use func
+      row_new[v_numeric] = apply(row[v_numeric], 2, func, ...) #subset to numerics, use func
       row_new #save the new row
     })
 
