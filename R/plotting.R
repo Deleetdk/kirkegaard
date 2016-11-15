@@ -320,8 +320,11 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
       }
     }
 
+    #check for no data
+    if (nrow(df) == 0) stop("No overlapping non-missing data.")
+
     #summarize
-    df_sum = describeBy(df[[var]], df[[groupvar]], mat = T)
+    df_sum = psych::describeBy(df[[var]], df[[groupvar]], mat = T)
 
     #reorder groups in line with data
     if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
@@ -400,6 +403,9 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         stop("There must not be missing values in the group variable when na.rm = F!")
       }
     }
+
+    #check for no data
+    if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #summarize
     df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(d_sub) {
