@@ -809,11 +809,26 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
 }
 
 
+#vectorized
 suited_for_pearson = function(x, unique_min = 5) {
-  if (inherits(x, "factor")) return(F)
-  if (inherits(x, "logical")) return(F)
-  if (length(unique(x) < unique_min)) return(F)
-  T
+  #inner func
+  inner_func = function(x) {
+    if (inherits(x, "factor")) return(F)
+    if (inherits(x, "logical")) return(F)
+    if (length(unique(x)) < unique_min) return(F)
+    T
+  }
+
+  #is input atomic?
+  if (purrr::is_atomic(x)) return(inner_func(x))
+
+  #if not, attempt to apply to each part
+  purrr::map_lgl(x, inner_func)
+}
+
+#all together
+suited_for_pearson_all = function(x, unique_min = 5) {
+  all(suited_for_pearson(x, unique_min = unique_min))
 }
 
 
@@ -872,7 +887,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
 
   #get criterion x indicator relationships
   if (indicator_criterion_method == "auto") {
-    if (!all(sapply(df2, suited_for_pearson))) {
+    if (!suited_for_pearson_all(df)) {
       message("Using latent correlations for the criterion-indicator relationships.")
       df2_cors = polycor::hetcor(df2, use = "pairwise.complete.obs") %>% magrittr::extract2("correlations")
     } else {
