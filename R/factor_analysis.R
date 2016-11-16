@@ -917,7 +917,13 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
   #reverse?
   if (loading_reversing) {
     for (i in 1:nrow(df3)) {
-      if (df3[i, "loading"] < 0) df3[i, ] = df3[i, ] * -1
+      if (df3[i, "loading"] < 0) {
+        #reverse
+        df3[i, ] = df3[i, ] * -1
+
+        #name change
+        indicator_names[i] = indicator_names[i] + "_r"
+      }
     }
   }
 
