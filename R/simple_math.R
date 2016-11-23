@@ -123,7 +123,10 @@ which_min2 = function(x) {
 #' is_whole_number(1L)
 #' is.integer(1)
 #' is_whole_number(1)
-is_whole_number = function(x) {
+is_whole_number = function(x, scalar = F) {
+  if (scalar) {
+    return((x == as.integer(x)) && is_scalar(x))
+  }
   x == as.integer(x)
 }
 
@@ -166,7 +169,7 @@ is_positive = function(x) {
 #' is_zero(0)
 #' is_zero(1)
 is_zero = function(x) {
-  x == 0
+  (x == 0)
 }
 
 

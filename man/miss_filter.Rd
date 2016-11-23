@@ -4,12 +4,14 @@
 \alias{miss_filter}
 \title{Filter data by missing values per row.}
 \usage{
-miss_filter(data, missing = 0)
+miss_filter(data, missing = 0, reverse = F)
 }
 \arguments{
-\item{data}{(data.frame or something coersible to a data.frame) The data.}
+\item{data}{(data frame) The data.}
 
-\item{missing}{(whole number scalar) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).}
+\item{missing}{(num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).}
+
+\item{reverse}{(lgl) Filter based on non-NA data instead.}
 }
 \description{
 Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.

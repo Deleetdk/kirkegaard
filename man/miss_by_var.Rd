@@ -4,15 +4,19 @@
 \alias{miss_by_var}
 \title{Missing datapoint counter, variable-level}
 \usage{
-miss_by_var(x)
+miss_by_var(x, reverse = F)
 }
 \arguments{
 \item{x}{a matrix or data.frame}
+
+\item{reverse}{(lgl) Count non-NA instead.}
 }
 \description{
 Counts the number of missing datapoints per variable
 }
 \examples{
 miss_by_var(miss_add_random(iris))
+miss_by_var(iris)
+miss_by_var(iris, reverse = T)
 }
 

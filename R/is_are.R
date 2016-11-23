@@ -304,3 +304,19 @@ is_scalar_NA = function(x, error_on_null = T) {
   #main
   is.atomic(x) && length(x) == 1 && is.na(x)
 }
+
+#' Is logical?
+#'
+#' Check whether an object is logical
+#' @param x (obj) An object to check.
+#' @param scalar (lgl) Only accept scalar.
+#' @return Logical scalar.
+#' @export
+#' @examples
+#' is_scalar_NA(NA)
+#' is_scalar(1:3)
+#' is_scalar_NA(c(1, NA))
+#' is_scalar_NA(c(NA, 1))
+is_logical = function(x, scalar = F) {
+  is.logical(x) && is_scalar(x)
+}

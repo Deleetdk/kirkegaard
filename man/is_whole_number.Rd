@@ -4,7 +4,7 @@
 \alias{is_whole_number}
 \title{Is vector a whole number?}
 \usage{
-is_whole_number(x)
+is_whole_number(x, scalar = F)
 }
 \arguments{
 \item{x}{(numeric vector) A numeric vector.}

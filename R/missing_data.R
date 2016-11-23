@@ -1,32 +1,5 @@
 ## FUNCTIONS FOR DEALING WITH MISSING DATA
 
-#' Missing datapoint counter, case-level
-#'
-#' Counts the number of missing datapoints per case
-#' @param x (data.frame/matrix) The data.
-#' @export
-#' @examples
-#' miss_by_case(miss_add_random(iris))
-miss_by_case = function(x){
-  y = apply(x, 1, is.na)
-  if (ncol(x) == 1) return(as.numeric(y))
-  y = apply(y, 2, sum)
-  return(y)
-}
-
-#' Missing datapoint counter, variable-level
-#'
-#' Counts the number of missing datapoints per variable
-#' @param x a matrix or data.frame
-#' @export
-#' @examples
-#' miss_by_var(miss_add_random(iris))
-miss_by_var = function(x){
-  y = apply(x, 2, is.na)
-  y = apply(y, 2, sum)
-  return(y)
-}
-
 
 #' Count missing data
 #'
@@ -42,6 +15,38 @@ count_NA = function(x, reverse = F) {
   if (reverse) return(sum(!is.na(x)))
   sum(is.na(x))
 }
+
+
+#' Missing datapoint counter, case-level
+#'
+#' Counts the number of missing datapoints per case
+#' @param x (data frame) The data.
+#' @param reverse (lgl) Count non-NA instead.
+#' @export
+#' @examples
+#' miss_by_case(miss_add_random(iris))
+#' miss_by_case(iris)
+#' miss_by_case(iris, reverse = T)
+miss_by_case = function(x, reverse = F){
+  apply(x, 1, count_NA, reverse = reverse)
+}
+
+
+#' Missing datapoint counter, variable-level
+#'
+#' Counts the number of missing datapoints per variable
+#' @param x a matrix or data.frame
+#' @param reverse (lgl) Count non-NA instead.
+#' @export
+#' @examples
+#' miss_by_var(miss_add_random(iris))
+#' miss_by_var(iris)
+#' miss_by_var(iris, reverse = T)
+miss_by_var = function(x, reverse = F){
+  apply(x, 2, count_NA, reverse = reverse)
+}
+
+
 
 
 #' Missing data barplot with ggplot2.
@@ -334,23 +339,20 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
 #' Filter data by missing values per row.
 #'
 #' Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
-#' @param data (data.frame or something coersible to a data.frame) The data.
-#' @param missing (whole number scalar) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
+#' @param data (data frame) The data.
+#' @param missing (num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
+#' @param reverse (lgl) Filter based on non-NA data instead.
 #' @export
 #' @examples
 #' df = data.frame(1:10, letters[1:10])
 #' df = miss_add_random(df)
 #' miss_filter(df)
-miss_filter = function(data, missing = 0) {
+miss_filter = function(data, missing = 0, reverse = F) {
   #initial
-  if (!is_whole_number(missing)) stop("missing must be a whole number!")
-  is_(data, "data.frame", error_on_false = T)
+  assertthat::assert_that(is_whole_number(missing, scalar = T))
+  assertthat::assert_that(is.data.frame(data))
+  assertthat::assert_that(is_logical(reverse, scalar = T))
 
-  #keep cases with that number of missing datapoints or fewer
-  data = data[miss_by_case(data) <= missing, ]
-  return(data)
+  #filter
+  data[miss_by_case(data, reverse = reverse) >= missing, ]
 }
-
-
-
-
