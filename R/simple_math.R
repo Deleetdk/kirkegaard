@@ -361,9 +361,10 @@ averages = function(x,
 #' #add extra
 #' helper_breaks(10^(0:5))
 helper_breaks = function(x, factors = c(2.5, 5)) {
+  y = x
   for (fct in factors) {
-    x = c(x, x * fct)
+    y = c(y, x * fct)
   }
-  sort(x)
+  sort(y)
 }
 
