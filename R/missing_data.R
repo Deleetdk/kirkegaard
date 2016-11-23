@@ -9,12 +9,9 @@
 #' miss_by_case(miss_add_random(iris))
 miss_by_case = function(x){
   y = apply(x, 1, is.na)
+  if (ncol(x) == 1) return(as.numeric(y))
   y = apply(y, 2, sum)
   return(y)
-}
-
-miss_case = function(...) {
-  stop("miss_case has been renamed to miss_by_case")
 }
 
 #' Missing datapoint counter, variable-level
@@ -30,9 +27,6 @@ miss_by_var = function(x){
   return(y)
 }
 
-miss_table = function(...) {
-  stop("miss_table has been renamed to miss_by_var.")
-}
 
 #' Count missing data
 #'
@@ -48,6 +42,7 @@ count_NA = function(x, reverse = F) {
   if (reverse) return(sum(!is.na(x)))
   sum(is.na(x))
 }
+
 
 #' Missing data barplot with ggplot2.
 #'
