@@ -347,3 +347,23 @@ averages = function(x,
   #return
   res
 }
+
+
+#' Augment logarithmic values with intuitive additional breaks
+#'
+#' Adds intuitive middle values to a vector of values. Useful for when plotting data on logarithmnic plots.
+#' @param x (num vectr) A vector of values.
+#' @param factors (num vectr) Factors to use to create the new values. Default is 2.5 and 5.
+#' @export
+#' @examples
+#' #standard log10 breaks
+#' 10^(0:5)
+#' #add extra
+#' helper_breaks(10^(0:5))
+helper_breaks = function(x, factors = c(2.5, 5)) {
+  for (fct in factors) {
+    x = c(x, x * fct)
+  }
+  sort(x)
+}
+
