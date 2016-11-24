@@ -1,6 +1,6 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2016.11.23
+Version: 2016.11.24
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
@@ -12,15 +12,10 @@ RoxygenNote: 5.0.1
 Imports:
     plyr,
     dplyr,
-    tidyr,
-    forcats,
-    purrr,
-    psych,
     glmnet,
     grid,
     psychometric,
-    weights,
-    assertthat
+    tidyr
 Suggests:
     fields,
     XLConnect,
@@ -31,4 +26,9 @@ Suggests:
 Depends:
     ggplot2,
     stringr,
+    weights,
+    purrr,
+    psych,
+    assertthat,
+    forcats,
     magrittr

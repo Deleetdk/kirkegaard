@@ -93,7 +93,7 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
     g = g + geom_vline(xintercept = central_tendency, linetype="dashed", size=1, color = colors)
   }
 
-  return(g)
+  return(g + ggplot2::theme_bw())
 }
 
 #' Scatter plot with kmeans clustering
@@ -126,7 +126,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
   g = ggplot2::ggplot(tmp_d, aes(fact_1, fact_2, color = cluster)) +
     geom_point() + geom_text(aes(label = label), size = 3,
                              vjust = 1, color = "black")
-  return(g)
+  return(g + ggplot2::theme_bw())
 }
 
 
@@ -259,7 +259,7 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
     g = g + xlab(str_clean(x_var)) + ylab(str_clean(y_var))
   }
 
-  return(g)
+  return(g + ggplot2::theme_bw())
 }
 
 
@@ -482,7 +482,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
   }
 
 
-  return(g)
+  return(g + ggplot2::theme_bw())
 }
 
 
@@ -516,7 +516,8 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
   ggplot2::ggplot(d_table, aes(Var2, Var1)) + geom_tile(aes(fill = Freq)) +
     geom_text(aes(label = round(Freq, 2))) +
     scale_fill_continuous(name = "Proportion") +
-    ylab(substitute(var1)) + xlab(substitute(var2))
+    ylab(substitute(var1)) + xlab(substitute(var2)) +
+    ggplot2::theme_bw()
 }
 
 

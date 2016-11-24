@@ -4,18 +4,18 @@
 \alias{are_equal}
 \title{Are objects equal?}
 \usage{
-are_equal(x, y, ...)
+are_equal(x, y, check.names = T, check.attributes = T, ...)
 }
 \arguments{
 \item{x}{(any object) The first object.}
 
 \item{y}{(any object) The second object.}
 
-\item{...}{(other named parameters) Further parameters to pass to \code{all.equal}.}
-
 \item{check.names}{(lgl) Whether to check names (default yes).}
 
 \item{check.attributes}{(lgl) Whether to check attributes (default yes).}
+
+\item{...}{(other named parameters) Further parameters to pass to \code{all.equal}.}
 }
 \value{
 Returns a logical scalar indicating whether the objects are equal.
@@ -25,5 +25,10 @@ A wrapper for \code{\link{all.equal}} that returns a logical scalar.
 }
 \examples{
 are_equal(iris[1:4], iris[-5])
+a = letters[1:3]
+b = letters[1:3]
+attr(b, "test") = "value"
+are_equal(a, b)
+are_equal(a, b, check.attributes = F)
 }
 

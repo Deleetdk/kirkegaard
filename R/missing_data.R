@@ -113,7 +113,7 @@ miss_plot = function(data, percent=T, case=T) {
   }
 
   #return
-  g
+  g + theme_bw()
 }
 
 
@@ -354,5 +354,6 @@ miss_filter = function(data, missing = 0, reverse = F) {
   assertthat::assert_that(is_logical(reverse, scalar = T))
 
   #filter
-  data[miss_by_case(data, reverse = reverse) >= missing, ]
+  if (!reverse) return(data[miss_by_case(data) <= missing, ])
+  data[miss_by_case(data, reverse = T) >= missing, ]
 }
