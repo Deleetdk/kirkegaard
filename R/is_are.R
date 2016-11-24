@@ -105,8 +105,17 @@ is_numeric = function(x, recursive = TRUE) {
 #' @export
 #' @examples
 #' are_equal(iris[1:4], iris[-5])
-are_equal = function(x, y, ...) {
-  test = all.equal(target = x, current = y, check.names = T, check.attributes = T, ...)
+#' a = letters[1:3]
+#' b = letters[1:3]
+#' attr(b, "test") = "value"
+#' are_equal(a, b)
+#' are_equal(a, b, check.attributes = F)
+are_equal = function(x, y, check.names = T, check.attributes = T, ...) {
+  test = base::all.equal(target = x,
+                  current = y,
+                  check.names = check.names,
+                  check.attributes = check.attributes,
+                  ...)
   if (is.logical(test)) {
     return(TRUE)
   } else {
