@@ -805,7 +805,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     }
 
 
-  return(g)
+  return(g + theme_bw())
 }
 
 
