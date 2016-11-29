@@ -5,43 +5,6 @@ p_load(kirkegaard, psych, plyr, MASS, assertthat)
 #otherwise get error
 options("expressions" = 10000)
 
-# merge_datasets + merge_datasets2 ----------------------------------------------------------
-#some data to merge
-d1 = iris[1:75, ] #split in two
-d2 = iris[76:150, ]
-set.seed(1);d2_na = miss_add_random(d2)
-t = merge_datasets(d1, d2) #merge into one
-t2 = silence(merge_datasets(d1, d2, join = "left"))
-t3 = silence(merge_datasets(d1, d2, join = "right"))
-t4 = merge_datasets(iris[1], iris[2:5])
-
-stopifnot({
-  t == iris #because everything went back to original position
-  t2 == d1 #because nothing was joined
-  t3 == d2 #because nothing was joined
-  t4 == iris #if not, likely that drop=F is needed!
-})
-
-#multi version
-stopifnot({
-  iris == merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ])
-})
-
-
-# fa_all_methods & fa_congruence_mat --------------------------------------------------------
-t = fa_all_methods(iris[-5], skip_methods = "pa", messages = F)
-
-# fa_congruence_mat -------------------------------------------------------
-stopifnot({
-  dim(cor(t$scores))==c(12, 12)
-  t2 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
-  t = fa_congruence_matrix(t$loadings)
-  t2 = fa_congruence_matrix(t2)
-  class(t) == "matrix"
-  class(t2) == "matrix"
-  dim(t) == c(3, 3)
-  dim(t2) == c(4, 4)
-})
 
 
 # df_standardize ------------------------------------------------------------------
@@ -225,55 +188,6 @@ t2 = as_num_matrix(t)
 stopifnot({
   class(t2) == "matrix"
   dim(t2) == c(3, 4)
-})
-
-
-# fa_Jensens_method -------------------------------------------------------------
-#this extract GFP and checks whether the gender difference is GFP-loaded
-gfp_fa = fa(bfi[1:25])
-stopifnot({
-  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender")
-  class(g) == c("gg", "ggplot")
-  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", reverse_factor = T)
-  class(g) == c("gg", "ggplot")
-  g = fa_Jensens_method(gfp_fa, bfi, criterion = "gender", loading_reversing = F)
-  class(g) == c("gg", "ggplot")
-})
-
-
-
-# fa_residuals ------------------------------------------------------------
-t = fa_residuals(swiss)
-stopifnot({
-  dim(t) == c(47, 6)
-  class(t) == "data.frame"
-})
-
-# fa_MAR ------------------------------------------------------------------
-t = fa_MAR(swiss, scores = "Bartlett")
-t2 = fa_MAR(swiss)
-stopifnot({
-  dim(t) == c(47, 1)
-  class(t) == "data.frame"
-  t != t2
-})
-
-
-# fa_mixedness ------------------------------------------------------------
-t = fa_mixedness(swiss)
-stopifnot({
-  dim(t) == c(47, 4)
-  class(t) == "data.frame"
-})
-
-
-
-# fa_splitsample_repeat ---------------------------------------------------------------------
-library(psych)
-t = silence(fa_splitsample_repeat(ability, runs = 5, messages = F, progress = F))
-stopifnot({
-  class(t) == "data.frame"
-  dim(t) == c(5, 1)
 })
 
 
@@ -646,30 +560,6 @@ g = list(GG_denhist(iris, "Sepal.Length"),
 
 stopifnot({
   sapply(g, function(x) class(x)) %in% c("gg", "ggplot")
-})
-
-
-# fa_plot_loadings fa_rank_fa -----------------------------------------------------
-library(psych)
-fa_list = list(part1 = fa(iris[1:50, -5]),
-               part2 = fa(iris[51:100, -5]),
-               part3 = fa(iris[101:150, -5]))
-#multianalysis plots, different orderings
-g = fa_plot_loadings(fa_list);g
-g_1 = fa_plot_loadings(fa_list, reorder = 1);g_1
-g_2 = fa_plot_loadings(fa_list, reorder = 2);g_2
-g_3 = fa_plot_loadings(fa_list, reorder = 3);g_3
-#monoanalysis
-g_4 = fa_plot_loadings(fa_list[[1]]);g_4
-
-#non-overlapping indicators
-fa_list2 = list(part1 = fa(iris[1:50, -c(1, 5)]),
-                part2 = fa(iris[51:100, -c(2, 5)]),
-                part3 = fa(iris[101:150, -c(3, 5)]))
-fa_plot_loadings(fa_list2)
-
-stopifnot({
-  sapply(list(g, g_1, g_2, g_3), function(x) "gg" %in% class(x))
 })
 
 
@@ -1116,21 +1006,6 @@ stopifnot({
   named_vectors_to_df(l) %>% dim == c(3, 4)
   named_vectors_to_df(l2) %>% dim == c(3, 4)
 })
-
-
-# get_salient_loadings ----------------------------------------------------
-#returns either a list or data.frame with the salient loadings of each factor from a factor analysis.
-
-p_load("psych")
-p_load("magrittr")
-fa_iris1 = fa(iris[-5])
-fa_iris2 = fa(iris[-5], 2)
-
-stopifnot({
-  get_salient_loadings(fa_iris1) %>% dim == c(4, 2)
-  get_salient_loadings(fa_iris2) %>% dim == c(3, 4)
-})
-
 
 
 # split_every_k -----------------------------------------------------------
