@@ -1,28 +1,10 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2016.11.25
+Version: 2016.11.29
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
     use my own functions across projects.
-Depends: R (>= 3.2.0)
-License: GPL
-LazyData: true
-RoxygenNote: 5.0.1
-Imports:
-    plyr,
-    dplyr,
-    glmnet,
-    grid,
-    psychometric,
-    tidyr
-Suggests:
-    fields,
-    XLConnect,
-    rmngb,
-    geosphere,
-    ape,
-    compute.es
 Depends:
     ggplot2,
     stringr,
@@ -32,3 +14,22 @@ Depends:
     assertthat,
     forcats,
     magrittr
+License: GPL
+LazyData: true
+RoxygenNote: 5.0.1
+Imports:
+    plyr,
+    dplyr,
+    glmnet,
+    grid,
+    psychometric,
+    tidyr,
+    GPArotation
+Suggests:
+    fields,
+    XLConnect,
+    rmngb,
+    geosphere,
+    ape,
+    compute.es,
+    testthat

@@ -4,16 +4,23 @@
 \alias{fa_loadings}
 \title{Get loadings from a factor analysis object.}
 \usage{
-fa_loadings(fa)
+fa_loadings(fa, threshold = NA, long_form = F)
 }
 \arguments{
 \item{fa}{(object of class "fa") A factor analysis object.}
+
+\item{threshold}{(num) A threshold for loadings to include.}
+
+\item{long_form}{(lgl) Whether to return data frame in long format. Default is no. Useful for plotting.}
 }
 \description{
 Extract loadings from a factor analysis object of class "fa") into a data.frame.
 }
 \examples{
-iris_fa = psych::fa(iris[-5])
-fa_loadings(iris_fa)
+fa_loadings(psych::fa(iris[-5]))
+fa_loadings(psych::fa(iris[-5], 2))
+fa_loadings(psych::fa(iris[-5], 2), long_form = T)
+fa_loadings(psych::fa(iris[-5], 2), .40)
+fa_loadings(psych::fa(iris[-5], 2), .20, long_form = T)
 }
 

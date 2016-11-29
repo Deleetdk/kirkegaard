@@ -13,7 +13,6 @@ fa_nfactors(.fa)
 Convenience function for determining the number of factors in a fa object. Vectorized.
 }
 \examples{
-library(psych)
 fa(iris[-5]) \%>\% fa_nfactors
 fa(iris[-5], nfactors = 2) \%>\% fa_nfactors
 }
