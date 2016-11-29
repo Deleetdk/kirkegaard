@@ -237,7 +237,7 @@ fa_mixedness = function(df, ...){
   return_df$ACFS = abs(return_df$CFS)
 
   #get the loadings from each fa
-  each_loadingset = ldply(each_fa, function(x) {
+  each_loadingset = plyr::ldply(each_fa, function(x) {
     return(as.numeric(x$loadings))
   })
 
