@@ -1,6 +1,6 @@
 #libs
 library(pacman)
-p_load(devtools, roxygen2, stringr)
+p_load(devtools, roxygen2, stringr, testthat)
 
 #make documentation
 document()

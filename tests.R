@@ -6,26 +6,6 @@ p_load(kirkegaard, psych, plyr, MASS, assertthat)
 options("expressions" = 10000)
 
 
-
-# df_standardize ------------------------------------------------------------------
-set.seed(1)
-l_t = list(t1 = df_standardize(iris, messages = F),
-           t2 = df_standardize(iris, exclude_factors = F, messages = F),
-           t3 = df_standardize(iris, w = runif(150), messages = F))
-
-stopifnot({
-  #inequalities
-  head(l_t$t1[-5]) != head(iris)[-5]
-  head(l_t$t2) != head(iris)
-  l_t$t1[-5] != l_t$t3[-5]
-
-  #numeric
-  are_equal(sapply(l_t$t2, sd), rep(1, 5), check.names = F)
-  !are_equal(sapply(l_t$t3[-5], sd), rep(1, 4), check.names = F)
-})
-
-
-
 # write_clipboard ---------------------------------------------------------
 #skip these tests on linux
 if (!Sys.info()['sysname'] == "Linux") {
@@ -138,14 +118,6 @@ stopifnot({
   class(t[[2]]) == "lm"
   class(t[[1]]) == "data.frame"
   nrow(t[[1]]) == 7
-})
-
-# df_round ----------------------------------------------------------------
-stopifnot({
-  set.seed(1)
-  df_round(matrix(rnorm(30), ncol=3))[6, 1] == -0.820
-  set.seed(1)
-  df_round(matrix(rnorm(30), ncol=3), 0)[6, 1] == -1
 })
 
 
@@ -591,87 +563,6 @@ t2 = MOD_partial(iris, "Sepal.Width", "Sepal.Length", "Petal.Length")
 
 stopifnot({
   all.equal(t, t2)
-})
-
-
-# df_as_num ---------------------------------------------------------------
-#converts string vectors in a data.frame to numeric ones if possible
-#make iris into a df with strings
-iris_chr = lapply(iris, as.character) %>% as.data.frame(stringsAsFactors = F)
-#change it back to numerics
-t = df_as_num(iris_chr)
-#check that back to factor works
-t2 = df_as_num(iris_chr, stringsAsFactors = T)
-#check that skip factors works
-t3 = df_as_num(iris, always_skip_factors = F)
-#check that it handles NAs
-iris_chr_NA = iris_chr;iris_chr_NA[1, 1] = NA
-t4 = df_as_num(iris_chr_NA)
-
-stopifnot({
-  all(sapply(t, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
-  all(sapply(t2, class) == c("numeric", "numeric", "numeric", "numeric", "factor"))
-  all(sapply(t3, class) == c("numeric", "numeric", "numeric", "numeric", "numeric"))
-  all(sapply(t4, class) == c("numeric", "numeric", "numeric", "numeric", "character"))
-})
-
-
-
-# df_add_delta ------------------------------------------------------------
-#this function adds delta (difference) variables to a df, in a semi-intelligent fashion
-
-#these should work
-t_list = list(df_add_delta(iris, primary_var = 1),
-              df_add_delta(iris, primary_var = "Sepal.Length"),
-              df_add_delta(iris, primary_var = pi),
-              df_add_delta(iris, primary_var = 1, standardize = T))
-
-
-#errors
-e_list = list(try({df_add_delta(iris, primary_var = 1, secondary_vars = 1:4)}, T),
-              try({df_add_delta(iris, primary_var = 0)}, T),
-              try({df_add_delta(iris, primary_var = 1, secondary_vars = 99)}, T),
-              try({df_add_delta(iris, primary_var = 1, secondary_vars = -1:1)}, T))
-
-stopifnot({
-  sapply(t_list, class) == rep("data.frame", length(t_list))
-  sapply(e_list, class) == rep("try-error", length(e_list))
-})
-
-
-
-# df_rowFunc ------------------------------------------------------------------------
-
-#tests
-t_list = list(
-  df_rowFunc(iris[1:4], progress = "text"),
-  df_rowFunc(iris[1], iris[2], iris[3], iris[4], progress = "none"),
-  df_rowFunc(iris[1:4], func = median, progress = "none"),
-  df_rowFunc(iris[1:4], standardize = T, progress = "none"),
-  df_rowFunc(iris[1:4], standardize = T, func = median, progress = "none")
-)
-
-#errors
-e_list = list(
-  try({df_rowFunc(iris)}, T)
-)
-
-#check
-stopifnot({
-  sapply(t_list, class) == rep("data.frame", length(t_list))
-  sapply(e_list, class) == rep("try-error", length(e_list))
-})
-
-
-# df_sort ---------------------------------------------------------------
-t1 = df_sort(iris, "Sepal.Length")
-t2 = df_sort(iris, "Sepal.Length", decreasing = T)
-t3 = df_sort(iris, 1)
-t4 = df_sort(iris, 2)
-t5 = df_sort(iris, 5)
-
-stopifnot({
-  cor(t1$Sepal.Length, t2$Sepal.Length) < -.9
 })
 
 
