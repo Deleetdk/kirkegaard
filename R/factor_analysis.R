@@ -545,51 +545,36 @@ fa_congruence_matrix = function(x) {
 #'
 #' Extract loadings from a factor analysis object of class "fa") into a data.frame.
 #' @param fa (object of class "fa") A factor analysis object.
+#' @param threshold (num) A threshold for loadings to include.
+#' @param long_form (lgl) Whether to return data frame in long format. Default is no. Useful for plotting.
 #' @export
 #' @examples
-#' library("psych")
-#' iris_fa = fa(iris[-5])
-#' get_loadings(iris_fa)
-get_loadings = function(fa) {
+#' fa_loadings(psych::fa(iris[-5]))
+#' fa_loadings(psych::fa(iris[-5], 2))
+#' fa_loadings(psych::fa(iris[-5], 2), long_form = T)
+#' fa_loadings(psych::fa(iris[-5], 2), .40)
+#' fa_loadings(psych::fa(iris[-5], 2), .20, long_form = T)
+fa_loadings = function(fa, threshold = NA, long_form = F) {
   loads = loadings(fa)
   class(loads) = "matrix"
   df = as.data.frame(loads)
-  return(df)
-}
 
-
-#' Get salient loadings from a factor analysis object.
-#'
-#' Find indicators that load above a given threshold for each factor. Can also force them into a data.frame for easy output. Uses input object from psych package's fa().
-#' @param fa (object of class "fa") A factor analysis object.
-#' @param threshold (numeric scalar) The cutoff to use for salient loadings. Default to .40.
-#' @export
-#' @examples
-#' get_salient_loadings()
-get_salient_loadings = function(fa, threshold = .40, to_df = T) {
-  #checks
-  if (!"fa" %in% class(fa)) stop("fa must be of class fa!")
-  if (!is_between(threshold, 0, 1)) stop("threshold must be between 0 and 1!")
-
-  #get loadings to df
-  d_loads = get_loadings(fa)
-
-  #loop and keep only the salient loadings
-  l_salient = lapply(d_loads, function(x) {
-    names(x) = rownames(d_loads)
-    x_abs = abs(x)
-    v_salient = x_abs >= threshold
-    return(x[v_salient])
-  })
-
-  #to data.frame?
-  if (to_df) {
-    d_salient = named_vectors_to_df(l_salient, value_suffix = "_loadings", name_suffix = "_indicators")
-    return(d_salient)
+  #salient loadings only?
+  if (!is.na(threshold)) {
+    #remove those below
+    df[abs(df) < threshold] = NA
   }
 
-  return(l_salient)
+  #long form if desired
+  if (long_form) {
+    df = cbind(indicator = rownames(df), df)
+    df = tidyr::gather_(df, key_col = "factor", value_col = "loading", gather_cols = names(df)[-1]) %>%
+      na.omit
+  }
+
+  df
 }
+
 
 #' Determine number of factors
 #'
@@ -597,7 +582,6 @@ get_salient_loadings = function(fa, threshold = .40, to_df = T) {
 #' @param .fa (fa or list of fa objects) The object from which to determine the number of factors.
 #' @export
 #' @examples
-#' library(psych)
 #' fa(iris[-5]) %>% fa_nfactors
 #' fa(iris[-5], nfactors = 2) %>% fa_nfactors
 fa_nfactors = function(.fa) {
