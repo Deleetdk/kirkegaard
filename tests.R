@@ -289,7 +289,6 @@ stopifnot({
 
 # cor_matrix_weights ------------------------------------------------------
 p_load(datasets)
-p_load(weights)
 
 t = cor_matrix_weights(as.data.frame(state.x77), weight_var = "Population")
 stopifnot({
@@ -465,7 +464,6 @@ stopifnot({
 
 
 # GG_scatter --------------------------------------------------------------
-p_load(psych)
 
 g = GG_scatter(longley, "Unemployed", "Armed.Forces");g
 g = GG_scatter(longley, "Unemployed", "GNP");g
@@ -568,7 +566,6 @@ stopifnot({
 
 # score_items -------------------------------------------------------------
 #scores test items
-p_load(psych) #data in here
 
 t = score_items(iqitems, c(4,4,4, 6,  6,3,4,4,   5,2,2,4,   3,2,6,7))
 
@@ -633,7 +630,6 @@ stopifnot({
 
 
 # score_accuracy -------------------------------------------------
-p_load(stringr)
 #simulate some data
 n_cases = 10
 n_countries = 100
@@ -959,8 +955,6 @@ stopifnot({
 
 # df_residualize ----------------------------------------------------------
 
-p_load("magrittr")
-
 set.seed(1)
 df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
 weightsvar = runif(5)
@@ -1002,7 +996,7 @@ stopifnot({
 
 # copy_columns ------------------------------------------------------------
 #copy cols from one df to another
-p_load(magrittr)
+
 
 stopifnot({
   #copy all using default
@@ -1058,7 +1052,7 @@ stopifnot({
 
 # cor_matrix --------------------------------------------------------------
 #correlation matrix with nice output
-p_load(weights);p_load(magrittr)
+
 
 stopifnot({
   are_equal(cor_matrix(iris[-5]), cor(iris[-5])) #validate vs. base-r
@@ -1074,7 +1068,7 @@ stopifnot({
 
 # SMD_matrix & pool_sd --------------------------------------------------------------
 #standardized mean differences
-p_load(magrittr)
+
 
 #iris with missing
 set.seed(1)
