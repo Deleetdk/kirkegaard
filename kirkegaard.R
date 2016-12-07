@@ -10,4 +10,3 @@ install("../kirkegaard")
 
 #load
 library(kirkegaard)
-
