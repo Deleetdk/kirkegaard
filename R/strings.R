@@ -211,3 +211,23 @@ str_uniquify = function(string, suffix = " (%d)") {
   d$names
 }
 
+
+#' Filter string by pattern
+#'
+#' A wrapper for stringr's \code{\link{str_detect}} that returns the matched values, or the non-matched values.
+#' @param string (chr) A string.
+#' @param pattern (chr) Pattern to look for (regex).
+#' @param reverse (lgl) Whether to return the non-matched values instead (default no).
+#' @return A character vector.
+#' @export
+#' @examples
+#' str_filter(letters, pattern = "[aeiou]")
+#' str_filter(letters, pattern = "[aeiou]", reverse = T)
+str_filter = function(string, pattern, reverse = F) {
+  #get results
+  v = stringr::str_detect(string = string, pattern = pattern)
+
+  #reverse
+  if (reverse) return(string[!v])
+  string[v]
+}
