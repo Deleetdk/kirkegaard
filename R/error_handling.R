@@ -5,28 +5,23 @@
 #' Checks whether an object is a try-error. Returns a boolean.
 #' @param x (an object) An object to check.
 #' @export
-#' @examples
-#' is_error()
-is_error = function(x) "try-error" %in% class(x)
+is_error = function(x) inherits(x, "try-error")
+
 
 #' Does call return an error?
 #'
 #' Parses a string as a call and determines whether it returns an error or not. Returns a boolean.
-#' @param x (character scalar) Code to run in a string.
-#' @param silent_try (log scalar) Whether to use a silent try (default true).
+#' @param x (expr) Expression.
+#' @param silent_try (lgl scalar) Whether to use a silent try (default true).
 #' @export
 #' @examples
-#' throws_error("log('123')") #cannot take a logarithm of a string
-throws_error = function(x, silent_try = T) {
-
-  #if it is a string, try to evaluate it
-  if (is.character(x)) {
-    trial = try(eval(parse(text = x)), silent = silent_try)
-  } else { #else, return an error
-    stop("x wasn't a string! The code to call must be a string.")
-    #trial = try(eval(parse(text = object_to_string(x))), silent = silent_try)
-    #not sure why this doesn't work
-  }
+#' throws_error(log("")) #cannot take a logarithm of a string
+#' throws_error(log(0)) #can take logarithm of 0
+throws_error = function(expr, silent_try = T) {
+  #try evaluating in parent frame
+  trial = try({
+    eval(substitute(expr), envir = parent.frame())
+  }, silent = silent_try)
 
   return(is_error(trial))
 }
@@ -46,4 +41,69 @@ fail_if_NA = function(x) {
 
   #return input
   x
+}
+
+
+#' Browse on error
+#'
+#' Browse on error. Calls browse in the parent.frame so that one can see the context the for error.
+#' @param expr (expr) Any expression that might cause an error.
+#' @export
+#' @examples
+#' try_browse({log("p")})
+try_browse = function(expr) {
+  #try
+  .trial = try({
+    y = eval(substitute(expr), parent.frame())
+  })
+
+  #catch
+  if (inherits(.trial, "try-error")) eval(quote(browser()), parent.frame(n = 1))
+
+  y
+}
+
+
+#' Browse on condition
+#'
+#' Browse on condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false.
+#' @param expr (expr) An expression.
+#' @param condition (expr) A condition to evaluate. y. is the output of expr.
+#' @export
+#' @examples
+#' browse_if(1+1, .y == 2)
+browse_if = function(expr, condition) {
+  #evaluate in parent.frame
+  .y = eval(substitute(expr), parent.frame())
+
+  #test condition
+  .cond = eval(substitute(condition))
+
+  #browse?
+  if (.cond) eval(quote(browser()), parent.frame(n = 1))
+
+  #return output
+  invisible(.y)
+}
+
+#' Browse if equal to
+#'
+#' Browse on equals condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false. Wrapper for browse_if.
+#' @param expr (expr) An expression.
+#' @param equal_to (any object) Any object to test for output equality.
+#' @export
+#' @examples
+#' browse_if(1+1, 2)
+browse_if_equals = function(expr, equal_to) {
+  #evaluate in parent.frame
+  .y = eval(substitute(expr), parent.frame())
+
+  #test condition
+  .cond = kirkegaard::are_equal(.y, equal_to)
+
+  #browse?
+  if (.cond) eval(quote(browser()), parent.frame(n = 1))
+
+  #return output
+  invisible(.y)
 }

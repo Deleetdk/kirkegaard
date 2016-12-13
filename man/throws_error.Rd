@@ -4,17 +4,18 @@
 \alias{throws_error}
 \title{Does call return an error?}
 \usage{
-throws_error(x, silent_try = T)
+throws_error(expr, silent_try = T)
 }
 \arguments{
-\item{x}{(character scalar) Code to run in a string.}
+\item{silent_try}{(lgl scalar) Whether to use a silent try (default true).}
 
-\item{silent_try}{(log scalar) Whether to use a silent try (default true).}
+\item{x}{(expr) Expression.}
 }
 \description{
 Parses a string as a call and determines whether it returns an error or not. Returns a boolean.
 }
 \examples{
-throws_error("log('123')") #cannot take a logarithm of a string
+throws_error(log("")) #cannot take a logarithm of a string
+throws_error(log(0)) #can take logarithm of 0
 }
 

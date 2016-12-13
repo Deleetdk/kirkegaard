@@ -12,7 +12,4 @@ is_error(x)
 \description{
 Checks whether an object is a try-error. Returns a boolean.
 }
-\examples{
-is_error()
-}
 
