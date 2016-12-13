@@ -226,82 +226,6 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
 }
 
 
-# Correlates all variables, finds the pair with the highest correlation, and removes one of them using the specified method.
-#' Remove the n most redundant variables from a data.frame.
-#'
-#' Removes the n top variables that highly correlated with another variable so as to avoid problems in analysis.
-#' @param df a data.frame.
-#' @param num.to.remove the number of variables to remove.
-#' @param remove.method the method to use to remove variables. Methods are "c", "l", "r", "f" and "s": conversative, liberal, random, first or second.
-#' @export
-#' @examples
-#' remove_redundant_vars()
-remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
-  if (!is.data.frame(df)) {
-    stop(paste0("First parameter is not a data frame. Instead it is ", class(df)))
-  }
-  if (!is.numeric(num.to.remove)) {
-    stop(paste0("Second parameter is not numeric. Instead is ", class(num.to.remove)))
-  }
-  remove.method.1 = substr(remove.method, 1,1) #get first char
-  if (!remove.method %in% c("f", "s", "r")) { #conversative, liberal or random, first or second
-    stop(paste0("Third parameter was neither identifable as first, second or random. It was: ", remove.method))
-  }
-
-  old.names = colnames(df) #save old variable names
-
-  for (drop.num in 1:num.to.remove) {
-    message(paste0("Dropping variable number ", drop.num))
-    names = colnames(df) #current names
-
-    #correlations
-    cors = as.data.frame(cor(df, use="pair"))
-
-    #remove diagnonal 1's
-    for (idx in 1:nrow(cors)) {
-      cors[idx, idx] = NA
-    }
-
-    #absolute values because we don't care if cor is .99 or -.99
-    cors.abs = abs(cors)
-
-    #dropping
-    max.idx = which_max2(cors.abs) #indexes of max value (first one if multiple identical)
-
-    topvars = paste(rownames(cors)[max.idx[2]], "and", rownames(cors)[max.idx[1]]) #names of top correlated variables
-    r = round(cors[max.idx[1], max.idx[2]], 3)
-    message(paste0("Most correlated vars are ", topvars, " r=", r)) #info
-
-    #first
-    if (remove.method.1 == "f") {
-      df[, max.idx[2]] = NULL #remove the second var
-    }
-    #second
-    if (remove.method.1 == "s") {
-      df[, max.idx[1]] = NULL #remove the second var
-    }
-    #random
-    if (remove.method.1 == "r") {
-      if (rnorm(1) > 0){
-        df[, max.idx[1]] = NULL #remove the second var
-      }
-      else {
-        df[, max.idx[2]] = NULL #remove the first var
-      }
-
-    }
-  }
-  #Which variables were dropped?
-  new.names = colnames(df)
-  dropped.names = setdiff(old.names, new.names)
-  message("Dropped the following variables:")
-  message(dropped.names)
-
-  #return reduced df
-  return(df)
-}
-
-
 # Remove redundant variables
 #
 #' Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.
@@ -311,8 +235,8 @@ remove_redundant_vars = function(df, num.to.remove = 1, remove.method = "s") {
 #' @param messages (boolean) Whether to print diagnostic messages.
 #' @export
 #' @examples
-#' remove_redundant_vars()
-remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson", messages = T) {
+#' remove_redundant_vars(iris[-5]) %>% head
+remove_redundant_vars = function(df, threshold = .9, cor_method = "pearson", messages = T) {
   #Check input
   if (!is.data.frame(df)) {
     stop(paste0("First parameter is not a data frame. Instead it is ", class(df)))
@@ -348,7 +272,7 @@ remove_redundant_vars2 = function(df, threshold = .9, cor_method = "pearson", me
   m_long_threshold = m_long[m_long$r >= threshold | m_long$r <= -threshold, ]
   if(nrow(m_long_threshold) != 0) {
     silence({message("The following variable pairs had stronger intercorrelations than |", threshold, "|:")}, messages = messages)
-    if (messages) round_df(m_long_threshold) %>% print #round and print
+    if (messages) df_round(m_long_threshold) %>% print #round and print
 
   } else {
     silence({message("No variables needed to be excluded.")}, messages = messages)

@@ -2,21 +2,24 @@
 % Please edit documentation in R/statistics.R
 \name{remove_redundant_vars}
 \alias{remove_redundant_vars}
-\title{Remove the n most redundant variables from a data.frame.}
+\title{Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.}
 \usage{
-remove_redundant_vars(df, num.to.remove = 1, remove.method = "s")
+remove_redundant_vars(df, threshold = 0.9, cor_method = "pearson",
+  messages = T)
 }
 \arguments{
-\item{df}{a data.frame.}
+\item{df}{(data.frame) A data.frame with numeric variables.}
 
-\item{num.to.remove}{the number of variables to remove.}
+\item{threshold}{(numeric scalar) A threshold above which intercorrelations are removed. Defaults to .9.}
 
-\item{remove.method}{the method to use to remove variables. Methods are "c", "l", "r", "f" and "s": conversative, liberal, random, first or second.}
+\item{cor_method}{(character scalar) The correlation method to use. Parameter is fed to cor(). Defaults to "pearson".}
+
+\item{messages}{(boolean) Whether to print diagnostic messages.}
 }
 \description{
-Removes the n top variables that highly correlated with another variable so as to avoid problems in analysis.
+Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.
 }
 \examples{
-remove_redundant_vars()
+remove_redundant_vars(iris[-5]) \%>\% head
 }
 
