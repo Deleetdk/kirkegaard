@@ -470,3 +470,25 @@ read_rvest = function(path) {
 
   x
 }
+
+
+#' Find duplicated elements
+#'
+#' Find groups of duplicates elements in a vector.
+#' @param x (vector) A vector.
+#' @return a list
+#' @export
+#' @examples
+#' find_duplicates(c(1, 1, 2, 2, 3, 4, 5, 5))
+find_duplicates = function(x) {
+  #find duplicated elements
+  dup_ele = unique(x[duplicated(x)])
+
+  #group indexes by the duped value
+  group_ids = lapply(dup_ele, function(ele) which(x == ele))
+
+  #add names
+  names(group_ids) = dup_ele
+
+  group_ids
+}
