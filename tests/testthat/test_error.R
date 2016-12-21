@@ -3,7 +3,6 @@
 context("error-handling")
 
 
-
 # is_error ----------------------------------------------------------------
 
 #an error
@@ -22,3 +21,10 @@ test_that("throws_error", {
 }
 )
 
+
+# browser -----------------------------------------------------------------
+
+#TODO: figure out how to make tests for browser() related functions
+#browse_if
+#browse_if_equals
+#try_browse

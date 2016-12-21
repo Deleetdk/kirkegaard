@@ -1368,23 +1368,10 @@ stopifnot({
 
   #test weights
   are_equal(weighted.mean(standardize(X, W), W), 0)
-  are_equal(wtd_sd(standardize(X, W), W), 1)
 
   #robust
   are_equal(median(standardize(X, robust = T)), 0)
   are_equal(mad(standardize(X, robust = T)), 1)
-
-  #means
-  are_equal(wtd_mean(X), mean(X))
-  are_equal(wtd_mean(X, W), weighted.mean(X, W))
-
-  #sums
-  are_equal(wtd_sum(X), sum(X))
-  are_equal(wtd_sum(X, W), weighted.mean(X, W) * 100)
-
-  #errors
-  throws_error("wtd_mean(NA, NA)")
-  !throws_error("wtd_mean(c(1, NA), c(1, NA))")
 })
 
 
