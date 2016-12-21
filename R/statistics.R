@@ -798,9 +798,10 @@ wtd_sd = function(x, w, sample = T, error = T) {
   #check sample
   if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
   if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
+  if (nrow(d) == 0) return(NaN) #return NaN on no cases
 
   #weighted mean
-  wtd_mean = wtd_mean(x, w)
+  wtd_mean = wtd_mean(x, w, error = error)
 
   #diffs squared
   diffs_sq = (x - wtd_mean)^2
