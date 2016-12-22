@@ -438,3 +438,58 @@ merge_datasets_multi = function(..., join = "both", overwrite_NA = FALSE, restor
   Reduce(function(x, y) merge_datasets(x, y, join=join, overwrite_NA = overwrite_NA, restore_factors = restore_factors), list(...))
 }
 
+
+#' Write rvest/xml object
+#'
+#' Writes an rvest/xml object to disk for reuse. This is a wrapper around write_rds.
+#' @param x (obj) Object to write to disk.
+#' @param path (str) Where to save it.
+#' @param ... Other parameters to write_rds.
+#' @return Invisibly returns x for use in pipelines.
+#' @export
+write_rvest = function(x, path, ...) {
+  #convert to character
+  #is list?
+  if (inherits(x, "list")) {
+    x = purrr::map(x, function(.x) {
+      #to char
+      .x = as.character(.x)
+
+      #to UTF8
+      Encoding(.x) = "UTF-8"
+
+      .x
+    })
+
+  } else {
+    x = as.character(x)
+    Encoding(x) = "UTF-8"
+  }
+
+  #save
+  readr::write_rds(x, path = path, ...)
+
+  invisible(x)
+}
+
+#' Read rvest/xml object
+#'
+#' Reads an rvest/xml object from disk. This is a wrapper around read_rds.
+#' @param path (str) Where to read from.
+#' @param ... Other parameters to read_rds.
+#' @return x
+#' @export
+read_rvest = function(path) {
+  #load from file
+  x = readr::read_rds(path)
+
+  #read
+  if (inherits(x, "list")) {
+    x = purrr::map(x, read_html)
+  } else {
+    x = xml2::read_html(x)
+  }
+
+  x
+}
+
