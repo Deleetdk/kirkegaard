@@ -144,78 +144,6 @@ fill_in = function(x, length, value = NA) {
 }
 
 
-#' Split vector every k elements
-#'
-#' Split a vector every k elements. Returns a list.
-#' @param x (vector) A vector to split.
-#' @param k (whole number scalar) Split every k elements.
-#' @param uneven (logical scalar) Whether to accept a split that would be uneven. If yes, the last group will be smaller than the others. Defaults to TRUE.
-#' @export
-#' @examples
-#' split_every_k(1:12, 4)
-#' split_every_k(1:11, 4) #last group isnt as large as the others
-split_every_k = function(x, k, uneven = T) {
-
-  #input checks
-  assertthat::assert_that(is.vector(x))
-  assertthat::assert_that(is_whole_number(k))
-  assertthat::assert_that(is.logical(uneven))
-
-  #check length
-  if (!uneven) {
-    if (length(x) %% k != 0) {
-      stop(stringr::str_c("The length of n was not integer disible by n! ", length(x), "%%", k, "=", length(x) %% k))
-    }
-  }
-
-  #split
-  x_length = length(x)
-  k_in_x = (x_length / k) %>% ceiling
-  v_groups = rep(1:k_in_x, each = k)
-  v_groups = v_groups[1:x_length]
-  return(split(x, v_groups))
-}
-
-
-
-
-
-#' Reshape named vectors to a data.frame.
-#'
-#' Construct a data.frame from a list of named vectors by filling in the shorter vectors with NAs.
-#' @param list (a list of vectors) The list of vectors.
-#' @param name_suffix (character scalar) The suffix to use on the names.
-#' @param valie_suffix (character scalar) The suffix to use on the values.
-#' @export
-#' @examples
-#' l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
-#' named_vectors_to_df(l)
-named_vectors_to_df = function(list, name_suffix = "_name", value_suffix = "_value") {
-
-  #checks
-  #how many vectors
-  v_vectors = length(list)
-
-  #longest vector
-  v_max = max(sapply(list, length))
-
-  #fill out
-  list = lapply(list, fill_in, length = v_max)
-
-  #make data.frame
-  df = matrix(ncol = 2*v_vectors, nrow = v_max) %>% as.data.frame
-  v_names = stringr::str_c(rep(names(list), each = 2), c(name_suffix, value_suffix))
-  colnames(df) = v_names
-
-  #fill out values
-  l_names = lapply(list, names)
-  df[seq(1, 2*v_vectors, 2)] = l_names
-  df[seq(2, 2*v_vectors, 2)] = list
-
-  return(df)
-}
-
-
 #' Silence warnings or messages from expression via parameter.
 #'
 #' If warnings and messages need to be toggleable, but there are many expressions that can give them and it would be cumbersome to add an if sentence for every expression.
@@ -450,3 +378,6 @@ find_duplicates = function(x) {
 
   group_ids
 }
+
+
+
