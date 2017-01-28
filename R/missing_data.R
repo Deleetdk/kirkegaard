@@ -206,9 +206,9 @@ miss_complexity = function(data) {
 #' Calculates Cohen's d or equivalent for every variable pair. Larger values mean that cases with missing data in one variable differ from other cases in the other variable, thus that the data are not missing at random (MCAR).
 #'
 #' This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
-#' @param data (data.frame/matrix) The data.
-#' @param robust (log scalar) Whether to use robust measures (default false). If true, will use median/mad instead of mean/sd to calculate the standardized mean differences.
-#' @return A data.frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
+#' @param data (df/mat) Data.
+#' @param robust (lgl scalar) Whether to use robust measures (default false). If true, will use median/mad instead of mean/sd to calculate the standardized mean differences.
+#' @return A data frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
 #' @export
 #' @examples
 #' miss_analyze(miss_add_random(iris))
@@ -232,7 +232,11 @@ miss_analyze = function(data, robust = F) {
       #if factor, use cramer's V
       if (data[[var2]] %>% is.factor()) {
 
-        return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>% compute.es::res(r = ., n = 100, verbose = F)) %>% extract("d") %>% unlist() %>% as.vector()) #silence to avoid chi sq warnings
+        return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>%
+                         compute.es::res(r = ., n = 100, verbose = F)) %>%
+                 extract("d") %>%
+                 unlist() %>%
+                 as.vector()) #silence to avoid chi sq warnings
       }
 
       #if numeric, use standardized mean difference
