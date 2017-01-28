@@ -19,6 +19,10 @@
 #' GG_denhist(iris[[1]])
 #' #also accepts 1-column data.frames, but throws a warning
 #' GG_denhist(iris[1])
+#' #warns you if some groups have no data
+#' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
+#' #warns you if grouping variable has missing data
+#' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
 GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
 
   #input type
