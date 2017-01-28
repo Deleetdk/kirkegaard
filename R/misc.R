@@ -381,3 +381,10 @@ find_duplicates = function(x) {
 
 
 
+#' Updates the package from Github
+#' @export
+#' @examples
+#' update_package()
+update_package = function(...) {
+  devtools::install_github("deleetdk/kirkegaard")
+}
