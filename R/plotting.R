@@ -25,6 +25,7 @@
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
 GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
 
+
   #input type
   if (is_simple_vector(data)) {
     var = deparse(substitute(data))
@@ -169,11 +170,11 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param y_var (chr scalar) Y variable string.
 #' @param weights (num scalar) A set of weights to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
-#' @param case_names (log scalar) Whether to add case names or not (default true).
-#' @param case_names_vector (chr vector) The case names to use. If missing, uses row names. If length one, is taken to be a variable in the data.
+#' @param case_names (lgl scalar) Whether to add case names or not (default true).
+#' @param case_names_vector (chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.
 #' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
-#' @param clean_names (log scalar) Whether to clean the axes names using str_clean(). Default=T.
-#' @param check_overlap (log scalar) Whether to avoid overplotting names. Default=T.
+#' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean(). Default=T.
+#' @param check_overlap (lgl scalar) Whether to avoid overplotting names. Default=T.
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
@@ -183,27 +184,37 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
-GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_names_vector, CI = .95, clean_names = T, check_overlap = T) {
+GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = T, case_names_vector = NA, CI = .95, clean_names = T, check_overlap = T) {
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
   if (!y_var %in% colnames(df)) stop("Y variable not found in data.frame!")
 
   #case names?
-  if (!missing(case_names_vector)) {
-    if (!(lengths_match(df, case_names_vector) | length(case_names_vector) == 1)) stop("Vector of case names is of the wrong length!")
-    if (lengths_match(df, case_names_vector)) {
-      df$.label = case_names_vector #use supplied names
-    } else {
-      if (!case_names_vector %in% names(df)) stop(sprintf("Variable %s wasn't in the data.frame!", case_names_vector))
-      df$.label = df[[case_names_vector]]
-    }
-  } else {
-    df$.label = rownames(df) #use rownames
+  #default to rownames
+  df$.label = rownames(df)
+  if (case_names) {
+
+    #any given names?
+    if (!is_scalar_NA(case_names_vector)) {
+      #is it length 1?
+      if (is_scalar(case_names_vector)) {
+        #is it there?
+        if (!case_names_vector %in% names(df)) stop(sprintf("Variable %s wasn't in the data.frame!", case_names_vector))
+        df$.label = df[[case_names_vector]]
+      } else {
+        #if not length 1, does it match the data length?
+        if (!(lengths_match(df, case_names_vector))) stop("Vector of case names is of the wrong length!")
+
+          #use supplied names
+          df$.label = case_names_vector
+        }
+      }
   }
 
+
   #weights
-  if (missing(weights)) {
+  if (is.null(weights)) {
     df$.weights = rep(1, nrow(df)) #fill with 1's
   } else {
     df$.weights = weights
@@ -218,7 +229,7 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
   cor_CI = psychometric::CIr(cor, n = psych::count.pairwise(df)[1, 2], level = CI)
 
   #auto detect text position
-  if (missing(text_pos)) {
+  if (is.na(text_pos)) {
     if (cor>0) text_pos = "tl" else text_pos = "tr"
   }
 
@@ -266,7 +277,7 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
                          gp = grid::gpar(fontsize = 11))
 
   #plot
-  if (missing(weights)) {
+  if (is.null(weights)) {
     g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
       geom_point()
   } else {
@@ -280,7 +291,7 @@ GG_scatter = function(df, x_var, y_var, weights, text_pos, case_names = T, case_
     annotation_custom(text_object)
 
   #case names?
-  if (missing(weights)) {y_nudge = 1.25} else {y_nudge = 2}
+  if (is.null(weights)) {y_nudge = 1.25} else {y_nudge = 2}
   if (case_names) {
     g = g + geom_text(aes(label = .label), size = 3, vjust = y_nudge, check_overlap = check_overlap)
   }
