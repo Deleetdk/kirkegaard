@@ -34,7 +34,7 @@ GG_denhist(iris, "Sepal.Length") #plot overall distribution
 GG_denhist(iris, "Sepal.Length", vline = median) #use another central tendency
 GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 #also accepts vectors
-GG_denhist(iris[[1]])
+iris$Sepal.Length \%>\% GG_denhist
 #also accepts 1-column data.frames, but throws a warning
 GG_denhist(iris[1])
 #warns you if some groups have no data

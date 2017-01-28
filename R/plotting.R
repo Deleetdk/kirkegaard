@@ -16,7 +16,7 @@
 #' GG_denhist(iris, "Sepal.Length", vline = median) #use another central tendency
 #' GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 #' #also accepts vectors
-#' GG_denhist(iris[[1]])
+#' iris$Sepal.Length %>% GG_denhist
 #' #also accepts 1-column data.frames, but throws a warning
 #' GG_denhist(iris[1])
 #' #warns you if some groups have no data
@@ -33,21 +33,24 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
     colnames(data) = var
   }
 
-  #rename
-  df = data
-  rm(data)
-
   #1 column df
-  if (is.data.frame(df) & ncol(df) == 1 & missing("var")) {
-    var = names(df)
+  if (is.data.frame(data) & ncol(data) == 1 & missing("var")) {
+    var = names(data)
     warning("received a data.frame but no var: used the only available column")
   }
+
+  #rename and drop unused
+  df = data[c(var, group)]
+  rm(data)
 
   #check if var is in df
   if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
 
   #remove NA group
   if (!is.null(group)) {
+    #convert to factor
+    df[[group]] %<>% as.factor
+
     #any miss in grouping variable?
     if (anyNA(df[[group]])) {
           df = df[!is.na(df[[group]]), ]
@@ -57,7 +60,11 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
     #groups without any data?
     if (df[c(var, group)] %>% anyNA) {
       warning("There were groups without any data. These were removed")
+      #also drop the other variables
       df = df[!is.na(df[[var]]) & !is.na(df[[group]]), ]
+
+      #drop unused levels to prevent error in plyr::daply later
+      df[[group]] %<>% fct_drop()
     }
 
   }
