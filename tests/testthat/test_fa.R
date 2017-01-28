@@ -28,8 +28,8 @@ fa_bfi = fa(bfi[1:25])
 
 test_that("fa_Jensens_method",{
   expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender"), "ggplot")
-  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", reverse_factor = T), "ggplot")
-  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", loading_reversing = F), "ggplot")
+  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", reverse_factor = T, indicator_criterion_method = "pearson"), "ggplot")
+  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", loading_reversing = F, indicator_criterion_method = "pearson"), "ggplot")
 })
 
 
