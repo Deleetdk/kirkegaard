@@ -46,13 +46,13 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
     #any miss in grouping variable?
     if (anyNA(df[[group]])) {
           df = df[!is.na(df[[group]]), ]
-    warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
+          warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
     }
 
     #groups without any data?
-    if (df[c(var, group)] %>% miss_by_case %>% anyNA) {
+    if (df[c(var, group)] %>% anyNA) {
       warning("There were groups without any data. These were removed")
-      df = base::subset(df, !is.na(group) & is.na(var))
+      df = df[!is.na(df[[var]]) & !is.na(df[[group]]), ]
     }
 
   }
