@@ -1,20 +1,25 @@
-#' Histogram with an empirical density curve and a vertical line at the mean
+#' Histogram with an empirical density curve
 #'
-#' Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
-#' @param data (data.frame or something coercible into) A data.frame with variables.
+#' Plots a histogram with an empirical density curve and a vertical line at desired central tendency measure.
+#'
+#' Automatically rescales the histogram and density fit so the heights match. Applies \code{theme_bw}.
+#' @param data (data.frame or something coercible into) A data frame or a vector.
 #' @param var (chr sclr) The name of the variable to use. Not needed if data is a vector. Not needed if data has 1 column.
-#' @param vline (chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.
-#' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
 #' @param group (chr sclr) The name of the grouping variable to use.
+#' @param vline (chr sclr) Whether and how to plot vertical line(s) at some point(s. Set to NULL for none. Default is \code{mean}. Can also be a custom function. Beware, it should ignore values.
+#' @param clean_name (lgl) Wheter to call str_clean on the x axis label.
+#' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
 #' @export
+#' @return A ggplot2 object.
 #' @examples
 #' GG_denhist(iris, "Sepal.Length") #plot overall distribution
+#' GG_denhist(iris, "Sepal.Length", vline = median) #use another central tendency
 #' GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 #' #also accepts vectors
 #' GG_denhist(iris[[1]])
 #' #also accepts 1-column data.frames, but throws a warning
 #' GG_denhist(iris[1])
-GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
+GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
 
   #input type
   if (is_simple_vector(data)) {
@@ -37,16 +42,23 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
   if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
 
   #remove NA group
-  if (!missing("group")) {
-    #any miss?
+  if (!is.null(group)) {
+    #any miss in grouping variable?
     if (anyNA(df[[group]])) {
           df = df[!is.na(df[[group]]), ]
     warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
     }
+
+    #groups without any data?
+    if (df[c(var, group)] %>% miss_by_case %>% anyNA) {
+      warning("There were groups without any data. These were removed")
+      df = base::subset(df, !is.na(group) & is.na(var))
+    }
+
   }
 
   #plot
-  if (missing("group")) {
+  if (is.null(group)) {
     g = ggplot2::ggplot(df, aes_string(var)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                      colour="black", fill="white", binwidth = binwidth) +
@@ -60,38 +72,53 @@ GG_denhist = function(data, var, vline = "mean", binwidth = NULL, group) {
   }
 
 
-  #vline
-  if (!is.null(vline) & missing("group")) {
-    #calculate central tendency using given function
-    central_tendency = do.call(what = vline, args = list(x = df[[var]], na.rm = T))
+  #vline?
+  if (!is.null(vline)) {
+    #if chr func, get the function
+    if (is.character(vline)) vline = get(vline)
 
-    #add it
-    g = g + geom_vline(xintercept = central_tendency,
-                       color="red",
-                       linetype="dashed", size=1)
-  }
-
-  if (!is.null(vline) & !missing("group")) {
-    #calculate central tendencies using given function
-
-    #fetch the actual function
-    func = get(vline)
-    central_tendency = plyr::daply(df, .variables = group, .fun = function(block) {
-      func(block[[var]], na.rm=T)
+    #build function
+    tryCatch({
+      vline_func = purrr::partial(vline, na.rm=T)
+      #test it
+      vline_func(1)
+    },
+    error = function(e){
+      #just use the supplied one
+      vline_func = vline
     })
 
-    #get the colors
-    #http://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
-    gg_color_hue <- function(n) {
-      hues = seq(15, 375, length = n + 1)
-      hcl(h = hues, l = 65, c = 100)[1:n]
+    #no groups
+    if (is.null(group)) {
+      #add it
+      g = g + geom_vline(xintercept = vline_func(df[[var]]),
+                         color="red",
+                         linetype="dashed", size=1)
     }
 
-    colors = gg_color_hue(length(unique(df[[group]])))
+    #groups
+    if (!is.null(group)) {
+      #calculate central tendencies using given function
+      central_tendency = plyr::daply(df, .variables = group, .fun = function(block) {
+        vline_func(block[[var]])
+      })
 
-    #add it
-    g = g + geom_vline(xintercept = central_tendency, linetype="dashed", size=1, color = colors)
+      #get the colors
+      #http://stackoverflow.com/questions/8197559/emulate-ggplot2-default-color-palette
+      gg_color_hue <- function(n) {
+        hues = seq(15, 375, length = n + 1)
+        hcl(h = hues, l = 65, c = 100)[1:n]
+      }
+
+      colors = gg_color_hue(length(unique(df[[group]])))
+
+      #add it
+      g = g + geom_vline(xintercept = central_tendency, linetype="dashed", size=1, color = colors)
+    }
   }
+
+  #clean name?
+  if (clean_name) g = g + scale_x_continuous(name = str_clean(var))
 
   return(g + ggplot2::theme_bw())
 }
