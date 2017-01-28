@@ -12,6 +12,7 @@ Depends:
     purrr,
     assertthat,
     forcats,
+    tidyr,
     magrittr,
     psych
 License: GPL
@@ -23,7 +24,6 @@ Imports:
     glmnet,
     grid,
     psychometric,
-    tidyr,
     GPArotation
 Suggests:
     fields,
