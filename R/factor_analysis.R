@@ -815,6 +815,19 @@ suited_for_pearson_all = function(x, unique_min = 5) {
   all(suited_for_pearson(x, unique_min = unique_min))
 }
 
+#calculate cors for mixed dfs
+#avoid re-doing necessary calculations
+hetcor_partial = function(primary, secondaries) {
+  cors = purrr::map(seq_along(secondaries), function(x) {
+    polycor::hetcor(cbind(primary, secondaries[x]))
+  })
+
+
+  vals = map(cors, "correlations") %>% map_dbl(~magrittr::extract(., 2, 1))
+  attr(vals, "type") = map(cors, "type") %>% map_chr(~magrittr::extract(., 2, 1))
+  vals
+}
+
 
 #' Scatter plot of Jensen's method
 #'
@@ -856,47 +869,54 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
   #reverse factor is desired
   if (reverse_factor) fa_loadings = fa_loadings * -1
 
-  #indicator_criterion_method
-  if (is.numeric(indicator_criterion_method)) {
-    indicator_criterion_vals = indicator_criterion_method
-    indicator_criterion_method = "manual"
-  }
-
   #get indicator names
   indicator_names = rownames(fa$loadings)
   indicator_num = length(indicator_names)
 
-  #make new df
-  df2 = df[c(indicator_names, criterion)]
+  #criterion
+  if (is.numeric(criterion)) {
+    #fitting length?
+    if (!indicator_num == length(criterion)) stop("The criterion values supplies did not have the right length. They must match the number of indicators. Criterion %d vs. indicators %d", length(criterion), indicator_num)
 
-  #get criterion x indicator relationships
-  if (indicator_criterion_method == "auto") {
-    if (!suited_for_pearson_all(df)) {
-      message("Using latent correlations for the criterion-indicator relationships.")
-      df2_cors = polycor::hetcor(df2, use = "pairwise.complete.obs") %>% magrittr::extract2("correlations")
-    } else {
-      message("Using Pearson correlations for the criterion-indicator relationships.")
-      #convert all to numeric
+    #put into the value vector
+    criterion_vals = criterion
+  }
+
+  if (is.character(criterion)) {
+    #is it there?
+    if (!criterion %in% names(df)) stop("Criterion variable not found in the data")
+
+    #setsub df
+    df2 = df[c(indicator_names, criterion)]
+
+    #get criterion x indicator relationships
+    if (indicator_criterion_method == "auto") {
+      #can we use Pearson correlations for all of these?
+      if (!suited_for_pearson_all(df2)) {
+        message("Using latent correlations for the criterion-indicators relationships.")
+        criterion_vals = silence(hetcor_partial(df2[criterion], df2[-which(names(df2) == criterion)]))
+      } else {
+        message("Using Pearson correlations for the criterion-indicators relationships.")
+        #convert all to numeric
+        df2 = df_colFunc(df2, func = as.numeric)
+        df2_cors = weights::wtd.cors(df2, weight = .weights)
+        criterion_vals = df2_cors[ncol(df2_cors), -ncol(df2_cors)]
+      }
+    } else if (indicator_criterion_method == "pearson") {
+      message("Using Pearson correlations for the criterion-indicators relationships.")
       df2 = df_colFunc(df2, func = as.numeric)
       df2_cors = weights::wtd.cors(df2, weight = .weights)
-    }
-  } else if (indicator_criterion_method == "pearson") {
-    df2 = df_colFunc(df2, func = as.numeric)
-    df2_cors = weights::wtd.cors(df2, weight = .weights)
-  } else if (indicator_criterion_method == "latent") {
-    df2_cors = polycor::hetcor(df2) %>% magrittr::extract2("correlations")
-  } else if (indicator_criterion_method == "manual") {
-    #all good
-  } else stop(sprintf("Could not recognize indicator_criterion_method: %s", indicator_criterion_method))
+      criterion_vals = df2_cors[ncol(df2_cors), -ncol(df2_cors)]
+    } else if (indicator_criterion_method == "latent") {
+      message("Using latent correlations for the criterion-indicators relationships.")
+      criterion_vals = silence(hetcor_partial(df2[criterion], df[-which(names(df) == criterion)]))
+    } else stop(sprintf("Could not recognize indicator_criterion_method: %s", indicator_criterion_method))
 
-
-  #criterion x indicator vector
-  # browser()
-  if (!exists("indicator_criterion_vals")) indicator_criterion_vals = df2_cors[1:indicator_num, (indicator_num+1)]
+  }
 
   #make df for plotting
   df3 = data.frame(loading = fa_loadings,
-                   crit_vals = indicator_criterion_vals)
+                   crit_vals = criterion_vals)
 
   #reverse?
   if (loading_reversing) {

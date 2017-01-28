@@ -25,11 +25,17 @@ test_that("fa_congruence_matrix",{
 # fa_Jensens_method -------------------------------------------------------------
 #this extract GFP and checks whether the gender difference is GFP-loaded
 fa_bfi = fa(bfi[1:25])
+set.seed(1)
+tmp_num_only = matrix(rnorm(10000), ncol=10) %>% as.data.frame
 
 test_that("fa_Jensens_method",{
+  #latents
   expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender"), "ggplot")
-  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", reverse_factor = T, indicator_criterion_method = "pearson"), "ggplot")
-  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", loading_reversing = F, indicator_criterion_method = "pearson"), "ggplot")
+  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", reverse_factor = T), "ggplot")
+  expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", loading_reversing = F), "ggplot")
+
+  #pearson
+  expect_is(fa_Jensens_method(fa(tmp_num_only[, -1]), tmp_num_only, "V1"), "ggplot")
 })
 
 
