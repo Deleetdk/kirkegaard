@@ -7,12 +7,12 @@
 miss_analyze(data, robust = F)
 }
 \arguments{
-\item{data}{(data.frame/matrix) The data.}
+\item{data}{(df/mat) Data.}
 
-\item{robust}{(log scalar) Whether to use robust measures (default false). If true, will use median/mad instead of mean/sd to calculate the standardized mean differences.}
+\item{robust}{(lgl scalar) Whether to use robust measures (default false). If true, will use median/mad instead of mean/sd to calculate the standardized mean differences.}
 }
 \value{
-A data.frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
+A data frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.
 }
 \description{
 Calculates Cohen's d or equivalent for every variable pair. Larger values mean that cases with missing data in one variable differ from other cases in the other variable, thus that the data are not missing at random (MCAR).

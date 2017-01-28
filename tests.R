@@ -961,11 +961,11 @@ weightsvar = runif(5)
 
 stopifnot({
   #test basic function
-  df_residualize(df, resid.vars = "c", print.models = F) %>% extract(c("a", "b")) != df[c("a", "b")]
+  df_residualize(df, resid.vars = "c", print.models = F) %>% magrittr::extract(c("a", "b")) != df[c("a", "b")]
   #test suffix + message off
   df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)
   #test exclusion vector
-  df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% extract("b") == df$b
+  df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% magrittr::extract("b") == df$b
   #test return
   df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"
   #with weights
