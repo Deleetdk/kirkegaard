@@ -2,30 +2,44 @@
 % Please edit documentation in R/plotting.R
 \name{GG_denhist}
 \alias{GG_denhist}
-\title{Histogram with an empirical density curve and a vertical line at the mean}
+\title{Histogram with an empirical density curve}
 \usage{
-GG_denhist(data, var, vline = "mean", binwidth = NULL, group)
+GG_denhist(data, var, group = NULL, vline = mean, binwidth = NULL,
+  clean_name = T)
 }
 \arguments{
-\item{data}{(data.frame or something coercible into) A data.frame with variables.}
+\item{data}{(data.frame or something coercible into) A data frame or a vector.}
 
 \item{var}{(chr sclr) The name of the variable to use. Not needed if data is a vector. Not needed if data has 1 column.}
 
-\item{vline}{(chr sclr) Whether to plot a vertical line at some point. Can be "mean" or "median". Set to NULL for none. Default="mean". Can also be a custom function as long as it takes an na.rm=T parameter.}
+\item{group}{(chr sclr) The name of the grouping variable to use.}
+
+\item{vline}{(chr sclr) Whether and how to plot vertical line(s) at some point(s. Set to NULL for none. Default is \code{mean}. Can also be a custom function. Beware, it should ignore values.}
 
 \item{binwidth}{(num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
 
-\item{group}{(chr sclr) The name of the grouping variable to use.}
+\item{clean_name}{(lgl) Wheter to call str_clean on the x axis label.}
+}
+\value{
+A ggplot2 object.
 }
 \description{
-Plots a histogram with an empirical density curve and a vertical line at the mean using ggplot2.
+Plots a histogram with an empirical density curve and a vertical line at desired central tendency measure.
+}
+\details{
+Automatically rescales the histogram and density fit so the heights match. Applies \code{theme_bw}.
 }
 \examples{
 GG_denhist(iris, "Sepal.Length") #plot overall distribution
+GG_denhist(iris, "Sepal.Length", vline = median) #use another central tendency
 GG_denhist(iris, "Sepal.Length", group = "Species") #plot by group
 #also accepts vectors
 GG_denhist(iris[[1]])
 #also accepts 1-column data.frames, but throws a warning
 GG_denhist(iris[1])
+#warns you if some groups have no data
+data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) \%>\% GG_denhist("x", "y")
+#warns you if grouping variable has missing data
+data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) \%>\% GG_denhist("x", "y")
 }
 

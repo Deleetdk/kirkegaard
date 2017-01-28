@@ -4,8 +4,9 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, weights, text_pos, case_names = T,
-  case_names_vector, CI = 0.95, clean_names = T, check_overlap = T)
+GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
+  case_names = T, case_names_vector = NA, CI = 0.95, clean_names = T,
+  check_overlap = T)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -18,15 +19,15 @@ GG_scatter(df, x_var, y_var, weights, text_pos, case_names = T,
 
 \item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 
-\item{case_names}{(log scalar) Whether to add case names or not (default true).}
+\item{case_names}{(lgl scalar) Whether to add case names or not (default true).}
 
-\item{case_names_vector}{(chr vector) The case names to use. If missing, uses row names. If length one, is taken to be a variable in the data.}
+\item{case_names_vector}{(chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.}
 
 \item{CI}{(num scalar) interval. Defaults to .95. Set to NULL to disable.}
 
-\item{clean_names}{(log scalar) Whether to clean the axes names using str_clean(). Default=T.}
+\item{clean_names}{(lgl scalar) Whether to clean the axes names using str_clean(). Default=T.}
 
-\item{check_overlap}{(log scalar) Whether to avoid overplotting names. Default=T.}
+\item{check_overlap}{(lgl scalar) Whether to avoid overplotting names. Default=T.}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.

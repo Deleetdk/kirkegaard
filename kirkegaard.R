@@ -7,6 +7,7 @@ document()
 
 #install
 install("../kirkegaard")
+# install("../kirkegaard", upgrade_dependencies = F)
 
 #load
 library(kirkegaard)
