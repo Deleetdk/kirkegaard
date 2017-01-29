@@ -2,18 +2,15 @@
 % Please edit documentation in R/modeling.R
 \name{MOD_summary}
 \alias{MOD_summary}
-\alias{lm_CI}
 \title{Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.}
 \usage{
-MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
-  kfold = T, folds = 10, runs = 20, ...)
+MOD_summary(fitted_model, level = 0.95, standardize = T, kfold = T,
+  folds = 10, runs = 20, ...)
 }
 \arguments{
 \item{fitted_model}{(lm or glm) The fitted model.}
 
 \item{level}{(num scalar) The level of confidence to use. Defaults to .95 (95\%).}
-
-\item{round}{(num scalar) At which digit to round the numbers. Defaults to 2.}
 
 \item{standardize}{(log scalar) Whether to report standardized betas (default true).}
 
@@ -24,6 +21,8 @@ MOD_summary(fitted_model, level = 0.95, round = 2, standardize = T,
 \item{runs}{(int scalar) The number of runs to use for cross-validation. Default is 20.}
 
 \item{...}{(other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.}
+
+\item{round}{(num scalar) At which digit to round the numbers. Defaults to 2.}
 }
 \description{
 Tidys information from linear models or generalized linear models.
@@ -31,7 +30,7 @@ Tidys information from linear models or generalized linear models.
 \examples{
 #fit two models with iris data, one with normal and one with standardized data
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris \%>\% std_df())
+fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris \%>\% df_standardize())
 #then summarize the two models
 MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
 MOD_summary(fit1, standardize = T) #unstd. data, then std. betas

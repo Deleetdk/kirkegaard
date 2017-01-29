@@ -130,8 +130,41 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
               all_models = model.fits))
 }
 
-#old name
-lm_beta_matrix = MOD_APSLM
+#' Get etas from analysis of variance
+#'
+#' Converts a \code{lm} or \code{glm} to an analysis of variance, and calculates the etas (square rooted values of traditional eta^2).
+#' @export
+MOD_etas = function(fitted_model) {
+  fitted_model %>%
+    aov %>%
+    lsr::etaSquared() ->
+    etassq
+
+  #sqrt
+  etas = etassq %>% sqrt
+
+  #rename
+  colnames(etas) %<>% stringr::str_replace(".sq", "")
+
+  etas
+}
+
+
+#' Custom printing function for model_summary class
+#' @export
+print.model_summary  = function(x) {
+
+  cat("Model coefficients\n")
+  print(x$coefs)
+
+  cat("\n\nModel meta-data\n")
+  print(x$meta)
+
+  cat("\n\nEtas from analysis of variance\n")
+  print(x$aov_etas)
+
+  invisible(NULL)
+}
 
 
 #' Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.
@@ -145,18 +178,24 @@ lm_beta_matrix = MOD_APSLM
 #' @param folds (num scalar) The number of folds to use if using cross-validation.
 #' @param runs (int scalar) The number of runs to use for cross-validation. Default is 20.
 #' @param ... (other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.
-#' @export MOD_summary lm_CI
-#' @aliases lm_CI
+#' @export
 #' @examples
 #' #fit two models with iris data, one with normal and one with standardized data
 #' fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-#' fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% std_df())
+#' fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% df_standardize())
 #' #then summarize the two models
 #' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
 #' MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
 #' MOD_summary(fit2, standardize = F) #std data., don't std. betas
 #' MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
-MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
+MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
+
+  #init
+  return_list = list(coefs = NULL,
+                     meta = NULL,
+                     model_obj = NULL,
+                     aov_etas = NULL
+                     )
 
   #fetch data
   model_data = fitted_model$model
@@ -186,18 +225,19 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
     #degrees of freedom
     df = sum.model$df[2]
 
-    #R2 values
-    model_meta = c(nrow(model_data), sum.model$r.squared, sum.model$adj.r.squared)
-    names(model_meta) = c("N", "R2", "R2 adj.")
+    #model meta
+    model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
+                            "N" = nrow(model_data),
+                            "R2" = sum.model$r.squared,
+                            "R2-adj." = sum.model$adj.r.squared,
+                            "R2-cv" = NA,
+                            check.names = F
+                            )
 
     #cross validate?
     if (kfold) {
-      model_meta = c(model_meta, MOD_k_fold_r2(fitted_model, folds = folds, runs = runs, ...)[2])
-      names(model_meta) = c("N", "R2", "R2 adj.", "R2 " + folds + "-fold cv")
+      model_meta$`R2-cv` = MOD_k_fold_r2(fitted_model, folds = folds, runs = runs, ...)[2]
     }
-
-    #rounding
-    model_meta = round(model_meta, round)
 
     #coefs
     coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
@@ -234,7 +274,7 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
     coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
     coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
-    coefs = round(coefs, round) #round to desired digit
+
 
     #insert reference levels
 
@@ -313,13 +353,20 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
     #degrees of freedom
     df = sum.model$df[2]
 
-    #meta values
+    #values
     pseudo_r2 = 1 - (sum.model$deviance / sum.model$null.deviance)
-    model_meta = c(nrow(model_data), pseudo_r2, sum.model$deviance, sum.model$aic)
-    names(model_meta) = c("N", "pseudo-R2", "deviance", "AIC")
 
-    #rounding, dont round the first value
-    model_meta = round(model_meta, round)
+    #meta values
+    model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
+                            "N" = nrow(model_data),
+                            "pseudo-R2" = pseudo_r2,
+                            "deviance" = sum.model$deviance,
+                            "pseudo-R2-cv" = NA,
+                            check.names = F
+                            )
+
+    #cross validate?
+    #TODO
 
     #coefs
     coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
@@ -363,7 +410,6 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
     coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
     coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
-    coefs = round(coefs, round) #round to desired digit
 
     #insert reference levels
 
@@ -430,13 +476,19 @@ MOD_summary = function(fitted_model, level = .95, round = 2, standardize = T, kf
 
   }
 
-  #return
-  return(list(coefs = coefs,
-              meta = model_meta))
-}
+  #fill in object
+  return_list[["coefs"]] = coefs
+  return_list[["meta"]] = model_meta
+  return_list[["model_obj"]] = fitted_model
+  return_list[["aov"]] = fitted_model %>% aov
+  return_list[["aov_etas"]] = fitted_model %>% MOD_etas
 
-#old name
-lm_CI = MOD_summary
+  #change class for custom printing
+  class(return_list) = "model_summary"
+
+
+  return(return_list)
+}
 
 
 #' Get R2 and R2 adj. for each model.

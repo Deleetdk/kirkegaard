@@ -58,7 +58,19 @@ Jensen_plot = defunct("This function has been deleted, use fa_Jensens_method")
 #' @export
 Jensens_method = defunct("This function has been moved to fa_Jensens_method")
 
+#' @export
+lm_CI = defunct("This function has been moved to MOD_summary")
 
+#' @export
+std_df = defunct("This function has been moved to df_standardize")
+
+#' @export
+remove_redundant_vars2 = defunct("This function has been moved to remove_redundant_vars, and the old function deleted")
+
+# MOD_ --------------------------------------------------------------------
+
+#' @export
+lm_beta_matrix = defunct("This function has been moved to MOD_APSLM")
 
 
 # old FA_ -----------------------------------------------------------------
