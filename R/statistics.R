@@ -226,8 +226,8 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
 }
 
 
-# Remove redundant variables
-#
+#' Remove redundant variables
+#'
 #' Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.
 #' @param df (data.frame) A data.frame with numeric variables.
 #' @param threshold (numeric scalar) A threshold above which intercorrelations are removed. Defaults to .9.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/statistics.R
 \name{remove_redundant_vars}
 \alias{remove_redundant_vars}
-\title{Remove redundant variables from a data.frame based on a threshold value. This is done by calculating all the intercorrelations, then finding those that correlate at or above the threshold (absolute value), then removing the second pair of each variable and not removing more variables than strictly necessary.}
+\title{Remove redundant variables}
 \usage{
 remove_redundant_vars(df, threshold = 0.9, cor_method = "pearson",
   messages = T)
