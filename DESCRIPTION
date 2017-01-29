@@ -14,7 +14,8 @@ Depends:
     forcats,
     tidyr,
     magrittr,
-    psych
+    psych,
+    tibble
 License: GPL
 LazyData: true
 RoxygenNote: 5.0.1
