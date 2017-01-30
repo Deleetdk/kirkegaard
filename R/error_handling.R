@@ -17,11 +17,25 @@ is_error = function(x) inherits(x, "try-error")
 #' @examples
 #' throws_error(log("")) #cannot take a logarithm of a string
 #' throws_error(log(0)) #can take logarithm of 0
+#' throws_error("!!!!/83") #can test syntax errors if calls are strings
+#' throws_error("!!!!/83") #can test syntax errors if calls are strings
 throws_error = function(expr, silent_try = T) {
-  #try evaluating in parent frame
-  trial = try({
-    eval(substitute(expr), envir = parent.frame())
-  }, silent = silent_try)
+
+  #quote
+  qexpr = quote(expr)
+
+  #chr?
+  if (is.character(qexpr)) {
+    #try as string
+    trial = try({
+      eval(parse(qexpr), envir = parent.frame())
+    }, silent = silent_try)
+  } else {
+    #try as expression
+    trial = try({
+      eval(substitute(expr), envir = parent.frame())
+    }, silent = silent_try)
+  }
 
   return(is_error(trial))
 }

@@ -711,7 +711,7 @@ stopifnot({
   !is_(iris, size = 1) #check for wrong size
   is_(iris, type = "list") #check for type
   !is_(iris, type = "factor") #check for wrong type
-  throws_error('is_(iris, class = "list", error_on_false = T)')  #check for one class, error
+  throws_error(is_(iris, class = "list", error_on_false = T))  #check for one class, error
 })
 
 
@@ -727,11 +727,8 @@ stopifnot({
   !is_error(15)
 
   #second
-  !throws_error("1==1")
-  !throws_error("1 > 2")
-  throws_error("!1!")
-  throws_error("1><>2")
-  throws_error("7///7")
+  !throws_error(1==1)
+  !throws_error(1 > 2)
 })
 
 
@@ -748,8 +745,8 @@ stopifnot({
   conditional_change(c(1:10, NA), func_str = "<5", new_value = NA) %>% count_NA == 5
 
   #errors
-  throws_error('conditional_change(1:10, func_str = "!1!", new_value = NA)')
-  throws_error('conditional_change(is.array, func_str = "<0", new_value = NA)')
+  throws_error(conditional_change(1:10, func_str = "!1!", new_value = NA))
+  throws_error(conditional_change(is.array, func_str = "<0", new_value = NA))
 })
 
 
@@ -764,7 +761,7 @@ stopifnot({
   sapply(-1:1, math_to_function("=5")) == rep(FALSE, 3)
 
   #errors
-  throws_error("math_to_function('!4!4!4')(1)")
+  throws_error(math_to_function('!4!4!4')(1))
 })
 
 
