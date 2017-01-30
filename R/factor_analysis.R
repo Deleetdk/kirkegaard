@@ -443,10 +443,10 @@ fa_CAFL = function(x, ..., sort = 1, include_full_sample = T) {
 #' Divides a dataset into 2 at random, extracts a factor from each and correlates them. Then saves the correlation. Repeats this any desired number of times. Can also return the factor scores instead of correlations.
 #' @param data (data.frame or matrix) The data.
 #' @param runs (integer scalar) The number of runs to do.
-#' @param save_scores (boolean scalar) Whether to save scores. Default=F.
-#' @param messages (lgl scalar) Whether to display messages, default yes.
-#' @param progress (lgl scalar) Whether to display progress bar, default yes.
-#' @param seed (num scalar) Seed to use for reproducible results. Default=1.
+#' @param save_scores (boolean scalar) Whether to save scores.
+#' @param messages (lgl scalar) Whether to display messages.
+#' @param progress (lgl scalar) Whether to display progress bar.
+#' @param seed (num scalar) Seed to use for reproducible results. Pass \code{NULL} to not use a seed.
 #' @param ... Extra parameters to pass to psych::fa().
 #' @export
 #' @examples
