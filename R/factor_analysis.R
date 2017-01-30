@@ -588,8 +588,8 @@ fa_nfactors = function(.fa) {
   #single
   if (inherits(.fa, what = "fa")) return (.fa$loadings %>% ncol)
   #multiple
-  if (!all(sapply(.fa, inherits, what = "fa"))) stop("Input was not a single fa object or list or fa objects.")
-  sapply(.fa, function(x) x$loadings %>% ncol)
+  if (!all(purrr::map_lgl(.fa, inherits, what = "fa"))) stop("Input was not a single fa object or list or fa objects.")
+  purrr::map_int(.fa, function(x) x$loadings %>% ncol)
 }
 
 
@@ -631,9 +631,9 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
   #multiple unifactor analyses - m1
   #multiple multifactor analyses - mm
   if (inherits(fa_objects, "fa")) fa_objects = list(fa_objects) #put it in a list for consistency
-  if (!all(sapply(fa_objects, inherits, what = "fa"))) stop("Could not recognize input. Input must be a single fa object, or a list of fa objects.")
+  if (!all(purrr::map_lgl(fa_objects, inherits, what = "fa"))) stop("Could not recognize input. Input must be a single fa object, or a list of fa objects.")
   fa_num = length(fa_objects)
-  factor_num = sapply(fa_objects, fa_nfactors)
+  factor_num = purrr::map_int(fa_objects, fa_nfactors)
 
   if (fa_num == 1 && all(1 == factor_num)) {
     plot_type = "11"
@@ -722,17 +722,17 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     #plot
     if (fa_num > 1) {
       g = ggplot2::ggplot(d2, aes(x = id, y = fa, color = time, group = time)) +
-        geom_point(position = position_dodge(width = 0.5)) +
-        ylab("Loading") +
-        xlab("Indicator") +
-        scale_color_discrete(name = "Analysis", labels = fa_labels) +
-        coord_flip()
+        ggplot2::geom_point(position = position_dodge(width = 0.5)) +
+        ggplot2::ylab("Loading") +
+        ggplot2::xlab("Indicator") +
+        ggplot2::scale_color_discrete(name = "Analysis", labels = fa_labels) +
+        ggplot2::coord_flip()
     } else {
       g = ggplot2::ggplot(d2, aes(x = id, y = fa)) +
-        geom_point(position = position_dodge(width = 0.5)) +
-        ylab("Loading") +
-        xlab("Indicator") +
-        coord_flip()
+        ggplot2::geom_point(position = position_dodge(width = 0.5)) +
+        ggplot2::ylab("Loading") +
+        ggplot2::xlab("Indicator") +
+        ggplot2::coord_flip()
     }
   }
 
@@ -777,11 +777,11 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
 
     #plot
     g = ggplot2::ggplot(d, aes(x = indicator, y = loading, color = factor, group = factor)) +
-      geom_point(position = position_dodge(width = 0.1)) +
-      ylab("Loading") +
-      xlab("Indicator") +
-      scale_color_discrete(labels = factor_names, name = "Factor") +
-      coord_flip()
+      ggplot2::geom_point(position = position_dodge(width = 0.1)) +
+      ggplot2::ylab("Loading") +
+      ggplot2::xlab("Indicator") +
+      ggplot2::scale_color_discrete(labels = factor_names, name = "Factor") +
+      ggplot2::coord_flip()
   }
 
   if (plot_type == "mm") {
@@ -789,7 +789,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     }
 
 
-  return(g + theme_bw())
+  return(g + ggplot2::theme_bw())
 }
 
 

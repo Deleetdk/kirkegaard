@@ -85,7 +85,7 @@ is_numeric = function(x, recursive = TRUE) {
   #recursive test?
   if (recursive) {
     #test all elements
-    return(all(sapply(x, is_numeric)))
+    return(all(purrr::map_lgl(x, is_numeric)))
   }
 
   #otherwise assume FALSE
@@ -143,23 +143,27 @@ has_names = function(x) {
 #'
 #' Vectors are treated as 1-dimensional.
 #' @param ... (objects) The objects to test.
-#' @param dimension (num scalar) The dimension to test (default 1).
+#' @param dimension (num scalar) The dimension to test.
 #' @return Logical scalar.
 #' @export
 #' @examples
 #' lengths_match(1:4, 5:8) #same lengths
 #' lengths_match(iris, iris[1:2]) #same nrow
 #' lengths_match(iris, iris[1:2], dimension = 2) #different ncol
+#' lengths_match(iris, 1:3, dimension = 2) #incompatible objects
 lengths_match = function(..., dimension = 1) {
 
   #try to get the nth dimension lengths
   trial = try({
-    v_len = sapply(list(...), FUN = function(x) {
-      get_dims(x)[dimension] %>% fail_if_NA()
+    v_len = purrr::map_int(list(...), function(x) {
+      get_dims(x) %>% `[`(dimension) %>% fail_if_NA()
     })
   }, silent = T)
 
-  if (is_error(trial)) stop("Could not get dimension lengths! This probably means that at least one object does not have that many dimensions. E.g. if trying to get the second dimension from a vector.")
+  if (is_error(trial)) {
+    warning("At least one object does not have that many dimensions. Check input.")
+    return(F)
+  }
 
   #are they all the same?
   all_the_same(v_len)

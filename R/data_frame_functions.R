@@ -905,7 +905,7 @@ df_rename = function(data, current_names, new_names) {
   if (any(duplicated(new_names))) stop("There were duplicate names in new_names!")
 
   #check if variables exist
-  sapply(current_names, function(x) {
+  purrr::walk(current_names, function(x) {
     if (!x %in% names(data)) warning(sprintf("Variable %s was not in the data.", x), call. = F)
   })
 
@@ -1323,12 +1323,12 @@ df_flexsubset = function(data, vars, messages = T) {
 
   #determine overlap
   # vars_overlap = intersect(names(data), vars) #this changes the order
-  vars_overlap = sapply(vars, function(x) {
+  vars_overlap = purrr::map_chr(vars, function(x) {
     if (x %in% names(data)) return(x)
     NA
   }) %>% na.omit %>% as.vector
   # vars_nonoverlap = setdiff(vars, names(data))
-  vars_nonoverlap = sapply(vars, function(x) {
+  vars_nonoverlap = purrr::map_chr(vars, function(x) {
     if (!x %in% names(data)) return(x)
     NA
   }) %>% na.omit %>% as.vector
