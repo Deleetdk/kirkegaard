@@ -11,24 +11,25 @@ is_error = function(x) inherits(x, "try-error")
 #' Does call return an error?
 #'
 #' Parses a string as a call and determines whether it returns an error or not. Returns a boolean.
-#' @param x (expr) Expression.
-#' @param silent_try (lgl scalar) Whether to use a silent try (default true).
+#' @param expr (expr) An expression.
+#' @param silent_try (lgl scalar) Whether to use a silent try.
 #' @export
 #' @examples
 #' throws_error(log("")) #cannot take a logarithm of a string
 #' throws_error(log(0)) #can take logarithm of 0
-#' throws_error("!!!!/83") #can test syntax errors if calls are strings
-#' throws_error("!!!!/83") #can test syntax errors if calls are strings
+#' throws_error("log(0)") #works on strings too
+#' throws_error("log(NULL)") #works on strings too
 throws_error = function(expr, silent_try = T) {
 
-  #quote
-  qexpr = quote(expr)
+  #chr?
+  #try to check for chr, if true, it is a chr, if false, it MAY be an error
+  try_chr = trial = try({is.character(expr)}, silent = T)
 
   #chr?
-  if (is.character(qexpr)) {
+  if (isTRUE(try_chr)) {
     #try as string
     trial = try({
-      eval(parse(qexpr), envir = parent.frame())
+      eval(parse(text = expr), envir = parent.frame())
     }, silent = silent_try)
   } else {
     #try as expression
@@ -39,6 +40,7 @@ throws_error = function(expr, silent_try = T) {
 
   return(is_error(trial))
 }
+
 
 
 #' Fail if input contains NA

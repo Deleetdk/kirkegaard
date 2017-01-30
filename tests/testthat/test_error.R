@@ -18,6 +18,8 @@ test_that("is_error",
 test_that("throws_error", {
   expect_false(throws_error(log(1)))
   expect_true(throws_error(log("")))
+  expect_false(throws_error("log(1)"))
+  expect_true(throws_error("log('')"))
 }
 )
 

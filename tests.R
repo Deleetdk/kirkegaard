@@ -853,7 +853,7 @@ t = matrix(1:6, nrow=3)
 rownames(t) = LETTERS[1:3]; colnames(t) = letters[1:2]
 
 stopifnot({
-  throws_error("copy_names(t, t2, F)")
+  throws_error(copy_names(t, t2, F))
 })
 
 
@@ -908,7 +908,7 @@ stopifnot({
   all.equal(split_every_k(1:12, 4), list(1:4, 5:8, 9:12), check.names = F)
   all.equal(split_every_k(1:11, 4), list(1:4, 5:8, 9:11), check.names = F)
   all.equal(split_every_k(1:4, 4), list(1:4), check.names = F)
-  throws_error("split_every_k(1:11, 4, uneven = F)")
+  throws_error(split_every_k(1:11, 4, uneven = F))
 })
 
 # stack_into_n_columns split_into_n_columns -----------------------------------------
@@ -927,7 +927,7 @@ stopifnot({
 
 stopifnot({
   #check wrong input
-  throws_error("split_into_n_columns(data = df2, columns = 5, pad_rows = F)")
+  throws_error(split_into_n_columns(data = df2, columns = 5, pad_rows = F))
 
   #test some values
   split_into_n_columns(df2, split_times = 4) %>% get_dims() == c(3, 12)
@@ -954,8 +954,8 @@ stopifnot({
 stopifnot({
   alternate(list(1:3, letters[1:3])) == c("1", "a", "2", "b", "3", "c")
   alternate(list(1:3, letters[1:3], LETTERS[1:3])) == c("1", "a", "A", "2", "b", "B", "3", "c", "C")
-  throws_error("alternate(list(1:2, letters[1:3]))")
-  throws_error("alternate(c(1:2, 2:1))")
+  throws_error(alternate(list(1:2, letters[1:3])))
+  throws_error(alternate(c(1:2, 2:1)))
 })
 
 
@@ -1109,7 +1109,7 @@ t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
 stopifnot({
   merge_rows(t, "id") == t_true #test string input
   merge_rows(t, "id", func = mean) == t_true2 #test another function
-  throws_error("merge_rows(t, 'id', numeric = FALSE)") #test error
+  throws_error(merge_rows(t, 'id', numeric = FALSE)) #test error
 })
 
 #do it by name

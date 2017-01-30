@@ -7,9 +7,9 @@
 throws_error(expr, silent_try = T)
 }
 \arguments{
-\item{silent_try}{(lgl scalar) Whether to use a silent try (default true).}
+\item{expr}{(expr) An expression.}
 
-\item{x}{(expr) Expression.}
+\item{silent_try}{(lgl scalar) Whether to use a silent try.}
 }
 \description{
 Parses a string as a call and determines whether it returns an error or not. Returns a boolean.
