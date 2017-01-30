@@ -415,7 +415,7 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T,
   tmp_df = data.frame(...)
 
   #check for numericness
-  if(!all(purrr::map_lgl(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
+  if(!all(purrr::map_chr(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
 
   #standardize?
   if (standardize) tmp_df = df_standardize(tmp_df)
