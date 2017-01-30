@@ -2,17 +2,18 @@
 % Please edit documentation in R/missing_data.R
 \name{miss_plot}
 \alias{miss_plot}
-\alias{plot_miss}
 \title{Missing data barplot with ggplot2.}
 \usage{
-miss_plot(data, percent = T, case = T)
+miss_plot(data, percent = T, case = T, reverse = F)
 }
 \arguments{
 \item{data}{(data.frame) Data.frame.}
 
-\item{percent}{(lgl scalar) Whether to use percent or raw counts. Default true.}
+\item{percent}{(lgl scalar) Whether to use percent or raw counts.}
 
-\item{case}{(lgl scalar) Whether to plot missingness for cases or variables. Default cases.}
+\item{case}{(lgl scalar) Whether to plot missingness for cases or variables.}
+
+\item{reverse}{(lgl sclr) Whether to count datapoints instead of missing datapoints.}
 }
 \description{
 Returns a ggplot2 object of the missing data.
@@ -23,5 +24,6 @@ miss_plot(test_data)
 miss_plot(test_data, percent = F) #raw count
 miss_plot(test_data, case = F) #variables
 miss_plot(test_data, case = F, percent = F) #variables, raw
+miss_plot(test_data, reverse = T) #reverse
 }
 

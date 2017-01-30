@@ -67,6 +67,10 @@ std_df = defunct("This function has been moved to df_standardize")
 #' @export
 remove_redundant_vars2 = defunct("This function has been moved to remove_redundant_vars, and the old function deleted")
 
+#' @export
+plot_miss = defunct("This function has been moved to miss_plot")
+
+
 # MOD_ --------------------------------------------------------------------
 
 #' @export

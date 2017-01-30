@@ -53,24 +53,25 @@ miss_by_var = function(x, reverse = F){
 #'
 #' Returns a ggplot2 object of the missing data.
 #' @param data (data.frame) Data.frame.
-#' @param percent (lgl scalar) Whether to use percent or raw counts. Default true.
-#' @param case (lgl scalar) Whether to plot missingness for cases or variables. Default cases.
-#' @export miss_plot plot_miss
-#' @aliases plot_miss
+#' @param percent (lgl scalar) Whether to use percent or raw counts.
+#' @param case (lgl scalar) Whether to plot missingness for cases or variables.
+#' @param reverse (lgl sclr) Whether to count datapoints instead of missing datapoints.
+#' @export
 #' @examples
 #' test_data = miss_add_random(iris)
 #' miss_plot(test_data)
 #' miss_plot(test_data, percent = F) #raw count
 #' miss_plot(test_data, case = F) #variables
 #' miss_plot(test_data, case = F, percent = F) #variables, raw
-miss_plot = function(data, percent=T, case=T) {
+#' miss_plot(test_data, reverse = T) #reverse
+miss_plot = function(data, percent=T, case=T, reverse=F) {
   #cases or vars?
   if (case) {
-    m = miss_by_case(data)
+    m = miss_by_case(data, reverse = reverse)
     d = table(m) %>% as.data.frame()
     names(d) = c("number_miss", "count")
   } else {
-    m = miss_by_var(data)
+    m = miss_by_var(data, reverse = reverse)
     d = data.frame(number_miss = m, var = names(m))
   }
 
@@ -85,12 +86,19 @@ miss_plot = function(data, percent=T, case=T) {
 
     g = ggplot2::ggplot(d, aes(number_miss, count)) +
       geom_bar(stat = "identity") +
-      scale_x_discrete(breaks = min.miss:max.miss) + #always keep entire range
-      xlab("Number of missing values")
+      scale_x_discrete(breaks = min.miss:max.miss) #always keep entire range
+
 
     #percent
     if (percent) g = g + scale_y_continuous(labels = scales::percent, name = "Percent")
     if (!percent) g = g + ylab("Count")
+
+    #xlab
+    if (!reverse) {
+      g = g + xlab("Number of missing values")
+    } else {
+      g = g + xlab("Number of datapoints")
+    }
 
   } else {
     #percent?
@@ -110,7 +118,10 @@ miss_plot = function(data, percent=T, case=T) {
     } else {
       g = g + scale_y_continuous(name = "Number of missing values")
     }
+
   }
+
+
 
   #return
   g + theme_bw()
