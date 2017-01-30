@@ -70,6 +70,12 @@ remove_redundant_vars2 = defunct("This function has been moved to remove_redunda
 #' @export
 plot_miss = defunct("This function has been moved to miss_plot")
 
+#' @export
+as_abbrev = defunct("Depreciated. use pu_translate")
+
+#' @export
+as_long = defunct("Depreciated. use pu_translate")
+
 
 # MOD_ --------------------------------------------------------------------
 

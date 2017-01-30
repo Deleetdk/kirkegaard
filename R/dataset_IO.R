@@ -51,54 +51,6 @@ output_sorted_var = function(df, var, filename) {
 }
 
 
-#' Abbreviate country and regional names to ISO-3.
-#'
-#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
-#' @param names A character vector of the full names of countries and regions.
-#' @export
-#' @examples
-#' as_abbrev()
-as_abbrev = function(names, georgia = "country"){
-  #get dictionary
-  codes = read.csv("countrycodes.csv", sep=";", row.names=1, encoding = "UTF-8", stringsAsFactors = F)
-
-  #Georgia as state or country?
-  if (substr(georgia, 1, 1) == "s") {
-    codes["Georgia", ] = "USA_GA"
-  }
-
-  #loop thru and get abbrevs
-  abbrevs = character()
-  for (name in names){
-    abbrevs = c(abbrevs, codes[name, ])
-    if (is.na(codes[name, ])){
-      print(paste(name, "is missing"))
-    }
-  }
-  return(abbrevs)
-}
-
-
-#' Get full country names from ISO-3.
-#'
-#' To enable easier merging of datasets of international data. You need to download the countrylist.csv file yourself.
-#' @param x (character vector) The ISO-3 codes.
-#' @export
-#' @examples
-#' as_long()
-as_long = function(x) {
-  d_names = read.csv("countrycodes.csv", sep = ";", header = T, stringsAsFactors = F, encoding = "UTF-8")
-
-  sapply(x, function(i) {
-    indice = (d_names$Codes == i) %>% #find matches
-      which %>% #their indices
-      `[`(1) #get the first
-    if(is.na(indice)) message(stringr::str_c(i, " could not be found!"))
-
-    return(d_names$Names[indice])
-  })
-}
-
 
 #' Write object to clipboard
 #'
