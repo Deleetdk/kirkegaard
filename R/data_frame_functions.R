@@ -315,7 +315,7 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
   if (class(df[[primary_var]]) != "numeric") stop("Primary var must be numeric!")
 
   #non-numeric
-  non_num_vars = sapply(df, is.numeric) %>% `!` %>% names(.)[.]
+  non_num_vars = purrr::map_lgl(df, is.numeric) %>% `!` %>% names(.)[.]
   #find the non-numeric variable names
 
   #convert
@@ -417,7 +417,7 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T,
   tmp_df = data.frame(...)
 
   #check for numericness
-  if(!all(sapply(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
+  if(!all(purrr::map_lgl(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
 
   #standardize?
   if (standardize) tmp_df = df_standardize(tmp_df)
@@ -594,7 +594,7 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
   if (!missing("key")) {
     #numeric columns
     if (numeric) {
-      v_numeric = sapply(df, is.numeric) #detect numeric cols
+      v_numeric = purrr::map_lgl(df, is.numeric) #detect numeric cols
     } else {
       v_numeric = 1:ncol(df) #use all
     }
@@ -846,7 +846,7 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
 
   #add by?
   if (add_by) {
-    nrows = sapply(list, nrow)
+    nrows = purrr::map_int(list, nrow)
     by = mapply(x = list_names, each = nrows, FUN = function(x, each) {
       rep(x, each)
     }, SIMPLIFY = F) %>% unlist()
@@ -1295,19 +1295,21 @@ df_subset_by_pattern = function(data, pattern, inverse = FALSE) {
 #' @param keep (num or chr vector) A vector of names of columns to keep no matter what. Can also be numeric indices which are then replaced with the colnames.
 #' @return Returns the subset of the object.
 #' @export
-df_remove_NA_vars = function(data, keep) {
-  #keep vector
-  if (missing("keep")) keep = ""
-  keep = sapply(keep, FUN = function(i) {
-    #if its a number string
-    if (!is.na(as.numeric(i))) {
-      colnames(data)[i] #convert to the nth colname
-    }
-  })
+#' @examples
+#' df_remove_NA_vars(data.frame(a = NA, b = 1))
+#' df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a")
+#' df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1)
+df_remove_NA_vars = function(data, keep = "") {
 
-  v_remove = sapply(data, FUN = function(x) {
+  #numeric
+  if (is.numeric(keep)) keep = colnames(data)[keep]
+
+  #which to remove
+  v_remove = purrr::map_lgl(data, function(x) {
     all(is.na(x))
   })
+
+  #subset
   data[!v_remove | colnames(data) %in% keep]
 }
 

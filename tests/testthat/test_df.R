@@ -103,3 +103,11 @@ test_that("df_sort", {
   expect_true(!are_equal(df_sort(iris, "Sepal.Length"), df_sort(iris, 4)))
 })
 
+
+# df_remove_NA_vars -------------------------------------------------------
+
+test_that("df_remove_NA_vars", {
+  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1)), data.frame(b = 1))
+  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a"), data.frame(a = NA, b = 1))
+  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1), data.frame(a = NA, b = 1))
+})

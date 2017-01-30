@@ -279,9 +279,9 @@ split_into_n_columns = function(data, split_times, pad_rows = T, include_rowname
 #' This function allows you to merge two data.frames by their overlapping rownames. About 15 times faster than the earlier version.
 #' @param DF1 (data.frame) A data.frame to merge into.
 #' @param DF2 (data.frame) A data.frame with the new data.
-#' @param join (character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.
-#' @param overwrite_NA (logical scalar) Whether to overwrite with NA values. Default = FALSE.
-#' @param restore_factors (logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.
+#' @param join (character scalar) Which data.frame to use cases from. Options: left, right, both.
+#' @param overwrite_NA (lgl scalar) Whether to overwrite with NA values.
+#' @param restore_factors (lgl scalar) Whether to recreate factors in the merged data.frame. Does not keep levels.
 #' @export
 #' @examples
 #' merge_datasets(iris[1:4], iris[1:5]) #merge together two parts of iris
@@ -310,7 +310,7 @@ merge_datasets = function (DF1, DF2, join = "both", overwrite_NA = FALSE, restor
   }
 
   #factors present?
-  if (any(c(sapply(DF1, is.factor), sapply(DF2, is.factor)))) {
+  if (any(c(purrr::map_lgl(DF1, is.factor), purrr::map_lgl(DF2, is.factor)))) {
     if (!restore_factors) {
       message("Factors were converted to characters.")
     }
@@ -355,7 +355,7 @@ merge_datasets = function (DF1, DF2, join = "both", overwrite_NA = FALSE, restor
 
   #restore factors
   if (restore_factors) {
-    v_factors = sapply(colnames(DF3), function(col) {
+    v_factors = purrr::map_lgl(colnames(DF3), function(col) {
       #check if cols are factors or nulls in both datasets
       if ((is.factor(DF1[[col]]) || is.null(DF1[[col]])) &&
           (is.factor(DF2[[col]]) || is.null(DF2[[col]]))) return(TRUE)
