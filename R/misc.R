@@ -190,7 +190,7 @@ silence = function(expr, warnings = F, messages = F, startupmessages = F) {
 alternate = function(x) {
   #checks
   if (!is.list(x)) stop("x must be a list!")
-  v_lengths = sapply(x, length)
+  v_lengths = purrr::map_int(x, length)
   if (!all_the_same(v_lengths)) stop("lengths of all vectors are not the same!")
 
   #merge alternatingly
@@ -225,7 +225,7 @@ alternate = function(x) {
 #' format_digits(c(.12345), 2)
 #' format_digits(c(.15555), 2)
 format_digits = function(x, digits = 2) {
-  sapply(x, function(y) {
+  purrr::map_chr(x, function(y) {
     format(round(y, digits = digits), nsmall = digits)
   })
 }
@@ -259,7 +259,7 @@ make_list_array = function(...) {
   input_list = list(...)
   names_list = input_list
 
-  v_lengths = sapply(seq_along(input_list), FUN = function(x) {
+  v_lengths = purrr::map_int(seq_along(input_list), function(x) {
 
     #is scalar
     if (length(input_list[[x]]) == 1) {

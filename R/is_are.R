@@ -201,8 +201,8 @@ is_ = function(x, class, size, type, error_on_false = F) {
 
   #check class
   if (!missing("class")) {
-    v_class_check = any(sapply(X = class, FUN = function(class_i) {
-      is(x, class2 = class_i)
+    v_class_check = any(purrr::map_lgl(class, function(class_i) {
+      inherits(x, what = class_i)
     }))
   }
 
@@ -213,7 +213,7 @@ is_ = function(x, class, size, type, error_on_false = F) {
 
   #check type
   if (!missing("type")) {
-    v_type_check = any(sapply(X = type, FUN = function(type_i) {
+    v_type_check = any(purrr::map_lgl(type, function(type_i) {
       typeof(x) == type_i #check type
     }))
   }
