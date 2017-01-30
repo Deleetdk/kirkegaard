@@ -76,6 +76,38 @@ as_abbrev = defunct("Depreciated. use pu_translate")
 #' @export
 as_long = defunct("Depreciated. use pu_translate")
 
+#' @export
+t_df = defunct("Renamed to df_t")
+
+#' @export
+reorder_columns = defunct("Renamed to df_reorder_columns")
+
+#' @export
+df_remove_vars = defunct("Renamed to df_remove")
+
+#' @export
+df_rename_vars = defunct("Renamed to df_rename")
+
+#' @export
+add_id = defunct("Renamed to df_add_id")
+
+#' @export
+copy_columns = defunct("Renamed to df_copy_columns")
+
+#' @export
+as_num_df = defunct("Renamed to df_as_num")
+
+#' @export
+df_func = defunct("Renamed to df_rowFunc")
+
+#' @export
+sort_df = defunct("Renamed to df_sort")
+
+#' @export
+residualize_DF = defunct("Renamed to df_residualize")
+
+#' @export
+merge_rows = defunct("Renamed to df_merge_rows")
 
 # MOD_ --------------------------------------------------------------------
 

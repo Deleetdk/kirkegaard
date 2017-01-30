@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_residualize}
 \alias{df_residualize}
-\alias{residualize_DF}
 \title{Residualized data.frame.}
 \usage{
 df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,

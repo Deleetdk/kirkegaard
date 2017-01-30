@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_remove}
 \alias{df_remove}
-\alias{df_remove_vars}
 \title{Remove variables from a data.frame}
 \usage{
 df_remove(data, vars)

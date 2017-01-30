@@ -12,13 +12,13 @@ fa_splitsample_repeat(data, runs = 100, save_scores = F, messages = T,
 
 \item{runs}{(integer scalar) The number of runs to do.}
 
-\item{save_scores}{(boolean scalar) Whether to save scores. Default=F.}
+\item{save_scores}{(boolean scalar) Whether to save scores.}
 
-\item{messages}{(lgl scalar) Whether to display messages, default yes.}
+\item{messages}{(lgl scalar) Whether to display messages.}
 
-\item{progress}{(lgl scalar) Whether to display progress bar, default yes.}
+\item{progress}{(lgl scalar) Whether to display progress bar.}
 
-\item{seed}{(num scalar) Seed to use for reproducible results. Default=1.}
+\item{seed}{(num scalar) Seed to use for reproducible results. Pass \code{NULL} to not use a seed.}
 
 \item{...}{Extra parameters to pass to psych::fa().}
 }

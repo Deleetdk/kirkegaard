@@ -12,11 +12,11 @@ merge_datasets(DF1, DF2, join = "both", overwrite_NA = FALSE,
 
 \item{DF2}{(data.frame) A data.frame with the new data.}
 
-\item{join}{(character scalar) Which data.frame to use cases from. Defaults to "both". Can be: both, left, right.}
+\item{join}{(character scalar) Which data.frame to use cases from. Options: left, right, both.}
 
-\item{overwrite_NA}{(logical scalar) Whether to overwrite with NA values. Default = FALSE.}
+\item{overwrite_NA}{(lgl scalar) Whether to overwrite with NA values.}
 
-\item{restore_factors}{(logical scalar) Whether to recreate factors in the merged data.frame. Does not keep levels. Default = FALSE.}
+\item{restore_factors}{(lgl scalar) Whether to recreate factors in the merged data.frame. Does not keep levels.}
 }
 \description{
 This function allows you to merge two data.frames by their overlapping rownames. About 15 times faster than the earlier version.

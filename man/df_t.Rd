@@ -2,16 +2,15 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_t}
 \alias{df_t}
-\alias{t_df}
 \title{Transpose data.frame}
 \usage{
 df_t(df)
 }
 \arguments{
-\item{df}{(data.frame) A data.frame.}
+\item{df}{(df) A data frame.}
 }
 \value{
-A transposed data.frame.
+A transposed data frame.
 }
 \description{
 Transpose a data.frame, returning a data.frame that also keeps the dimnames.

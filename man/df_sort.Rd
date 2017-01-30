@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_sort}
 \alias{df_sort}
-\alias{sort_df}
 \title{Sort a data.frame by one or more variables. Can sort by decreasing or increasing order}
 \usage{
 df_sort(df, vars = names(df), decreasing = F)

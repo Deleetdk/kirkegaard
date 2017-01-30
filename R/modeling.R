@@ -14,8 +14,7 @@
 #' @param messages (log scalar) Whether to show messages with the models. Default no.
 #' @param progress (lgl scalar) Whether to show a progress bar. Default yes.
 #' @param cv_runs (num scalar) How many runs to use in cross-validation. Default 20. Increase this value for smaller datasets to get more reliable results.
-#' @export MOD_APSLM lm_beta_matrix
-#' @aliases lm_beta_matrix
+#' @export
 #' @examples
 #' #try all models in iris dataset to predict sepal length
 #' MOD_APSLM(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
@@ -129,6 +128,8 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
   return(list(beta_matrix = betas,
               all_models = model.fits))
 }
+
+
 
 #' Get etas from analysis of variance
 #'

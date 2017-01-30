@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_rename}
 \alias{df_rename}
-\alias{df_rename_vars}
 \title{Rename variables in a data.frame}
 \usage{
 df_rename(data, current_names, new_names)

@@ -20,7 +20,4 @@ A tidy data.frame.
 \description{
 Makes a data.frame tidyr by gathering columns that are variants of each other, such as for different years.
 }
-\examples{
-
-}
 

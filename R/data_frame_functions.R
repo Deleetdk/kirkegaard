@@ -211,8 +211,7 @@ get_each_subset_minus_1 = function(df){
 #' @param always_skip_factors Whether to always skip non-ordered factors. Default=F.
 #' @param remove_commas Whether to remove commas from the cells first. If present, they will make the conversion to numeric fail. Defaults to T.
 #' @param skip_factors Depreciated.
-#' @export as_num_df df_as_num
-#' @aliases as_num_df
+#' @export
 #' @examples
 #' iris_chr = as.data.frame(lapply(iris, as.character)) #convert iris to strings
 #' str(iris_chr)
@@ -289,7 +288,7 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
 
   return(new_df)
 }
-as_num_df = df_as_num
+
 
 
 #' Add delta columns to a data.frame.
@@ -404,8 +403,7 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 #' @param pattern (string) A pattern to use for finding the columns names.
 #' @param ignore_NA (boolean) Whether to ignore missing data. Defaults to T.
 #' @param progress (chr scalar) Progress parameter passed to aaply. Default is text.
-#' @export df_rowFunc df_func
-#' @aliases df_func
+#' @export
 #' @examples
 #' df_rowFunc(iris[-5]) #get means by row
 #' all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
@@ -437,7 +435,7 @@ df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T,
   return(results)
 
 }
-df_func = df_rowFunc
+
 
 #sort a df according to a variable
 #just a minor edit of the function in reshape package. Preseres rownames.
@@ -448,8 +446,7 @@ df_func = df_rowFunc
 #' @param df (df) A data.frame.
 #' @param vars (str/int) variables to use for sorting.
 #' @param decreasing Whether to use decreasing order. Default=F.
-#' @export sort_df df_sort
-#' @aliases sort_df
+#' @export
 #' @examples
 #' head(df_sort(iris, 1)) #sort by the first variable, increasing order
 #' head(df_sort(iris, 1, decreasing = T)) #sort by the first variable, decreasing order
@@ -460,7 +457,7 @@ df_sort = function (df, vars = names(df), decreasing = F){
     return(df)
   df[do.call("order", list(what = df[, vars, drop = FALSE], decreasing = decreasing)), , drop = FALSE]
 }
-sort_df = df_sort
+
 
 
 #Thanks to: https://stat.ethz.ch/pipermail/r-help/2011-October/293842.html
@@ -474,8 +471,7 @@ sort_df = df_sort
 #' @param print.models (logical) Wether to print the lm models used in the process. Defaults to TRUE.
 #' @param exclude_vars (character vector) Names of variables are that excluded from the residualization.
 #' @param weights (num vector) A vector of values to use for weights. If none given, all cases will be given equal weights.
-#' @export residualize_DF df_residualize
-#' @aliases residualize_DF
+#' @export
 #' @examples
 #' #generate some data
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
@@ -544,7 +540,7 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 
   return(resid)
 }
-residualize_DF = df_residualize
+
 
 
 #' Merge rows in data.frame.
@@ -559,8 +555,7 @@ residualize_DF = df_residualize
 #' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to sum with na.rm=T.
 #' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
 #' ... Other parameters passed to func.
-#' @export merge_rows df_merge_rows
-#' @aliases merge_rows
+#' @export
 #' @examples
 #' #suppse you had a data.frame with data for multiple variables
 #' #but accidentally, one observation was given two names, "C" and "D".
@@ -635,7 +630,7 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
 
   stop("Something went amiss! Debug this function!")
 }
-merge_rows = df_merge_rows
+
 
 
 #' Merge rows in data.frame by name.
@@ -696,8 +691,7 @@ merge_rows_by_name = function(df, names, new_name, func = mean, numeric = TRUE) 
 #' @param to (data.frame) The destination data.frame.
 #' @param columns (chr vec or num vec) The columns to copy. Can be either their names or whole numbers indicating their position in the source data.frame. By default, it will copy all columns.
 #' @param pattern (chr scl) Alternatively, a regex pattern to use to match the desired columns. Uses the stringr package.
-#' @export df_copy_columns copy_columns
-#' @aliases copy_columns
+#' @export
 #' @examples
 #' t = data.frame(x = 1:5, y = 6:10); t
 #' t2 = data.frame(a = letters[1:5], b = LETTERS[1:5]); t2
@@ -728,7 +722,7 @@ df_copy_columns = function(from, to, columns, pattern) {
   #return
   to
 }
-copy_columns = df_copy_columns
+
 
 
 
@@ -868,15 +862,14 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
 #' @param data (data.frame) The data.frame.
 #' @param id (vector) A vector of values to use. Will be repeated silently if not long enough. Will throw an error if it's not possible.
 #' @param id_var (character scalar) What to call the id column (default "ID").
-#' @export df_add_id add_id
-#' @aliases add_id
+#' @export
 #' @examples
 #' head(df_add_id(iris, "A")) #Add an ID column named "ID" filled with "A"
-df_add_id = function(data, id, id_var="ID") {
+df_add_id = function(data, id, id_var = "ID") {
   data[id_var] = id
   data
 }
-add_id = df_add_id
+
 
 
 #' Rename variables in a data.frame
@@ -885,8 +878,7 @@ add_id = df_add_id
 #' @param data (data.frame) The data.frame.
 #' @param current_names (chr vector) The current names of the variables.
 #' @param new_names (chr scalar) The new names of the variables.
-#' @export df_rename df_rename_vars
-#' @aliases df_rename_vars
+#' @export
 #' @examples
 #' #rename one variable
 #' names(df_rename(iris, "Sepal.Length", "Sepal_Length"))
@@ -936,7 +928,7 @@ df_rename = function(data, current_names, new_names) {
   #return
   data
 }
-df_rename_vars = df_rename
+
 
 
 
@@ -945,8 +937,7 @@ df_rename_vars = df_rename
 #' Remove variables from a data.frame by name, position or logical.
 #' @param data (data.frame) A data.frame.
 #' @param vars (vector) The variables to remove. Can be logical, character or integer.
-#' @export df_remove_vars df_remove
-#' @aliases df_remove_vars
+#' @export
 #' @examples
 #' #remove two variables by name
 #' #does not work in base r by expected syntax:
@@ -971,7 +962,7 @@ df_remove = function(data, vars) {
 
   data
 }
-df_remove_vars = df_remove
+
 
 
 #' Reorder columns in a data.frame by name
@@ -979,11 +970,10 @@ df_remove_vars = df_remove
 #' Reorder columns in a data.frame by name using a named vector.
 #'
 #' Copied and modified from http://stackoverflow.com/a/37009127/3980197.
-#' @param data (data.frame) The data.frame.
+#' @param data (data.frame) The data frame.
 #' @param vars (named vector) The variables to reorder.
-#' @export df_reorder_columns reorder_columns
-#' @aliases reorder_columns
-#' @return The modified data.frame.
+#' @export
+#' @return The modified data frame.
 #' @examples
 #' #remove Species to front
 #' head(df_reorder_columns(iris, c("Species" = 1)))
@@ -1030,7 +1020,7 @@ df_reorder_columns = function(data, vars){
   data <- data[ , out.vec]
   return(data)
 }
-reorder_columns = df_reorder_columns
+
 
 
 #' Add affix to column names.
@@ -1142,10 +1132,9 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 #' Transpose data.frame
 #'
 #' Transpose a data.frame, returning a data.frame that also keeps the dimnames.
-#' @param df (data.frame) A data.frame.
-#' @return A transposed data.frame.
-#' @export df_t t_df
-#' @aliases t_df
+#' @param df (df) A data frame.
+#' @return A transposed data frame.
+#' @export
 #' @examples
 #' df_t(iris)
 df_t = function(df) {
@@ -1157,7 +1146,7 @@ df_t = function(df) {
 
   df2
 }
-t_df = df_t
+
 
 #' Gather by pattern
 #'
@@ -1167,8 +1156,6 @@ t_df = df_t
 #' @param varying_name (chr sclr) A name to use for the column of varying part of the name, e.g. the year. Defaults to ".varying".
 #' @return A tidy data.frame.
 #' @export
-#' @examples
-#'
 df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".id", method = "pure_tidyr") {
 
   #convert class if needed

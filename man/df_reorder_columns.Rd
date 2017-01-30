@@ -2,18 +2,17 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_reorder_columns}
 \alias{df_reorder_columns}
-\alias{reorder_columns}
 \title{Reorder columns in a data.frame by name}
 \usage{
 df_reorder_columns(data, vars)
 }
 \arguments{
-\item{data}{(data.frame) The data.frame.}
+\item{data}{(data.frame) The data frame.}
 
 \item{vars}{(named vector) The variables to reorder.}
 }
 \value{
-The modified data.frame.
+The modified data frame.
 }
 \description{
 Reorder columns in a data.frame by name using a named vector.

@@ -276,9 +276,8 @@ miss_analyze = function(data, robust = F) {
 #' Inserts missing data into a data.frame at random, thus creating data that are Missing Completely At Random (MCAR). THis isn't how data usually are missing in the real world, but may be sufficient for some situations.
 #' @param df (data.frame) A data.frame.
 #' @param prop (num vector) The proportion of NAs to add.
-#' @return A a data.frame.
-#' @export miss_add_random
-#' @aliases miss_add_random miss_add_random
+#' @return A data.frame.
+#' @export
 #' @examples
 #' df = data.frame(c(1:10), letters[1:10]) #example data
 #' miss_add_random(df) #add 10% random NAs

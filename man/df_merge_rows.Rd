@@ -2,7 +2,6 @@
 % Please edit documentation in R/data_frame_functions.R
 \name{df_merge_rows}
 \alias{df_merge_rows}
-\alias{merge_rows}
 \title{Merge rows in data.frame.}
 \usage{
 df_merge_rows(data, key, names, new_name, func = purrr::partial(sum, na.rm =

@@ -12,7 +12,7 @@ miss_add_random(df, prop = 0.1)
 \item{prop}{(num vector) The proportion of NAs to add.}
 }
 \value{
-A a data.frame.
+A data.frame.
 }
 \description{
 Inserts missing data into a data.frame at random, thus creating data that are Missing Completely At Random (MCAR). THis isn't how data usually are missing in the real world, but may be sufficient for some situations.

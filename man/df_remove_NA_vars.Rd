@@ -4,7 +4,7 @@
 \alias{df_remove_NA_vars}
 \title{Remove NA columns}
 \usage{
-df_remove_NA_vars(data, keep)
+df_remove_NA_vars(data, keep = "")
 }
 \arguments{
 \item{data}{(data.frame) Data to subset.}
@@ -16,5 +16,10 @@ Returns the subset of the object.
 }
 \description{
 Detect variables with no data in a data.frame and remove them. Can be given a vector of names or indices of columns to keep no matter what.
+}
+\examples{
+df_remove_NA_vars(data.frame(a = NA, b = 1))
+df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a")
+df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1)
 }
 

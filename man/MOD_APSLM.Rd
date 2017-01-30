@@ -2,7 +2,6 @@
 % Please edit documentation in R/modeling.R
 \name{MOD_APSLM}
 \alias{MOD_APSLM}
-\alias{lm_beta_matrix}
 \title{Fit all possible simple linear models}
 \usage{
 MOD_APSLM(dependent, predictors, data, standardized = T, .weights = NA,
