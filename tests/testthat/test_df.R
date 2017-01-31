@@ -197,3 +197,27 @@ test_that("df_remove", {
   #attempt remove same twice
   expect_warning(df_remove(iris, c("Species", "Species")))
 })
+
+
+# df_residualize ----------------------------------------------------------
+
+set.seed(1)
+df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
+weightsvar = runif(5)
+
+test_that("df_residualize", {
+  #test basic function
+  expect_true(all(df_residualize(df, resid.vars = "c", print.models = F) %>% `[`(c("a", "b")) != df[c("a", "b")]))
+
+  #test suffix + message off
+  expect_true(all(df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)))
+
+  #test exclusion vector
+  expect_equivalent(df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% `[`("b"), df["b"])
+
+  #test return
+  expect_true(all(df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"))
+
+  #with weights
+  expect_true(all(df_residualize(df, resid.vars = "c", weights = weightsvar, print.models = F) %>% get_dims() == c(5, 3)))
+})

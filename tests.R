@@ -731,27 +731,6 @@ stopifnot({
 })
 
 
-# df_residualize ----------------------------------------------------------
-
-set.seed(1)
-df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
-weightsvar = runif(5)
-
-stopifnot({
-  #test basic function
-  df_residualize(df, resid.vars = "c", print.models = F) %>% magrittr::extract(c("a", "b")) != df[c("a", "b")]
-  #test suffix + message off
-  df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)
-  #test exclusion vector
-  df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% magrittr::extract("b") == df$b
-  #test return
-  df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"
-  #with weights
-  df_residualize(df, resid.vars = "c", weights = weightsvar, print.models = F) %>% get_dims() == c(5, 3) #with weights
-})
-
-
-
 # extract_num_vars --------------------------------------------------------
 
 stopifnot({
