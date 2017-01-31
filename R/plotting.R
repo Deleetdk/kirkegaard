@@ -342,13 +342,13 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_name
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
-GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
+GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
 
   #convert
   df = as.data.frame(df)
 
   #no subgroupvar variable, simple
-  if(missing("subgroupvar")) {
+  if (is.null(subgroupvar)) {
 
     #checks
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
@@ -402,7 +402,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes_string(groupvar, var)) +
         geom_point(aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        geom_errorbar(aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (type == "violin") {
@@ -410,7 +410,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        geom_errorbar(data = df_sum, aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (type == "violin2") {
@@ -419,7 +419,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         geom_count(data = df, aes_string(groupvar, var)) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(data = df_sum, aes(group1, mean, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        geom_errorbar(data = df_sum, aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
     }
 
     if (split_group_labels) {
@@ -431,7 +431,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
   }
 
   #if plot by subgroup too
-  if(!missing("subgroupvar")) {
+  if (!is.null(subgroupvar)) {
 
     #checks
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
@@ -502,7 +502,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes(groupvar, y = var, color = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
 
     }
 
@@ -510,7 +510,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "violin2") {
@@ -518,7 +518,7 @@ GG_group_means = function(df, var, groupvar, subgroupvar, CI = .95, type = "bar"
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9), alpha = .5) +
         geom_count(data = df, aes(groupvar, y = var, group = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, y = mean, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2, color = "red")
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2, color = "red")
     }
 
     if (split_group_labels) {
