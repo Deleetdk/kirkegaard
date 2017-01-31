@@ -72,7 +72,7 @@ is_numeric_by_col = function(df) {
 #' @examples
 #' is_numeric(iris)
 #' is_numeric(iris[-5])
-is_numeric = function(x, recursive = TRUE) {
+is_numeric = function(x, recursive = T) {
   #vector
   if (is_simple_vector(x)) return(is.numeric(x))
 
@@ -80,7 +80,7 @@ is_numeric = function(x, recursive = TRUE) {
   if (is.array(x) || is.matrix(x)) return(is.numeric(x))
 
   #factor
-  if (is.factor(x)) return(FALSE)
+  if (is.factor(x)) return(F)
 
   #recursive test?
   if (recursive) {
@@ -189,30 +189,35 @@ lengths_match = function(..., dimension = 1) {
 #' is_(iris, size = c(150, 5)) #check for size
 #' is_(iris, size = 1) #check for wrong size
 #' is_(iris, type = "list") #check for type
-#' is_(iris, type = "factor") #check for wrong type
+#' !is_(iris, type = "factor") #check for wrong type
 #' is_(iris, class = "list", error_on_false = T) #check for one class, error
-is_ = function(x, class, size, type, error_on_false = F) {
+#' is_(1:3, class = "numeric")
+is_ = function(x, class = NULL, size = NULL, type = NULL, error_on_false = F) {
 
   #check x
-  check_missing("x")
+  x
 
   #init
   v_type_check = v_size_check = v_class_check = T
 
   #check class
-  if (!missing("class")) {
+  if (!is.null(class)) {
     v_class_check = any(purrr::map_lgl(class, function(class_i) {
+      #special case of numeric
+      if (class_i == "numeric") return(is.numeric(x))
+
+      #else test normally
       inherits(x, what = class_i)
     }))
   }
 
   #check size
-  if (!missing("size")) {
+  if (!is.null(size)) {
     v_size_check = all(get_dims(x) == size)
   }
 
   #check type
-  if (!missing("type")) {
+  if (!is.null(type)) {
     v_type_check = any(purrr::map_lgl(type, function(type_i) {
       typeof(x) == type_i #check type
     }))

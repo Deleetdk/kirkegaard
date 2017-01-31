@@ -259,7 +259,7 @@ make_list_array = function(...) {
   input_list = list(...)
   names_list = input_list
 
-  v_lengths = purrr::map_int(seq_along(input_list), function(x) {
+  v_lengths = purrr::map(seq_along(input_list), function(x) {
 
     #is scalar
     if (length(input_list[[x]]) == 1) {

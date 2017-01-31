@@ -214,7 +214,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
   }
 
   #make symmetric
-  m = MAT_get_half(m) %>% MAT_vector2full
+  m = MAT_half(m) %>% MAT_vector2full
 
   #dimnames
   rownames(m) = colnames(m) = colnames(data)
@@ -711,7 +711,7 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
 
   #expand to full
   m_old = m
-  m = m %>% MAT_get_half() %>% MAT_vector2full()
+  m = m %>% MAT_half() %>% MAT_vector2full()
   diag(m) = NA
 
   #names

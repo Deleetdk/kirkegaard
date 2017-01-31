@@ -4,7 +4,7 @@
 \alias{is_numeric}
 \title{Is object thoroughly numeric?}
 \usage{
-is_numeric(x, recursive = TRUE)
+is_numeric(x, recursive = T)
 }
 \arguments{
 \item{x}{(any object) An object to test.}

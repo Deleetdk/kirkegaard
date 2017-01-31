@@ -10,31 +10,27 @@ MOD_summary(fitted_model, level = 0.95, standardize = T, kfold = T,
 \arguments{
 \item{fitted_model}{(lm or glm) The fitted model.}
 
-\item{level}{(num scalar) The level of confidence to use. Defaults to .95 (95\%).}
+\item{level}{(num scalar) The level of confidence to use.}
 
-\item{standardize}{(log scalar) Whether to report standardized betas (default true).}
+\item{standardize}{(log scalar) Whether to report standardized betas.}
 
-\item{kfold}{(log scalar) Whether to also calculate a k fold cross-validated r2 value (default true).}
+\item{kfold}{(log scalar) Whether to also calculate a k fold cross-validated r2 value.}
 
 \item{folds}{(num scalar) The number of folds to use if using cross-validation.}
 
-\item{runs}{(int scalar) The number of runs to use for cross-validation. Default is 20.}
+\item{runs}{(int scalar) The number of runs to use for cross-validation.}
 
 \item{...}{(other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.}
 
-\item{round}{(num scalar) At which digit to round the numbers. Defaults to 2.}
+\item{round}{(num scalar) At which digit to round the numbers.}
 }
 \description{
 Tidys information from linear models or generalized linear models.
 }
 \examples{
-#fit two models with iris data, one with normal and one with standardized data
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris \%>\% df_standardize())
-#then summarize the two models
-MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
-MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
-MOD_summary(fit2, standardize = F) #std data., don't std. betas
-MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
+#then summarize the model
+MOD_summary(fit1) #unstd. data, std. betas
+MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \\code{summary}
 }
 

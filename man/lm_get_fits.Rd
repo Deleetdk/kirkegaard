@@ -12,7 +12,4 @@ lm_get_fits(model_list)
 \description{
 Returns a data.frame with each models R2 and R2 adj.
 }
-\examples{
-lm_get_fits()
-}
 

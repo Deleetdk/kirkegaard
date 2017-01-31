@@ -19,7 +19,4 @@ MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd", "mad",
 \description{
 Calculates summary statistics for model betas.
 }
-\examples{
-MOD_summarize_models()
-}
 

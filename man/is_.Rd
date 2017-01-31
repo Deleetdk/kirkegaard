@@ -4,7 +4,7 @@
 \alias{is_}
 \title{Check whether object is the right class, size and type}
 \usage{
-is_(x, class, size, type, error_on_false = F)
+is_(x, class = NULL, size = NULL, type = NULL, error_on_false = F)
 }
 \arguments{
 \item{x}{(any object) The object to test.}
@@ -33,7 +33,8 @@ is_(iris, class = "data.frame", size = c(150, 5)) #check for one class and size
 is_(iris, size = c(150, 5)) #check for size
 is_(iris, size = 1) #check for wrong size
 is_(iris, type = "list") #check for type
-is_(iris, type = "factor") #check for wrong type
+!is_(iris, type = "factor") #check for wrong type
 is_(iris, class = "list", error_on_false = T) #check for one class, error
+is_(1:3, class = "numeric")
 }
 

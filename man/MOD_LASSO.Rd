@@ -4,7 +4,7 @@
 \alias{MOD_LASSO}
 \title{Repeatedly run glmnet.cv()}
 \usage{
-MOD_LASSO(data, dependent, predictors, weights_ = NA, standardize = T,
+MOD_LASSO(data, dependent, predictors, weights_ = NULL, standardize = T,
   runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages = T,
   progress = T)
 }
@@ -15,21 +15,21 @@ MOD_LASSO(data, dependent, predictors, weights_ = NA, standardize = T,
 
 \item{predictors}{(chr vector) The names of the predictor variables.}
 
-\item{weights_}{(num vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.}
+\item{weights_}{(num vector/chr scalar) If weights should be used, a numeric vector of values to use or chr vector.}
 
-\item{standardize}{(log scalar) Whether to standardize the data beforehand. Defaults to true.}
+\item{standardize}{(log scalar) Whether to standardize the data beforehand.}
 
-\item{runs}{(int scalar) Number of times to run. Defaults to 100.}
+\item{runs}{(int scalar) Number of times to run.}
 
-\item{alpha_}{(num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.}
+\item{alpha_}{(num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.}
 
-\item{NA_ignore}{(log scalar) Whether to remove cases with missing data. Defaults to T.}
+\item{NA_ignore}{(log scalar) Whether to remove cases with missing data.´´}
 
-\item{seed}{(int scalar) The seed to use (default 1). For reproducible results.}
+\item{seed}{(int scalar) The seed to use. For reproducible results.}
 
-\item{messages}{(log scalar) Whether to show messages. Default yes.}
+\item{messages}{(log scalar) Whether to show messages.}
 
-\item{progress}{(log scalar) Whether to show a progress bar. Default yes.}
+\item{progress}{(log scalar) Whether to show a progress bar.}
 }
 \description{
 Returns a data frame of beta coefficients from glmnet.cv() fits.

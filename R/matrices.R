@@ -43,7 +43,7 @@ MAT_vector2full = function(x, diag = FALSE, byrow = FALSE, diag_value = 0) {
   m_size = MAT_find_size(length(x), diag)
   m = matrix(1:(m_size^2), nrow = m_size, byrow = byrow)
   #which cells from where?
-  m_lower = MAT_get_half(m, diag = diag, lower = !byrow)
+  m_lower = MAT_half(m, diag = diag, lower = !byrow)
 
   #make full
   full = matrix(diag_value, nrow = nrow(m), ncol = ncol(m))
@@ -64,8 +64,8 @@ MAT_vector2full = function(x, diag = FALSE, byrow = FALSE, diag_value = 0) {
 #' @export
 #' @examples
 #' cor(iris[-5]) #can't summarize this data due to diagonal
-#' MAT_get_half(cor(iris[-5])) #this data we can
-MAT_get_half = function(x, lower = T, diag = F) {
+#' MAT_half(cor(iris[-5])) #this data we can
+MAT_half = function(x, lower = T, diag = F) {
   #coerce to matrix
   x = as.matrix(x)
 

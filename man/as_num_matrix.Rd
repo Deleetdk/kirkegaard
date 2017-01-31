@@ -9,7 +9,7 @@ as_num_matrix(df, skip_chr = T)
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
 
-\item{skip_chr}{(log scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.}
+\item{skip_chr}{(lgl scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.}
 }
 \description{
 Returns a numeric matrix. Ordered factors are converted to numbers, while non-ordered factors are split into dummy variables using the first level as the the reference.

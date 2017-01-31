@@ -6,7 +6,16 @@
 \usage{
 MOD_etas(fitted_model)
 }
+\arguments{
+\item{fitted_model}{(model) A model.}
+}
+\value{
+A matrix. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
+}
 \description{
 Converts a \code{lm} or \code{glm} to an analysis of variance, and calculates the etas (square rooted values of traditional eta^2).
+}
+\examples{
+lm(Sepal.Length ~ Species + Petal.Width, data = iris) \%>\% MOD_etas
 }
 

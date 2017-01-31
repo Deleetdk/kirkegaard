@@ -1,10 +1,10 @@
 #' Standardize data.frame
 #'
 #' Standardize all variables in a data.frame. Can use weighted standardization. Wraps \code{\link{standardize}}.
-#' @param df (data.frame) The data.frame.
+#' @param df (data frame) The data frame.
 #' @param exclude (chr vector) Names of variables to not standardize.
-#' @param messages (log scalar) Whether to output messages (default T).
-#' @param exclude_factors (log scalar) Whether to exclude factors (default T).
+#' @param messages (lgl scalar) Whether to output messages.
+#' @param exclude_factors (lgl scalar) Whether to exclude factors.
 #' @param w (num vector) Weights to use, if any.
 #' @export
 #' @return Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
@@ -21,6 +21,12 @@ df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w
 
     #skip if in exclusion vector
     if (colnames(df)[col_idx] %in% exclude) {
+      next
+    }
+
+    #logical
+    if (is.logical(df[[col_idx]])) {
+      if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a logical.")
       next
     }
 
@@ -50,10 +56,6 @@ df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w
   return(df)
 }
 
-#old name
-std_df = function(...) {
-  stop("std_df is depreciated, please see df_standardize")
-}
 
 
 #' Round numeric variables of a data frame.
@@ -77,10 +79,6 @@ df_round = function(df, digits=3) {
   return(df)
 }
 
-#old name
-round_df = function(...) {
-  stop("round_df is depreciated, please see df_round")
-}
 
 
 #' Rank numeric variables of a data frame.
@@ -101,11 +99,6 @@ df_rank = function(df, ...) {
   return(df2)
 }
 
-#old name
-rank_df = function(...) {
-  stop("rank_df is depreciated, please see df_round")
-}
-
 
 #' Convert a data.frame to a numeric matrix, including factors.
 #'
@@ -113,7 +106,7 @@ rank_df = function(...) {
 #'
 #' Factors with only two levels are kept as they are.
 #' @param df (data.frame) A data.frame with variables.
-#' @param skip_chr (log scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.
+#' @param skip_chr (lgl scalar) Whether to skip character columns (default). If false, they are converted to non-ordered factors.
 #' @export
 #' @examples
 #' head(as_num_matrix(iris)) #Convert iris to purely numerics. Two variables are created because the original had 3 levels.
@@ -552,8 +545,8 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 #' @param key (character scalar) The name of the key variable, which is the variable to merge rows by. If given ".rownames", then it will use the rownames.
 #' @param names (character vector) The rownames to merge.
 #' @param new_name (character scalar) The new rownames to use. Defaults to the first member of the names parameter.
-#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to sum with na.rm=T.
-#' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
+#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data.
+#' @param numeric (logical scalar) Whether to apply the function only to the numeric columns.
 #' ... Other parameters passed to func.
 #' @export
 #' @examples
@@ -570,23 +563,25 @@ df_residualize = function(data, resid.vars, suffix = "", exclude.resid.vars = T,
 #' t
 #' df_merge_rows(t, "large_unit") #rows merged by sum by default
 #' df_merge_rows(t, "large_unit", func = mean) #rows merged by mean
-df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, na.rm=T), numeric = TRUE, ...) {
+df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func = purrr::partial(sum, na.rm = T), numeric = T, ...) {
 
   #checks
-  if (missing("data")) stop("data must be given!")
-  df = as.data.frame(data)
-  if (missing("names") & missing("key")) stop("At least key or names parameters must be given!")
-  if (!missing("names") & !missing("key")) stop("Both key and names were given. Only one of these can be given!")
-  if (!missing("names")) {
-    if (missing("new_name")) {
+  data
+  df = as.data.frame(data); rm(data)
+  assertthat::assert_that(is.function(func))
+
+  if (is.null(names) & is.null(key)) stop("At least key or names parameters must be given!")
+  if (!is.null(names) & !is.null(key)) stop("Both key and names were given. Only one of these can be given!")
+  if (!is.null(names)) {
+    if (is.null(new_name)) {
       new_name = names[1]
       message("A new preferred new name wasn't given. The first name was chosen for this purpose (\"" + new_name + "\")")
     }
   }
-  if (!is.function(func)) stop("func must be a function!")
+
 
   #key version
-  if (!missing("key")) {
+  if (!is.null(key)) {
     #numeric columns
     if (numeric) {
       v_numeric = purrr::map_lgl(df, is.numeric) #detect numeric cols
@@ -608,7 +603,7 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
     return(df2)
   }
 
-  if (!missing("names")) {
+  if (!is.null(names)) {
     #make vectors for matches
     v_key = mapvalues(rownames(df), names, to = rep(new_name, length(names)))
 
@@ -616,7 +611,7 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
     df2 = cbind(df, "rownames__" = v_key)
 
     #call self on the data with created key
-    df2 = merge_rows(df2, key = "rownames__", func = func, numeric = numeric, ...)
+    df2 = df_merge_rows(df2, key = "rownames__", func = func, numeric = numeric, ...)
 
     #restore rownames
     rownames(df2) = df2$rownames__
@@ -630,100 +625,6 @@ df_merge_rows = function(data, key, names, new_name, func = purrr::partial(sum, 
 
   stop("Something went amiss! Debug this function!")
 }
-
-
-
-#' Merge rows in data.frame by name.
-#'
-#' Find blocks of rows with a rowname that matches a given vector of names and merge them into one.
-#' @param df (data.frame or matrix) The data object.
-#' @param names (character vector) The rownames to merge.
-#' @param new_name (character scalar) The new rownames to use. Defaults to the first member of the names parameter.
-#' @param func (function) The function to use. Note that if you set numeric = FALSE, then the function must be able to handle non-numeric data. Defaults to mean.
-#' @param numeric (logical scalar) Whether to apply the function only to the numeric columns. Default=TRUE.
-#' @export
-#' @examples
-#' #suppse you had a data.frame with data for multiple variables
-#' #but accidentally, one observation was given two names, "C" and "D".
-#' #and data has been dispersed among the rows
-#' #we can move all the data into one row without data loss.
-#' t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
-#' t1
-#' #here the real values for the C observation are both 3, but it has accidentally been called "D".
-#' merge_rows_by_name(df = t1, names = c("C", "D"), func = mean)
-merge_rows_by_name = function(df, names, new_name, func = mean, numeric = TRUE) {
-  message("This function is depreciated. Use df_merge_rows.")
-
-
-  #checks
-  if (missing("df")) stop("df must be given!")
-  if (missing("names")) stop("names must be given!")
-  if (missing("new_name")) {
-    new_name = names[1]
-    message("A new preferred new name wasn't given. The first name was chosen for this purpose (\"" + new_name + "\")")
-  }
-
-  #make vectors for matches
-  v_key = mapvalues(rownames(df), names, to = rep(new_name, length(names)))
-
-  #make new df with rownames column
-  df2 = cbind(df, "rownames__" = v_key)
-
-  #call merge_rows
-  df2 = merge_rows(df2, key = "rownames__", func = func, numeric = numeric)
-
-  #restore rownames
-  rownames(df2) = df2$rownames__
-
-  #remove added column
-  df2$rownames__ = NULL
-
-  #return
-  df2
-}
-
-
-
-#' Copy columns between data.frames
-#'
-#' Copy columns from one data.frame to another by name or pattern.
-#' @param from (data.frame) The source data.frame.
-#' @param to (data.frame) The destination data.frame.
-#' @param columns (chr vec or num vec) The columns to copy. Can be either their names or whole numbers indicating their position in the source data.frame. By default, it will copy all columns.
-#' @param pattern (chr scl) Alternatively, a regex pattern to use to match the desired columns. Uses the stringr package.
-#' @export
-#' @examples
-#' t = data.frame(x = 1:5, y = 6:10); t
-#' t2 = data.frame(a = letters[1:5], b = LETTERS[1:5]); t2
-#' df_copy_columns(t, t2) #same as cbind(t, t2)
-#' df_copy_columns(t, t2, columns = 1) #same as cbind(t[1], t2)
-#' df_copy_columns(t, t2, pattern = "[^x]") #copy columns that doesn't have x in their name. complicated in base-r!
-df_copy_columns = function(from, to, columns, pattern) {
-  #checks
-  from = as.data.frame(from); to = as.data.frame(to) #convert
-  if (nrow(from) != nrow(to)) stop("Number of rows not identical in the two objects!")
-
-  #columns not given
-  if (missing("columns") && missing("pattern")) pattern = "." #match all columns
-
-  #pattern
-  if (!missing("pattern")) {
-    columns = colnames(from)[stringr::str_detect(string = colnames(from), pattern = pattern)]
-  }
-
-  #columns
-  if (is.numeric(columns)) columns = colnames(from)[columns] #get names
-
-  #loop and copy
-  for (col in columns) {
-    to[col] = from[col]
-  }
-
-  #return
-  to
-}
-
-
 
 
 # split unsplit functions -----------------------------------------------------------------
@@ -1074,17 +975,22 @@ df_add_affix = function(data, prefix, suffix) {
 #' head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length", keep_unselected = F))
 #' #select all by not providing any selector
 #' str(df_colFunc(iris, func = as.character)) #all have been changed to chr
-df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_unselected = T, ...) {
+df_colFunc = function(data, func, indices = NULL, pattern = NULL, pattern_inverse = F, keep_unselected = T, ...) {
 
-  #checks
-  check_missing(c("data", "func"))
+  #force
+  data
+  func
+
+  #type
   data = as.data.frame(data)
-  if (!missing(pattern) & !missing("indices")) stop("Only one of indices or pattern can be given!")
-  if (missing("pattern") & missing("indices")) indices = names(data)
-  if (!missing("indices")) is_(indices, class = c("character", "logical", "numeric"), error_on_false = T)
+
+  #other input
+  if (!is.null(pattern) & !is.null(indices)) stop("Only one of indices or pattern can be given!")
+  if (is.null(pattern) & is.null(indices)) indices = names(data)
+  if (!is.null(indices)) is_(indices, class = c("character", "logical", "numeric", "integer"), error_on_false = T)
 
   #which cols?
-  if (!missing("pattern")) {
+  if (!is.null(pattern)) {
     #find names by regex
 
     indices = str_detect2(names(data), pattern = pattern, value = T)
@@ -1092,7 +998,7 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
     if (pattern_inverse) indices = setdiff(names(data), indices)
   }
 
-  if (!missing("indices")) {
+  if (!is.null(indices)) {
     #chr indices
     if (is.character(indices)) {
       if (!all(indices %in% names(data))) {
@@ -1123,11 +1029,13 @@ df_colFunc = function(data, func, indices, pattern, pattern_inverse = F, keep_un
 
   #keep unselected?
   if (!keep_unselected) {
-    data = df_remove_vars(data, setdiff(names(data), indices))
+    data = df_remove(data, setdiff(names(data), indices))
   }
 
   data
 }
+
+
 
 #' Transpose data.frame
 #'
@@ -1223,6 +1131,8 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
   stop("You somehow managed to break this function!")
 }
 
+
+
 #' Group by pattern
 #'
 #' Determines groups of strings using a regex pattern.
@@ -1254,6 +1164,7 @@ group_by_pattern = function(x, pattern) {
   #return list
   l_memberships
 }
+
 
 #' Subset by pattern
 #'

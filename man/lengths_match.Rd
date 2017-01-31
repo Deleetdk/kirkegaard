@@ -9,7 +9,7 @@ lengths_match(..., dimension = 1)
 \arguments{
 \item{...}{(objects) The objects to test.}
 
-\item{dimension}{(num scalar) The dimension to test (default 1).}
+\item{dimension}{(num scalar) The dimension to test.}
 }
 \value{
 Logical scalar.
@@ -24,5 +24,6 @@ Vectors are treated as 1-dimensional.
 lengths_match(1:4, 5:8) #same lengths
 lengths_match(iris, iris[1:2]) #same nrow
 lengths_match(iris, iris[1:2], dimension = 2) #different ncol
+lengths_match(iris, 1:3, dimension = 2) #incompatible objects
 }
 

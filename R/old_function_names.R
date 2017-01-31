@@ -4,17 +4,51 @@
 #function generator
 defunct = function(msg = "This function is depreciated") function(...) return(stop(msg))
 
-#' @export
-subset_by_pattern = defunct("subset_by_pattern changed name to df_subset_by_pattern")
+
+# other stuff -------------------------------------------------------------
 
 #' @export
-remove_NA_vars = defunct("remove_NA_vars changed name to df_remove_NA_vars")
+suppressor = defunct("This function has been moved to silence")
 
 #' @export
-plot_loadings = defunct("This function is depreciated. Use FA_plot_loadings.")
+rcorr2 = defunct("Don't use this function.")
 
 #' @export
-plot_loadings_multi = defunct("This function is depreciated. Use FA_plot_loadings.")
+plot_kmeans = defunct("This function has been moved to GG_kmeans")
+
+#' @export
+as_abbrev = defunct("Depreciated. use pu_translate")
+
+#' @export
+as_long = defunct("Depreciated. use pu_translate")
+
+#' @export
+check_missing = defunct("Depreciated. Don't rely on missingness.")
+
+
+# spatial -----------------------------------------------------------------
+#' @export
+SAC_control_all_methods = defunct("This function has been moved to SAC_control")
+
+#' @export
+SAC_knsn_reg = defunct("This function has been moved to SAC_knsnr")
+
+#' @export
+get_SAC_measures = defunct("This function has been moved to SAC_measures")
+
+# missing related ---------------------------------------------------------
+
+#' @export
+plot_miss = defunct("This function has been moved to miss_plot")
+
+#' @export
+filter_by_missing_values = defunct("This function has been moved to miss_filter")
+
+
+# df_ related ---------------------------------------------------------------------
+
+#' @export
+std_df = defunct("This function has been moved to df_standardize")
 
 #' @export
 merge_datasets2 = defunct("This function has been moved to merge_datasets")
@@ -23,58 +57,28 @@ merge_datasets2 = defunct("This function has been moved to merge_datasets")
 merge_datasets2_multi = defunct("This function has been moved to merge_datasets_multi")
 
 #' @export
-suppressor = defunct("This function has been moved to silence")
+as_num_df = defunct("Renamed to df_as_num")
 
 #' @export
-plot_miss = defunct("This function has been moved to miss_plot")
+df_func = defunct("Renamed to df_rowFunc")
 
 #' @export
-df_addNA = defunct("This function has been moved to miss_add_random")
+sort_df = defunct("Renamed to df_sort")
 
 #' @export
-filter_by_missing_values = defunct("This function has been moved to miss_filter")
+residualize_DF = defunct("Renamed to df_residualize")
 
 #' @export
-MOD_repeat_cv_glmnet = defunct("This function has been moved to MOD_LASSO")
+merge_rows = defunct("Renamed to df_merge_rows")
 
 #' @export
-SAC_knsn_reg = defunct("This function has been moved to SAC_knsnr")
+round_df = defunct("Renamed to df_round")
 
 #' @export
-get_SAC_measures = defunct("This function has been moved to SAC_measures")
+rank_df = defunct("Renamed to df_rank")
 
 #' @export
-rcorr2 = defunct("Don't use this function.")
-
-#' @export
-SAC_control_all_methods = defunct("This function has been moved to SAC_control")
-
-#' @export
-plot_kmeans = defunct("This function has been moved to GG_kmeans")
-
-#' @export
-Jensen_plot = defunct("This function has been deleted, use fa_Jensens_method")
-
-#' @export
-Jensens_method = defunct("This function has been moved to fa_Jensens_method")
-
-#' @export
-lm_CI = defunct("This function has been moved to MOD_summary")
-
-#' @export
-std_df = defunct("This function has been moved to df_standardize")
-
-#' @export
-remove_redundant_vars2 = defunct("This function has been moved to remove_redundant_vars, and the old function deleted")
-
-#' @export
-plot_miss = defunct("This function has been moved to miss_plot")
-
-#' @export
-as_abbrev = defunct("Depreciated. use pu_translate")
-
-#' @export
-as_long = defunct("Depreciated. use pu_translate")
+merge_rows_by_name = defunct("Depreciated. Use df_merge_rows")
 
 #' @export
 t_df = defunct("Renamed to df_t")
@@ -92,27 +96,28 @@ df_rename_vars = defunct("Renamed to df_rename")
 add_id = defunct("Renamed to df_add_id")
 
 #' @export
-copy_columns = defunct("Renamed to df_copy_columns")
+copy_columns = defunct("Function has been deleted. Use cbind. If you need the pattern, then use df_subset_by_pattern and cbind.")
+df_copy_columns = defunct("Function has been deleted. Use cbind. If you need the pattern, then use df_subset_by_pattern and cbind.")
 
 #' @export
-as_num_df = defunct("Renamed to df_as_num")
+subset_by_pattern = defunct("subset_by_pattern changed name to df_subset_by_pattern")
 
 #' @export
-df_func = defunct("Renamed to df_rowFunc")
+remove_NA_vars = defunct("remove_NA_vars changed name to df_remove_NA_vars")
 
 #' @export
-sort_df = defunct("Renamed to df_sort")
-
-#' @export
-residualize_DF = defunct("Renamed to df_residualize")
-
-#' @export
-merge_rows = defunct("Renamed to df_merge_rows")
+df_addNA = defunct("This function has been moved to miss_add_random")
 
 # MOD_ --------------------------------------------------------------------
 
 #' @export
 lm_beta_matrix = defunct("This function has been moved to MOD_APSLM")
+
+#' @export
+MOD_repeat_cv_glmnet = defunct("This function has been moved to MOD_LASSO")
+
+#' @export
+lm_CI = defunct("This function has been moved to MOD_summary")
 
 
 # old FA_ -----------------------------------------------------------------
@@ -157,3 +162,17 @@ FA_plot_loadings = FA_MAR
 #' @export
 FA_Jensens_method = FA_MAR
 
+#' @export
+plot_loadings = defunct("This function is depreciated. Use FA_plot_loadings.")
+
+#' @export
+plot_loadings_multi = defunct("This function is depreciated. Use FA_plot_loadings.")
+
+#' @export
+Jensen_plot = defunct("This function has been deleted, use fa_Jensens_method")
+
+#' @export
+Jensens_method = defunct("This function has been moved to fa_Jensens_method")
+
+#' @export
+remove_redundant_vars2 = defunct("This function has been moved to remove_redundant_vars, and the old function deleted")

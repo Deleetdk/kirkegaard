@@ -7,13 +7,13 @@
 df_standardize(df, exclude = "", messages = T, exclude_factors = T, w)
 }
 \arguments{
-\item{df}{(data.frame) The data.frame.}
+\item{df}{(data frame) The data frame.}
 
 \item{exclude}{(chr vector) Names of variables to not standardize.}
 
-\item{messages}{(log scalar) Whether to output messages (default T).}
+\item{messages}{(lgl scalar) Whether to output messages.}
 
-\item{exclude_factors}{(log scalar) Whether to exclude factors (default T).}
+\item{exclude_factors}{(lgl scalar) Whether to exclude factors.}
 
 \item{w}{(num vector) Weights to use, if any.}
 }
