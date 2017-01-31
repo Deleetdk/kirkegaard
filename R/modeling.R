@@ -129,12 +129,114 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
               all_models = model.fits))
 }
 
+#Function to make a nicely formatted coefficient data frame
+make_nicer_coefs = function(fitted_model, coefs = NULL) {
+  #summarize the model
+  sum.model = summary(fitted_model)
+  model_data = fitted_model$model#get predictors
+  predictor_data = model_data[-1] %>% df_subset_by_pattern(pattern = "(weights)", inverse = T)
+
+  #get coefs from fit unless given a set
+  if (is.null(coefs)) {
+    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
+    coefs = as.data.frame(coefs) #conver to dataframe
+    colnames(coefs) = c("Beta", "SE") #rename cols
+  }
+
+  #rename predictors if they are logicals
+  lgl_preds = fitted_model$model %>%
+    #exclude y
+    `[`(-1) %>%
+    #check logical
+    map_lgl(inherits, what = "logical") %>%
+    #index
+    which
+
+  #loop over the predictors
+  for (pred_i in lgl_preds) {
+    rownames(coefs)[pred_i] %<>% stringr::str_sub(start = 1, end = -5)
+  }
+
+  #insert reference levels
+
+  #the assign vector
+  v_assign = fitted_model$assign + 1
+
+  #first we have to find where they are
+  v_duplicate = duplicated(v_assign[-1]) #we create this to find all the non-first betas from a factor
+  #otherwise, we would insert a new row above every factor level
+
+  v_factorsbegin = numeric() #the rows where the new factors begin
+  for (row in seq_along(v_assign[-1])) {
+    i = v_assign[-1][row] #the value
+
+    if (!is.factor(model_data[[i]])) next
+
+    #check if already covered
+    if (v_duplicate[row]) next #if so, then skip
+
+    #then save the position
+    v_factorsbegin = c(v_factorsbegin, row)
+  }
+
+
+
+  #add reference levels
+  #are there any?
+  if (length(v_factorsbegin) != 0) {
+    row = 1
+    while (T) {
+      #insert ref?
+      if (row %in% v_factorsbegin) {
+        #add the ref row
+        coefs = rbind(coefs[0:(row-1), ], #the rows above
+                      c(0, NA, NA, NA), #ref row
+                      coefs[(row):nrow(coefs), ]) #the rows below
+
+        #remove the current from the vector
+        v_factorsbegin = v_factorsbegin[-1]
+
+        #no more? then we are done
+        if (length(v_factorsbegin) == 0) break
+
+        #increment insert rows by 1 because we added another row
+        v_factorsbegin = v_factorsbegin + 1
+      }
+
+      #iterater + 1
+      row = row + 1
+
+      #stop if reached the last row
+      if (row > nrow(coefs)) stop("Bug in the code!")
+    }
+
+    #set the rownames
+    v_rownames = sapply(seq_along(predictor_data), function(i) {
+      v_varname = colnames(predictor_data)[i]
+      #factor?
+      if (is.factor(predictor_data[[i]])) {
+        return(v_varname + ": " + levels(predictor_data[[i]]))
+      } else {
+        return(v_varname)
+      }
+    }) %>% unlist()
+
+    rownames(coefs) = v_rownames
+  }
+
+  coefs
+}
+
 
 
 #' Get etas from analysis of variance
 #'
 #' Converts a \code{lm} or \code{glm} to an analysis of variance, and calculates the etas (square rooted values of traditional eta^2).
+#' @param fitted_model (model) A model.
+#' @return A matrix. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
 #' @export
+#' @examples
+#' lm(Sepal.Length ~ Species + Petal.Width, data = iris) %>% MOD_etas
 MOD_etas = function(fitted_model) {
   fitted_model %>%
     aov %>%
@@ -172,23 +274,19 @@ print.model_summary  = function(x) {
 #'
 #' Tidys information from linear models or generalized linear models.
 #' @param fitted_model (lm or glm) The fitted model.
-#' @param level (num scalar) The level of confidence to use. Defaults to .95 (95\%).
-#' @param round (num scalar) At which digit to round the numbers. Defaults to 2.
-#' @param standardize (log scalar) Whether to report standardized betas (default true).
-#' @param kfold (log scalar) Whether to also calculate a k fold cross-validated r2 value (default true).
+#' @param level (num scalar) The level of confidence to use.
+#' @param round (num scalar) At which digit to round the numbers.
+#' @param standardize (log scalar) Whether to report standardized betas.
+#' @param kfold (log scalar) Whether to also calculate a k fold cross-validated r2 value.
 #' @param folds (num scalar) The number of folds to use if using cross-validation.
-#' @param runs (int scalar) The number of runs to use for cross-validation. Default is 20.
+#' @param runs (int scalar) The number of runs to use for cross-validation.
 #' @param ... (other args) Other arguments passed to \code{\link{MOD_k_fold_r2}}.
 #' @export
 #' @examples
-#' #fit two models with iris data, one with normal and one with standardized data
 #' fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-#' fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% df_standardize())
-#' #then summarize the two models
-#' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas
-#' MOD_summary(fit1, standardize = T) #unstd. data, then std. betas
-#' MOD_summary(fit2, standardize = F) #std data., don't std. betas
-#' MOD_summary(fit1, standardize = T, kfold = F) #unstd. data, then std. betas, no cv
+#' #then summarize the model
+#' MOD_summary(fit1) #unstd. data, std. betas
+#' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \code{summary}
 MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
 
   #init
@@ -240,13 +338,12 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
       model_meta$`R2-cv` = MOD_k_fold_r2(fitted_model, folds = folds, runs = runs, ...)[2]
     }
 
-    #coefs
-    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
-    coefs = as.data.frame(coefs) #conver to dataframe
-    colnames(coefs) = c("Beta", "SE") #rename
-
     #the assign vector
-    v_assign = fitted_model$assign+1
+    v_assign = fitted_model$assign + 1
+
+    #init coefs
+    coefs = sum.model$coefficients[-1, 1:2] %>% as.data.frame
+    p_vals = sum.model$coefficients[, 4]
 
     #standardize?
     if (standardize) {
@@ -257,11 +354,10 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
         var = model_data[[i]]
 
         #if var is a factor, sd = 1
-        if (is.factor(var)) return(1)
+        if (is.factor(var) || is.logical(var)) return(1)
         #otherwise, calculate it
-        sd(var, na.rm = T)
+        sd(var)
       })[1:(nrow(coefs) + 1)]
-      #we subset to avoid weights in they are in the model
 
       #calculate the factors
       factors = sds[-1] / sds[1]
@@ -270,74 +366,14 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
       coefs = coefs * factors
     }
 
+    #coefs
+    coefs = make_nicer_coefs(fitted_model = fitted_model, coefs = coefs)
 
     #calculate CIs
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
     coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
     coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
 
-
-    #insert reference levels
-
-    #first we have to find where they are
-    v_duplicate = duplicated(v_assign[-1]) #we create this to find all the non-first betas from a factor
-    #otherwise, we would insert a new row above every factor level
-
-    v_factorsbegin = numeric() #the rows where the new factors begin
-    for (row in seq_along(v_assign[-1])) {
-      i = v_assign[-1][row] #the value
-
-      if (!is.factor(model_data[[i]])) next
-
-      #check if already covered
-      if (v_duplicate[row]) next #if so, then skip
-
-      #then save the position
-      v_factorsbegin = c(v_factorsbegin, row)
-    }
-
-    #add reference levels
-    #are there any?
-    if (length(v_factorsbegin) != 0) {
-      row = 1
-      while (T) {
-        #insert ref?
-        if (row %in% v_factorsbegin) {
-          #add the ref row
-          coefs = rbind(coefs[0:(row-1), ], #the rows above
-                        c(0, NA, NA, NA), #ref row
-                        coefs[(row):nrow(coefs), ]) #the rows below
-
-          #remove the current from the vector
-          v_factorsbegin = v_factorsbegin[-1]
-
-          #no more? then we are done
-          if (length(v_factorsbegin) == 0) break
-
-          #increment insert rows by 1 because we added another row
-          v_factorsbegin = v_factorsbegin + 1
-        }
-
-        #iterater + 1
-        row = row + 1
-
-        #stop if reached the last row
-        if (row > nrow(coefs)) stop("Bug in the code!")
-      }
-
-      #set the rownames
-      v_rownames = sapply(seq_along(predictor_data), function(i) {
-        v_varname = colnames(predictor_data)[i]
-        #factor?
-        if (is.factor(predictor_data[[i]])) {
-          return(v_varname + ": " + levels(predictor_data[[i]]))
-        } else {
-          return(v_varname)
-        }
-      }) %>% unlist()
-
-      rownames(coefs) = v_rownames
-    }
   }
 
 
@@ -369,10 +405,9 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     #cross validate?
     #TODO
 
-    #coefs
-    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
-    coefs = as.data.frame(coefs) #conver to dataframe
-    colnames(coefs) = c("Beta", "SE") #rename
+    #init coefs
+    coefs = sum.model$coefficients[-1, 1:2] %>% as.data.frame
+    p_vals = sum.model$coefficients[, 4]
 
     #since the assign vector isn't given, we create one
     v_assign = sapply(seq_along(model_data), function(i) {
@@ -393,9 +428,10 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
         var = model_data[[i]]
 
         #if var is a factor, sd = 1
-        if (is.factor(var)) return(1)
+        if (is.factor(var) || is.logical(var)) return(1)
+
         #otherwise, calculate it
-        sd(var, na.rm = T)
+        sd(var)
       })[1:(nrow(coefs) + 1)]
       #we subset to avoid weights in they are in the model
 
@@ -406,74 +442,13 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
       coefs = coefs * factors
     }
 
+    #coefs
+    coefs = make_nicer_coefs(fitted_model = fitted_model, coefs = coefs)
 
     #calculate CIs
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
     coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
     coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
-
-    #insert reference levels
-
-    #first we have to find where they are
-    v_duplicate = duplicated(v_assign[-1]) #we create this to find all the non-first betas from a factor
-    #otherwise, we would insert a new row above every factor level
-
-    v_factorsbegin = numeric() #the rows where the new factors begin
-    for (row in seq_along(v_assign[-1])) {
-      i = v_assign[-1][row] #the value
-
-      if (!is.factor(model_data[[i]])) next
-
-      #check if already covered
-      if (v_duplicate[row]) next #if so, then skip
-
-      #then save the position
-      v_factorsbegin = c(v_factorsbegin, row)
-    }
-
-    #add reference levels
-    #are there any?
-    if (length(v_factorsbegin) != 0) {
-      row = 1
-      while (T) {
-
-        #insert ref?
-        if (row %in% v_factorsbegin) {
-          #add the ref row
-          coefs = rbind(coefs[0:(row-1), ], #the rows above
-                        c(0, NA, NA, NA), #ref row
-                        coefs[(row):nrow(coefs), ]) #the rows below
-
-          #remove the current from the vector
-          v_factorsbegin = v_factorsbegin[-1]
-
-          #no more? then we are done
-          if (length(v_factorsbegin) == 0) break
-
-          #increment insert rows by 1 because we added another row
-          v_factorsbegin = v_factorsbegin + 1
-        }
-
-        #iterater + 1
-        row = row + 1
-
-        #stop if reached the last row
-        if (row > nrow(coefs)) stop("Bug in the code!")
-      }
-
-      #set the rownames
-      v_rownames = sapply(seq_along(predictor_data), function(i) {
-        v_varname = colnames(predictor_data)[i]
-        #factor?
-        if (is.factor(predictor_data[[i]])) {
-          return(v_varname + ": " + levels(predictor_data[[i]]))
-        } else {
-          return(v_varname)
-        }
-      }) %>% unlist()
-
-      rownames(coefs) = v_rownames
-    }
 
   }
 
@@ -492,13 +467,12 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 }
 
 
+
 #' Get R2 and R2 adj. for each model.
 #'
 #' Returns a data.frame with each models R2 and R2 adj.
 #' @param model_list (list) A list of model fits e.g. from lm().
 #' @export
-#' @examples
-#' lm_get_fits()
 lm_get_fits = function(model_list) {
   d = as.data.frame(matrix(nrow = length(model_list), ncol = 2))
   colnames(d) = c("R2", "R2_adj")
@@ -536,21 +510,24 @@ lm_best = function(model_list) {
 #' @param data (data.frame) A data.frame with the data. Must contain dependent and predictor variables.
 #' @param dependent (chr scalar) The name of the dependent variable.
 #' @param predictors (chr vector) The names of the predictor variables.
-#' @param weights_ (num vector) If weights should be used, a numeric vector of values to use. Defaults to equal weights.
-#' @param standardize (log scalar) Whether to standardize the data beforehand. Defaults to true.
-#' @param runs (int scalar) Number of times to run. Defaults to 100.
-#' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression. Defaults to 1.
-#' @param NA_ignore (log scalar) Whether to remove cases with missing data. Defaults to T.
-#' @param messages (log scalar) Whether to show messages. Default yes.
-#' @param progress (log scalar) Whether to show a progress bar. Default yes.
-#' @param seed (int scalar) The seed to use (default 1). For reproducible results.
+#' @param weights_ (num vector/chr scalar) If weights should be used, a numeric vector of values to use or chr vector.
+#' @param standardize (log scalar) Whether to standardize the data beforehand.
+#' @param runs (int scalar) Number of times to run.
+#' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.
+#' @param NA_ignore (log scalar) Whether to remove cases with missing data.´´
+#' @param messages (log scalar) Whether to show messages.
+#' @param progress (log scalar) Whether to show a progress bar.
+#' @param seed (int scalar) The seed to use. For reproducible results.
 #' @export
 #' @examples
 #' MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
-MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages=T, progress=T) {
+MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages = T, progress = T) {
 
   #check input
-  check_missing(c("data", "dependent", "predictors", "standardize", "runs", "alpha_", "NA_ignore"))
+  data
+  dependent
+  predictors
+
   if (length(predictors) < 2) stop("There must be at least two predictors. This is a limitation of glmnet::glmnet.")
   is_(data, class="data.frame", error_on_false = T)
   is_(dependent, class="character", size = 1, error_on_false = T)
@@ -568,13 +545,14 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T
   if (!is.na(seed)) set.seed(seed)
 
   #weights
-  if (length(weights_) == 1) {
-    if (is.na(weights_)) {
-      df$weights_ = rep(1, nrow(df))
-    }
-  } else {
-    if (length(weights_) != nrow(df)) stop("Length of weights does not match df!")
+  if (is.null(weights_)) {
+    df$weights_ = rep(1, nrow(df))
+  } else if (is_(weights_, class = "character", size = 1)) {
+    df$weights_ = df[[weights_]]
+  } else if (is_(weights_, class = "numeric", size = nrow(df))) {
     df$weights_ = weights_
+  } else {
+    stop("Length of weights does not match df!")
   }
 
   #subset
@@ -631,8 +609,6 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NA, standardize = T
 #' @param desc A character vector of the desired descriptive statistics. These are extracted using describe() from the psych package. Defaults to c("mean", "median", "sd").
 #' @param include_intercept (log scalar) Whether to include estimation of the intercept (default false).
 #' @export
-#' @examples
-#' MOD_summarize_models()
 MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd", "mad", "fraction_zeroNA"), include_intercept = F) {
 
   #zero coefs
