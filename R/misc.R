@@ -388,3 +388,22 @@ find_duplicates = function(x) {
 update_package = function(...) {
   devtools::install_github("deleetdk/kirkegaard")
 }
+
+
+
+#' Try and browse on error
+#'
+#' Opens the browser in the calling envirionment so you can see what went wrong. Useful to putting inside loops and only opening browser on the iterations that cause errors.
+#' @export
+try_browser = function(expr) {
+  #try
+  .trial = try({
+    y = eval(substitute(expr), parent.frame())
+  })
+
+  #catch
+  if (inherits(.trial, "try-error")) eval(quote(browser()), parent.frame(n = 1))
+
+  y
+}
+
