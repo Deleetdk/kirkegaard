@@ -47,84 +47,9 @@ stopifnot({
 })
 
 
-# lm_best MOD_summary -----------------------------------------------------------------
-#fit some models
-t = list(lm(Sepal.Length ~ Sepal.Width, iris),
-         lm(Sepal.Length ~ Sepal.Width + Petal.Length, iris),
-         lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width, iris),
-         lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width + Species, iris))
-stopifnot(lm_best(t) == 4)
-
-#fit two models
-fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
-fit2 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris %>% df_standardize(messages = F))
-
-#weights
-v_weights = runif(150, 1, 10)
-fit3 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris, weights = v_weights)
-fit3_std = silence(lm("Sepal.Length ~ Sepal.Width + Petal.Length", df_standardize(iris), weights = v_weights))
-fit4 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris)
-fit4_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = df_standardize(iris, messages = F))
-fit5 = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = iris, weights = 1:150)
-fit5_std = lm(formula = "Sepal.Length ~ Species + Sepal.Width + Petal.Width + Petal.Length", data = df_standardize(iris, messages = F), weights = 1:150)
-
-#missing data
-fit6 = lm("Petal.Length ~ Sepal.Width", iris) %>% MOD_summary(progress = F)
-fit6_miss = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris)) %>% MOD_summary(progress = F)
-fit6_miss_wtd = lm("Petal.Length ~ Sepal.Width", miss_add_random(iris), weight = Sepal.Length) %>% MOD_summary(progress = F)
-
-#glm
-fit7_c = glm("Sepal.Length ~ Sepal.Width + Species", iris, family = gaussian())
-fit7_c_std = glm("Sepal.Length ~ Sepal.Width + Species", df_standardize(iris, messages = F), family = gaussian())
-
-iris2 = mutate(iris, virginica = as.factor(Species == "virginica"))
-fit7_d = glm("virginica ~ Sepal.Width + Sepal.Length", iris2, family = binomial())
-fit7_d_std = glm("virginica ~ Sepal.Width + Sepal.Length", df_standardize(iris2, messages = F), family = binomial())
-
-# stopifnot({
-#   #then we test and make sure all the numbers are right
-#   MOD_summary(fit1, standardize = F, progress = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
-#   MOD_summary(fit1, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
-#   MOD_summary(fit2, standardize = F, progress = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
-#   MOD_summary(fit2, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #std data., std. betas
-#
-#   #weights
-#   MOD_summary(fit3, progress = F)$coef == MOD_summary(fit3_std, standardize = F, progress = F)$coef
-#
-#   #factor variable
-#   MOD_summary(fit4, progress = F)$coefs == MOD_summary(fit4_std, standardize = F, progress = F)$coefs
-#
-#   #factor variable and weights
-#   MOD_summary(fit5, progress = F)$coefs == MOD_summary(fit5_std, standardize = F, progress = F)$coefs
-#
-#   #glm
-#   all(MOD_summary(fit7_c, progress = F)$coefs == MOD_summary(fit7_c_std, standardize = F, progress = F)$coefs, na.rm=T)
-#   all(MOD_summary(fit7_d, progress = F)$coefs == MOD_summary(fit7_d_std, standardize = F, progress = F)$coefs, na.rm=T)
-# })
-
-#   #then we test and make sure all the numbers are right
-MOD_summary(fit1, standardize = F, progress = F)$coefs$Beta == round(fit1$coefficients[-1], 2) #unstd. data, don't std. betas
-MOD_summary(fit1, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #unstd. data, std. betas
-MOD_summary(fit2, standardize = F, progress = F)$coefs$Beta == c(.31, 1.01) #std data., don't std. betas
-MOD_summary(fit2, standardize = T, progress = F)$coefs$Beta == c(.31, 1.01) #std data., std. betas
-
-#weights
-MOD_summary(fit3, progress = F)$coef == MOD_summary(fit3_std, standardize = F, progress = F)$coef
-
-#factor variable
-MOD_summary(fit4, progress = F)$coefs == MOD_summary(fit4_std, standardize = F, progress = F)$coefs
-
-#factor variable and weights
-MOD_summary(fit5, progress = F)$coefs == MOD_summary(fit5_std, standardize = F, progress = F)$coefs
-
-#glm
-all(MOD_summary(fit7_c, progress = F)$coefs == MOD_summary(fit7_c_std, standardize = F, progress = F)$coefs, na.rm=T)
-all(MOD_summary(fit7_d, progress = F)$coefs == MOD_summary(fit7_d_std, standardize = F, progress = F)$coefs, na.rm=T)
-
-
 
 # MOD_APSLM  ----------------------------------------------------------
-t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F))
+t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = iris, standardized = T, messages = F, cv_runs = 2))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -133,7 +58,7 @@ stopifnot({
 })
 
 #with missing data
-t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = miss_add_random(iris), standardized = T, messages = F))
+t = silence(MOD_APSLM("Petal.Width", colnames(iris)[1:3], data = miss_add_random(iris), standardized = T, messages = F, cv_runs = 2))
 stopifnot({
   length(t) == 2
   class(t[[2]]) == "lm"
@@ -153,7 +78,7 @@ stopifnot({
 
 # MOD_LASSO ----------------------------------------------------
 #using the iris dataset
-t = silence(MOD_LASSO(iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 5, messages = F))
+t = silence(MOD_LASSO(iris, dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width"), runs = 2, messages = F))
 stopifnot({
   dim(t) == c(5, 4)
   class(t) == "data.frame"
@@ -521,24 +446,7 @@ stopifnot({
 
 #gets half a matrix and makes it into a full again and back, then compares with the full
 stopifnot({
-  MAT_vector2full(1:3) %>% MAT_get_half() %>% MAT_vector2full() == MAT_vector2full(1:3)
-})
-
-
-# GG_denhist --------------------------------------------------------------
-p_load(MASS)
-
-Sepal_Length = iris$Sepal.Length
-g = list(GG_denhist(iris, "Sepal.Length"),
-         GG_denhist(Sepal_Length),
-         GG_denhist(Sepal_Length, vline = "mean"),
-         GG_denhist(Sepal_Length, vline = "median"),
-         GG_denhist(Sepal_Length, vline = NULL),
-         GG_denhist(iris, "Sepal.Length", group = "Species")
-         )
-
-stopifnot({
-  sapply(g, function(x) class(x)) %in% c("gg", "ggplot")
+  MAT_vector2full(1:3) %>% MAT_half() %>% MAT_vector2full() %>% are_equal(MAT_vector2full(1:3))
 })
 
 
@@ -582,41 +490,6 @@ stopifnot({
   dim(t) == c(1525, 16)
   class(t) == "data.frame"
   (cor(t, use = "p") > 0) %>% all #all cors positive
-})
-
-
-
-# GG_group_means -----------------------------------------------------------
-
-iris_na = miss_add_random(iris)
-
-#does it respect factor levels order?
-iris_reorder = iris
-iris_reorder$Species = factor(x = iris_reorder$Species, levels = levels(iris$Species) %>% rev())
-levels(iris_reorder$Species)
-gg = GG_group_means(iris_reorder, "Sepal.Length", "Species")
-
-#subgroup
-iris2 = iris
-iris2$type = sample(c("A", "B"), size = 150, replace = T)
-
-#this the plot means function
-l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
-           GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
-           GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
-           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
-           GG_group_means(iris_na, "Sepal.Length", "Species", msg_NA = F),
-           "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"),
-
-           #some more parameters tried
-           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type"),
-           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "point"),
-           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points"))
-
-stopifnot({
-  sapply(l_t, function(x) "ggplot" %in% class(x))
-  throws_error("GG_group_means(iris_na, 'Sepal.Length', 'Species', na.rm = F)")
-  levels(l_t$order$data$group1) == rev(levels(iris$Species))
 })
 
 
@@ -675,63 +548,6 @@ stopifnot({
 })
 
 
-# is_ --------------------------------------------------------
-#various small helpful functions
-
-#is_simple_vector
-stopifnot({
-  #try list
-  is.vector(list(1:3))
-  is.list(list(1:3))
-  !is_simple_vector(list(1:3))
-
-  #test vector
-  is.vector(1:3)
-  !is.list(1:3)
-  is_simple_vector(1:3)
-})
-
-#is_whole_number
-stopifnot({
-  is_whole_number(seq(0, 2, .5)) == c(T, F, T, F, T)
-})
-
-#is_negative, is_positive
-stopifnot({
-  is_negative(-2:2) == c(T, T, F, F, F)
-  is_positive(-2:2) == c(F, F, F, T, T)
-})
-
-# is_
-stopifnot({
-  is_(iris, class = "data.frame") #check for one class
-  is_(iris, class = c("data.frame", "logical", "matrix")) #can check for multiple classes
-  is_(iris, class = "data.frame", size = c(150, 5)) #check for one class and size
-  is_(iris, size = c(150, 5)) #check for size
-  !is_(iris, size = 1) #check for wrong size
-  is_(iris, type = "list") #check for type
-  !is_(iris, type = "factor") #check for wrong type
-  throws_error(is_(iris, class = "list", error_on_false = T))  #check for one class, error
-})
-
-
-
-# is_error, throws_error() ------------------------------------------------
-#test error functions
-
-trial = try({1/"1"}, silent = T)
-
-stopifnot({
-  #first
-  is_error(trial)
-  !is_error(15)
-
-  #second
-  !throws_error(1==1)
-  !throws_error(1 > 2)
-})
-
-
 # conditional_change ------------------------------------------------------
 #a complement to plyr's mapvalues.
 
@@ -765,12 +581,6 @@ stopifnot({
 })
 
 
-# missing data counting ---------------------------------------------------
-
-stopifnot({
-  count_NA(c(1:10, rep(NA, 5), 1:10)) == 5
-  count_NA(c(1:10, rep(NA, 5), 1:10), reverse = T) == 20
-})
 
 
 # str_replace_multi, str_clean, str_detect2 --------------------------------------------
@@ -783,23 +593,6 @@ stopifnot({
   str_detect2(letters[1:10], pattern = "[acbde]") == c(rep(T, 5), rep(F, 5))
   str_detect2(letters[1:10], pattern = "[acbde]", value = T) == letters[1:5]
 })
-
-
-
-# silence ---------------------------------------------------------------
-#make stuff shut up
-
-#unload maps if its loaded
-p_unload("maps")
-
-stopifnot({
-  #minimal silent stuff
-  are_equal(capture.output(silence(warning("test"), messages = T, startupmessages = T)), character())
-  are_equal(capture.output(silence(message("test"), warnings = T, startupmessages = T)), character())
-  are_equal(capture.output(silence(p_load(maps), warnings = T, messages = T)), character())
-
-})
-
 
 
 
@@ -854,27 +647,6 @@ rownames(t) = LETTERS[1:3]; colnames(t) = letters[1:2]
 
 stopifnot({
   throws_error(copy_names(t, t2, F))
-})
-
-
-
-# is_between --------------------------------------------------------------
-#tests whether values are between two limits.
-
-stopifnot({
-  #scalars
-  is_between(5, 0, 10)
-  is_between(5, 5, 5)
-  !is_between(1, 5, 5)
-
-  #vectors
-  is_between(0:10, 0, 10)
-  !is_between(-10:-1, 0, 10)
-
-  #test parameters
-  !is_between(1, 1, 2, include_lower = F)
-  !is_between(2, 1, 2, include_upper = F)
-  !is_between(1, 1, 1, include_upper = F, include_lower = F)
 })
 
 
@@ -979,18 +751,6 @@ stopifnot({
 })
 
 
-# miss_filter ------------------------------------------------
-#filters data by number of missing values per case
-
-df = data.frame(1:10, letters[1:10])
-set.seed(1)
-df = miss_add_random(df)
-
-stopifnot({
-  miss_filter(df) %>% nrow %>% equals(8)
-})
-
-
 
 # extract_num_vars --------------------------------------------------------
 
@@ -998,51 +758,6 @@ stopifnot({
   extract_num_vars(iris) == iris[-5]
   extract_nonnum_vars(iris) == iris[5]
 })
-
-
-# copy_columns ------------------------------------------------------------
-#copy cols from one df to another
-
-
-stopifnot({
-  #copy all using default
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150))) %>% dim %>% equals(c(150, 6))
-
-  #copy all using pattern
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), pattern = ".") %>% dim %>% equals(c(150, 6))
-
-  #copy those with Length in name (2)
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), pattern = "Length") %>% dim %>% equals(c(150, 3))
-
-  #copy one specific column
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = "Species") %>% dim %>% equals(c(150, 2))
-
-  #copy two specific cols
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = c("Species", "Sepal.Length")) %>% dim %>% equals(c(150, 3))
-
-  #copy using numbers
-  copy_columns(from = iris, to = data.frame(rnorm = rnorm(150)), columns = 1:3) %>% dim %>% equals(c(150, 4))
-})
-
-# is_numeric is_numeric_by_col --------------------------------------------------------------
-
-stopifnot({
-  #
-  is_numeric_by_col(iris)
-
-  #
-  is_numeric(1:3)
-  !is_numeric("123")
-  !is_numeric(iris)
-  is_numeric(iris[-5])
-  !is_numeric(iris[-5], F)
-  !is_numeric(T)
-  is_numeric(array(1:8, dim = rep(2, 3)))
-  is_numeric(list(1, 2, 3))
-  is_numeric(list(1, 2, 3), F)
-  is_numeric(list(list(1, 2, 3), 5, list(1, 2, 3), 4, list(list(10))))
-})
-
 
 
 # format_digits -----------------------------------------------------------
@@ -1056,50 +771,7 @@ stopifnot({
 })
 
 
-# cor_matrix --------------------------------------------------------------
-#correlation matrix with nice output
-
-
-stopifnot({
-  are_equal(cor_matrix(iris[-5]), cor(iris[-5])) #validate vs. base-r
-  are_equal(cor_matrix(iris), cor(iris[-5])) #automatic skip non-numeric
-  are_equal(cor_matrix(iris[-5], weights = rep(1, 150)), cor(iris[-5])) #with weights
-  !are_equal(cor_matrix(iris[-5], weights = runif(150)), cor(iris[-5])) #other weights
-  !are_equal(cor_matrix(iris[-5], weights = iris[-5]), cor(iris[-5])) #complex weights
-  cor_matrix(iris, CI = .95) %>% is.character #with CI
-  cor_matrix(iris, CI = .95) %>% get_dims %>% equals(c(4, 4)) #verify dims
-  cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character #complex weights + CI
-})
-
-
-# SMD_matrix & pool_sd --------------------------------------------------------------
-#standardized mean differences
-
-
-#iris with missing
-set.seed(1)
-iris_miss = miss_add_random(iris)
-
-#tests
-t = list(#parameters
-         SMD_matrix(iris$Sepal.Length, iris$Species),
-         SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = median),
-         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
-         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
-         SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
-         SMD_matrix(iris$Sepal.Length, iris$Species, trim = .05),
-
-         #with missing data
-         SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
-         )
-
-stopifnot({
-  sapply(t, is.matrix) #all matrices
-  unique(t) %>% length %>% equals(7) #all different
-})
-
-
-# merge_rows, merge_rows_by_name --------------------------------------------------------------
+# df_merge_rows, --------------------------------------------------------------
 #performs row-wise merging
 
 t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
@@ -1107,9 +779,9 @@ t_true = data.frame(id = c("a", "b", "c"), value = c(3, 7, 5))
 t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
 
 stopifnot({
-  merge_rows(t, "id") == t_true #test string input
-  merge_rows(t, "id", func = mean) == t_true2 #test another function
-  throws_error(merge_rows(t, 'id', numeric = FALSE)) #test error
+  df_merge_rows(t, "id") == t_true #test string input
+  df_merge_rows(t, "id", func = mean) == t_true2 #test another function
+  throws_error(df_merge_rows(t, 'id', numeric = FALSE)) #test error
 })
 
 #do it by name
@@ -1137,16 +809,6 @@ stopifnot({
   extract_last(iris, 10:1, 1) == iris[141:150, 5, drop = FALSE]
   extract_last(letters, 1) == rev(letters)[1]
   extract_last(letters, 5:1) == rev(letters)[5:1]
-})
-
-
-# df_subset_by_pattern -------------------------------------------------------
-#subset using regex for column names
-
-stopifnot({
-  df_subset_by_pattern(iris, "Length") == iris[c(1, 3)] # length columns
-  df_subset_by_pattern(iris, "Length", T)  == iris[-c(1, 3)] # non-length columns
-  df_subset_by_pattern(iris, "Species")  == iris[5] # species, 1 col
 })
 
 
@@ -1265,12 +927,6 @@ stopifnot({
 
 
 
-# add_id ------------------------------------------------------------------
-x = iris; x["ID"] = "A"
-stopifnot({
-  add_id(iris, "A") == x
-})
-
 
 
 # list-arrays -------------------------------------------------------------
@@ -1283,7 +939,8 @@ t = list(#vector input
          #using only scalars as input
          make_list_array(1, 1, 1),
          #what about 10 dimensions with length 2?
-         do.call("make_list_array", args = as.list(rep(2, 10))))
+         do.call("make_list_array", args = as.list(rep(2, 10)))
+         )
 
 stopifnot({
   #check types
@@ -1311,55 +968,6 @@ stopifnot({
 
 
 
-# df_rename -----------------------------------------------------
-
-iris_copy1 = names(df_rename(iris, "Species", "SPECIES"))
-iris_copy2 = names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
-
-stopifnot({
-  #one
-  names(iris_copy1) == c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width",
-                         "SPECIES")
-  #two
-  names(iris_copy2) == c("SEPAL_LENGTH", "Sepal.Width", "Petal.Length", "Petal.Width",
-                         "SPECIES")
-})
-
-
-# df_remove ----------------------------------------------------------
-
-stopifnot({
-  #one
-  all(df_remove(iris, "Species") == iris[-5])
-  #two
-  all(names(df_remove(iris, c("Sepal.Length", "Species"))) == names(iris[-c(1, 5)]))
-  #remove same twice?
-  silence(all(df_remove(iris, c("Species", "Species")) == iris[-5]))
-  #remove all
-  are_equal(df_remove(iris, names(iris)), iris[-c(1:5)])
-})
-
-
-# check_ -----------------------------------------------------------
-#check if arguments are missing
-
-test_func = function(y) {
-  check_missing("y")
-  T
-}
-
-stopifnot({
-  #check_missing
-  throws_error("test_func(y = )")
-  test_func(y = "k")
-
-  #check_if_in
-  are_equal(check_if_in("a", letters[1:10]), NULL)
-  throws_error("check_if_in('a', letters[2])")
-})
-
-
-
 # wtd_sd wtd_mean wtd_sum standardize ------------------------------------------------------
 
 set.seed(1)
@@ -1383,59 +991,6 @@ stopifnot({
 
 
 
-# missing data functions --------------------------------------------------
-
-t1 = miss_analyze(miss_add_random(iris))
-set.seed(1)
-t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% miss_add_random() %>% miss_analyze()
-
-stopifnot({
-  #analyze missing data relationships
-  get_dims(t1) == c(5, 5)
-  get_dims(t2) == c(10, 10)
-  (t2 < .8) %>% sum(na.rm = T) == 90 #all are small effects
-
-})
-
-
-
-# transpose ---------------------------------------------------------------
-
-stopifnot({
-  are_equal(df_t(iris),
-            iris %>% t %>% as.data.frame %>% set_colnames(rownames(iris)) %>% set_rownames(colnames(iris)))
-})
-
-
-
-# last_value --------------------------------------------------------------
-
-stopifnot({
-  last_value(1:3) == 3
-  last_value(c(1:3, NA)) == 3
-  is.na(last_value(c(1:3, NA), na.rm=F))
-  is.na(last_value(rep(NA, 3)))
-})
-
-
-# all_the_same lengths_match ------------------------------------------------------------
-
-stopifnot({
-  #check if same
-  all_the_same(rep(1, 100))
-  !all_the_same(1:100)
-
-  #lengths
-  lengths_match(1:4, 5:8) #same lengths
-  lengths_match(iris, iris[1:2]) #same nrow
-  !lengths_match(iris, iris[1:2], dimension = 2) #different ncol
-
-  #errors
-  throws_error("lengths_match(1:4, iris, dimension = 2)", silent_try = T)
-})
-
-
-
 # find_cutoff -------------------------------------------------------------
 # using a simple model where there is a normal distribution of a trait, and everybody is selected for a special group
 # above a cutoff. If we know what the population mean is above the cutoff, then we can estimate what the cutoff is.
@@ -1443,40 +998,6 @@ stopifnot({
 stopifnot({
   are_equal(find_cutoff(115), 104.1)
   are_equal(find_cutoff(130), 123.7)
-})
-
-
-# df_colFunc --------------------------------------------------------------
-#apply functions selectively to columns of a data.frame
-t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
-#using inverse regex
-t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
-#using integer indices
-t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
-#using logical indices
-t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
-#removing unselected columns
-t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
-#select all by not providing any selector
-t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
-
-stopifnot({
-  t1[1, 1] == iris[1, 1] * 2
-  !t1[1, 2] == iris[1, 1] * 2
-
-  t2[1, 1] == iris[1, 1] * 2
-  t2[1, 2] == iris[1, 2] * 2
-
-  !t3[1, 1] == iris[1, 1] * 2
-  t3[1, 2] == iris[1, 2] * 2
-
-  t4[1, 1] == iris[1, 1] * 2
-  !t4[1, 2] == iris[1, 2] * 2
-
-  ncol(t5) == 2
-  t5[1, 1] == iris[1, 1] * 2
-
-  sapply(t6, is.character)
 })
 
 
@@ -1592,18 +1113,6 @@ stopifnot({
   df_flexsubset(iris, c("Species", "test"), messages = F) == iris["Species"]
   silence(are_equal(df_flexsubset(iris, c("test")), as.data.frame(matrix(nrow=150, ncol=0)), check.attributes = F))
 })
-
-
-# str_uniquify ------------------------------------------------------------
-x = sample(LETTERS[1:10], size = 20, replace = T)
-
-stopifnot({
-  #uniquify normally
-  x %>% str_uniquify %>% duplicated %>% any %>% `!`
-  #custom suffix using a second %d.
-  x %>% str_uniquify(" [%d/%d]") %>% duplicated %>% any %>% `!`
-})
-
 
 
 # done --------------------------------------------------------------------

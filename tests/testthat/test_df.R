@@ -111,3 +111,89 @@ test_that("df_remove_NA_vars", {
   expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a"), data.frame(a = NA, b = 1))
   expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1), data.frame(a = NA, b = 1))
 })
+
+
+# df_t ---------------------------------------------------------------
+
+test_that("df_t", {
+  expect_equivalent(df_t(iris), iris %>% t %>% as.data.frame %>% set_colnames(rownames(iris)) %>% set_rownames(colnames(iris)))
+})
+
+
+# df_colFunc --------------------------------------------------------------
+#apply functions selectively to columns of a data.frame
+t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+#using inverse regex
+t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+#using integer indices
+t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+#using logical indices
+t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+#removing unselected columns
+t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+#select all by not providing any selector
+t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
+
+test_that("df_colFunc", {
+  expect_equivalent(t1[1, 1], iris[1, 1] * 2)
+  expect_true(!t1[1, 2] == iris[1, 1] * 2)
+  expect_true(t2[1, 1] == iris[1, 1] * 2)
+  expect_true(t2[1, 2] == iris[1, 2] * 2)
+  expect_true(!t3[1, 1] == iris[1, 1] * 2)
+  expect_true(t3[1, 2] == iris[1, 2] * 2)
+  expect_true(t4[1, 1] == iris[1, 1] * 2)
+  expect_true(!t4[1, 2] == iris[1, 2] * 2)
+  expect_true(ncol(t5) == 2)
+  expect_true(t5[1, 1] == iris[1, 1] * 2)
+  expect_true(purrr::map_lgl(t6, is.character) %>% all)
+})
+
+# df_subset_by_pattern -------------------------------------------------------
+#subset using regex for column names
+
+
+test_that("df_subset_by_pattern", {
+  # length columns
+  expect_equivalent(df_subset_by_pattern(iris, "Length"), iris[c(1, 3)])
+
+  # non-length columns
+  expect_equivalent(df_subset_by_pattern(iris, "Length", T), iris[-c(1, 3)])
+
+  # species, 1 col
+  expect_equivalent(df_subset_by_pattern(iris, "Species"), iris[5])
+})
+
+
+# df_add_id ------------------------------------------------------------------
+x = iris; x["ID"] = "A"
+
+test_that("df_add_id", {
+  expect_equivalent(df_add_id(iris, "A"), x)
+})
+
+
+# df_rename -----------------------------------------------------
+
+test_that("df_rename", {
+  expect_equivalent(names(df_rename(iris, "Species", "SPECIES")),
+                    c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "SPECIES"))
+  expect_equivalent(names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES"))),
+                    c("SEPAL_LENGTH", "Sepal.Width", "Petal.Length", "Petal.Width", "SPECIES"))
+})
+
+
+# df_remove ----------------------------------------------------------
+
+test_that("df_remove", {
+  #rm one
+  expect_equivalent(df_remove(iris, "Species"), iris[-5])
+
+  #two
+  expect_equivalent(names(df_remove(iris, c("Sepal.Length", "Species"))), names(iris[-c(1, 5)]))
+
+  #all
+  expect_equivalent(df_remove(iris, names(iris)), iris[-c(1:5)])
+
+  #attempt remove same twice
+  expect_warning(df_remove(iris, c("Species", "Species")))
+})

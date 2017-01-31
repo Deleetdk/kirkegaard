@@ -35,3 +35,42 @@ test_that("scatter", {
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150), "ggplot")
 })
+
+
+# GG_group_means -----------------------------------------------------------
+
+iris_na = miss_add_random(iris)
+
+#does it respect factor levels order?
+iris_reorder = iris
+iris_reorder$Species = factor(x = iris_reorder$Species, levels = levels(iris$Species) %>% rev())
+gg = GG_group_means(iris_reorder, "Sepal.Length", "Species")
+
+#subgroup
+iris2 = iris
+iris2$type = sample(c("A", "B"), size = 150, replace = T)
+
+#this the plot means function
+l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "point"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
+           GG_group_means(iris_na, "Sepal.Length", "Species", msg_NA = F),
+           "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"),
+
+           #some more parameters tried
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type"),
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "point"),
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
+           )
+
+test_that("GG_group_means", {
+  #all types
+  expect_true(all(map_lgl(l_t, function(x) "ggplot" %in% class(x))))
+
+  #missing data, but don't ignore it
+  expect_error(GG_group_means(iris_na, 'Sepal.Length', 'Species', na.rm = F))
+
+  #reversed levels
+  expect_true(all(levels(l_t$order$data$group1) == rev(levels(iris$Species))))
+})
