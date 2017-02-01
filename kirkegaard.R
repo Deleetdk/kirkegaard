@@ -7,8 +7,8 @@ options(digits=2, scipen=2)
 document()
 
 #install
-install("../kirkegaard")
-# install("../kirkegaard", upgrade_dependencies = F)
+#install("../kirkegaard")
+install("../kirkegaard", upgrade_dependencies = F)
 
 #load
 library(kirkegaard)

@@ -9,13 +9,16 @@ tmp_data = data = data.frame(x_num = rnorm(100),
                              x_lgl = rbinom(100, 1, .5) %>% as.logical(),
                              x_fct = factor(sample(letters[1:3], size = 100, replace = T)),
                              x_ord = ordered(sample(1:3, size = 100, replace = T)),
+                             x_chr = sample(letters[1:3], size = 100, replace = T),
 
                              y_num = rnorm(100),
                              y_lgl = rbinom(100, 1, .5) %>% as.logical(),
                              y_fct = factor(sample(letters[1:3], size = 100, replace = T)),
                              y_ord = ordered(sample(1:3, size = 100, replace = T)),
+                             y_chr = sample(letters[1:3], size = 100, replace = T),
                              y_fct2 = factor(sample(letters[1:2], size = 100, replace = T)),
-                             y_ord2 = ordered(sample(letters[1:2], size = 100, replace = T))
+                             y_ord2 = ordered(sample(letters[1:2], size = 100, replace = T)),
+                             stringsAsFactors = F
 )
 tmp_data_std = tmp_data %>% df_standardize(messages = F)
 tmp_data_miss = tmp_data_std %>% miss_add_random()
@@ -26,6 +29,8 @@ lm_1 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data_std) %>% MOD_
 lm_2 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data) %>% MOD_summary(kfold = F)
 #test cv
 lm_3 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data) %>% MOD_summary(progress = F, runs = 3)
+#test chr
+lm_4 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord + x_chr", data = tmp_data) %>% {silence(MOD_summary(., kfold = F))}
 
 test_that("MOD_summary_lm", {
   ## lm

@@ -130,15 +130,22 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
 }
 
 #Function to make a nicely formatted coefficient data frame
-make_nicer_coefs = function(fitted_model, coefs = NULL) {
+make_nicer_coefs = function(fitted_model, coefs = NULL, model_data = NULL) {
+
   #summarize the model
-  sum.model = summary(fitted_model)
-  model_data = fitted_model$model#get predictors
+  model_sum = summary(fitted_model)
+
+  #get model data from fit unless given a set
+  if (is.null(model_data)) {
+    model_data = fitted_model$model#get predictors
+  }
+
+  #get predictors from model data
   predictor_data = model_data[-1] %>% df_subset_by_pattern(pattern = "(weights)", inverse = T)
 
   #get coefs from fit unless given a set
   if (is.null(coefs)) {
-    coefs = sum.model$coef[-1,1:2, drop = F] #coefs without intercept
+    coefs = model_sum$coef[-1,1:2, drop = F] #coefs without intercept
     coefs = as.data.frame(coefs) #conver to dataframe
     colnames(coefs) = c("Beta", "SE") #rename cols
   }
@@ -319,16 +326,16 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     }
 
     #summary
-    sum.model = summary(fitted_model)
+    model_sum = summary(fitted_model)
 
     #degrees of freedom
-    df = sum.model$df[2]
+    df = model_sum$df[2]
 
     #model meta
     model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
                             "N" = nrow(model_data),
-                            "R2" = sum.model$r.squared,
-                            "R2-adj." = sum.model$adj.r.squared,
+                            "R2" = model_sum$r.squared,
+                            "R2-adj." = model_sum$adj.r.squared,
                             "R2-cv" = NA,
                             check.names = F
                             )
@@ -342,8 +349,8 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     v_assign = fitted_model$assign + 1
 
     #init coefs
-    coefs = sum.model$coefficients[-1, 1:2] %>% as.data.frame
-    p_vals = sum.model$coefficients[, 4]
+    coefs = model_sum$coefficients[-1, 1:2] %>% as.data.frame
+    p_vals = model_sum$coefficients[, 4]
 
     #standardize?
     if (standardize) {
@@ -367,7 +374,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     }
 
     #coefs
-    coefs = make_nicer_coefs(fitted_model = fitted_model, coefs = coefs)
+    coefs = make_nicer_coefs(fitted_model = fitted_model, coefs = coefs, model_data = model_data)
 
     #calculate CIs
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
@@ -385,19 +392,19 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     }
 
     #summary
-    sum.model = summary(fitted_model)
+    model_sum = summary(fitted_model)
 
     #degrees of freedom
-    df = sum.model$df[2]
+    df = model_sum$df[2]
 
     #values
-    pseudo_r2 = 1 - (sum.model$deviance / sum.model$null.deviance)
+    pseudo_r2 = 1 - (model_sum$deviance / model_sum$null.deviance)
 
     #meta values
     model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
                             "N" = nrow(model_data),
                             "pseudo-R2" = pseudo_r2,
-                            "deviance" = sum.model$deviance,
+                            "deviance" = model_sum$deviance,
                             "pseudo-R2-cv" = NA,
                             check.names = F
                             )
@@ -406,8 +413,8 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     #TODO
 
     #init coefs
-    coefs = sum.model$coefficients[-1, 1:2] %>% as.data.frame
-    p_vals = sum.model$coefficients[, 4]
+    coefs = model_sum$coefficients[-1, 1:2] %>% as.data.frame
+    p_vals = model_sum$coefficients[, 4]
 
     #since the assign vector isn't given, we create one
     v_assign = sapply(seq_along(model_data), function(i) {
