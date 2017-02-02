@@ -163,10 +163,10 @@ FA_plot_loadings = FA_MAR
 FA_Jensens_method = FA_MAR
 
 #' @export
-plot_loadings = defunct("This function is depreciated. Use FA_plot_loadings.")
+plot_loadings = defunct("This function is depreciated. Use fa_plot_loadings.")
 
 #' @export
-plot_loadings_multi = defunct("This function is depreciated. Use FA_plot_loadings.")
+plot_loadings_multi = defunct("This function is depreciated. Use fa_plot_loadings.")
 
 #' @export
 Jensen_plot = defunct("This function has been deleted, use fa_Jensens_method")
