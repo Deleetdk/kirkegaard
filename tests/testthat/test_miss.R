@@ -36,7 +36,7 @@ test_that("miss_filter", {
 
 
 
-# missing data functions --------------------------------------------------
+# miss_analyze --------------------------------------------------
 #large dataset with missing data
 set.seed(1)
 t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% miss_add_random() %>% miss_analyze()
@@ -46,3 +46,17 @@ test_that("miss_analyze", {
   expect_true((t2 < .8) %>% sum(na.rm = T) == 90)
 })
 
+
+# miss_impute -------------------------------------------------------------
+set.seed(1)
+
+#test the dealing with ordinals with 2 levels
+iris_with_ord2 = iris %>% dplyr::filter(Species %in% c("setosa", "versicolor")) %>% dplyr::mutate(Species = ordered(Species))
+
+test_that("miss_impute", {
+  #ordinary
+  expect_is(iris %>% miss_add_random() %>% miss_impute(), class = "data.frame")
+
+  #ordinal with 2 levels
+  expect_warning(iris_with_ord2 %>% miss_add_random() %>%  miss_impute())
+})

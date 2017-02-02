@@ -310,6 +310,22 @@ miss_add_random =  function(df, prop = .1){
 miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
   #tibbles do not work here
   data = as.data.frame(data)
+
+  #convert ordered with <3 levels to factors
+  needs_conversion = purrr::map_lgl(data, ~is.ordered(.) && nlevels(.) < 3)
+  if (any(needs_conversion)) {
+    message("Some ordered variables had fewer than 3 levels and must be converted to ordinary factors for imputation to work: " + stringr::str_c(names(data)[needs_conversion], collapse = ", "))
+
+    #convert
+    data[] = lapply(data, function(v) {
+      if (is.ordered(v) && nlevels(v) < 3) {
+        return(factor(v, ordered = F))
+      }
+
+      v
+    })
+  }
+
   #exclude?
   case_na = miss_by_case(data)
   exclusion = any(case_na > max_na)
