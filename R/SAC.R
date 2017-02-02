@@ -963,7 +963,7 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 #' @param standardize Whether to standardize the data to get standardized betas. Defaults to T.
 #' @param control_approach Which control approaches to use. Options are partial and mr. Defaults to partial.
 #' @export
-SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods = c("KNSNR", "SLR"), standardize = T, control_approach = c("partial")) {
+SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods = c("KNSNR", "SLR"), standardize = T, control_approach = c("partial"), KNSNR_methods = c("b")) {
 
   #check input
   #is df
@@ -1113,11 +1113,18 @@ SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, la
       }
 
       #regress
-      d_betas[rows_, stringr::str_c("KNSNR_o_k", knsn_k)] = lm(tmp_form_o, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      if ("o" %in% KNSNR_methods) {
+        d_betas[rows_, stringr::str_c("KNSNR_o_k", knsn_k)] = lm(tmp_form_o, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      }
 
-      d_betas[rows_, stringr::str_c("KNSNR_p_k", knsn_k)] = lm(tmp_form_p, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      if ("p" %in% KNSNR_methods) {
+        d_betas[rows_, stringr::str_c("KNSNR_p_k", knsn_k)] = lm(tmp_form_p, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      }
 
-      d_betas[rows_, stringr::str_c("KNSNR_b_k", knsn_k)] = lm(tmp_form_b, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      if ("b" %in% KNSNR_methods) {
+        d_betas[rows_, stringr::str_c("KNSNR_b_k", knsn_k)] = lm(tmp_form_b, df_tmp, weights = weights___) %>% coef %>% `[`(-1)
+      }
+
     }
 
     if ("mr" %in% control_approach) {
