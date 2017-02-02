@@ -25,6 +25,9 @@ as_long = defunct("Depreciated. use pu_translate")
 #' @export
 check_missing = defunct("Depreciated. Don't rely on missingness.")
 
+#' @export
+MAT_get_half = defunct("Renamed to MAT_half")
+
 
 # spatial -----------------------------------------------------------------
 #' @export
