@@ -47,16 +47,38 @@ throws_error = function(expr, silent_try = T) {
 #'
 #' Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.
 #' @param x (any object) The object to test.
+#' @param extended (lgl) Whether to convert to logical.
+#' @param msg (chr) An error message.
+#' @export
+#' @examples
+#' fail_if(T)
+#' fail_if(1) #does not convert types
+#' fail_if(1, extended = T)
+fail_if = function(x, extended = F, msg = "There was an error") {
+  #fail if true
+  if (isTRUE(x)) stop(msg, call. = F)
+  if (extended && x) stop(msg, call. = F)
+
+  #return input
+  invisible(x)
+}
+
+
+#' Fail if input contains NA
+#'
+#' Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.
+#' @param x (any object) The object to test.
+#' @param msg (chr) An error message.
 #' @export
 #' @examples
 #' fail_if_NA(1:10) #no NAs
 #' fail_if_NA(c(1:3, NA, 1:3)) #NAs
-fail_if_NA = function(x) {
+fail_if_NA = function(x, msg = "Input contained NA.") {
   #fail if any NA
-  if (any(is.na(x))) stop("Input contained NA.")
+  if (any(is.na(x))) stop(msg, call. = F)
 
   #return input
-  x
+  invisible(x)
 }
 
 
@@ -76,24 +98,23 @@ try_browse = function(expr) {
   #catch
   if (inherits(.trial, "try-error")) eval(quote(browser()), parent.frame(n = 1))
 
-  y
+  invisible(y)
 }
 
 
 #' Browse if equal to
 #'
 #' Browse on equals condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false. Wrapper for browse_if.
-#' @param expr (expr) An expression.
+#' @param x (object) Any object.
 #' @param equal_to (any object) Any object to test for output equality.
+#' @param check.names (lgl) Whether to check names.
+#' @param check.attributes (lgl) Whether to check all attributes.
 #' @export
 #' @examples
 #' browse_if(1+1, 2)
-browse_if_equals = function(expr, equal_to) {
-  #evaluate in parent.frame
-  .y = eval(substitute(expr), parent.frame())
-
+browse_if_equals = function(x, equal_to, check.names = T, check.attributes = T) {
   #test condition
-  .cond = kirkegaard::are_equal(.y, equal_to)
+  .cond = kirkegaard::are_equal(x, equal_to, check.names = check.names, check.attributes = check.attributes)
 
   #browse?
   if (.cond) eval(quote(browser()), parent.frame(n = 1))
@@ -103,20 +124,22 @@ browse_if_equals = function(expr, equal_to) {
 }
 
 
-#' Try and browse on error
+#' Browse if equal to
 #'
-#' Opens the browser in the calling envirionment so you can see what went wrong. Useful to putting inside loops and only opening browser on the iterations that cause errors.
+#' Browse on equals condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false. Wrapper for browse_if.
+#' @param condition (lgl) A condition
+#' @param extended (lgl) Whether to convert to logical.
 #' @export
-try_browse = function(expr) {
-  #try
-  .trial = try({
-    y = eval(substitute(expr), parent.frame())
-  })
+#' @examples
+#' browse_if(T) #only
+#' browse_if(F) #
+#' browse_if(1) #does not automatically type convert
+#' browse_if(1, extended = T) #can if you want it
+browse_if = function(condition, extended = F) {
+  #browse?
+  if (isTRUE(condition)) eval(quote(browser()), parent.frame(n = 1))
+  if (extended && as.logical(condition)) eval(quote(browser()), parent.frame(n = 1))
 
-  #catch
-  if (inherits(.trial, "try-error")) eval(quote(browser()), parent.frame(n = 1))
-
-  y
+  #return output
+  invisible(T)
 }
-
-
