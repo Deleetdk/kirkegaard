@@ -5,12 +5,16 @@
 \title{Browse on error}
 \usage{
 try_browse(expr)
+
+try_browse(expr)
 }
 \arguments{
 \item{expr}{(expr) Any expression that might cause an error.}
 }
 \description{
 Browse on error. Calls browse in the parent.frame so that one can see the context the for error.
+
+Opens the browser in the calling envirionment so you can see what went wrong. Useful to putting inside loops and only opening browser on the iterations that cause errors.
 }
 \examples{
 try_browse({log("p")})

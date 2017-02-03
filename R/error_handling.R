@@ -80,28 +80,6 @@ try_browse = function(expr) {
 }
 
 
-#' Browse on condition
-#'
-#' Browse on condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false.
-#' @param expr (expr) An expression.
-#' @param condition (expr) A condition to evaluate. y. is the output of expr.
-#' @export
-#' @examples
-#' browse_if(1+1, .y == 2)
-browse_if = function(expr, condition) {
-  #evaluate in parent.frame
-  .y = eval(substitute(expr), parent.frame())
-
-  #test condition
-  .cond = eval(substitute(condition))
-
-  #browse?
-  if (.cond) eval(quote(browser()), parent.frame(n = 1))
-
-  #return output
-  invisible(.y)
-}
-
 #' Browse if equal to
 #'
 #' Browse on equals condition. Calls browse in the parent.frame so that one can see the context. Made for easier debugging. Pipe-friendly: returns output if condition is false. Wrapper for browse_if.
@@ -123,3 +101,22 @@ browse_if_equals = function(expr, equal_to) {
   #return output
   invisible(.y)
 }
+
+
+#' Try and browse on error
+#'
+#' Opens the browser in the calling envirionment so you can see what went wrong. Useful to putting inside loops and only opening browser on the iterations that cause errors.
+#' @export
+try_browse = function(expr) {
+  #try
+  .trial = try({
+    y = eval(substitute(expr), parent.frame())
+  })
+
+  #catch
+  if (inherits(.trial, "try-error")) eval(quote(browser()), parent.frame(n = 1))
+
+  y
+}
+
+
