@@ -5,11 +5,12 @@ context("MOD_")
 
 #test with all types of preds
 set.seed(1)
-tmp_data = data = data.frame(x_num = rnorm(100),
+tmp_data = data = data_frame(x_num = rnorm(100),
                              x_lgl = rbinom(100, 1, .5) %>% as.logical(),
                              x_fct = factor(sample(letters[1:3], size = 100, replace = T)),
                              x_ord = ordered(sample(1:3, size = 100, replace = T)),
                              x_chr = sample(letters[1:3], size = 100, replace = T),
+                             x_num_rev = x_num * -1,
 
                              y_num = rnorm(100),
                              y_lgl = rbinom(100, 1, .5) %>% as.logical(),
@@ -31,6 +32,8 @@ lm_2 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data) %>% MOD_summ
 lm_3 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data) %>% MOD_summary(progress = F, runs = 3)
 #test chr
 lm_4 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord + x_chr", data = tmp_data) %>% {silence(MOD_summary(., kfold = F))}
+#test linear depdendency error
+lm_5 = lm(y_num ~ x_num + x_num_rev, data = tmp_data)
 
 test_that("MOD_summary_lm", {
   ## lm
@@ -50,6 +53,9 @@ test_that("MOD_summary_lm", {
 
   #test cv
   expect_false(lm_3$meta$`R2-cv` %>% is.na)
+
+  #error
+  expect_error(lm_5 %>% MOD_summary())
 })
 
 

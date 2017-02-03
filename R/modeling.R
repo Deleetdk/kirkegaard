@@ -132,6 +132,9 @@ MOD_APSLM = function(dependent, predictors, data, standardized = T, .weights = N
 #Function to make a nicely formatted coefficient data frame
 make_nicer_coefs = function(fitted_model, coefs = NULL, model_data = NULL) {
 
+  #check for model errors
+  fail_if_NA(fitted_model$coef, msg = "The model parameters contained missing values. This is usually because of perfect linear dependency between predictors.")
+
   #summarize the model
   model_sum = summary(fitted_model)
 
@@ -295,6 +298,9 @@ print.model_summary  = function(x) {
 #' MOD_summary(fit1) #unstd. data, std. betas
 #' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \code{summary}
 MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
+
+  #check for model errors
+  fail_if_NA(fitted_model$coef, msg = "The model parameters contained missing values. This is usually because of perfect linear dependency between predictors.")
 
   #init
   return_list = list(coefs = NULL,
