@@ -109,23 +109,6 @@ stopifnot({
 })
 
 
-# GG_scatter --------------------------------------------------------------
-#easy scatterplots with ggplot2
-mpg_na = miss_add_random(mpg) #missing data
-
-l_t = silence(list(t = GG_scatter(mpg, "hwy", "cty"), #test default
-           t2 = GG_scatter(mpg_na, "hwy", "cty"), #test with missing data
-           t3 = GG_scatter(mpg, "hwy", "cty", case_names = F), #test no case names
-           t4 = GG_scatter(mpg, "hwy", "cty", CI = .99), #test CI
-           t5 = GG_scatter(mpg, "hwy", "cty", text_pos = "br")) #test position
-)
-
-stopifnot({
-  sapply(l_t, function(x) {
-    class(x) == c("gg", "ggplot")
-  })
-})
-
 
 # GG_contingency_Table ----------------------------------------------------
 t = list(GG_contingency_table(mpg, "drv", "cyl"),
