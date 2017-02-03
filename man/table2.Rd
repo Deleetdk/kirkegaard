@@ -4,14 +4,16 @@
 \alias{table2}
 \title{Better table}
 \usage{
-table2(x, prop = F, include_NA = T)
+table2(x, prop = F, include_NA = T, sort_descending = T)
 }
 \arguments{
 \item{x}{(a vector) A vector.}
 
-\item{prop}{(lgl) Whether to return proportions instead of percents. Default no.}
+\item{prop}{(lgl) Whether to return proportions instead of percents.}
 
-\item{include_NA}{(lgl) Whether to count NA values. Default yes.}
+\item{include_NA}{(lgl) Whether to count NA values.}
+
+\item{sort}{(lgl) Whether to sort by descending order. If null, sorts by group factor levels.}
 }
 \value{
 A data frame (tbl).
@@ -20,6 +22,11 @@ A data frame (tbl).
 Returns a data frame table with both counts and percents.
 }
 \examples{
+#table and sort descending
 sample(letters[1:10], size = 100, replace = T) \%>\% table2
+#ascending
+sample(letters[1:10], size = 100, replace = T) \%>\% table2(sort_descending = F)
+#using factor levels
+sample(letters[1:10], size = 100, replace = T) \%>\% table2(sort_descending = NULL)
 }
 

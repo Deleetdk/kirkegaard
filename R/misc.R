@@ -337,19 +337,46 @@ last_value = function(x, na.rm = T) {
 #'
 #' Returns a data frame table with both counts and percents.
 #' @param x (a vector) A vector.
-#' @param prop (lgl) Whether to return proportions instead of percents. Default no.
-#' @param include_NA (lgl) Whether to count NA values. Default yes.
+#' @param prop (lgl) Whether to return proportions instead of percents.
+#' @param include_NA (lgl) Whether to count NA values.
+#' @param sort (lgl) Whether to sort by descending order. If null, sorts by group factor levels.
 #' @return A data frame (tbl).
 #' @export
 #' @examples
+#' #table and sort descending
 #' sample(letters[1:10], size = 100, replace = T) %>% table2
-table2 = function(x, prop = F, include_NA = T) {
-  tbl = table(x, exclude = NULL)
+#' #ascending
+#' sample(letters[1:10], size = 100, replace = T) %>% table2(sort_descending = F)
+#' #using factor levels
+#' sample(letters[1:10], size = 100, replace = T) %>% table2(sort_descending = NULL)
+table2 = function(x, prop = F, include_NA = T, sort_descending = T) {
+
+  #NA param
+  if (include_NA) {
+    NA_param = "always"
+  } else {
+    NA_param = "no"
+  }
+
+  #get regular table
+  tbl = table(x, useNA = NA_param)
+
+  #as data frame
   d = tibble::data_frame("Group" = names(tbl),
-                 "Count" = as.numeric(tbl)
+                         "Count" = as.numeric(tbl)
   )
+
   #percent/prob
   if (!prop) d$Percent = d$Count / sum(d$Count) * 100 else d$Proportion = d$Count / sum(d$Count)
+
+  #sort?
+  if (!is.null(sort_descending)) {
+    if (sort_descending) {
+      d %<>% dplyr::arrange(-Count)
+    } else {
+      d %<>% dplyr::arrange(Count)
+    }
+  }
 
   d
 }

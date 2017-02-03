@@ -17,3 +17,24 @@ test_that("last_value", {
   expect_true(is.na(last_value(rep(NA, 3))))
 
 })
+
+
+# table2 ------------------------------------------------------------------
+set.seed(1)
+some_letters = sample(letters[1:10], size = 100, replace = T)
+base_table = table(some_letters)
+
+test_that("table2", {
+  #sorting
+  expect_equivalent(table2(some_letters, include_NA = F) %>% `[[`(3), sort(base_table, decreasing = T) %>% as.vector)
+  expect_equivalent(table2(some_letters, include_NA = F, sort_descending = F) %>% `[[`(3), sort(base_table, decreasing = F) %>% as.vector)
+  expect_equivalent(table2(some_letters, include_NA = F, sort_descending = NULL) %>% `[[`(3), base_table %>% as.vector)
+
+  #with NA
+  expect_equivalent(table2(some_letters) %>% nrow, 11)
+
+  #proportion
+  expect_equivalent(table2(some_letters, prop = T) %>% names %>% `[`(3), "Proportion")
+})
+
+
