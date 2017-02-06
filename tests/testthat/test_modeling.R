@@ -34,6 +34,8 @@ lm_3 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord", data = tmp_data) %>% MOD_summ
 lm_4 = lm("y_num ~ x_num + x_lgl + x_fct + x_ord + x_chr", data = tmp_data) %>% {silence(MOD_summary(., kfold = F))}
 #test linear depdendency error
 lm_5 = lm(y_num ~ x_num + x_num_rev, data = tmp_data)
+#test 1 pred model
+lm_6 = lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary(kfold = F)
 
 test_that("MOD_summary_lm", {
   ## lm
@@ -41,6 +43,8 @@ test_that("MOD_summary_lm", {
   expect_is(lm_1, "model_summary")
   expect_is(lm_2, "model_summary")
   expect_is(lm_3, "model_summary")
+  expect_is(lm_4, "model_summary")
+  expect_is(lm_6, "model_summary")
 
   #parameter estimates
   expect_equivalent(lm_1$coefs, lm_2$coefs)
