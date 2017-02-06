@@ -8,8 +8,6 @@
 #' This is a convenient wrapper for read.csv()
 #' @param filename the file to be read
 #' @export
-#' @examples
-#' read_mega()
 read_mega = function(filename){
   return(read.csv(filename,sep=";",row.names=1, #this loads the rownames
                   stringsAsFactors=FALSE)) #dont want factors
@@ -21,8 +19,6 @@ read_mega = function(filename){
 #' @param object the object to be written to a file
 #' @param filename the name of the file you want to write to
 #' @export
-#' @examples
-#' write_mega()
 write_mega = function(object, filename){
   datafile = cbind(ID=rownames(object), object) #adds an ID column with the rownames
   return(write.table(datafile, file = filename, #filename
@@ -38,8 +34,6 @@ write_mega = function(object, filename){
 #' @param var a string with the name of the variable to write.
 #' @param var a string with the desired filename to write to.
 #' @export
-#' @examples
-#' output_sorted_var()
 output_sorted_var = function(df, var, filename) {
   s = df[var] #subset
   s2 = s[order(s[1], decreasing = T),,drop=F] #sort
@@ -50,6 +44,13 @@ output_sorted_var = function(df, var, filename) {
   write.csv(s3, file.name, fileEncoding = "UTF-8") #save
 }
 
+#' Write object to clipboard
+#'
+#' S3 generic function to write objects to the clipboard for easy use.
+#'
+#' See \code{\link{write_clipboard.data.frame}}, \code{\link{write_clipboard.model_summary}}.
+#' @export
+write_clipboard <- function(x) UseMethod("write_clipboard")
 
 
 #' Write object to clipboard
@@ -66,7 +67,7 @@ output_sorted_var = function(df, var, filename) {
 #' @examples
 #' write_clipboard(cor(iris[-5]))
 #' write_clipboard(miss_add_random(iris))
-write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
+write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
 
   #round
   x_orig = x
@@ -112,6 +113,94 @@ write_clipboard = function(x, digits = 2, clean_names = T, clean_what = c("_", "
 
   #silently return the output too
   invisible(x_orig)
+}
+
+#for matrix, use data frame function
+#' @export
+write_clipboard.matrix = write_clipboard.data.frame
+
+
+#helper function for printing lists of heterogenous data frames
+ldf_to_long_mat = function(x) {
+
+  #convert rownames and colnames to explicit names
+  x_explicit_names = purrr::map(x, function(.) {
+    #append rownames to new leftmost col
+    #and colnames to new top row, put NA in the corner
+    y = cbind(c(NA, rownames(.)), rbind(colnames(.), as.matrix(.)))
+    rownames(y) = NULL
+    colnames(y) = NULL
+    y
+  })
+
+  #widest?
+  x_widths = purrr::map_int(x_explicit_names, ~ncol(.))
+  x_width_max = max(x_widths)
+
+  #add empty columns
+  x_cols_added = purrr::map(x_explicit_names, function(.) {
+    #need to add?
+    if (ncol(.) < x_width_max) {
+      delta_ncol = x_width_max - ncol(.)
+      with_added = cbind(., matrix(rep("", nrow(.) * delta_ncol), ncol = delta_ncol))
+      return(with_added)
+    }
+
+    #otherwise, good to go
+    .
+  })
+
+  #fill in empty lines and titles
+  x_with_empty_lines = purrr::map(seq_along(x_cols_added), function(i) {
+    #add empty
+    this = x_cols_added[[i]]
+    this_name = names(x)[i]
+
+    #add header?
+    if (has_names(x)) {
+      #add a header based on the name of the list
+      this = rbind(
+        c(this_name, rep("", x_width_max - 1)),
+        this
+      )
+    }
+
+    #add empty
+    this = rbind(
+      rep("", x_width_max),
+      this
+    )
+
+    this
+  })
+
+  #finally, rbind and cut top line
+  purrr::reduce(x_with_empty_lines, rbind) %>%
+    #remove the top empty line
+    `[`(-1, )
+}
+
+
+#' Write model summary to clipboard
+#'
+#' Restructures a model summary object to a matrix and writes it to the clipboard.
+#' @export
+#' @examples
+#' lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary %>% write_clipboard
+write_clipboard.model_summary = function(x, digits = 2) {
+  #rerestructure to a matrix suitable for clipboard
+  ldf_to_long_mat(list(
+    #coefs
+    coefs = x$coefs %>% df_round(digits = digits),
+
+    #model meta data
+    meta = x$meta,
+
+    #etas
+    etas = x$aov_etas %>% df_round(digits = digits)
+  )) %>%
+    #call generic again
+    write_clipboard()
 }
 
 

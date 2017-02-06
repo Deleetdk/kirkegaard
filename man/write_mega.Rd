@@ -14,7 +14,4 @@ write_mega(object, filename)
 \description{
 This is a convenient wrapper for write.csv()
 }
-\examples{
-write_mega()
-}
 
