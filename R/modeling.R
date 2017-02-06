@@ -298,7 +298,6 @@ print.model_summary  = function(x) {
 #' MOD_summary(fit1) #unstd. data, std. betas
 #' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \code{summary}
 MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
-
   #check for model errors
   fail_if_NA(fitted_model$coef, msg = "The model parameters contained missing values. This is usually because of perfect linear dependency between predictors.")
 
@@ -355,7 +354,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     v_assign = fitted_model$assign + 1
 
     #init coefs
-    coefs = model_sum$coefficients[-1, 1:2] %>% as.data.frame
+    coefs = model_sum$coefficients[-1, 1:2, drop = F] %>% as.data.frame
     p_vals = model_sum$coefficients[, 4]
 
     #standardize?
@@ -730,5 +729,6 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = T) {
   #return
   c("raw_r2" = summary(lmfit)$r.squared, "cv_r2" = mean(v_runs, na.rm=T))
 }
+
 
 
