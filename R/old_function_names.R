@@ -29,6 +29,14 @@ check_missing = defunct("Depreciated. Don't rely on missingness.")
 MAT_get_half = defunct("Renamed to MAT_half")
 
 
+# modeling ----------------------------------------------------------------
+
+#' @export
+lm_best = defunct("This function has been removed. It's not a good way to do things.")
+
+#' @export
+lm_get_fits = defunct("This function has been removed. Just use purrr::map if you need this.")
+
 # spatial -----------------------------------------------------------------
 #' @export
 SAC_control_all_methods = defunct("This function has been moved to SAC_control")
