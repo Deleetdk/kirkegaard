@@ -325,6 +325,17 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
   #get predictors
   predictor_data = model_data[-1] %>% df_subset_by_pattern(pattern = "(weights)", inverse = T)
 
+  #summary
+  model_sum = summary(fitted_model)
+
+  #degrees of freedom
+  df = model_sum$df[2]
+
+  #init coefs
+  coefs = model_sum$coefficients[-1, 1:2, drop = F] %>% as.data.frame
+  colnames(coefs) = c("Beta", "SE") #rename cols
+  p_vals = model_sum$coefficients[, 4]
+
 
   if (all(class(fitted_model) == "lm")) {
     #higher order?
@@ -332,15 +343,14 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
       stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
     }
 
-    #summary
-    model_sum = summary(fitted_model)
 
-    #degrees of freedom
-    df = model_sum$df[2]
+    #the assign vector
+    v_assign = fitted_model$assign + 1
 
     #model meta
     model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
                             "N" = nrow(model_data),
+                            "df" = df,
                             "R2" = model_sum$r.squared,
                             "R2-adj." = model_sum$adj.r.squared,
                             "R2-cv" = NA,
@@ -351,13 +361,6 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
     if (kfold) {
       model_meta$`R2-cv` = MOD_k_fold_r2(fitted_model, folds = folds, runs = runs, ...)[2]
     }
-
-    #the assign vector
-    v_assign = fitted_model$assign + 1
-
-    #init coefs
-    coefs = model_sum$coefficients[-1, 1:2, drop = F] %>% as.data.frame
-    p_vals = model_sum$coefficients[, 4]
 
     #standardize?
     if (standardize) {
@@ -385,8 +388,8 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 
     #calculate CIs
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
-    coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
-    coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
+    coefs$CI_lower = coefs[, 1] - multiplier*coefs[, 2] #lower
+    coefs$CI_upper = coefs[, 1] + multiplier*coefs[, 2] #upper
 
   }
 
@@ -398,18 +401,13 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
       stop("Higher order (interaction) variables are not supported at this time! As an alternative, standardize the data before running the model to get standardized values.")
     }
 
-    #summary
-    model_sum = summary(fitted_model)
-
-    #degrees of freedom
-    df = model_sum$df[2]
-
     #values
     pseudo_r2 = 1 - (model_sum$deviance / model_sum$null.deviance)
 
     #meta values
     model_meta = data.frame("outcome" = fitted_model$model %>% names %>% `[`(1),
                             "N" = nrow(model_data),
+                            "df" = df,
                             "pseudo-R2" = pseudo_r2,
                             "deviance" = model_sum$deviance,
                             "pseudo-R2-cv" = NA,
@@ -418,10 +416,6 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 
     #cross validate?
     #TODO
-
-    #init coefs
-    coefs = model_sum$coefficients[-1, 1:2] %>% as.data.frame
-    p_vals = model_sum$coefficients[, 4]
 
     #since the assign vector isn't given, we create one
     v_assign = sapply(seq_along(model_data), function(i) {
@@ -461,8 +455,8 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 
     #calculate CIs
     multiplier = qt(1-((1-level)/2), df) #to calculate the CIs
-    coefs$CI.lower = coefs[, 1] - multiplier*coefs[, 2] #lower
-    coefs$CI.upper = coefs[, 1] + multiplier*coefs[, 2] #upper
+    coefs$CI_lower = coefs[, 1] - multiplier*coefs[, 2] #lower
+    coefs$CI_upper = coefs[, 1] + multiplier*coefs[, 2] #upper
 
   }
 
