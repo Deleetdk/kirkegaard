@@ -101,7 +101,7 @@ df_round = function(df, digits = 2, NA_as_empty_string = T, simple = F) {
   num_cols = purrr::map_lgl(df, is.numeric) %>% which
 
     for (idx in num_cols) {
-      df[idx] = round(df[[idx]], digits =  digits) %>%
+      df[[idx]] = round(df[[idx]], digits =  digits) %>%
         format(nsmall = digits) %>%
         stringr::str_replace(" *NA", "") %>%
         plyr::mapvalues("", NA, F)
