@@ -28,6 +28,6 @@ A wrapper function to \code{\link{write.table}} for writing to the clipboard for
 }
 \examples{
 iris[-5] \%>\% cor \%>\% write_clipboard
-iris \%>\% miss_add_random \%>\% write_clipboard
+iris \%>\% head \%>\% miss_add_random \%>\% write_clipboard
 }
 
