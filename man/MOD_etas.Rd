@@ -10,10 +10,13 @@ MOD_etas(fitted_model)
 \item{fitted_model}{(model) A model.}
 }
 \value{
-A matrix. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
+A data frame. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
 }
 \description{
 Converts a \code{lm} or \code{glm} to an analysis of variance, and calculates the etas (square rooted values of traditional eta^2).
+}
+\details{
+Is actually a wrapper for \code{\link{lsr::etaSquared}}, but returns the etas instead of eta squared, and returns a data frame not a matrix.
 }
 \examples{
 lm(Sepal.Length ~ Species + Petal.Width, data = iris) \%>\% MOD_etas

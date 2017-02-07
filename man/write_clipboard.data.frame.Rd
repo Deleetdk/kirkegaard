@@ -27,7 +27,7 @@
 A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 }
 \examples{
-write_clipboard(cor(iris[-5]))
-write_clipboard(miss_add_random(iris))
+iris[-5] \%>\% cor \%>\% write_clipboard
+iris \%>\% miss_add_random \%>\% write_clipboard
 }
 
