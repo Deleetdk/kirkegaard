@@ -60,20 +60,56 @@ df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w
 
 #' Round numeric variables of a data frame.
 #'
-#' Returns a data.frame where numeric variables have been rounded to the desired number of digits.
-#' @param df A data.frame or matrix.
-#' @param digits The number of digits to round to.
+#' Returns a data frame where numeric variables have been rounded to the desired number of digits.
+#'
+#' This method is intended for printing purposes. It preserves the number of digits after the decimal point even if they are redundant (e.g. round 2.100 to 2 digits yields 2.10, not 2.1). All columns are converted to character.
+#' @param df (data frame) A data.frame or matrix.
+#' @param digits (int) The number of digits to round to.
+#' @param NA_as_empty_string (lgl) Whether to convert \code{NA}s to empty strings ("").
+#' @param simple (lgl) Whether to just call \code{\link{round}} on all the numerical columns.
 #' @export
 #' @examples
-#' head(df_round(iris)) #round isis. Automatically skips non-numeric columns.
-#' head(df_round(iris, 0)) #round isis to 0 digits.
-df_round = function(df, digits=3) {
-  df = as.data.frame(df) #convert to df
-  for (idx in seq_along(df)) {
-    num = is.numeric(df[ , idx, drop = T]) #have to drop to get the variable not a df
-    if (num) {
-      df[idx] = round(df[idx], digits)
+#' #round to 2 digits by default
+#' iris %>% head %>% df_round
+#' #round to whole numbers
+#' iris %>% head %>% df_round(digits = 0)
+#' #NAs are converted to empty strings
+#' data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) %>% df_round
+#' #but this behavior can be toggled
+#' data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) %>% df_round(NA_as_empty_string = F)
+#' #if for whatever reason you want to just call \code{\link{round}} on all the numerical columns, use \code{simple=T}
+#' iris %>% head %>% df_round(digits = 1, simple = T)
+df_round = function(df, digits = 2, NA_as_empty_string = T, simple = F) {
+
+  #simple?
+  if (simple) {
+    df[] = lapply(df, function(x) {
+      if (is.numeric(x)) round(x, digits = digits) else x
+    })
+
+    return(df)
+  }
+
+  #factors to characters
+  df[] = lapply(df, function(x) {
+    if (is.factor(x)) as.character(x) else x
+  })
+
+  #as strings
+  #we want this is we want to print the output
+  #otherwise R gets rid of the redundant 0's at the end
+  num_cols = purrr::map_lgl(df, is.numeric) %>% which
+
+    for (idx in num_cols) {
+      df[idx] = round(df[[idx]], digits =  digits) %>%
+        format(nsmall = digits) %>%
+        stringr::str_replace(" *NA", "") %>%
+        plyr::mapvalues("", NA, F)
     }
+
+  #NAs to empty strings?
+  if (NA_as_empty_string) {
+    df[] = lapply(df, plyr::mapvalues, from = NA, to = "", warn_missing = F)
   }
 
   return(df)
@@ -84,7 +120,7 @@ df_round = function(df, digits=3) {
 #' Rank numeric variables of a data frame.
 #'
 #' Returns a data.frame where numeric variables have been converted to their ranks.
-#' @param df A data.frame.
+#' @param df (data frame) A data.frame.
 #' @param ... Other parameters for \code{\link{rank}}.
 #' @export
 #' @examples

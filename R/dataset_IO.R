@@ -50,7 +50,7 @@ output_sorted_var = function(df, var, filename) {
 #'
 #' See \code{\link{write_clipboard.data.frame}}, \code{\link{write_clipboard.model_summary}}.
 #' @export
-write_clipboard <- function(x) UseMethod("write_clipboard")
+write_clipboard <- function(...) UseMethod("write_clipboard")
 
 
 #' Write object to clipboard
@@ -77,8 +77,8 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
   if (pad_digits) {
     x = format(x, nsmall = digits)
 
-    #recode "NAs" as real NAs
-    x[] = lapply(x, str_detect_replace, pattern = " *NA", replacement = NA)
+    #recode "NAs" as empty strings
+    x[] = lapply(x, str_detect_replace, pattern = " *NA", replacement = "")
   }
 
   #clean
@@ -518,7 +518,7 @@ write_rvest = function(x, path, ...) {
 #' Reads an rvest/xml object from disk. This is a wrapper around read_rds.
 #' @param path (str) Where to read from.
 #' @param ... Other parameters to read_rds.
-#' @return x
+#' @return An XML object.
 #' @export
 read_rvest = function(path) {
   #load from file

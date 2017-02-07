@@ -12,7 +12,7 @@ read_rvest(path)
 \item{...}{Other parameters to read_rds.}
 }
 \value{
-x
+An XML object.
 }
 \description{
 Reads an rvest/xml object from disk. This is a wrapper around read_rds.

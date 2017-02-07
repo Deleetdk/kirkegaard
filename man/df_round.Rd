@@ -4,18 +4,33 @@
 \alias{df_round}
 \title{Round numeric variables of a data frame.}
 \usage{
-df_round(df, digits = 3)
+df_round(df, digits = 2, NA_as_empty_string = T, simple = F)
 }
 \arguments{
-\item{df}{A data.frame or matrix.}
+\item{df}{(data frame) A data.frame or matrix.}
 
-\item{digits}{The number of digits to round to.}
+\item{digits}{(int) The number of digits to round to.}
+
+\item{NA_as_empty_string}{(lgl) Whether to convert \code{NA}s to empty strings ("").}
+
+\item{simple}{(lgl) Whether to just call \code{\link{round}} on all the numerical columns.}
 }
 \description{
-Returns a data.frame where numeric variables have been rounded to the desired number of digits.
+Returns a data frame where numeric variables have been rounded to the desired number of digits.
+}
+\details{
+This method is intended for printing purposes. It preserves the number of digits after the decimal point even if they are redundant (e.g. round 2.100 to 2 digits yields 2.10, not 2.1). All columns are converted to character.
 }
 \examples{
-head(df_round(iris)) #round isis. Automatically skips non-numeric columns.
-head(df_round(iris, 0)) #round isis to 0 digits.
+#round to 2 digits by default
+iris \%>\% head \%>\% df_round
+#round to whole numbers
+iris \%>\% head \%>\% df_round(digits = 0)
+#NAs are converted to empty strings
+data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) \%>\% df_round
+#but this behavior can be toggled
+data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) \%>\% df_round(NA_as_empty_string = F)
+#if for whatever reason you want to just call \\code{\\link{round}} on all the numerical columns, use \\code{simple=T}
+iris \%>\% head \%>\% df_round(digits = 1, simple = T)
 }
 

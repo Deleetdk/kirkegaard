@@ -4,7 +4,7 @@
 \alias{write_clipboard}
 \title{Write object to clipboard}
 \usage{
-write_clipboard(x)
+write_clipboard(...)
 }
 \description{
 S3 generic function to write objects to the clipboard for easy use.

@@ -21,9 +21,34 @@ test_that("df_standardize", {
 })
 
 # df_round ----------------------------------------------------------------
-
 test_that("df_round", {
-  expect_equivalent(df_round(iris[-5]), iris[-5] %>% map_df(round, 2))
+  expect_equivalent(iris %>% head(1) %>% df_round,
+                    data.frame(Sepal.Length = "5.10",
+                               Sepal.Width = "3.50",
+                               Petal.Length = "1.40",
+                               Petal.Width = "0.20",
+                               Species = "setosa",
+                               stringsAsFactors = F)
+                    )
+
+  expect_equivalent(iris %>% head(1) %>% df_round(digits = 0),
+                    data.frame(Sepal.Length = "5",
+                               Sepal.Width = "4",
+                               Petal.Length = "1",
+                               Petal.Width = "0",
+                               Species = "setosa",
+                               stringsAsFactors = F)
+                    )
+
+  expect_equivalent(iris %>% `[`(2, ) %>% df_round(digits = 1, simple = T),
+                    data.frame(Sepal.Length = 4.9,
+                               Sepal.Width = 3.0,
+                               Petal.Length = 1.4,
+                               Petal.Width = 0.2,
+                               Species = "setosa")
+  )
+
+
 })
 
 # df_as_num ---------------------------------------------------------------

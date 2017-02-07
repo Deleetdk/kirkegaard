@@ -7,7 +7,7 @@
 df_rank(df, ...)
 }
 \arguments{
-\item{df}{A data.frame.}
+\item{df}{(data frame) A data.frame.}
 
 \item{...}{Other parameters for \code{\link{rank}}.}
 }
