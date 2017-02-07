@@ -242,8 +242,10 @@ make_nicer_coefs = function(fitted_model, coefs = NULL, model_data = NULL) {
 #' Get etas from analysis of variance
 #'
 #' Converts a \code{lm} or \code{glm} to an analysis of variance, and calculates the etas (square rooted values of traditional eta^2).
+#'
+#' Is actually a wrapper for \code{\link{lsr::etaSquared}}, but returns the etas instead of eta squared, and returns a data frame not a matrix.
 #' @param fitted_model (model) A model.
-#' @return A matrix. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
+#' @return A data frame. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
 #' @export
 #' @examples
 #' lm(Sepal.Length ~ Species + Petal.Width, data = iris) %>% MOD_etas
@@ -257,9 +259,9 @@ MOD_etas = function(fitted_model) {
   etas = etassq %>% sqrt
 
   #rename
-  colnames(etas) %<>% stringr::str_replace(".sq", "")
+  colnames(etas) = c("eta", "eta_partial")
 
-  etas
+  as.data.frame(etas)
 }
 
 
@@ -476,41 +478,6 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 
 
   return(return_list)
-}
-
-
-
-#' Get R2 and R2 adj. for each model.
-#'
-#' Returns a data.frame with each models R2 and R2 adj.
-#' @param model_list (list) A list of model fits e.g. from lm().
-#' @export
-lm_get_fits = function(model_list) {
-  d = as.data.frame(matrix(nrow = length(model_list), ncol = 2))
-  colnames(d) = c("R2", "R2_adj")
-
-  for (idx in 1:length(model_list)) {
-    mod = model_list[[idx]]
-    s = summary(mod)
-    d[idx, "R2"] = s$r.squared
-    d[idx, "R2_adj"] = s$adj.r.squared
-  }
-
-  return(d)
-}
-
-
-
-#' Find the best model by R2 adj. value.
-#'
-#' Returns the index of the model with the highest R2 adj. value.
-#' @param model_list A list of model fits e.g. from lm().
-#' @export
-#' @examples
-#' lm_best()
-lm_best = function(model_list) {
-  fit_df = lm_get_fits(model_list)[2]
-  return(which_max2(fit_df)[1])
 }
 
 

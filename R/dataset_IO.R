@@ -65,8 +65,8 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @param .rownames (lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.
 #' @export
 #' @examples
-#' write_clipboard(cor(iris[-5]))
-#' write_clipboard(miss_add_random(iris))
+#' iris[-5] %>% cor %>% write_clipboard
+#' iris %>% miss_add_random %>% write_clipboard
 write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
 
   #round
@@ -121,10 +121,18 @@ write_clipboard.matrix = write_clipboard.data.frame
 
 
 #helper function for printing lists of heterogenous data frames
-ldf_to_long_mat = function(x) {
+ldf_to_long_mat = function(x, only_interesting_rownames = T) {
 
   #convert rownames and colnames to explicit names
   x_explicit_names = purrr::map(x, function(.) {
+    #boring rownames?
+    if (only_interesting_rownames && are_equal(rownames(.), as.character(1:nrow(.)))) {
+      y = rbind(colnames(.), as.matrix(.))
+      rownames(y) = NULL
+      colnames(y) = NULL
+      return(y)
+    }
+
     #append rownames to new leftmost col
     #and colnames to new top row, put NA in the corner
     y = cbind(c(NA, rownames(.)), rbind(colnames(.), as.matrix(.)))
@@ -186,8 +194,9 @@ ldf_to_long_mat = function(x) {
 #' Restructures a model summary object to a matrix and writes it to the clipboard.
 #' @export
 #' @examples
-#' lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary %>% write_clipboard
+#' lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary(kfold=F) %>% write_clipboard
 write_clipboard.model_summary = function(x, digits = 2) {
+
   #rerestructure to a matrix suitable for clipboard
   ldf_to_long_mat(list(
     #coefs
