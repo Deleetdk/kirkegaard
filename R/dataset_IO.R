@@ -53,7 +53,7 @@ output_sorted_var = function(df, var, filename) {
 write_clipboard <- function(...) UseMethod("write_clipboard")
 
 
-#' Write object to clipboard
+#' Write data frame to clipboard
 #'
 #' A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 #' @param x (any object that works with write.table) Something to write to the clipboard.
@@ -63,11 +63,13 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @param pad_digits (log scalar) Whether to pad zeros to the digits (for prettier tables; default = T).
 #' @param print (log scalar) Whether to also print the output in R (default T).
 #' @param .rownames (lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.
+#' @param write_to_clipboard (lgl) Whether to write to the clipboard. Can be useful to disable in rare cases.
+#' @param return_modified (lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.
 #' @export
 #' @examples
 #' iris[-5] %>% cor %>% write_clipboard
-#' iris %>% miss_add_random %>% write_clipboard
-write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T) {
+#' iris %>% head %>% miss_add_random %>% write_clipboard
+write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T, write_to_clipboard = T, return_modified = F) {
 
   #round
   x_orig = x
@@ -98,36 +100,52 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
   #print
   if (print) print(x)
 
-  if (Sys.info()['sysname'] == "Linux") {
-    if (.rownames) write.table(cbind(".rownames" = rownames(x), x), pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
-    if (!.rownames) write.table(x, pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
+  #write to clipboard
+  if (write_to_clipboard) {
+    if (Sys.info()['sysname'] == "Linux") {
+      if (.rownames) write.table(cbind(".rownames" = rownames(x), x), pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
+      if (!.rownames) write.table(x, pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
 
-    #was it written?
-    if (!are_equal(silence(read.table("clipboard")), x)) {
-      warning("write.table does not work on linux. I have not found a method to get it to work.")
+      #was it written?
+      if (!are_equal(silence(read.table("clipboard")), x)) {
+        warning("write.table does not work on linux. I have not found a method to get it to work.")
+      }
+    } else {
+      if (.rownames) write.table(cbind(".rownames" = rownames(x), x), "clipboard", sep = "\t", na = "", row.names = F)
+      if (!.rownames) write.table(x, "clipboard", sep = "\t", na = "", row.names = F)
     }
-  } else {
-    if (.rownames) write.table(cbind(".rownames" = rownames(x), x), "clipboard", sep = "\t", na = "", row.names = F)
-    if (!.rownames) write.table(x, "clipboard", sep = "\t", na = "", row.names = F)
   }
 
-  #silently return the output too
-  invisible(x_orig)
+
+  #return
+  if (return_modified) {
+    return(invisible(x))
+  } else {
+    return(invisible(x_orig))
+  }
 }
 
+
 #for matrix, use data frame function
+#' Write matrix to clipboard
+#'
+#' Write a matrix to the clipboard with clean formating. Calls \code{\link{write_clipboard.data.frame}}.
 #' @export
 write_clipboard.matrix = write_clipboard.data.frame
 
 
 #helper function for printing lists of heterogenous data frames
-ldf_to_long_mat = function(x, only_interesting_rownames = T) {
+ldf_to_long_mat = function(x, rowname_headers = NULL, only_interesting_rownames = T, clean_colnames = T, clean_rownames = T) {
+  #rowname headers?
+  if (is.null(rowname_headers)) {
+    rowname_headers = rep(NA, length(x))
+  }
 
   #convert rownames and colnames to explicit names
-  x_explicit_names = purrr::map(x, function(.) {
+  x_explicit_names = purrr::map2(x, rowname_headers, function(., rh) {
     #boring rownames?
     if (only_interesting_rownames && are_equal(rownames(.), as.character(1:nrow(.)))) {
-      y = rbind(colnames(.), as.matrix(.))
+      y = rbind(colnames(.) %>% str_clean, as.matrix(.))
       rownames(y) = NULL
       colnames(y) = NULL
       return(y)
@@ -135,7 +153,7 @@ ldf_to_long_mat = function(x, only_interesting_rownames = T) {
 
     #append rownames to new leftmost col
     #and colnames to new top row, put NA in the corner
-    y = cbind(c(NA, rownames(.)), rbind(colnames(.), as.matrix(.)))
+    y = cbind(c(rh, rownames(.) %>% str_clean), rbind(colnames(.) %>% str_clean, as.matrix(.)))
     rownames(y) = NULL
     colnames(y) = NULL
     y
@@ -194,7 +212,7 @@ ldf_to_long_mat = function(x, only_interesting_rownames = T) {
 #' Restructures a model summary object to a matrix and writes it to the clipboard.
 #' @export
 #' @examples
-#' lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary(kfold=F) %>% write_clipboard
+#' lm(Sepal.Length ~ Petal.Length, data = iris) %>% MOD_summary(kfold = F) %>% write_clipboard
 write_clipboard.model_summary = function(x, digits = 2) {
 
   #rerestructure to a matrix suitable for clipboard
@@ -207,7 +225,7 @@ write_clipboard.model_summary = function(x, digits = 2) {
 
     #etas
     etas = x$aov_etas %>% df_round(digits = digits)
-  )) %>%
+  ), rowname_headers = c("Predictor", NA, "Predictor")) %>%
     #call generic again
     write_clipboard()
 }

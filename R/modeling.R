@@ -245,7 +245,7 @@ make_nicer_coefs = function(fitted_model, coefs = NULL, model_data = NULL) {
 #'
 #' Is actually a wrapper for \code{\link{lsr::etaSquared}}, but returns the etas instead of eta squared, and returns a data frame not a matrix.
 #' @param fitted_model (model) A model.
-#' @return A data frame. Eta is the square root of the eta^2 metric (equivalent to r^2), eta.part is the sqrt of the partial eta^2.
+#' @return A data frame. Eta is the square root of the eta^2 metric (equivalent to r^2), eta_partial is the square root of the partial eta^2.
 #' @export
 #' @examples
 #' lm(Sepal.Length ~ Species + Petal.Width, data = iris) %>% MOD_etas
@@ -259,7 +259,7 @@ MOD_etas = function(fitted_model) {
   etas = etassq %>% sqrt
 
   #rename
-  colnames(etas) = c("eta", "eta_partial")
+  colnames(etas) = c("Eta", "Eta_partial")
 
   as.data.frame(etas)
 }

@@ -2,11 +2,11 @@
 % Please edit documentation in R/dataset_IO.R
 \name{write_clipboard.data.frame}
 \alias{write_clipboard.data.frame}
-\title{Write object to clipboard}
+\title{Write data frame to clipboard}
 \usage{
 \method{write_clipboard}{data.frame}(x, digits = 2, clean_names = T,
   clean_what = c("_", "\\\\."), pad_digits = T, print = T,
-  .rownames = T)
+  .rownames = T, write_to_clipboard = T, return_modified = F)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}
@@ -22,6 +22,10 @@
 \item{print}{(log scalar) Whether to also print the output in R (default T).}
 
 \item{.rownames}{(lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.}
+
+\item{write_to_clipboard}{(lgl) Whether to write to the clipboard. Can be useful to disable in rare cases.}
+
+\item{return_modified}{(lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.}
 }
 \description{
 A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
