@@ -246,3 +246,17 @@ test_that("df_residualize", {
   #with weights
   expect_true(all(df_residualize(df, resid.vars = "c", weights = weightsvar, print.models = F) %>% get_dims() == c(5, 3)))
 })
+
+
+
+# df_merge_cols -----------------------------------------------------------
+
+
+test_that("df_merge_cols", {
+  expect_equivalent(data_frame(
+    a = c(1, NA, NA),
+    b = c(-1, 2, NA),
+    c = c(-5, -9, 3)
+  ) %>% df_merge_cols(letters[1:3]), 1:3)
+})
+
