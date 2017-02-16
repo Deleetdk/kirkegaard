@@ -29,4 +29,3 @@ str(iris_chr)
 str(df_as_num(iris_chr)) #convert back
 all(iris == df_as_num(iris_chr)) #confirm identity
 }
-

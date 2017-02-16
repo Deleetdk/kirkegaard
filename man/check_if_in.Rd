@@ -21,4 +21,3 @@ Checks whether an object is in a list/vector. If not, returns an informative err
 check_if_in("a", letters[1:10])
 check_if_in("a", letters[2])
 }
-

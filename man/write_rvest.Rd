@@ -19,4 +19,3 @@ Invisibly returns x for use in pipelines.
 \description{
 Writes an rvest/xml object to disk for reuse. This is a wrapper around write_rds.
 }
-

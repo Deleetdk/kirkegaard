@@ -17,4 +17,3 @@ A wrapper for writeLines() and capture.output().
 \examples{
 write_sessioninfo("session_info.txt", print = TRUE)
 }
-

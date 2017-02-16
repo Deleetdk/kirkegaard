@@ -29,4 +29,3 @@ sample(letters[1:10], size = 100, replace = T) \%>\% table2(sort_descending = F)
 #using factor levels
 sample(letters[1:10], size = 100, replace = T) \%>\% table2(sort_descending = NULL)
 }
-

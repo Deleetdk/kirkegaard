@@ -19,4 +19,3 @@ A wrapper for names to test for existence of names.
 has_names(iris)
 has_names(1:4)
 }
-

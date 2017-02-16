@@ -18,4 +18,3 @@ get_dims(v)
 m = matrix(1:9, nrow=3)
 get_dims(m)
 }
-

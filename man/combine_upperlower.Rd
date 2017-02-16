@@ -19,4 +19,3 @@ Returns a matrix composed of an upper and a upper part.
 \examples{
 combine_upperlower()
 }
-

@@ -18,4 +18,3 @@ Inputs any object, checks if it contains NA. If yes, throws an error. If not, re
 fail_if_NA(1:10) #no NAs
 fail_if_NA(c(1:3, NA, 1:3)) #NAs
 }
-

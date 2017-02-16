@@ -18,4 +18,3 @@ Calculates the proportions of missing data by case, variable and cell.
 \examples{
 miss_amount(miss_add_random(iris))
 }
-

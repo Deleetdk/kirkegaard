@@ -20,4 +20,3 @@ Factors with only two levels are kept as they are.
 \examples{
 head(as_num_matrix(iris)) #Convert iris to purely numerics. Two variables are created because the original had 3 levels.
 }
-

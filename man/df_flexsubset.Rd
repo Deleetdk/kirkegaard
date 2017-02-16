@@ -26,4 +26,3 @@ df_flexsubset(iris, c("Species", "Sepal.Length")) \%>\% str
 df_flexsubset(iris, c("Species", "test")) \%>\% str
 df_flexsubset(iris, c("test")) \%>\% str
 }
-

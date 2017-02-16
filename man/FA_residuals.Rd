@@ -19,4 +19,3 @@ Extracts the first factor, then uses the factor scores to predict the indicator 
 \examples{
 fa_residuals(iris[-5])
 }
-

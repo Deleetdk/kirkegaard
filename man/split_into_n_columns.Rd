@@ -27,4 +27,3 @@ split_into_n_columns(df, 2) #ok
 split_into_n_columns(df, 3) #ok
 split_into_n_columns(df, 4) #stupid but no error!
 }
-

@@ -12,4 +12,3 @@ Updates the package from Github
 \examples{
 update_package()
 }
-

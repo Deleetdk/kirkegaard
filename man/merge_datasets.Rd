@@ -24,4 +24,3 @@ This function allows you to merge two data.frames by their overlapping rownames.
 \examples{
 merge_datasets(iris[1:4], iris[1:5]) #merge together two parts of iris
 }
-

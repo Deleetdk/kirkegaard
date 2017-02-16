@@ -16,4 +16,3 @@ Returns a list of data.frames. This function is useful for doing leave one out c
 df = data.frame(n = 1:5, a = letters[1:5])
 get_each_subset_minus_1(df)
 }
-

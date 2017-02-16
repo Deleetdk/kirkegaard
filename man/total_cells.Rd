@@ -18,4 +18,3 @@ Calculate the total number of cells in an object. This is done by finding the pr
 \examples{
 total_cells(iris)
 }
-

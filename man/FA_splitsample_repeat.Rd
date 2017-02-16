@@ -28,4 +28,3 @@ Divides a dataset into 2 at random, extracts a factor from each and correlates t
 \examples{
 fa_splitsample_repeat(iris[-5])
 }
-

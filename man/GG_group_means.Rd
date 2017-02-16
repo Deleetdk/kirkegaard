@@ -47,4 +47,3 @@ GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "
 GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
 }
-

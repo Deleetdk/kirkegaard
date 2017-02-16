@@ -21,4 +21,3 @@ A more advanced version of \code{\link{is.numeric}}. It wraps the base-r functio
 is_numeric(iris)
 is_numeric(iris[-5])
 }
-

@@ -22,4 +22,3 @@ df = data.frame(c(1:10), letters[1:10]) #example data
 miss_add_random(df) #add 10\% random NAs
 miss_amount(df) #verify that 10\% really is missing
 }
-

@@ -17,4 +17,3 @@ Returns a single number which is the length of the sides of the original matrix.
 \examples{
 MAT_find_size(3)
 }
-

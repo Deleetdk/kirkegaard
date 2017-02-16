@@ -18,4 +18,3 @@ Calculates the patterns of missing data. This is the missing data matrix multipl
 \examples{
 miss_pattern(miss_add_random(iris))
 }
-

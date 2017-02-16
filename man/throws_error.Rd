@@ -20,4 +20,3 @@ throws_error(log(0)) #can take logarithm of 0
 throws_error("log(0)") #works on strings too
 throws_error("log(NULL)") #works on strings too
 }
-

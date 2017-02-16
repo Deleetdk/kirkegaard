@@ -20,4 +20,3 @@ is.vector(l)
 is_simple_vector(v)
 is_simple_vector(l)
 }
-

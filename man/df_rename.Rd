@@ -26,4 +26,3 @@ df_rename(iris, current_names = names(iris), new_names = rev(names(iris)[sample(
 #warning on non-existent names
 head(df_rename(iris, "bleh", "blah"))
 }
-

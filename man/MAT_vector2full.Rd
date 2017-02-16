@@ -21,4 +21,3 @@ Returns a symmetric matrix.
 \examples{
 MAT_vector2full(1:3)
 }
-

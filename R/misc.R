@@ -9,8 +9,6 @@
 #' @param .lower.tri a matrix or data.frame for the lower trianagle.
 #' @param .diag a value to insert in the diagonal. Defaults to NA.
 #' @export
-#' @examples
-#' combine_upperlower()
 combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
   #detect wrong input
   if (!is.matrix(.upper.tri) & !is.data.frame(.upper.tri)) {

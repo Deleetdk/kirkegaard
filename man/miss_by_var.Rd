@@ -19,4 +19,3 @@ miss_by_var(miss_add_random(iris))
 miss_by_var(iris)
 miss_by_var(iris, reverse = T)
 }
-

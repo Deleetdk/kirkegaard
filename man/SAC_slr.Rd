@@ -35,4 +35,3 @@ SAC_slr(df, dependent, predictors, k = 3, output = "trim10", dists, lat_var,
 \description{
 Returns either summary statistics for each predictor or a data.frame with the betas from each local regression.
 }
-

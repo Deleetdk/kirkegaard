@@ -19,4 +19,3 @@ Winsorizes the numbers, that is, reduces any number above a given limit to that 
 \examples{
 winsorise(seq(-3, 13), 10, 0)
 }
-

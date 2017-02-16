@@ -22,4 +22,3 @@ colnames(m) = LETTERS[1:3]
 copy_names(m, n)
 n
 }
-

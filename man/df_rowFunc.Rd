@@ -28,4 +28,3 @@ df_rowFunc(iris[-5]) #get means by row
 all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
 df_rowFunc(iris[-5], func = median) #rowMedians
 }
-

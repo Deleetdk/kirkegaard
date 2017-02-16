@@ -23,4 +23,3 @@ A wrapper for stringr's \code{\link{str_detect}} that returns the matched values
 str_filter(letters, pattern = "[aeiou]")
 str_filter(letters, pattern = "[aeiou]", reverse = T)
 }
-

@@ -26,4 +26,3 @@ Calculate standardized mean differneces between all groups.
 \examples{
 SMD_matrix(iris$Sepal.Length, iris$Species)
 }
-

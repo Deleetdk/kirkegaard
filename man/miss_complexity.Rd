@@ -21,4 +21,3 @@ This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introd
 \examples{
 miss_complexity(miss_add_random(iris))
 }
-

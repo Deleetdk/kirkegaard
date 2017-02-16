@@ -23,4 +23,3 @@ Calculates the partial correlation.
 \examples{
 MOD_partial()
 }
-

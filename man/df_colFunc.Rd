@@ -44,4 +44,3 @@ head(df_colFunc(iris, func = multiply_by_zero, pattern = "Length", keep_unselect
 #select all by not providing any selector
 str(df_colFunc(iris, func = as.character)) #all have been changed to chr
 }
-

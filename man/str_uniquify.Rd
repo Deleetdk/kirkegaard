@@ -28,4 +28,3 @@ x \%>\% str_uniquify
 #custom suffix using a second \%d.
 x \%>\% str_uniquify(" [\%d/\%d]")
 }
-

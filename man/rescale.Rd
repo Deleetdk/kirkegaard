@@ -26,4 +26,3 @@ rescale(1:10, new_min = 0, new_max = 5) #converts to 0, ..., 5
 rescale(rnorm(10), new_min = 1, new_max = 100) \%>\% sort #converts to 1, ..., 1
 rescale(c(.1, .5, 1), new_min = 10, new_max = 20, old_min = 0, old_max = 1) #assume old numbers belong to scale 0-1, rescale to 10-20 scale, i.e. 11, 15, 20
 }
-

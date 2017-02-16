@@ -26,4 +26,3 @@ lengths_match(iris, iris[1:2]) #same nrow
 lengths_match(iris, iris[1:2], dimension = 2) #different ncol
 lengths_match(iris, 1:3, dimension = 2) #incompatible objects
 }
-

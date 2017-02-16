@@ -18,4 +18,3 @@ Returns a character string with newlines every nth character. Works for characte
 set.seed(2)
 add_newlines(paste0(sample(c(letters, " "), size = 100, replace = T), collapse = ""))
 }
-

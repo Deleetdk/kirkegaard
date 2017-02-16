@@ -17,4 +17,3 @@ is_whole_number(1L)
 is.integer(1)
 is_whole_number(1)
 }
-

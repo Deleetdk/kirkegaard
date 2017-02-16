@@ -26,4 +26,3 @@ miss_plot(test_data, case = F) #variables
 miss_plot(test_data, case = F, percent = F) #variables, raw
 miss_plot(test_data, reverse = T) #reverse
 }
-

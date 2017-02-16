@@ -27,4 +27,3 @@ sd(X) #0.898
 wtd_sd(X, W) #0.894, slightly different
 wtd_sd(X) #0.898, not using weights
 }
-

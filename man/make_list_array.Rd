@@ -18,4 +18,3 @@ A convenience function to create a list-array. A list with dimensions like an ar
 \examples{
 make_list_array(1:3, letters[1:3], LETTERS[1:3])
 }
-

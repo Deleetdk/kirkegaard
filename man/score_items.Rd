@@ -22,4 +22,3 @@ library(psych) #for ICAR data
 d = score_items(iqitems, c(4,4,4, 6,  6,3,4,4,   5,2,2,4,   3,2,6,7)) #score and save
 psych::alpha(d) #examine internal consistency
 }
-

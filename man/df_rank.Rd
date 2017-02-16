@@ -17,4 +17,3 @@ Returns a data.frame where numeric variables have been converted to their ranks.
 \examples{
 head(df_rank(iris)) #rank iris data. Automatically skips non-numeric columns.
 }
-

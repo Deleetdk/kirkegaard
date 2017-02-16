@@ -33,4 +33,3 @@ data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) \%>\% df_round(NA_as_e
 #if for whatever reason you want to just call \\code{\\link{round}} on all the numerical columns, use \\code{simple=T}
 iris \%>\% head \%>\% df_round(digits = 1, simple = T)
 }
-

@@ -16,4 +16,3 @@ A simple wrapper for is.factor and is.ordered.
 is_unordered_factor(factor(1:3))
 is_unordered_factor(ordered(1:3))
 }
-

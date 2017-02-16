@@ -22,4 +22,3 @@ df_remove_NA_vars(data.frame(a = NA, b = 1))
 df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a")
 df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1)
 }
-

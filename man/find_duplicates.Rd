@@ -18,4 +18,3 @@ Find groups of duplicates elements in a vector.
 \examples{
 find_duplicates(c(1, 1, 2, 2, 3, 4, 5, 5))
 }
-

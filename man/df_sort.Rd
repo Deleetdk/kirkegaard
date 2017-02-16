@@ -21,4 +21,3 @@ head(df_sort(iris, 1)) #sort by the first variable, increasing order
 head(df_sort(iris, 1, decreasing = T)) #sort by the first variable, decreasing order
 head(df_sort(iris, "Species")) #sort by Species variable
 }
-

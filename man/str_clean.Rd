@@ -26,4 +26,3 @@ A simple wrapper str_replace_all() with sensible defaults.
 \examples{
 str_clean(colnames(iris))
 }
-

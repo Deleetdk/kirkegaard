@@ -28,4 +28,3 @@ wtd_mean(X) # not using weights
 mean(X) #same as above
 wtd_mean(X, W) #slightly different
 }
-

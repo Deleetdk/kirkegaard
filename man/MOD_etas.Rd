@@ -21,4 +21,3 @@ Is actually a wrapper for \code{\link{lsr::etaSquared}}, but returns the etas in
 \examples{
 lm(Sepal.Length ~ Species + Petal.Width, data = iris) \%>\% MOD_etas
 }
-

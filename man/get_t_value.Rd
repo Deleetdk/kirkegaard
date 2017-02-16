@@ -20,4 +20,3 @@ Wrapper function for \code{qt} to get the t value needed for finding confidence 
 #get t value for 95 pct. confidence interval with df = 20
 get_t_value(.95, 20)
 }
-

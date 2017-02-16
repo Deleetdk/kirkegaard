@@ -20,4 +20,3 @@ Adds intuitive middle values to a vector of values. Useful for when plotting dat
 #add extra
 helper_breaks(10^(0:5))
 }
-

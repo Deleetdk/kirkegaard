@@ -9,4 +9,3 @@
 \description{
 Custom printing function for model_summary class
 }
-

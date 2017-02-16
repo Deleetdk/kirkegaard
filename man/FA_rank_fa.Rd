@@ -17,4 +17,3 @@ Runs factor analysis on a rank-ordered dataset which prevents outliers from havi
 \examples{
 fa_rank_fa()
 }
-

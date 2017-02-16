@@ -17,4 +17,3 @@ Appends each column after each other. A wrapper for unlist() that also removes t
 \examples{
 df_to_v(iris)
 }
-

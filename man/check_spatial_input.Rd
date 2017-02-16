@@ -26,4 +26,3 @@ Returns a list with the results of the check. This is generally only used as a h
 \examples{
 check_spatial_input()
 }
-

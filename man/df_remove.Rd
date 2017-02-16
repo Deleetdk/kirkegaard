@@ -20,4 +20,3 @@ Remove variables from a data.frame by name, position or logical.
 #iris[-c("Sepal.Length", "Species")]
 names(df_remove(iris, c("Sepal.Length", "Species")))
 }
-

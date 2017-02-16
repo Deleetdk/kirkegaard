@@ -42,4 +42,3 @@ fa = fa(cors)
 fa_Jensens_method(fa, okcupid_social_prudence, criterion = "CA")
 #output shows that indicators with larger loadings tend to be more positively related to cognitive ability
 }
-

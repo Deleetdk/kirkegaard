@@ -36,4 +36,3 @@ Convert names of political units to standardized abbreviations or convert standa
 \examples{
 pu_translate("DNK", reverse = T)
 }
-

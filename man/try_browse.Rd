@@ -15,4 +15,3 @@ Browse on error. Calls browse in the parent.frame so that one can see the contex
 \examples{
 try_browse({log("p")})
 }
-

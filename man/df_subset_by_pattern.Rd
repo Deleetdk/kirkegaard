@@ -26,4 +26,3 @@ Subsets using [] and with drop=FALSE.
 df_subset_by_pattern(iris, "Length") # length columns
 df_subset_by_pattern(iris, "Length", T) # non-length columns
 }
-

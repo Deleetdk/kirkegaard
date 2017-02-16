@@ -23,4 +23,3 @@ all_elements_the_same(l_testlist_ok) #TRUE
 all_elements_the_same(l_testlist_bad) #FALSE
 all_elements_the_same(list()) #TRUE if list is empty
 }
-

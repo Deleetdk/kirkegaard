@@ -28,4 +28,3 @@ MaxALC, max absolute loading change. Measures the maximal loading change.
 \examples{
 fa_mixedness(iris[-5])
 }
-

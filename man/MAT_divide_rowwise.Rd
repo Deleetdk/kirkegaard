@@ -25,4 +25,3 @@ MAT_divide_rowwise(m, c(1, 2)) #row-wise
 #works on data.frames too
 MAT_divide_rowwise(iris[-5], c(1, 999, 1, 999)) \%>\% head
 }
-

@@ -23,4 +23,3 @@ GG_contingency_table(mpg, "drv", "cyl")
 GG_contingency_table(mpg, "drv", "cyl", margin = 1)
 GG_contingency_table(mpg, "drv", "cyl", margin = 2)
 }
-

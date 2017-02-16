@@ -33,4 +33,3 @@ hist(x)
 y = discretize(rnorm(100), 5, equal_range = F)
 hist(y)
 }
-

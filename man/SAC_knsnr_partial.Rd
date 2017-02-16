@@ -29,4 +29,3 @@ SAC_knsnr_partial(df, variables, k = 3, dists, lat_var, lon_var,
 \description{
 Removes SAC in each variable using knsnr and then correlates them with each other. Returns a correlation matrix.
 }
-

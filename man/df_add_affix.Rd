@@ -21,4 +21,3 @@ test_iris = iris[1:10, ] #small test dataset
 df_add_affix(test_iris, prefix = "P_") #ad P_ prefix
 df_add_affix(test_iris, suffix = "_S") #ad _S suffix
 }
-

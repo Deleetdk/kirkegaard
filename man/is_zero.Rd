@@ -16,4 +16,3 @@ A wrapper for "== 0".
 is_zero(0)
 is_zero(1)
 }
-

@@ -19,4 +19,3 @@ Add an ID column to a data.frame. Convenience function.
 \examples{
 head(df_add_id(iris, "A")) #Add an ID column named "ID" filled with "A"
 }
-

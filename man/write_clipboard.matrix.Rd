@@ -11,4 +11,3 @@
 \description{
 Write a matrix to the clipboard with clean formating. Calls \code{\link{write_clipboard.data.frame}}.
 }
-

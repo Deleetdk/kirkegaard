@@ -20,4 +20,3 @@ Construct a data.frame from a list of named vectors by filling in the shorter ve
 l = list(A = c(a = 1, b = 2, c = 3), B = c(a = 3, b = 2, c = 1))
 named_vectors_to_df(l)
 }
-

@@ -15,4 +15,3 @@ Takes an input either a list of factor analysis objects from fa() (psych package
 \examples{
 fa_congruence_matrix()
 }
-

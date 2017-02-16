@@ -24,4 +24,3 @@ v_to_df(1:4)
 v_to_df(c(a = 1, b = 2, c = 3, d = 4))
 v_to_df(c(a = 1, b = 2, c = 3, d = 4), name_col = "name")
 }
-

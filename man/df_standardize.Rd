@@ -29,4 +29,3 @@ head(df_standardize(iris)) #standardized
 head(df_standardize(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
 head(df_standardize(iris, w = runif(150))) #standardized with weights
 }
-

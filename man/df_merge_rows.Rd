@@ -42,4 +42,3 @@ t
 df_merge_rows(t, "large_unit") #rows merged by sum by default
 df_merge_rows(t, "large_unit", func = mean) #rows merged by mean
 }
-

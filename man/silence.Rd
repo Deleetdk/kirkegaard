@@ -24,4 +24,3 @@ silence(warning("test"), warnings = T)
 silence(message("test"))
 silence(message("test"), messages = T)
 }
-

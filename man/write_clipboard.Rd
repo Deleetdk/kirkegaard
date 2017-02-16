@@ -12,4 +12,3 @@ S3 generic function to write objects to the clipboard for easy use.
 \details{
 See \code{\link{write_clipboard.data.frame}}, \code{\link{write_clipboard.model_summary}}.
 }
-

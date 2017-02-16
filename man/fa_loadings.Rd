@@ -23,4 +23,3 @@ fa_loadings(psych::fa(iris[-5], 2), long_form = T)
 fa_loadings(psych::fa(iris[-5], 2), .40)
 fa_loadings(psych::fa(iris[-5], 2), .20, long_form = T)
 }
-

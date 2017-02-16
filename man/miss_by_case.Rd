@@ -19,4 +19,3 @@ miss_by_case(miss_add_random(iris))
 miss_by_case(iris)
 miss_by_case(iris, reverse = T)
 }
-

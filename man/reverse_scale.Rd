@@ -22,4 +22,3 @@ reverse_scale(x) #reverse scores: 3 becomes -3
 x == reverse_scale(reverse_scale(x)) #reverse twice and get back
 reverse_scale(x, .min = -3, .max = 10) #supply other min/max
 }
-

@@ -28,4 +28,3 @@ wtd_sum(X) # not using weights
 sum(X) #same as above
 wtd_sum(X, W) #different
 }
-

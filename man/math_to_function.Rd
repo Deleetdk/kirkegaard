@@ -23,4 +23,3 @@ Takes a string like "<0" and outputs a function to test for that condition. Retu
 math_to_function("<0")(-1) #check if -1<0
 math_to_function("=0")(1234) #check if 1235=0
 }
-

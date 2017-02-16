@@ -15,4 +15,3 @@ Wrapper for matrixplot() from VIM, but automatically substrings the variable nam
 \examples{
 matrixplot2(miss_add_random(iris))
 }
-

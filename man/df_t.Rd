@@ -18,4 +18,3 @@ Transpose a data.frame, returning a data.frame that also keeps the dimnames.
 \examples{
 df_t(iris)
 }
-

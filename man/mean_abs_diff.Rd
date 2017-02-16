@@ -17,4 +17,3 @@ Calculates all the pairwise absolute differences, then averages them.
 \examples{
 mean_abs_diff(iris[[1]])
 }
-

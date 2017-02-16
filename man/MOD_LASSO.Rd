@@ -40,4 +40,3 @@ The messages parameter is depreceated in favor of the progress parameter.
 \examples{
 MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
 }
-

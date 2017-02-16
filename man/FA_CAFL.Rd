@@ -21,4 +21,3 @@ Examines how the exclusion of each particular case influences the factor loading
 \examples{
 fa_robust_cormatrix()
 }
-

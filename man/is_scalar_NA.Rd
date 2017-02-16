@@ -23,4 +23,3 @@ is_scalar(1:3)
 is_scalar_NA(c(1, NA))
 is_scalar_NA(c(NA, 1))
 }
-

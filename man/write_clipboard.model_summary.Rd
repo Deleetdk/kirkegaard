@@ -12,4 +12,3 @@ Restructures a model summary object to a matrix and writes it to the clipboard.
 \examples{
 lm(Sepal.Length ~ Petal.Length, data = iris) \%>\% MOD_summary(kfold = F) \%>\% write_clipboard
 }
-

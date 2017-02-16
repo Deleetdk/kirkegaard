@@ -26,4 +26,3 @@ extract_last(iris, 1) # last row
 extract_last(iris, , 1) # last column
 extract_last(iris, 5:1, 2:1) #last 5 elements rows and last 2 columns
 }
-

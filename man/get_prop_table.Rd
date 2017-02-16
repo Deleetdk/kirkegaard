@@ -17,4 +17,3 @@ Cuts a vector into a specified number of equal sized bins and calculations the p
 \examples{
 get_prop_table(iris$Sepal.Length)
 }
-

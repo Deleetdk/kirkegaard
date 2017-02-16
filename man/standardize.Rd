@@ -26,4 +26,3 @@ W = runif(100)
 standardize(X, W)
 standardize(X, robust = T) #almost the same for these data
 }
-

@@ -34,4 +34,3 @@ weightsvar = runif(5)
 df_residualize(df, resid.vars = "c") #without weights
 df_residualize(df, resid.vars = "c", weights = weightsvar) #with weights
 }
-

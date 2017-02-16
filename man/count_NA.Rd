@@ -21,4 +21,3 @@ A simple wrapper for \code{\link{is.na}} and \code{\link{sum}}.
 m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)
 count_NA(m)
 }
-

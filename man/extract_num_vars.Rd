@@ -18,4 +18,3 @@ Extract the numerical variables from a data.frame or matrix.
 \examples{
 extract_num_vars(iris)
 }
-

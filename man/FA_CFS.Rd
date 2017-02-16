@@ -19,4 +19,3 @@ Returns a numerical vector of the change in the size of the first factor by remo
 \examples{
 fa_CFS(iris[-5])
 }
-

@@ -37,4 +37,3 @@ Use \code{\link{MOD_summarize_models}} on the data.frame with model summary info
 #try all models in iris dataset to predict sepal length
 MOD_APSLM(dependent = "Sepal.Length", predictors = c("Sepal.Width", "Petal.Length", "Petal.Width", "Species"), data = iris)
 }
-

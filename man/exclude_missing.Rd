@@ -32,4 +32,3 @@ exclude_missing(x, .Inf = F)
 x = list(1, NA, 2, NULL, 3, NaN, 4, Inf, 1:3, c(1, NA, 3))
 exclude_missing(x) #does not remove NAs recursively
 }
-

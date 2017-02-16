@@ -33,4 +33,3 @@ fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
 MOD_summary(fit1) #unstd. data, std. betas
 MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \\code{summary}
 }
-

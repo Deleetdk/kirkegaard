@@ -22,4 +22,3 @@ homogeneity(iris$Species, reverse = T)
 homogeneity(c(.7, .2, .1), summary = T)
 homogeneity(c(80, 15, 5), summary = T)
 }
-

@@ -18,4 +18,3 @@ all_the_same(rnorm(100))
 all_the_same(letters[rep(1, 10)])
 all_the_same(letters[sample(1:10, size = 10)])
 }
-

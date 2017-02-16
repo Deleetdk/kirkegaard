@@ -21,4 +21,3 @@ df = data.frame(1:10, letters[1:10])
 df = miss_add_random(df)
 miss_filter(df)
 }
-

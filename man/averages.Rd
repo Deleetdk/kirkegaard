@@ -29,4 +29,3 @@ averages(x)
 set.seed(1)
 averages(rnorm(1000)) #some functions give warnings when there are negative numbers
 }
-

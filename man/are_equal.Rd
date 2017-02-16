@@ -31,4 +31,3 @@ attr(b, "test") = "value"
 are_equal(a, b)
 are_equal(a, b, check.attributes = F)
 }
-

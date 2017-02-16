@@ -26,4 +26,3 @@ fit_wtd = lm("Petal.Length ~ Sepal.Length", data = iris, weight = Sepal.Width) #
 MOD_k_fold_r2(fit) #raw r2 and cv r2
 MOD_k_fold_r2(fit_wtd) #different r2 due to weights
 }
-

@@ -27,4 +27,3 @@ A wrapper for stringr's \code{\link{str_c}} and the primitive "+" function.
 #longer than length 1
 1:2 + "a"
 }
-

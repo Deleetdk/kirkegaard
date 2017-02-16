@@ -12,4 +12,3 @@ read_mega(filename)
 \description{
 This is a convenient wrapper for read.csv()
 }
-

@@ -20,4 +20,3 @@ Returns a vector with the values in one half of the matrix. Which half and wheth
 cor(iris[-5]) #can't summarize this data due to diagonal
 MAT_half(cor(iris[-5])) #this data we can
 }
-

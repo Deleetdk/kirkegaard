@@ -29,4 +29,3 @@ find_cutoff(115)
 #try impossible
 find_cutoff(95)
 }
-

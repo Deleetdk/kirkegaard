@@ -21,4 +21,3 @@ Useful wrapper for VIM's irmi function. Can skip cases without changing case ord
 df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
 miss_impute(df) #impute missing
 }
-

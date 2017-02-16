@@ -15,4 +15,3 @@ Performs a robust factor analysis. It is done using the output from fa_robust_co
 \examples{
 fa_robust_cormatrix()
 }
-

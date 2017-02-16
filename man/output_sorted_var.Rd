@@ -16,4 +16,3 @@ output_sorted_var(df, var, filename)
 \description{
 This is a convenience function for outputting lists
 }
-

@@ -48,4 +48,3 @@ cor_matrix(iris, p_val = .95, p_template = "\%r (\%p)") #with p values, with an 
 cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
 cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 }
-

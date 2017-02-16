@@ -28,4 +28,3 @@ t1_n = c(NA, 2, 3, NA);names(t1_n) = letters[1:4]
 t3_n = c(1, NA, NA, 4, 5);names(t3_n) = letters[1:5]
 merge_vectors(t1_n, t3_n, byname = T)
 }
-

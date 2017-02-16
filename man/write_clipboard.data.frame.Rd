@@ -34,4 +34,3 @@ A wrapper function to \code{\link{write.table}} for writing to the clipboard for
 iris[-5] \%>\% cor \%>\% write_clipboard
 iris \%>\% head \%>\% miss_add_random \%>\% write_clipboard
 }
-

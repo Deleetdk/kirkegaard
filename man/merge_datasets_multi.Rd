@@ -22,4 +22,3 @@ This is a wrapper for merge_datasets().
 \examples{
 merge_datasets_multi(iris[1:50, ], iris[51:100, ], iris[101:150, ]) #merge three-part iris
 }
-

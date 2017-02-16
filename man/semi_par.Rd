@@ -21,4 +21,3 @@ Returns the semi-partial correlation. Weights may be used.
 \examples{
 semi_par()
 }
-

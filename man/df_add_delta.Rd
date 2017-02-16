@@ -31,4 +31,3 @@ head(df_add_delta(iris, primary_var = 1, secondary_vars = 2))
 #add delta variables to iris between Sepal.Length and all other numerical variables
 head(df_add_delta(iris, primary_var = 1))
 }
-

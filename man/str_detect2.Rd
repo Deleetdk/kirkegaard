@@ -23,4 +23,3 @@ A wrapper for stringr's \code{\link{str_detect}} so that one can get the matches
 str_detect2(letters[1:10], pattern = "[acbde]")
 str_detect2(letters[1:10], pattern = "[acbde]", value = T)
 }
-

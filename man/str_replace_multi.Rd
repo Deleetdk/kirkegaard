@@ -21,4 +21,3 @@ A simple wrapper for stringr's str_replace() and str_replace_all().
 \examples{
 str_replace_multi()
 }
-

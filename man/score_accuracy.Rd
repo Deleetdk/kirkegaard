@@ -27,4 +27,3 @@ Calculates accuracy measures from a data.frame of estimates using a vector of cr
 \examples{
 score_accuracy()
 }
-

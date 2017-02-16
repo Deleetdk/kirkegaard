@@ -21,4 +21,3 @@ Performs kmeans and factor analysis on a dataset. Then plots a scatter plot usin
 \examples{
 GG_kmeans(iris[-5], 3)
 }
-

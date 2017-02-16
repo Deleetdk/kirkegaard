@@ -23,4 +23,3 @@ format_digits(c(.1), 5)
 format_digits(c(.12345), 2)
 format_digits(c(.15555), 2)
 }
-

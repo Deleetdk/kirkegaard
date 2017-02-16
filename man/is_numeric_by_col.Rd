@@ -18,4 +18,3 @@ A simple wrapper for \code{vapply}.
 \examples{
 is_numeric_by_col(iris)
 }
-

@@ -34,4 +34,3 @@ throws_error("df_reorder_columns(iris, c('abc' = 1))")
 #throws warning if one tries to move the same multiple times as this is probably not intended
 throws_error('df_reorder_columns(iris, c("Species" = 1, "Species" = 2))')
 }
-

@@ -18,4 +18,3 @@ Extract the non-numerical variables from a data.frame or matrix.
 \examples{
 extract_nonnum_vars(iris)
 }
-

@@ -15,4 +15,3 @@ Returns a vector of the autodetected values or raises an error if it fails.
 \examples{
 distance_method_detector()
 }
-

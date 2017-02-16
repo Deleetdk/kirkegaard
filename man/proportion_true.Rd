@@ -27,4 +27,3 @@ proportion_true(x)
 data.frame() \%>\% proportion_true() #data.frame
 list() \%>\% proportion_true()
 }
-

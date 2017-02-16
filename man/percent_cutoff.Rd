@@ -26,4 +26,3 @@ percent_cutoff(iris$Sepal.Length, cutoffs = 4:8)
 percent_cutoff(iris$Sepal.Length, cutoffs = 4:8, below = T) #reverse cutoff
 percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3) #ignores NA/NaN
 }
-

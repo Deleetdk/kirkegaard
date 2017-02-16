@@ -26,4 +26,3 @@ Returns a table of semi-partial correlations where a dependent variable has firs
 \examples{
 semi_par_serial()
 }
-

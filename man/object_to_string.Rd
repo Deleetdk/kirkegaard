@@ -15,4 +15,3 @@ Converts an object to a string using deparse and substitute.
 \examples{
 object_to_string()
 }
-

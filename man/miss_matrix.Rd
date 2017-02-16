@@ -18,4 +18,3 @@ Create the missing data matrix. Not so useful in itself, but useful for other fu
 \examples{
 miss_matrix(miss_add_random(iris))
 }
-

@@ -20,4 +20,3 @@ Split a vector every k elements. Returns a list.
 split_every_k(1:12, 4)
 split_every_k(1:11, 4) #last group isnt as large as the others
 }
-

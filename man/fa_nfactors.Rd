@@ -16,4 +16,3 @@ Convenience function for determining the number of factors in a fa object. Vecto
 fa(iris[-5]) \%>\% fa_nfactors
 fa(iris[-5], nfactors = 2) \%>\% fa_nfactors
 }
-

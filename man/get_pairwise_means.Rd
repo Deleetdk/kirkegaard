@@ -14,4 +14,3 @@ get_pairwise_means(x, weight_method = "harmonic")
 \description{
 Returns a data.frame with the pairwise means of the desired type.
 }
-

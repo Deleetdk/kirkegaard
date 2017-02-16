@@ -22,4 +22,3 @@ is_scalar(1)
 is_scalar(1:3)
 is_scallar(NULL, error_on_null = F)
 }
-

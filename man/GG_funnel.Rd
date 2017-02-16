@@ -16,4 +16,3 @@ GG_funnel(.analysis, .CI = 0.95, .study_CI = F)
 \description{
 Makes a pretty contingency table with ggplot2 using geom_tile.
 }
-

@@ -17,4 +17,3 @@ is_positive(1)
 is_positive(0)
 is_positive(-1)
 }
-

@@ -22,4 +22,3 @@ last_value(1:3)
 last_value(c(1:3, NA))
 last_value(rep(NA, 3))
 }
-

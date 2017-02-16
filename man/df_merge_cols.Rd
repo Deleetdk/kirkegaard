@@ -24,4 +24,3 @@ b = c(-1, 2, NA),
 c = c(-5, -9, 3)
 ) \%>\% df_merge_cols(letters[1:3])
 }
-

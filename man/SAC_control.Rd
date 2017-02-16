@@ -51,4 +51,3 @@ SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,
 \description{
 Returns a data.frame with predictors for linear regression with and without controls for SAC.
 }
-

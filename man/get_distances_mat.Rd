@@ -23,4 +23,3 @@ Inputs a data.frame and outputs a list with distance matrices. One can specify t
 The function requires either that it is given a distance matrix or that it can find variables to calculate distances with.
 This is a sister function to get_distances(), which outputs vectors.
 }
-

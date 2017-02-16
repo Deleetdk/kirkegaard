@@ -33,4 +33,3 @@ iris_list = list("setosa" = iris_set, "versicolor" = iris_ver, "virginica" = iri
 #then merge to one data.frame
 ldf_to_df(iris_list) #note the missing data and column order
 }
-

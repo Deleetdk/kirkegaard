@@ -19,4 +19,3 @@ Runs factor analysis on a dataset with all 30 possible combinations of extractio
 \examples{
 fa_all_methods(iris[-5])
 }
-

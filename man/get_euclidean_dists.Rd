@@ -14,4 +14,3 @@ get_euclidean_dists(df, output = "vector", remove_diag = T)
 \description{
 Returns a numeric vector with the pairwise euclidean distances for all pairs.
 }
-

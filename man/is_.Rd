@@ -37,4 +37,3 @@ is_(iris, type = "list") #check for type
 is_(iris, class = "list", error_on_false = T) #check for one class, error
 is_(1:3, class = "numeric")
 }
-

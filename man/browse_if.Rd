@@ -20,4 +20,3 @@ browse_if(F) #
 browse_if(1) #does not automatically type convert
 browse_if(1, extended = T) #can if you want it
 }
-

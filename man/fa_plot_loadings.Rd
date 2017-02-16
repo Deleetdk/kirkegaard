@@ -38,4 +38,3 @@ fa_plot_loadings(fa_list)
 #reorder by a particular FA
 fa_plot_loadings(fa_list, reorder = 1)
 }
-

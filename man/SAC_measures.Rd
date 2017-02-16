@@ -37,4 +37,3 @@ SAC_measures(df, vars, dists, lat_var, lon_var, distance_method, k = 3,
 \description{
 Returns a data.frame with measures of SAC using Moran's I, CD, CD_sqrt and KNSNR.
 }
-

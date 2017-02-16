@@ -21,4 +21,3 @@ Browse on equals condition. Calls browse in the parent.frame so that one can see
 \examples{
 browse_if(1+1, 2)
 }
-

@@ -23,4 +23,3 @@ A wrapper for stringr's \code{\link{str_detect}} so that one can detect strings 
 str = 1:99 + c(".", ",", ":") #example str vector
 str_detect_replace(str, pattern = c("\\\\.", ",", ":"), replacement = c("dot", "comma", "colon")) #replace by pattern
 }
-

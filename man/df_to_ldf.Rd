@@ -19,4 +19,3 @@ Splits a data.frame by a variable and returns a named list.
 \examples{
 df_to_ldf(iris[c(1:5, 51:55, 101:105), ], "Species") #split iris by Species.
 }
-

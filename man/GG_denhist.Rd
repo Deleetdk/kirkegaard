@@ -42,4 +42,3 @@ data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) \%>\% GG_denhist("x", "y")
 #warns you if grouping variable has missing data
 data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) \%>\% GG_denhist("x", "y")
 }
-

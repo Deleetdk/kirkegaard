@@ -21,4 +21,3 @@ fail_if(T)
 fail_if(1) #does not convert types
 fail_if(1, extended = T)
 }
-

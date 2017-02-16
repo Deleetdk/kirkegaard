@@ -22,4 +22,3 @@ Remove redundant variables from a data.frame based on a threshold value. This is
 \examples{
 remove_redundant_vars(iris[-5]) \%>\% head
 }
-
