@@ -38,3 +38,41 @@ test_that("table2", {
 })
 
 
+
+# seq_along_rows ----------------------------------------------------------
+
+test_that("seq_along_rows", {
+  #normal
+  expect_equivalent(seq_along_rows(iris), 1:150)
+  expect_equivalent(seq_along_rows(iris[-c(1:150), ]), integer())
+
+  #errors
+  expect_error(seq_along_rows(NULL))
+  expect_error(seq_along_rows(NA))
+})
+
+
+# get_dims total_cells --------------------------------------------------------------
+#a better version of dim() from base-r
+
+test_that("get_dims", {
+  #normal stuff
+  expect_equivalent(get_dims(1:2), 2)
+  expect_equivalent(get_dims(list(1, 2)), 2)
+  expect_equivalent(get_dims(matrix(1:4, nrow=2)), c(2, 2))
+  expect_equivalent(matrix(1:4, nrow=2) %>% as.data.frame %>% get_dims, c(2, 2))
+  expect_equivalent(array(1:16, dim = c(2, 2, 2)) %>% dim, c(2, 2, 2))
+})
+
+
+# total cells -------------------------------------------------------------
+
+test_that("total_cells", {
+  #easy stuff
+  expect_equivalent(total_cells(iris), 750)
+  expect_equivalent(total_cells(1:3), 3)
+  expect_equivalent(total_cells(array(1:27, dim = c(3, 3, 3))), 27)
+
+  #questionable input
+  expect_equivalent(total_cells(NULL), 0)
+})

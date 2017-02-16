@@ -579,22 +579,6 @@ stopifnot({
 
 
 
-# get_dims total_cells --------------------------------------------------------------
-#a better version of dim() from base-r
-
-stopifnot({
-  get_dims(1:2) == 2
-  get_dims(list(1, 2)) == 2
-  get_dims(matrix(1:4, nrow=2)) == c(2, 2)
-  matrix(1:4, nrow=2) %>% as.data.frame %>% get_dims == c(2, 2)
-  array(1:16, dim = c(2, 2, 2)) %>% dim == c(2, 2, 2)
-
-  #total cells, easy application
-  total_cells(iris) == 750 #2d
-  total_cells(1:3) == 3 #1d
-  total_cells(array(1:27, dim = c(3, 3, 3))) == 27 #3d
-})
-
 
 # copy_names --------------------------------------------------------------
 #copy names from one object to another, partially if possible
