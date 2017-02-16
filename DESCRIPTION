@@ -34,3 +34,4 @@ Suggests:
     ape,
     compute.es,
     testthat
+Roxygen: list(markdown = TRUE)

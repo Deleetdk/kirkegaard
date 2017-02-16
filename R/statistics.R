@@ -14,11 +14,11 @@
 #' @param weights (numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).
 #' @param reliabilities (num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.
 #' @param CI (numeric scalar) The confidence level to use as a fraction.
-#' @param CI_template (character scalar) A template to use for formatting the confidence intervals. Defaults to "\%r [\%lower \%upper]".
+#' @param CI_template (character scalar) A template to use for formatting the confidence intervals.
 #' @param skip_nonnumeric (logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.
 #' @param CI_round (whole number scalar) If confidence intervals are used, how many digits should be shown?
 #' @param p_val (log scalar) If p values are desired, the alpha level to use.
-#' @param p_template (chr scalar) If p values are desired, the template to use (default "\%r [p=\%p]").
+#' @param p_template (chr scalar) If p values are desired, the template to use.
 #' @param p_round (int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.
 #' @export
 #' @examples

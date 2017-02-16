@@ -2,19 +2,23 @@
 % Please edit documentation in R/error_handling.R
 \name{fail_if}
 \alias{fail_if}
-\title{Fail if input contains NA}
+\alias{stop_if}
+\title{Fail conditionally}
 \usage{
-fail_if(x, extended = F, msg = "There was an error")
+fail_if(x, msg = "There was an error", extended = F)
 }
 \arguments{
 \item{x}{(any object) The object to test.}
 
-\item{extended}{(lgl) Whether to convert to logical.}
-
 \item{msg}{(chr) An error message.}
+
+\item{extended}{(lgl) Whether to convert to logical.}
+}
+\value{
+Invisibly returns the input.
 }
 \description{
-Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.
+Fail on not TRUE and give a custom error message.
 }
 \examples{
 fail_if(T)

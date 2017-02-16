@@ -9,10 +9,10 @@ fa_robust_cormatrix(x, method = "lmrob")
 \arguments{
 \item{x}{A data.frame to correlate.}
 
-\item{x}{method Which robust method to use. Options are "lmrob" [robustbase] or "rlm" [MASS]. Defaults to the first.}
+\item{x}{method Which robust method to use. Options are "lmrob" \link{robustbase} or "rlm" \link{MASS}. Defaults to the first.}
 }
 \description{
-Returns a correlation matrix with robust correlations. These are derived from either rlm() [MASS] or lmrob() [robustbase].
+Returns a correlation matrix with robust correlations. These are derived from either rlm() \link{MASS} or lmrob() \link{robustbase}.
 }
 \examples{
 fa_robust_cormatrix()

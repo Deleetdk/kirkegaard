@@ -67,11 +67,34 @@ get_prop_table = function(x, breaks_ = 20){
 #' m = matrix(1:9, nrow=3)
 #' get_dims(m)
 get_dims = function(x) {
-  if (is.null(dim(x))) {
+  #NULL per standard
+  if (is.null(x)) return(dim(x))
+
+  #some questionable input
+  if (is.function(x)) return(dim(x))
+
+  #if vector, then it has 1 dimesion with length as its length
+  if (is.vector(x)) {
     return(length(x))
     } else {
     return(dim(x))
   }
+}
+
+
+#' How many dimensions does an object have?
+#'
+#' Useful wrapper for [get_dims()].
+#' @param x (an object) An object.
+#' @export
+#' @examples
+#' #flexible
+#' ndims(1:3) #vector
+#' ndims(iris) #data frame
+#' ndims(array(1:27, dim = rep(3, 3))) #array
+#' ndims(mean) #function
+ndims = function(x) {
+  length(get_dims(x))
 }
 
 
@@ -244,6 +267,7 @@ write_sessioninfo = function(filename = "sessions_info.txt", print = FALSE) {
   writeLines(capture.output(sessionInfo()), con = filename)
 }
 
+
 #' Create list-array
 #'
 #' A convenience function to create a list-array. A list with dimensions like an array.
@@ -286,12 +310,16 @@ make_list_array = function(...) {
 #' Calculate total number of cells in an object
 #'
 #' Calculate the total number of cells in an object. This is done by finding the product of the lengths of each dimension.
+#'
+#' Return 0 on `NULL`.
 #' @param x (any suitable object) The object.
-#' @return A whole number.
+#' @return An integer.
 #' @export
 #' @examples
 #' total_cells(iris)
 total_cells = function(x) {
+  if (is.null(x)) return(0)
+
   #find the lengths of each dimension
   v_lengths = get_dims(x)
 
@@ -416,5 +444,28 @@ update_package = function(...) {
 
 
 
+
+
+#' Seq along rows
+#'
+#' Equivalent to seq_along, but for rows.
+#' @param df (vector) A vector.
+#' @return An integer vector.
+#' @export
+#' @examples
+#' #example on iris
+#' seq_along_rows(iris)
+#' #does not fail on 0-row data frames
+#' seq_along_rows(iris[-c(1:150), ])
+seq_along_rows = function(df) {
+  #input check
+  if (is.null(df)) stop("`df` cannot be NULL", call. = F)
+  stop_if(ndims(df) != 2, msg = sprintf("`df` must have exactly 2 dimensions, but it had %d", ndims(df)))
+
+  #no rows
+  if (nrow(df) == 0) return(integer())
+
+  1:nrow(df)
+}
 
 

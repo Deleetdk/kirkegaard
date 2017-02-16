@@ -2,6 +2,7 @@
 % Please edit documentation in R/error_handling.R
 \name{fail_if_NA}
 \alias{fail_if_NA}
+\alias{stop_if_NA}
 \title{Fail if input contains NA}
 \usage{
 fail_if_NA(x, msg = "Input contained NA.")
@@ -10,6 +11,9 @@ fail_if_NA(x, msg = "Input contained NA.")
 \item{x}{(any object) The object to test.}
 
 \item{msg}{(chr) An error message.}
+}
+\value{
+Invisibly returns the input.
 }
 \description{
 Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.

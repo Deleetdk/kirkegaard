@@ -18,7 +18,7 @@ A data frame of size n x n where n is the number of variables in data. The rows 
 Calculates Cohen's d or equivalent for every variable pair. Larger values mean that cases with missing data in one variable differ from other cases in the other variable, thus that the data are not missing at random (MCAR).
 }
 \details{
-This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
+This method was proposed by McKnight et al (2007) \link{Missing Data: A Gentle Introduction}.
 }
 \examples{
 miss_analyze(miss_add_random(iris))

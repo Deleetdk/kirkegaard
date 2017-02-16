@@ -17,7 +17,7 @@ cor_matrix(data, weights, reliabilities, CI,
 
 \item{CI}{(numeric scalar) The confidence level to use as a fraction.}
 
-\item{CI_template}{(character scalar) A template to use for formatting the confidence intervals. Defaults to "\%r [\%lower \%upper]".}
+\item{CI_template}{(character scalar) A template to use for formatting the confidence intervals.}
 
 \item{skip_nonnumeric}{(logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.}
 
@@ -25,7 +25,7 @@ cor_matrix(data, weights, reliabilities, CI,
 
 \item{p_val}{(log scalar) If p values are desired, the alpha level to use.}
 
-\item{p_template}{(chr scalar) If p values are desired, the template to use (default "\%r [p=\%p]").}
+\item{p_template}{(chr scalar) If p values are desired, the template to use.}
 
 \item{p_round}{(int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.}
 }

@@ -43,18 +43,20 @@ throws_error = function(expr, silent_try = T) {
 
 
 
-#' Fail if input contains NA
+#' Fail conditionally
 #'
-#' Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.
+#' Fail on not TRUE and give a custom error message.
 #' @param x (any object) The object to test.
-#' @param extended (lgl) Whether to convert to logical.
 #' @param msg (chr) An error message.
-#' @export
+#' @param extended (lgl) Whether to convert to logical.
+#' @export fail_if stop_if
+#' @aliases stop_if
+#' @return Invisibly returns the input.
 #' @examples
 #' fail_if(T)
 #' fail_if(1) #does not convert types
 #' fail_if(1, extended = T)
-fail_if = function(x, extended = F, msg = "There was an error") {
+fail_if = function(x, msg = "There was an error", extended = F) {
   #fail if true
   if (isTRUE(x)) stop(msg, call. = F)
   if (extended && x) stop(msg, call. = F)
@@ -63,13 +65,18 @@ fail_if = function(x, extended = F, msg = "There was an error") {
   invisible(x)
 }
 
+#useful synonym
+stop_if = fail_if
+
 
 #' Fail if input contains NA
 #'
 #' Inputs any object, checks if it contains NA. If yes, throws an error. If not, returns the input.
 #' @param x (any object) The object to test.
 #' @param msg (chr) An error message.
-#' @export
+#' @export fail_if_NA stop_if_NA
+#' @aliases stop_if_NA
+#' @return Invisibly returns the input.
 #' @examples
 #' fail_if_NA(1:10) #no NAs
 #' fail_if_NA(c(1:3, NA, 1:3)) #NAs
@@ -81,12 +88,15 @@ fail_if_NA = function(x, msg = "Input contained NA.") {
   invisible(x)
 }
 
+stop_if_NA = fail_if_NA
+
 
 #' Browse on error
 #'
 #' Browse on error. Calls browse in the parent.frame so that one can see the context the for error.
 #' @param expr (expr) Any expression that might cause an error.
 #' @export
+#' @return Invisibly returns result of evaluating the expression.
 #' @examples
 #' try_browse({log("p")})
 try_browse = function(expr) {

@@ -10,10 +10,13 @@ total_cells(x)
 \item{x}{(any suitable object) The object.}
 }
 \value{
-A whole number.
+An integer.
 }
 \description{
 Calculate the total number of cells in an object. This is done by finding the product of the lengths of each dimension.
+}
+\details{
+Return 0 on \code{NULL}.
 }
 \examples{
 total_cells(iris)

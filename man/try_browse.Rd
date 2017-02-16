@@ -9,6 +9,9 @@ try_browse(expr)
 \arguments{
 \item{expr}{(expr) Any expression that might cause an error.}
 }
+\value{
+Invisibly returns result of evaluating the expression.
+}
 \description{
 Browse on error. Calls browse in the parent.frame so that one can see the context the for error.
 }
