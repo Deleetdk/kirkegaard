@@ -19,6 +19,9 @@ test_that("denhist", {
   expect_warning(GG_denhist(iris[1]))
   expect_warning(data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y"))
   expect_warning(data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y"))
+
+  #expect error
+  expect_error(GG_denhist(iris, "Sepal.Length", vline = T))
 })
 
 

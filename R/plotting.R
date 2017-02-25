@@ -25,8 +25,21 @@
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
 GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
 
+  #check input
+  data
 
-  #input type
+  #vline input
+  if (!is.null(vline)) {
+    if (is.logical(vline)) {
+      if (!vline) {
+        vline = NULL
+      } else {
+        stop("vline cannot be TRUE! Use NULL or FALSE for not drawing a line.")
+      }
+    }
+  }
+
+  #data input type
   if (is_simple_vector(data)) {
     var = deparse(substitute(data))
     data = data.frame(data)
@@ -36,7 +49,7 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
   #1 column df
   if (is.data.frame(data) & ncol(data) == 1 & missing("var")) {
     var = names(data)
-    warning("received a data.frame but no var: used the only available column")
+    warning("received a data frame but no var: used the only available column")
   }
 
   #rename and drop unused
@@ -44,7 +57,7 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
   rm(data)
 
   #check if var is in df
-  if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data.frame!")
+  if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data frame!")
 
   #remove NA group
   if (!is.null(group)) {
