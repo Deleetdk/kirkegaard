@@ -13,8 +13,10 @@ get_spherical_dists = function(df, lat_var = "lat", lon_var = "lon", output = "v
   #assumes that the latitude and longitude vars are called lat and lon, otherwise set their names
 
   #missing data
-  if (any(is.na(df))) warning("Warning, data.frame contained cases with missing values which were excluded!")
-  df = na.omit(df)
+  df
+  df = df[c(lat_var, lon_var)]
+  if (anyNA(df)) stop("There cannot be missing data in the latitude or longitude varialbes!")
+
 
   #subset
   df = df[c(lat_var, lon_var)]
@@ -438,9 +440,12 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
   #Statistical inference and spatial patterns in correlates of IQ, Intelligence
 
   #check if vars are there
+  df
+  vars
   if (!all(vars %in% names(df))) {
     stop(sprintf("Some variables were not found in the data frame: " + stringr::str_c(vars[!vars %in% names(df)])))
   }
+  if (anyNA(df[vars])) stop("There cannot be missing data in the variables.")
 
   #autodetect distance method
   if(!missing("dists")) auto_detect_dist_method = F
@@ -451,11 +456,6 @@ get_Morans_I_multi = function(df, vars, dists, lat_var, lon_var, distance_method
     lon_var = auto[3]
   }
 
-  #subset % NA
-  if(missing("dists")) {
-    df = df[c(vars, lat_var, lon_var)]
-  }
-  df = na.omit(df) #remove missing
 
   #calculate distances if not given
   if (missing("dists")) {
@@ -567,12 +567,15 @@ add_SAC = function(df, vars, k=3, iter=1, weight=1/3, dists, lat_var, lon_var, d
 #' @param outout Which type of output to return. Can be (predicted) scores, cor or resids. Defaults to scores.
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @export
-SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, output = "scores", auto_detect_dist_method=T) {
-  # browser()
+SAC_knsnr = function(df, dependent, predictor = NULL, k = 3, dists, lat_var, lon_var, weights_var = NULL, distance_method, output = "scores", auto_detect_dist_method=T) {
+
   #check input
-  if (missing("df")) stop("df input missing!")
-  if (anyNA(df)) stop("Missing values present. Remove and try again.")
-  if (!weights_var %in% colnames(df) & weights_var != "") stop("Weights variable isn't in the data.frame!")
+  df
+  dependent
+  if (!dependent %in% names(df)) stop("Dependent variable not present in data frame!")
+  if (anyNA(df[dependent])) stop("Dependent variable cannot have missing data!")
+  if (!is.null(predictor)) if (anyNA(df[predictor])) stop("Predictor variable cannot have missing data!")
+  if (!is.null(weights_var) && !weights_var %in% names(df)) stop("Weights variable isn't in the data.frame!")
   if (!k < nrow(df)) stop("k must be smaller than the number of cases!")
 
   #check spatial input
@@ -602,27 +605,19 @@ SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, w
     if (distance_method == "euclidean") dists = get_euclidean_dists(df[c(lat_var, lon_var)], output = "matrix")
   }
 
+  #weights
+  if (is.null(weights_var)) {
+    df$weights___ = rep(1, nrow(df)) #fill in 1's
+  } else {
+    df$weights___ = df[[weights_var]] #use chosen var
+  }
+
   #keep orig names and length
   orig_names = rownames(df)
   orig_nrow = nrow(df)
   df_return = as.data.frame(matrix(nrow=orig_nrow, ncol=1))
   rownames(df_return) = orig_names
   colnames(df_return) = "y_hat"
-
-  #weights
-  if (weights_var == "") {
-    df$weights___ = rep(1, nrow(df)) #fill in 1's
-  } else {
-    df$weights___ = df[[weights_var]] #use chosen var
-  }
-
-  #   #subset data
-  #   #this depends on whether the dists are given are not
-  #   if (missing("dists") & missing("predictor")) {
-  #     df = df[c(dependent, lat_var, lon_var, "weights___")]
-  #   } else if (missing("dists") & !missing("predictor")) {
-  #     df = df[c(dependent, predictor, lat_var, lon_var, "weights___")]
-  #   } else {df = df[c(dependent, "weights___")]}
 
 
   #object for results
@@ -681,9 +676,9 @@ SAC_knsnr = function(df, dependent, predictor, k = 3, dists, lat_var, lon_var, w
 SAC_knsnr_partial = function(df, variables, k = 3, dists, lat_var, lon_var, weights_var = "", distance_method, auto_detect_dist_method=T) {
 
   #check input
-  if (missing("df")) stop("df input missing!")
-  if (missing("variables")) stop("No variables given!")
-  if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  df
+  variables
+  if (anyNA(df[dependent])) stop("Dependent variable cannot have missing data!")
 
   #check spatial input
   check_results = check_spatial_input(df=df, dists=dists, lat_var=lat_var, lon_var=lon_var, distance_method=distance_method, auto_detect_dist_method=auto_detect_dist_method)
@@ -813,10 +808,10 @@ SAC_measures = function(df, vars, dists, lat_var, lon_var, distance_method, k = 
 SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, weights_method="inverse", weights_var = "", include_self = F, verbose = T) {
 
   #check input
-  if (missing("df")) stop("df input missing!")
-  if (missing("dependent")) stop("Dependent variable not given!")
-  if (missing("predictors")) stop("Dependent variable not given!")
-  if (anyNA(df)) stop("Missing values present. Remove/impute and try again.")
+  df
+  dependent
+  predictors
+  if (anyNA(df[c(dependent, predictors)])) stop("There cannot be missing data in the dependent or predictors!")
   if (include_self) weights_method = "none" #otherwise an error happens!
   if (missing("output")) output = "trim10" #if not given, use trim 10
 
@@ -966,15 +961,13 @@ SAC_slr = function(df, dependent, predictors, k=3, output = "trim10", dists, lat
 SAC_control = function(df, dependent, predictors, knsn_k=3, slr_k = 3, dists, lat_var, lon_var, distance_method, auto_detect_dist_method=T, SLR_weights_method="inverse", SLR_include_self = F, SLR_central_measure, CD_weight_method = "harmonic", weights_var="", methods = c("KNSNR", "SLR"), standardize = T, control_approach = c("partial"), KNSNR_methods = c("b")) {
 
   #check input
-  #is df
-  if (missing("df")) stop("df input missing!")
+  df
+  dependent
+  predictors
 
   #are variables even there?
   if (any(!(c(dependent, predictors) %in% colnames(df))))
-
-  if (missing("dependent")) stop("Dependent variable not given!")
-  if (missing("predictors")) stop("Dependent variable not given!")
-  if (anyNA(df[c(dependent, predictors)])) stop("Missing values present. Remove/impute and try again.")
+  if (anyNA(df[c(dependent, predictors)])) stop("Missing values present in dependent or predictors. Remove/impute and try again.")
   if (!all(control_approach %in% c("partial", "mr"))) {
     stop("Unrecognized control approaches included!")
   }
