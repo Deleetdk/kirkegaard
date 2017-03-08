@@ -717,31 +717,6 @@ stopifnot({
 })
 
 
-# df_merge_rows, --------------------------------------------------------------
-#performs row-wise merging
-
-t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
-t_true = data.frame(id = c("a", "b", "c"), value = c(3, 7, 5))
-t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
-
-stopifnot({
-  df_merge_rows(t, "id") == t_true #test string input
-  df_merge_rows(t, "id", func = mean) == t_true2 #test another function
-  throws_error(df_merge_rows(t, 'id', numeric = FALSE)) #test error
-})
-
-#do it by name
-t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
-t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
-
-stopifnot({
-  #merge
-  df_merge_rows(data = t1, names = c("C", "D")) == t1_cor
-
-  #another new_name
-  df_merge_rows(t1, names = c("C", "D"), new_name = "D") %>% rownames %>% equals(c("A", "B", "D"))
-})
-
 
 # extract_last ------------------------------------------------------------
 

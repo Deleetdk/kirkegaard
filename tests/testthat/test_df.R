@@ -260,3 +260,53 @@ test_that("df_merge_cols", {
   ) %>% df_merge_cols(letters[1:3]), 1:3)
 })
 
+
+# df_fct_split -----------------------------------------------------------
+
+test_that("df_fct_split", {
+  #basic uses
+  expect_equivalent(names(df_fct_split(iris, "Species")), c(names(iris), levels(iris$Species)))
+  expect_equivalent(names(df_fct_split(iris, "Species", rm_old = T)), c(names(iris)[-5], levels(iris$Species)))
+  expect_equivalent(names(df_fct_split(iris, "Species", prefix = "%v_")), c(names(iris), "Species_" + levels(iris$Species)))
+  expect_equivalent(names(df_fct_split(iris, "Species", prefix = "%v_")), c(names(iris), "Species_" + levels(iris$Species)))
+
+  #type output
+  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species"), class), c(rep("numeric", 4), "factor", rep("logical", 3)))
+  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "f"), class), c(rep("numeric", 4), "factor", rep("factor", 3)))
+  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "n"), class), c(rep("numeric", 4), "factor", rep("numeric", 3)))
+  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "i"), class), c(rep("numeric", 4), "factor", rep("integer", 3)))
+
+  #errors
+  expect_error(df_fct_split(iris, "Sepal.Length"))
+  expect_error(df_fct_split(iris, "wrong"))
+})
+
+
+# df_merge_rows -----------------------------------------------------------
+#performs row-wise merging
+
+#some objects
+t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
+t_true = data.frame(id = c("a", "b", "c"), value = c(3, 7, 5))
+t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
+
+t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
+t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
+
+test_that("df_merge_rows", {
+  ##key column
+  #basic
+  expect_equivalent(df_merge_rows(t, "id"), t_true)
+  expect_equivalent(df_merge_rows(t, "id", func = mean), t_true2)
+
+  #error due to non-numeric
+  expect_error(df_merge_rows(t, 'id', numeric = FALSE))
+
+  ##rownames
+  #basic
+  expect_true(all(silence(df_merge_rows(data = t1, names = c("C", "D")) == t1_cor)))
+  expect_equivalent(df_merge_rows(t1, names = c("C", "D"), new_name = "D") %>% rownames, c("A", "B", "D"))
+
+  #no new name given
+  expect_message(df_merge_rows(data = t1, names = c("C", "D")) == t1_cor)
+})

@@ -611,7 +611,7 @@ df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func =
   if (!is.null(names)) {
     if (is.null(new_name)) {
       new_name = names[1]
-      message("A new preferred new name wasn't given. The first name was chosen for this purpose (\"" + new_name + "\")")
+      message(sprintf("A new preferred rowname wasn't given. The first rowname was chosen for this purpose: `%s`", new_name))
     }
   }
 
@@ -641,7 +641,7 @@ df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func =
 
   if (!is.null(names)) {
     #make vectors for matches
-    v_key = mapvalues(rownames(df), names, to = rep(new_name, length(names)))
+    v_key = plyr::mapvalues(rownames(df), names, to = rep(new_name, length(names)))
 
     #make new df with rownames column
     df2 = cbind(df, "rownames__" = v_key)
@@ -1290,6 +1290,7 @@ df_flexsubset = function(data, vars, messages = T) {
   data[, vars_overlap, drop = F]
 }
 
+# df_merge_cols -----------------------------------------------
 
 #' Merge columns
 #'
@@ -1330,4 +1331,78 @@ df_merge_cols = function(df, cols) {
 }
 
 
+
+# df_fct_split -----------------------------------------------
+#an improvement as model.matrix
+
+#' Split factors into multiple columns
+#'
+#' Split factors into multiple columns
+#'
+#' This function is a more user-friendly version of `model.matrix`.
+#'
+#' For the prefix, one can use `%v` to refer to the variable name.
+#' @param df (df) A aata frame.
+#' @param fcts (chr) Names of columns to split up.
+#' @param prefix (chr) A prefix to add.
+#' @param warn_unused_levels (lgl) Whether to warn the user when some levels have no cases.
+#' @param type (chr) Which type of column should be created.
+#' @param rm_old (lgl) Whether to remove the old columns after the splitting.
+#' @return A modified data frame.
+#' @export
+#' @examples
+#' df_fct_split(iris, "Species")
+df_fct_split = function(df, fcts, prefix = "", warn_unused_levels = T, type = "l", rm_old = F) {
+  #input
+  df
+  fcts
+  assertthat::assert_that(is_scalar_character(type))
+  if (is.null(prefix)) prefix = ""
+
+  #loop over fcts
+  for (fct in fcts) {
+    #does not exist
+    if (!fct %in% colnames(df)) stop(sprintf("Variable was not found: `%s`", fct))
+
+    #not a factor
+    if (!is.factor(df[[fct]])) stop(sprintf("Variable was not a factor: `%s`", fct))
+
+    #get levels
+    fct_levels = table2(df[[fct]], include_NA = F)
+
+    #any unused?
+    if (any(fct_levels[["Count"]] == 0)) {
+      unused_levels = fct_levels %>% filter(Count == 0) %>% `[[`("Group")
+      warning(sprintf("There were unused factor levels in factor `%s`: `%s`", fct, str_c(unused_levels, collapse = ", ")))
+    }
+
+    #loop over levels
+    for (lvl in fct_levels$Group) {
+      #add new dichotomous categorical variable
+      #make prefix
+      prefix_this = str_replace_all(prefix, "%v", fct)
+      new_colname = prefix_this + lvl
+
+      #error if duplicate
+      if (new_colname %in% colnames(df)) stop(sprintf("Duplicate colname detected: %s", new_colname))
+
+      #switch
+      switch(type,
+             "l" = {df[[new_colname]] = (df[[fct]] == lvl)},
+             "f" = {df[[new_colname]] = (df[[fct]] == lvl) %>% as.factor},
+             "n" = {df[[new_colname]] = (df[[fct]] == lvl) %>% as.numeric},
+             "i" = {df[[new_colname]] = (df[[fct]] == lvl) %>% as.integer}
+      )
+    }
+
+    #remove old?
+    if (rm_old) {
+      df[[fct]] = NULL
+    }
+
+  }
+
+
+  df
+}
 
