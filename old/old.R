@@ -118,9 +118,7 @@ merge_datasets_multi = function(...) {
 #' @param reverse whether to reverse indicators with negative loadings. Default to true.
 #' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
 #' @export
-#' @examples
-#' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE, check_overlap = TRUE){
+Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos = NULL, var_names = TRUE, check_overlap = TRUE){
 
   #initial
   temp_loadings = as.numeric(loadings) #conver to vector
@@ -145,7 +143,7 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
   cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
 
   #auto detect text position
-  if (missing(text_pos)) {
+  if (is.null(text_pos)) {
     if (cor>0) text_pos = "tl" else text_pos = "tr"
   }
 
@@ -204,100 +202,6 @@ Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRU
   return(g)
 }
 
-
-#' Jensen method (method of correlated vectors) plot
-#'
-#' Returns a ggplot2 scatter plot with numerical results in a corner. Also supports reversing for dealing with factors that have negative indicators.
-#' @param loadings a vector of factor loadings.
-#' @param loadings a vector of correlations of the indicators with the criteria variable.
-#' @param reverse whether to reverse indicators with negative loadings. Default to true.
-#' @param text_pos which corner to write the numerical results in. Options are "tl", "tr", "bl", "br". Defaults to "tl".
-#' @export
-#' @examples
-#' Jensen_plot()
-Jensen_plot = function(loadings, cors, reverse = TRUE, text_pos, var_names = TRUE, check_overlap = TRUE){
-
-  #initial
-  temp_loadings = as.numeric(loadings) #conver to vector
-  names(temp_loadings) = rownames(loadings) #set names again
-  loadings = temp_loadings #back to normal name
-  DF = data.frame(loadings, cors) #DF
-
-  #reverse
-  if (reverse) {
-    for (idx in 1:nrow(DF)) {
-      if (DF[idx, 1] < 0){ #if loading <0
-        DF[idx, ] = DF[idx, ] * -1 #reverse
-        rownames(DF)[idx] = paste0(rownames(DF)[idx], "_r")
-      }
-    }
-  }
-
-  #method text
-  if (reverse) {method_text = "Jensen's method with reversing\n"} else {method_text = "Jensen's method without reversing\n"}
-
-  #correlation
-  cor = round(cor(DF)[1, 2], 2) #get correlation, rounded
-
-  #auto detect text position
-  if (missing(text_pos)) {
-    if (cor>0) text_pos = "tl" else text_pos = "tr"
-  }
-
-  #text object location
-  if (text_pos == "tl") {
-    x = .02
-    y = .98
-    hjust = 0
-    vjust = 1
-  }
-  if (text_pos == "tr") {
-    x = .98
-    y = .98
-    hjust = 1
-    vjust = 1
-  }
-  if (text_pos == "bl") {
-    x = .02
-    y = .02
-    hjust = 0
-    vjust = -.1
-  }
-  if (text_pos == "br") {
-    x = .98
-    y = .02
-    hjust = 1
-    vjust = -.1
-  }
-
-  #text
-  text = paste0(method_text,
-                "r=", cor, " (orange line)",
-                "\nn=", nrow(DF))
-
-  #text object
-  text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
-                               gp = grid::gpar(fontsize = 11))
-
-  #regression line
-  model = lm(cors ~ loadings, DF)
-  coefs = coef(model)
-
-  #plot
-  DF$rnames = rownames(DF)
-
-  g = ggplot2::ggplot(data = DF, aes(x = loadings, y = cors)) +
-    geom_point() +
-    xlab("Loadings") +
-    ylab("Correlation with criteria variable") +
-    annotation_custom(text_object) +
-    geom_abline(intercept = coefs[1], slope = coefs[2], color = "darkorange")
-
-  #add var_names if desired
-  if (var_names) g = g + geom_text(aes(label = rnames), alpha = .7, size = 3, vjust = 1.5, check_overlap = check_overlap)
-
-  return(g)
-}
 
 
 # Correlates all variables, finds the pair with the highest correlation, and removes one of them using the specified method.
