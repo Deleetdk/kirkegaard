@@ -28,6 +28,9 @@ check_missing = defunct("Depreciated. Don't rely on missingness.")
 #' @export
 MAT_get_half = defunct("Renamed to MAT_half")
 
+#' @export
+cor_matrix_weights = defunct("This function is bad and you should feel bad. Instead, feel good and use `cor_matrix`.")
+
 
 # modeling ----------------------------------------------------------------
 
