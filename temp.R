@@ -237,22 +237,6 @@ random_probs = function(k) {
 
 
 
-
-
-
-# run_tests = function(..., test_name, error_msg) {
-#   if (missing("test_name")) test_name = deparse(...)
-#   start_msg = paste0("Starting test: ", test_name)
-#   error_msg = "Test failed!"
-#
-#   #test
-#   message(start_msg)
-#   result = kirkegaard::throws_error("stopifnot(...)")
-#   if (result) stop(error_msg)
-# }
-
-# run_tests(T)
-
 serial_r2 = function(x) {
   #vectors
   var_remain = c(1, rep(NA, length(x) - 1))
