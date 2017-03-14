@@ -216,17 +216,6 @@ stopifnot({
 })
 
 
-# cor_matrix_weights ------------------------------------------------------
-p_load(datasets)
-
-t = cor_matrix_weights(as.data.frame(state.x77), weight_var = "Population")
-stopifnot({
-  dim(t) == c(7, 7)
-  is.na(diag(t))
-  t[upper.tri(t)] != t[lower.tri(t)]
-})
-
-
 # find_neighbors ----------------------------------------------------------
 n=50
 set.seed(1)
