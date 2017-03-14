@@ -4,7 +4,8 @@
 \alias{conditional_change}
 \title{Change values conditionally}
 \usage{
-conditional_change(x, func, func_str, new_value, handle_NA = T)
+conditional_change(x, func = NULL, func_str = NULL, new_value,
+  handle_NA = T)
 }
 \arguments{
 \item{x}{(vector, data.frame, matrix or list) An object whose values to change.}
@@ -15,11 +16,8 @@ conditional_change(x, func, func_str, new_value, handle_NA = T)
 
 \item{new_value}{(scalar vector) A value to use in the cases.}
 
-\item{handle_NA}{(boolean) Whether to handle missing values. Default=T.}
+\item{handle_NA}{(boolean) Whether to handle missing values.}
 }
 \description{
 Change values based on a condition given as a function.
-}
-\examples{
-conditional_change()
 }

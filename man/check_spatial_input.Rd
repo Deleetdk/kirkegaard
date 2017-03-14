@@ -4,8 +4,8 @@
 \alias{check_spatial_input}
 \title{Check for input for spatial data.}
 \usage{
-check_spatial_input(df, dists, lat_var, lon_var, distance_method,
-  auto_detect_dist_method)
+check_spatial_input(df, dists = NULL, lat_var = NULL, lon_var = NULL,
+  distance_method = NULL, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -22,7 +22,4 @@ check_spatial_input(df, dists, lat_var, lon_var, distance_method,
 }
 \description{
 Returns a list with the results of the check. This is generally only used as a helper function for other spatial statistics functions.
-}
-\examples{
-check_spatial_input()
 }

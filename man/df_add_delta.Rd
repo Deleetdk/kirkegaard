@@ -4,8 +4,8 @@
 \alias{df_add_delta}
 \title{Add delta columns to a data.frame.}
 \usage{
-df_add_delta(df, primary_var, secondary_vars, prefix = "delta", sep = "_",
-  subtract_from_primary = T, standardize = F)
+df_add_delta(df, primary_var, secondary_vars = NULL, prefix = "delta",
+  sep = "_", subtract_from_primary = T, standardize = F)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame.}

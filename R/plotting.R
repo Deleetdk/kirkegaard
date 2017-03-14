@@ -23,7 +23,7 @@
 #' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
 #' #warns you if grouping variable has missing data
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
-GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
+GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
 
   #check input
   data
@@ -47,7 +47,7 @@ GG_denhist = function(data, var, group = NULL, vline = mean, binwidth = NULL, cl
   }
 
   #1 column df
-  if (is.data.frame(data) & ncol(data) == 1 & missing("var")) {
+  if (is.data.frame(data) && ncol(data) == 1 && is.null(var)) {
     var = names(data)
     warning("received a data frame but no var: used the only available column")
   }
@@ -595,7 +595,7 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #' library(metafor); data(european_ancestry)
 #' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 #' GG_forest(meta, .names = european_ancestry$Author_sample)
-GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
+GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
   if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
 
   #extract effect sizes and SEs
@@ -605,7 +605,7 @@ GG_forest = function(.analysis, .names, .alphabetic_sort_names = T) {
                          meta = "study")
 
   #names
-  if (!missing(.names)) {
+  if (!is.null(.names)) {
     d$names = .names
   } else {
     d$names = "Study " + 1:nrow(d)

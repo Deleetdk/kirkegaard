@@ -4,7 +4,7 @@
 \alias{standardize}
 \title{Standardize a vector}
 \usage{
-standardize(x, w, robust = F, sample = T)
+standardize(x, w = NULL, robust = F, sample = T)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}

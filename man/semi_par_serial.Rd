@@ -4,7 +4,7 @@
 \alias{semi_par_serial}
 \title{Semi-partial correlation with weights}
 \usage{
-semi_par_serial(df, dependent, primary, secondaries, weights = NA,
+semi_par_serial(df, dependent, primary, secondaries, weights = NULL,
   standardize = T)
 }
 \arguments{
@@ -22,7 +22,4 @@ semi_par_serial(df, dependent, primary, secondaries, weights = NA,
 }
 \description{
 Returns a table of semi-partial correlations where a dependent variable has first been regressed on the primary predictor variable, and then correlated with each of the secondary predictors in turn.
-}
-\examples{
-semi_par_serial()
 }

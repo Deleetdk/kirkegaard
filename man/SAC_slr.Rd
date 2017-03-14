@@ -4,10 +4,10 @@
 \alias{SAC_slr}
 \title{Perform spatial local regression.}
 \usage{
-SAC_slr(df, dependent, predictors, k = 3, output = "trim10", dists, lat_var,
-  lon_var, distance_method, auto_detect_dist_method = T,
-  weights_method = "inverse", weights_var = "", include_self = F,
-  verbose = T)
+SAC_slr(df, dependent, predictors, k = 3, output = "trim10", dists = NULL,
+  lat_var = NULL, lon_var = NULL, distance_method = NULL,
+  auto_detect_dist_method = T, weights_method = "inverse",
+  weights_var = NULL, include_self = F, verbose = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

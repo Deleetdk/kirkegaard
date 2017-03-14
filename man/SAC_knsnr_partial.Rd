@@ -4,8 +4,9 @@
 \alias{SAC_knsnr_partial}
 \title{K nearest spatial neighbor partial correlations.}
 \usage{
-SAC_knsnr_partial(df, variables, k = 3, dists, lat_var, lon_var,
-  weights_var = "", distance_method, auto_detect_dist_method = T)
+SAC_knsnr_partial(df, variables, k = 3, dists = NULL, lat_var = NULL,
+  lon_var = NULL, weights_var = NULL, distance_method = NULL,
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

@@ -4,12 +4,13 @@
 \alias{SAC_control}
 \title{Control for spatial autocorrelation with multiple methods}
 \usage{
-SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3, dists,
-  lat_var, lon_var, distance_method, auto_detect_dist_method = T,
-  SLR_weights_method = "inverse", SLR_include_self = F, SLR_central_measure,
-  CD_weight_method = "harmonic", weights_var = "", methods = c("KNSNR",
-  "SLR"), standardize = T, control_approach = c("partial"),
-  KNSNR_methods = c("b"))
+SAC_control(df, dependent, predictors, knsn_k = 3, slr_k = 3,
+  dists = NULL, lat_var = NULL, lon_var = NULL, distance_method = NULL,
+  auto_detect_dist_method = T, SLR_weights_method = "inverse",
+  SLR_include_self = F, SLR_central_measure = NULL,
+  CD_weight_method = "harmonic", weights_var = NULL, methods = c("KNSNR",
+  "SLR"), standardize = T, control_approach = "partial",
+  KNSNR_methods = "b")
 }
 \arguments{
 \item{df}{A data.frame with variables.}

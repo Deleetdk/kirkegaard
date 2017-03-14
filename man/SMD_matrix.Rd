@@ -4,7 +4,7 @@
 \alias{SMD_matrix}
 \title{Standardized mean differences}
 \usage{
-SMD_matrix(x, group, central_tendency = mean, dispersion = "sd",
+SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
   dispersion_method = "all", ...)
 }
 \arguments{

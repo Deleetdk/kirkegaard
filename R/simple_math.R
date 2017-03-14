@@ -50,7 +50,7 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclu
   names(v_res) = cutoffs
 
   #round
-  if (!missing("digits")) v_res = round(v_res, digits = digits)
+  if (!is.null(digits)) v_res = round(v_res, digits = digits)
 
   return(v_res)
 }

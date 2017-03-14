@@ -4,8 +4,8 @@
 \alias{get_Morans_I_multi}
 \title{Calculate multiple Moran's I's. It's a wrapper function for get_Morans_I().}
 \usage{
-get_Morans_I_multi(df, vars, dists, lat_var, lon_var, distance_method,
-  auto_detect_dist_method = T)
+get_Morans_I_multi(df, vars, dists = NULL, lat_var = NULL, lon_var = NULL,
+  distance_method = NULL, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

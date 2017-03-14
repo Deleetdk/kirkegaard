@@ -13,9 +13,11 @@
 #' head(df_standardize(iris)) #standardized
 #' head(df_standardize(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
 #' head(df_standardize(iris, w = runif(150))) #standardized with weights
-df_standardize = function(df, exclude = "", messages = T, exclude_factors = T, w) {
-  #no weights
-  if (missing("w")) w = rep(1, nrow(df))
+df_standardize = function(df, exclude = NULL, messages = T, exclude_factors = T, w = NULL) {
+  df
+
+  #weights
+  if (is.null(w)) w = rep(1, nrow(df))
 
   for (col_idx in 1:ncol(df)) {
 
@@ -246,8 +248,8 @@ get_each_subset_minus_1 = function(df){
 #' str(iris_chr)
 #' str(df_as_num(iris_chr)) #convert back
 #' all(iris == df_as_num(iris_chr)) #confirm identity
-df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, always_skip_factors = F, remove_commas = T, skip_factors) {
-  if (!missing("skip_factors")) {
+df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, always_skip_factors = F, remove_commas = T, skip_factors = NULL) {
+  if (!is.null(skip_factors)) {
     stop("This parameter is depreciated. Use one of the two new ones.")
   }
 
@@ -336,10 +338,10 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
 #' head(df_add_delta(iris, primary_var = 1, secondary_vars = 2))
 #' #add delta variables to iris between Sepal.Length and all other numerical variables
 #' head(df_add_delta(iris, primary_var = 1))
-df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep = "_", subtract_from_primary = T, standardize = F) {
+df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta", sep = "_", subtract_from_primary = T, standardize = F) {
   #checks
   df = as.data.frame(df)
-  if (missing("primary_var")) stop("Primary var not given!")
+  primary_var
   if (class(df[[primary_var]]) != "numeric") stop("Primary var must be numeric!")
 
   #non-numeric
@@ -358,7 +360,7 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 
   #secondary
   #if secondaries not given, use all other vars
-  if(missing(secondary_vars)) {
+  if(is.null(secondary_vars)) {
     secondary_vars = setdiff(colnames(df), primary_var) %>% setdiff(non_num_vars)
     message("secondary_vars was not given. It was assumed that all other numerical variables were to be used.")
   }
@@ -437,8 +439,8 @@ df_add_delta = function(df, primary_var, secondary_vars, prefix = "delta", sep =
 #' df_rowFunc(iris[-5]) #get means by row
 #' all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
 #' df_rowFunc(iris[-5], func = median) #rowMedians
-df_rowFunc = function(..., standardize = F, func = mean, pattern, ignore_NA = T, progress = "text") {
-  if (!missing("pattern")) stop("pattern is depreciated. Use df_subset_by_pattern")
+df_rowFunc = function(..., standardize = F, func = mean, ignore_NA = T, progress = "text", pattern = NULL) {
+  if (!is.null(pattern)) stop("pattern is depreciated. Use df_subset_by_pattern")
 
   #make df
   tmp_df = data.frame(...)
@@ -971,10 +973,7 @@ df_reorder_columns = function(data, vars){
 #' test_iris = iris[1:10, ] #small test dataset
 #' df_add_affix(test_iris, prefix = "P_") #ad P_ prefix
 #' df_add_affix(test_iris, suffix = "_S") #ad _S suffix
-df_add_affix = function(data, prefix, suffix) {
-  #missing input
-  if (missing(prefix)) prefix = ""
-  if (missing(suffix)) suffix = ""
+df_add_affix = function(data, prefix = "", suffix = "") {
   #rename
   colnames(data) = paste0(prefix, colnames(data), suffix)
   #return

@@ -4,8 +4,9 @@
 \alias{add_SAC}
 \title{Add spatial autocorrelation to a variable.}
 \usage{
-add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, dists, lat_var, lon_var,
-  distance_method, verbose = F, auto_detect_dist_method = T)
+add_SAC(df, vars, k = 3, iter = 1, weight = 1/3, dists = NULL,
+  lat_var = NULL, lon_var = NULL, distance_method = NULL, verbose = F,
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

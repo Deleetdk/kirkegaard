@@ -4,8 +4,8 @@
 \alias{df_rowFunc}
 \title{Calculate summary statistics by rows in a data.frame.}
 \usage{
-df_rowFunc(..., standardize = F, func = mean, pattern, ignore_NA = T,
-  progress = "text")
+df_rowFunc(..., standardize = F, func = mean, ignore_NA = T,
+  progress = "text", pattern = NULL)
 }
 \arguments{
 \item{...}{(data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.}
@@ -14,11 +14,11 @@ df_rowFunc(..., standardize = F, func = mean, pattern, ignore_NA = T,
 
 \item{func}{(function) Which base function to call. Can be mean, median, sd, var and any other suitable function. Default to mean.}
 
-\item{pattern}{(string) A pattern to use for finding the columns names.}
-
 \item{ignore_NA}{(boolean) Whether to ignore missing data. Defaults to T.}
 
 \item{progress}{(chr scalar) Progress parameter passed to aaply. Default is text.}
+
+\item{pattern}{(string) A pattern to use for finding the columns names.}
 }
 \description{
 Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default.

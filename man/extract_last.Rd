@@ -4,7 +4,7 @@
 \alias{extract_last}
 \title{Subset object using Python's negative indexing}
 \usage{
-extract_last(x, margin_1, margin_2, drop = FALSE)
+extract_last(x, margin_1 = NULL, margin_2 = NULL, drop = FALSE)
 }
 \arguments{
 \item{x}{(vector, data.frame or matrix) Object to subset.}

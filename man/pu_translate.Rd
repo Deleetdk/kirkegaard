@@ -4,8 +4,8 @@
 \alias{pu_translate}
 \title{Translate between names of units and abbreviations}
 \usage{
-pu_translate(x, superunit, fuzzy = T, reverse = F, lang = "en",
-  superunit_recursive = F, messages = 1, stringdist_params,
+pu_translate(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en",
+  superunit_recursive = F, messages = 1, stringdist_params = NULL,
   standardize_name = F)
 }
 \arguments{
@@ -33,6 +33,13 @@ Returns a character vector.
 \description{
 Convert names of political units to standardized abbreviations or convert standardized abbreviations to names.
 }
+\details{
+Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit.
+}
 \examples{
+pu_translate("Denmark")
+pu_translate("Dänemark")
 pu_translate("DNK", reverse = T)
+pu_translate("DNK", reverse = T, lang = "de")
+pu_translate("Georgia")
 }

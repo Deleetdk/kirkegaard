@@ -4,8 +4,8 @@
 \alias{get_Morans_I}
 \title{Calculate Moran's I.}
 \usage{
-get_Morans_I(df, var, dists, lat_var, lon_var, distance_method,
-  auto_detect_dist_method = T)
+get_Morans_I(df, var, dists = NULL, lat_var = NULL, lon_var = NULL,
+  distance_method = NULL, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}
@@ -20,7 +20,7 @@ get_Morans_I(df, var, dists, lat_var, lon_var, distance_method,
 
 \item{distance_method}{Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.}
 
-\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.}
+\item{auto_detect_dist_method}{Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean.}
 }
 \description{
 Returns Moran's I coefficient and related NHST statistics. Excludes cases with missing data.

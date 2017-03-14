@@ -11,15 +11,13 @@
 #' @param distance_method Which geometric system to use to calculate distances. Defaults to spherical. Can be either spherical or euclidean. If using euclidean it doesn't matter which variable is coded as lat or lon.
 #' @param auto_detect_dist_method Whether to try to autodetect the distance method. If the dataset contains variables with the names "lat" and "lon", it will be detected as spherical. If it contains "x" and "y", it will be detected as euclidean. Defaults to true.
 #' @export
-#' @examples
-#' check_spatial_input()
-check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, auto_detect_dist_method) {
+check_spatial_input = function(df, dists = NULL, lat_var = NULL, lon_var = NULL, distance_method = NULL, auto_detect_dist_method = T) {
 
-  #dists missing?
-  if (missing("dists")) no_dists=T
+  #input
+  df
 
-  #dists found
-  if (!exists("no_dists")) {
+  #dists
+  if (!is.null(dists)) {
     return(list(setting = "dists"))
   }
 
@@ -41,38 +39,22 @@ check_spatial_input = function(df, dists, lat_var, lon_var, distance_method, aut
   }
 
   #both coords missing?
-  if (missing("lat_var") & missing("lon_var")) no_latlon=T
+  if (is.null(lat_var) && is.null(lon_var)) return(list(setting = "na"))
 
-  ##Actions
-
-  #none present
-  if (exists("no_dists") & exists("no_latlon")) {
-    return(list(setting = "na"))
-  }
-
-  #spatial found
-  if (exists("no_dists") & !exists("no_latlon")) {
-    #check if they exist
-    if (!all(c(lat_var, lon_var) %in% colnames(df))) {
-      stop("Spatial variables given were not in the data.frame!")
-    }
-
-    return(list(setting = "coords",
-                distance_method=distance_method,
-                lat_var=lat_var,
-                lon_var=lon_var))
-  }
+  #found coords
+  return(list(setting = "coords",
+              distance_method=distance_method,
+              lat_var=lat_var,
+              lon_var=lon_var))
 }
 
 
 
-#' Autodetect distance method based on variable names.
+#' Autodetect spatial distance method based on variable names.
 #'
 #' Returns a vector of the autodetected values or raises an error if it fails.
-#' @param df A data.frame with variables.
+#' @param df A data frame.
 #' @export
-#' @examples
-#' distance_method_detector()
 distance_method_detector = function(df) {
   #autodetect distance method
 

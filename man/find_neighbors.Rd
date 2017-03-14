@@ -4,8 +4,8 @@
 \alias{find_neighbors}
 \title{Find k neighbor cases using spherical or euclidean geometry.}
 \usage{
-find_neighbors(df, dists, k = 3, distance_method, lat_var, lon_var,
-  auto_detect_dist_method = T)
+find_neighbors(df, dists = NULL, k = 3, distance_method = NULL,
+  lat_var = NULL, lon_var = NULL, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

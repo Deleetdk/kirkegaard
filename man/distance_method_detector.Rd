@@ -2,16 +2,13 @@
 % Please edit documentation in R/SAC_helper.R
 \name{distance_method_detector}
 \alias{distance_method_detector}
-\title{Autodetect distance method based on variable names.}
+\title{Autodetect spatial distance method based on variable names.}
 \usage{
 distance_method_detector(df)
 }
 \arguments{
-\item{df}{A data.frame with variables.}
+\item{df}{A data frame.}
 }
 \description{
 Returns a vector of the autodetected values or raises an error if it fails.
-}
-\examples{
-distance_method_detector()
 }

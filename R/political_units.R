@@ -1,6 +1,8 @@
 #' Translate between names of units and abbreviations
 #'
 #' Convert names of political units to standardized abbreviations or convert standardized abbreviations to names.
+#'
+#' Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit.
 #' @param x (chr vectr) A chr vector of names to abbreviate.
 #' @param superunit (chr vectr) Optional. A superunit whose subunits are the only ones being considered. Set to "world" if only sovereign countries are desired.
 #' @param fuzzy (lgl scalr) Whether to use fuzzy matching if no exact match exists.
@@ -13,8 +15,12 @@
 #' @export
 #' @return Returns a character vector.
 #' @examples
+#' pu_translate("Denmark")
+#' pu_translate("Dänemark")
 #' pu_translate("DNK", reverse = T)
-pu_translate = function(x, superunit, fuzzy = T, reverse=F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params, standardize_name = F) {
+#' pu_translate("DNK", reverse = T, lang = "de")
+#' pu_translate("Georgia")
+pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params = NULL, standardize_name = F) {
   #check input
   is_(x, class = "character", error_on_false = T)
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
@@ -23,7 +29,7 @@ pu_translate = function(x, superunit, fuzzy = T, reverse=F, lang = "en", superun
   is_(messages, class = "numeric", error_on_false = T, size = 1)
   if (!is_between(messages, 0, 2)) stop(sprintf("messages was %f but must be 0>=x<=2. You probably made a mistake.", messages), call. = F)
   is_(standardize_name, class = "logical", error_on_false = T, size = 1)
-  if (!missing("stringdist_params")) is_(stringdist_params, class = "list", error_on_false = T)
+  if (!is.null(stringdist_params)) is_(stringdist_params, class = "list", error_on_false = T)
   if (superunit_recursive) stop("Not implemented yet. But the idea is that one can pass e.g. 'USA' and be able to match county names as well as states.")
 
   #impossible settings
@@ -37,12 +43,15 @@ pu_translate = function(x, superunit, fuzzy = T, reverse=F, lang = "en", superun
   units = dplyr::filter(units, is.na(Removed))
 
   #subset to subunits if desired
-  if (!missing("superunit")) {
+  if (!is.null(superunit)) {
+    #fill in 'world'
+    units$Superunit %<>% plyr::mapvalues(from = NA, to = "world")
+
     #get name of superunit
     name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
 
     if (messages > 1) message(sprintf("Subsetting to subunits of %s [%s].", name_superunit, superunit))
-    units = dplyr::filter(units, Superunit == superunit)
+    units = dplyr::filter(units, Superunit %in% superunit)
 
     #no members? give useful feedback
     if (nrow(units) == 0) stop(sprintf("There were no subunits of this superunit! %s", superunit))

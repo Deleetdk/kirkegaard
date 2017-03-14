@@ -4,7 +4,7 @@
 \alias{df_add_affix}
 \title{Add affix to column names.}
 \usage{
-df_add_affix(data, prefix, suffix)
+df_add_affix(data, prefix = "", suffix = "")
 }
 \arguments{
 \item{data}{(an object) An object whose colnames should be changed}

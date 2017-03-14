@@ -4,10 +4,10 @@
 \alias{MOD_partial}
 \title{Calculate a partial correlation.}
 \usage{
-MOD_partial(df, x, y, z, weights_var)
+MOD_partial(df, x, y, z, weights_var = NULL)
 }
 \arguments{
-\item{df}{A data.frame.}
+\item{df}{A data frame.}
 
 \item{x}{String with the name of the first variable.}
 
@@ -15,11 +15,8 @@ MOD_partial(df, x, y, z, weights_var)
 
 \item{z}{String with the name of the control variable.}
 
-\item{weights}{String with the name of the weights variable. Can be left out.}
+\item{weights_var}{String with the name of the weights variable. Can be left out.}
 }
 \description{
 Calculates the partial correlation.
-}
-\examples{
-MOD_partial()
 }

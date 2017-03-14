@@ -4,8 +4,8 @@
 \alias{get_distances_mat}
 \title{Calculate distance matrices for all variables in a data.frame.}
 \usage{
-get_distances_mat(df, lat_var, lon_var, distance_method,
-  auto_detect_dist_method = T)
+get_distances_mat(df, lat_var = NULL, lon_var = NULL,
+  distance_method = NULL, auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

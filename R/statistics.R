@@ -29,17 +29,19 @@
 #' cor_matrix(iris, p_val = .95, p_template = "%r (%p)") #with p values, with an alternative template
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
-cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val, p_template = "%r [p=%p]", p_round = 3) {
+cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = NULL, p_template = "%r [p=%p]", p_round = 3) {
 
   #checks
   data = as.data.frame(data)
   if (skip_nonnumeric) data = extract_num_vars(data)
   if (!is_numeric(data)) stop("data contains non-numeric columns!")
-  if (!missing("CI") & !missing("p_val")) stop("Cannot both calculate CIs and p values!")
-  v_noextras = missing("CI") & missing("p_val")
+
+  #CI and p vals
+  if (!is.null(CI) && !is.null(p_val)) stop("Cannot both calculate CIs and p values!")
+  v_noextras = is.null(CI) && is.null(p_val)
 
   #reliabities
-  if (missing("reliabilities")) {
+  if (is.null(reliabilities)) {
     reliabilities = rep(1, ncol(data))
   } else {
     #check length
@@ -47,7 +49,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
   }
 
   #weights not given or as character
-  if (missing("weights")) weights = rep(1, nrow(data)) #fill 1's
+  if (is.null(weights)) weights = rep(1, nrow(data))
   if (is.character(weights)) {
     weights = data[[weights]] #fetch from data
     data[weights] = NULL #remove from data
@@ -103,7 +105,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
       if (col >= row) next
 
       #simple weights & CI
-      if (simpleweights && !missing("CI")) {
+      if (simpleweights && !is.null("CI")) {
 
         #weighted cor
         r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
@@ -132,7 +134,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
       }
 
       #simple weights & p_val
-      if (simpleweights && !missing("p_val")) {
+      if (simpleweights && !is.null("p_val")) {
         #observed r
         r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
@@ -161,7 +163,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
           m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
         }
 
-        if (!missing("CI")) {
+        if (!is.null("CI")) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
@@ -188,7 +190,7 @@ cor_matrix = function(data, weights, reliabilities, CI, CI_template = "%r [%lowe
             str_replace("%upper", r_CI[2])
         }
 
-        if (!missing("p_val")) {
+        if (!is.null("p_val")) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
@@ -317,15 +319,17 @@ remove_redundant_vars = function(df, threshold = .9, cor_method = "pearson", mes
 #' @param z A numeric vector to partial out of y.
 #' @param weights A numeric vector of weights to use. If none given, will return unweighted results.
 #' @export
-#' @examples
-#' semi_par()
-semi_par = function(x, y, z, weights = NA, complete_cases = T) {
+semi_par = function(x, y, z, weights = NULL, complete_cases = T) {
 
-  #if no weights, set to vector of 1's
-  if (length(weights) == 1) {
-    if (is.na(weights)) {
-      weights = rep(1, length(x))
-    }
+  #x vector
+  x = as.vector(x)
+  y = as.vector(y)
+
+  #weights
+  if (is.null(w)) {
+    w = rep(1, length(x))
+  } else {
+    w = as.vector(w)
   }
 
   #data.frame
@@ -359,20 +363,19 @@ semi_par = function(x, y, z, weights = NA, complete_cases = T) {
 #' @param weights A string with the name of the variable to use for weights.
 #' @param standardize Whether to standardize the data frame before running results. The weights variable will not be standardized.
 #' @export
-#' @examples
-#' semi_par_serial()
-semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, standardize=T) {
+semi_par_serial = function(df, dependent, primary, secondaries, weights = NULL, standardize = T) {
 
   #subset and deal with lack of weights
-  if (is.na(weights)) {
+  if (is.null(weights)) {
     weights = "weights_var"
     df[weights] = rep(1, nrow(df))
-    df = subset(df, select = c(dependent, primary, secondaries, weights))
   } else {
     df["weights_var"] = df[weights] #move the weights var to another name
     weights = "weights_var"
-    df = subset(df, select = c(dependent, primary, secondaries, weights))
   }
+
+  #subset
+  df = subset(df, select = c(dependent, primary, secondaries, weights))
 
   #complete cases only
   df = na.omit(df)
@@ -414,60 +417,23 @@ semi_par_serial = function(df, dependent, primary, secondaries, weights=NA, stan
 
 
 
-
-#' Calculate a correlation matrix with and without weights.
-#'
-#' Inputs a data.frame and a set of weights. The weights can be given either as the name of the variable to use for weights or as a numeric vector. Outputs a correlation matrix where the lower triangle are weighted correlations and the upper triangle are unweighted. Diagonals are set as NA. The weights variable is excluded from the matrix.
-#' @param df A data.frame.
-#' @param weight_var A character vector of the name of the weights variable.
-#' @param weights A numeric vector of the weights to use.
-#' @export
-#' @examples
-#' cor_matrix_weights()
-cor_matrix_weights = function(df, weight_var, weights) {
-
-  #if weights are in the data.frame
-  if (!missing("weight_var")) {
-    #extract weights
-    weights = df[[weight_var]]
-
-    #remove weights var
-    df[weight_var] = NULL
-  }
-
-  #check lengths
-  if (length(weights) != nrow(df)) stop("Lengths of weights vector and data.frame don't match!")
-
-  #get cors
-  r = weights::wtd.cors(df)
-  r_wt = weights::wtd.cors(df, weight = weights)
-
-  #combine
-  r_combined = combine_upperlower(r, r_wt)
-
-  #return
-  return(r_combined)
-}
-
-
 #' Calculate a partial correlation.
 #'
 #' Calculates the partial correlation.
-#' @param df A data.frame.
+#' @param df A data frame.
 #' @param x String with the name of the first variable.
 #' @param y String with the name of the second variable.
 #' @param z String with the name of the control variable.
-#' @param weights String with the name of the weights variable. Can be left out.
+#' @param weights_var String with the name of the weights variable. Can be left out.
 #' @export
-#' @examples
-#' MOD_partial()
-MOD_partial = function(df, x, y, z, weights_var) {
-
-  #check input
-  if (missing("df") | missing("x") | missing("y") | missing("z")) stop("df, x, y or z is missing!")
+MOD_partial = function(df, x, y, z, weights_var = NULL) {
+  df
+  x
+  y
+  z
 
   #make or move weights
-  if (missing("weights_var")) {
+  if (is.null(weights_var)) {
     df$weights___ = rep(1, nrow(df)) #make unit weights
   } else {
     df$weights___ = df[[weights_var]] #reassign weights var
@@ -499,22 +465,21 @@ MOD_partial = function(df, x, y, z, weights_var) {
 #'
 #' Calculates accuracy measures from a data.frame of estimates using a vector of criteria values.
 #' @param x (numeric data.frame) A data.frame with estimates. Rows must be cases. Alternatively, a vector of values. If given a vector, it will assume the user wants aggregate-level estimates.
-#' @param criteria (numeric vector) A vector of criteria values to score estimates against.
+#' @param criterion (numeric vector) A vector of criteria values to score estimates against.
 #' @param methods (character vector) Which measures to return. Defaults to c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"). Use "all" to get all.
 #' @param aggregate (boolean) Whether to use aggregated estimates. Default=F.
 #' @param aggregate_function (function) Which function to use for aggregation. Default=base::mean.
 #' @param ... (named parameters) Additional parameters to pass to the aggregator function, such as na.rm=T to ignore missing data.
 #' @export
-#' @examples
-#' score_accuracy()
-score_accuracy = function(x, criteria, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
+score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
   #save rownames
   v_rownames = rownames(x)
 
   #check
+  x
+  criterion
   if (!is.function(aggregate_function)) stop("Aggregate function isn't a function!")
-  if (missing("x")) stop("Estimates x is missing!")
-  if (missing("criteria")) stop("Criteria values vector is missing!")
+
 
   #aggregate?
   if (aggregate) { #if the user wants aggregated results
@@ -534,24 +499,24 @@ score_accuracy = function(x, criteria, methods = c("pearson_r", "mean_abs_delta"
 
   #make df for results
   df = as.data.frame(x)
-  criteria = unlist(criteria) %>% as.vector
+  criterion = unlist(criterion) %>% as.vector
   d_res = data.frame(matrix(nrow = nrow(df), ncol = 0))
 
 
   #Pearson r
   d_res$pearson_r = sapply(1:nrow(df), function(x) {
-    cor(criteria, df[x, ] %>% unlist, use = "p")
+    cor(criterion, df[x, ] %>% unlist, use = "p")
   })
 
 
   #rank-order r
   d_res$rank_r = sapply(1:nrow(df), function(x) {
-    cor(criteria, df[x, ] %>% unlist, method = "spearman", use = "p")
+    cor(criterion, df[x, ] %>% unlist, method = "spearman", use = "p")
   })
 
 
   #delta (discrepancy) error
-  d_deltas = (t(df) - criteria) %>% t %>% as.data.frame
+  d_deltas = (t(df) - criterion) %>% t %>% as.data.frame
   d_res$mean_abs_delta = apply(d_deltas, 1, function(x) {
     mean(abs(x), na.rm = T)
   })
@@ -559,13 +524,13 @@ score_accuracy = function(x, criteria, methods = c("pearson_r", "mean_abs_delta"
 
   #dispersion error
   d_res$sd = apply(df, 1, sd, na.rm = T) #sd of each persons estimates
-  d_res$sd_error = d_res$sd - sd(criteria, na.rm = T)
+  d_res$sd_error = d_res$sd - sd(criterion, na.rm = T)
   d_res$sd_error_abs = d_res$sd_error %>% abs
 
 
   #elevation error
   d_res$mean_elevation = apply(df, 1, mean, na.rm = T)
-  d_res$mean_elevation_error = d_res$mean_elevation - mean(criteria, na.rm = T)
+  d_res$mean_elevation_error = d_res$mean_elevation - mean(criterion, na.rm = T)
   d_res$mean_elevation_error_abs = abs(d_res$mean_elevation_error)
 
   #rownames
@@ -645,7 +610,11 @@ pool_sd = function(x, group) {
 #' @export
 #' @examples
 #' SMD_matrix(iris$Sepal.Length, iris$Species)
-SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", dispersion_method = "all", ...) {
+SMD_matrix = function(x, group, central_tendency = wtd_mean, dispersion = "sd", dispersion_method = "all", ...) {
+  #input
+  x
+  group
+
 
   #df form
   d_x = data.frame(x = x, group = as.factor(group))
@@ -699,7 +668,7 @@ SMD_matrix = function(x, group, central_tendency = mean, dispersion = "sd", disp
       } else if (is.numeric(dispersion)) disp = dispersion #use given number
 
       #difference
-      diff = central_tendency(d_comb$x[d_comb$group == col], na.rm=T, ...) - central_tendency(d_comb$x[d_comb$group == row], na.rm=T, ...)
+      diff = central_tendency(d_comb$x[d_comb$group == col], ...) - central_tendency(d_comb$x[d_comb$group == row], ...)
 
       #devide by dispersion measure
       SMD = diff / disp
@@ -788,9 +757,16 @@ homogeneity = function(x, reverse = F, summary = F) {
 #' sd(X) #0.898
 #' wtd_sd(X, W) #0.894, slightly different
 #' wtd_sd(X) #0.898, not using weights
-wtd_sd = function(x, w, sample = T, error = T) {
-  #if missing, use 1's
-  if (missing("w")) w = rep(1, length(x))
+wtd_sd = function(x, w = NULL, sample = T, error = T) {
+  #x vector
+  x = as.vector(x)
+
+  #weights
+  if (is.null(w)) {
+    w = rep(1, length(x))
+  } else {
+    w = as.vector(w)
+  }
 
   #make temp df
   d = data.frame(x = x, w = w) %>% na.omit()
@@ -832,10 +808,17 @@ wtd_sd = function(x, w, sample = T, error = T) {
 #' wtd_mean(X) # not using weights
 #' mean(X) #same as above
 #' wtd_mean(X, W) #slightly different
-wtd_mean = function(x, w, error=T) {
+wtd_mean = function(x, w = NULL, error = T) {
 
-  #no weights?
-  if (missing("w")) w = rep(1, length(x))
+  #x vector
+  x = as.vector(x)
+
+  #weights
+  if (is.null(w)) {
+    w = rep(1, length(x))
+  } else {
+    w = as.vector(w)
+  }
 
   #lengths
   if (!lengths_match(x, w)) stop("Lengths of x and w do not match!")
@@ -868,9 +851,16 @@ wtd_mean = function(x, w, error=T) {
 #' wtd_sum(X) # not using weights
 #' sum(X) #same as above
 #' wtd_sum(X, W) #different
-wtd_sum = function(x, w, error=T) {
-  #no weights?
-  if (missing("w")) w = rep(1, length(x))
+wtd_sum = function(x, w = NULL, error=T) {
+  #x vector
+  x = as.vector(x)
+
+  #weights
+  if (is.null(w)) {
+    w = rep(1, length(x))
+  } else {
+    w = as.vector(w)
+  }
 
   #lengths
   lengths_match(x, w)
@@ -904,9 +894,16 @@ wtd_sum = function(x, w, error=T) {
 #' W = runif(100)
 #' standardize(X, W)
 #' standardize(X, robust = T) #almost the same for these data
-standardize = function(x, w, robust = F, sample = T) {
-  #missing w, use no weights
-  if (missing("w")) w = rep(1, length(x))
+standardize = function(x, w = NULL, robust = F, sample = T) {
+  #x vector
+  x = as.vector(x)
+
+  #weights
+  if (is.null(w)) {
+    w = rep(1, length(x))
+  } else {
+    w = as.vector(w)
+  }
 
   #parametric
   if (!robust) {

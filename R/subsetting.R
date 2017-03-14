@@ -11,25 +11,23 @@
 #' @param func (function) A function that returns a boolean.
 #' @param func_str (character scalar) A string to make a function from using math_to_function().
 #' @param new_value (scalar vector) A value to use in the cases.
-#' @param handle_NA (boolean) Whether to handle missing values. Default=T.
+#' @param handle_NA (boolean) Whether to handle missing values.
 #' @export
-#' @examples
-#' conditional_change()
-conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
+conditional_change = function(x, func = NULL, func_str = NULL, new_value, handle_NA = T) {
 
   #checks
-  if (missing("x")) stop("x is missing!")
-  if (missing("func") & missing("func_str")) stop("Both func and func_str are missing. You must supply a function!")
-  if (missing("new_value")) stop("new_value is missing. You must supply a replacement value!")
+  x
+  new_value
+  if (is.null(func) && is.null(func_str)) stop("Both `func`` and `func_str` are missing. You must supply a function!")
   if (!any(sapply(list(is.vector, is.data.frame, is.matrix, is.list), function(y) {
     y(x)
-  }))) stop("x was not a vector, data.frame, matrix or list. Other objects are not supported!")
+  }))) stop("x was not a vector, data frame, matrix or list. Other objects are not supported!")
   if (!handle_NA) {
-    if (any(is.na(x))) stop("Missing values present!")
+    if (any(is.na(x))) stop("Missing values present and not handled!")
   }
 
   #shorthands for functions
-  if (!missing("func_str")) {
+  if (!is.null(func_str)) {
     if (func_str == "<0") func = is_negative
     if (func_str == ">0") func = is_positive
     if (func_str == "=0") func = is_zero
@@ -37,7 +35,7 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
   }
 
   #make function
-  if (missing("func")) func = math_to_function(func_str)
+  if (is.null(func)) func = math_to_function(func_str)
 
   #conditional
 
@@ -84,7 +82,7 @@ conditional_change = function(x, func, func_str, new_value, handle_NA = T) {
 #' @examples
 #' extract_nonnum_vars(iris)
 extract_nonnum_vars = function(data) {
-  v_numerical = !sapply(data, is.numeric)
+  v_numerical = !purrr::map_lgl(data, is.numeric)
   data[, v_numerical, drop = FALSE]
 }
 
@@ -102,7 +100,7 @@ extract_nonnum_vars = function(data) {
 #' extract_last(iris, 1) # last row
 #' extract_last(iris, , 1) # last column
 #' extract_last(iris, 5:1, 2:1) #last 5 elements rows and last 2 columns
-extract_last = function(x, margin_1, margin_2, drop = FALSE) {
+extract_last = function(x, margin_1 = NULL, margin_2 = NULL, drop = FALSE) {
   #check types
   if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) stop("x was an unsupported type (not a vector, matrix or data.frame)!")
 
@@ -113,12 +111,12 @@ extract_last = function(x, margin_1, margin_2, drop = FALSE) {
   x_dims = dim(x)
 
   #make indices
-  if (missing("margin_1")) {
+  if (is.null(margin_1)) {
     margin_1 = 1:x_dims[1]
   } else {
     margin_1 = (x_dims[1] + 1) - margin_1
   }
-  if (missing("margin_2")) {
+  if (is.null(margin_2)) {
     margin_2 = 1:x_dims[2]
   } else {
     margin_2 = (x_dims[2] + 1) - margin_2

@@ -4,8 +4,8 @@
 \alias{GG_denhist}
 \title{Histogram with an empirical density curve}
 \usage{
-GG_denhist(data, var, group = NULL, vline = mean, binwidth = NULL,
-  clean_name = T)
+GG_denhist(data, var = NULL, group = NULL, vline = mean,
+  binwidth = NULL, clean_name = T)
 }
 \arguments{
 \item{data}{(data.frame or something coercible into) A data frame or a vector.}

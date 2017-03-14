@@ -4,7 +4,7 @@
 \alias{GG_forest}
 \title{Plot a contingency table with ggplot2}
 \usage{
-GG_forest(.analysis, .names, .alphabetic_sort_names = T)
+GG_forest(.analysis, .names = NULL, .alphabetic_sort_names = T)
 }
 \arguments{
 \item{.analysis}{(rma object) The rma analysis from metafor.}
