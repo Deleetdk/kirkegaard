@@ -11,7 +11,7 @@
 #' is_simple_vector(v)
 #' is_simple_vector(l)
 is_simple_vector = function(x) {
-  is.vector(x) & !is.list(x)
+  is.vector(x) && !is.list(x)
 }
 
 
@@ -24,7 +24,7 @@ is_simple_vector = function(x) {
 #' is_unordered_factor(factor(1:3))
 #' is_unordered_factor(ordered(1:3))
 is_unordered_factor = function(x) {
-  is.factor(x) & !is.ordered(x)
+  is.factor(x) && !is.ordered(x)
 }
 
 
