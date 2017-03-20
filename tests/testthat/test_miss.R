@@ -60,3 +60,12 @@ test_that("miss_impute", {
   #ordinal with 2 levels
   expect_warning(iris_with_ord2 %>% miss_add_random() %>%  miss_impute())
 })
+
+
+# miss_amount -------------------------------------------------------------
+set.seed(1)
+
+test_that("miss_amount", {
+  expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname, c(.42, 1, .10))
+})
+

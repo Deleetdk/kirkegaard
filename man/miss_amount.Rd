@@ -4,7 +4,7 @@
 \alias{miss_amount}
 \title{How much data is missing?}
 \usage{
-miss_amount(data, round = 2)
+miss_amount(data)
 }
 \arguments{
 \item{data}{(data.frame/matrix) The data.}

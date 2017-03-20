@@ -163,7 +163,7 @@ miss_matrix = function(data) {
 #' @export
 #' @examples
 #' miss_amount(miss_add_random(iris))
-miss_amount = function(data, round = 2) {
+miss_amount = function(data) {
   #calculate amount of missing
   by_case = miss_by_case(data) %>% percent_cutoff(cutoffs = 1)
   by_var = miss_by_var(data) %>% percent_cutoff(cutoffs = 1)
@@ -171,7 +171,7 @@ miss_amount = function(data, round = 2) {
 
   c("cases with missing data" = as.vector(by_case),
     "vars with missing data" = as.vector(by_var),
-    "cells with missing data" = overall) %>% round(round)
+    "cells with missing data" = overall)
 }
 
 
