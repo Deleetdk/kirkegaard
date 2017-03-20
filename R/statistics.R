@@ -105,7 +105,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
       if (col >= row) next
 
       #simple weights & CI
-      if (simpleweights && !is.null("CI")) {
+      if (simpleweights && !is.null(CI)) {
 
         #weighted cor
         r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
@@ -134,7 +134,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
       }
 
       #simple weights & p_val
-      if (simpleweights && !is.null("p_val")) {
+      if (simpleweights && !is.null(p_val)) {
         #observed r
         r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
@@ -163,7 +163,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
         }
 
-        if (!is.null("CI")) {
+        if (!is.null(CI)) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
@@ -190,7 +190,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
             str_replace("%upper", r_CI[2])
         }
 
-        if (!is.null("p_val")) {
+        if (!is.null(p_val)) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
