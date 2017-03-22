@@ -486,6 +486,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 #' @param weights_ (num vector/chr scalar) If weights should be used, a numeric vector of values to use or chr vector.
 #' @param standardize (log scalar) Whether to standardize the data beforehand.
 #' @param runs (int scalar) Number of times to run.
+#' @param nfolds (int) Number of folds.
 #' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.
 #' @param NA_ignore (log scalar) Whether to remove cases with missing data.´´
 #' @param messages (log scalar) Whether to show messages.
@@ -494,7 +495,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
 #' @export
 #' @examples
 #' MOD_LASSO(iris, "Sepal.Length", predictors = colnames(iris)[-1])
-MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize = T, runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages = T, progress = T) {
+MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize = T, runs = 100, nfolds = 10, alpha_ = 1, NA_ignore = T, seed = 1, messages = T, progress = T) {
 
   #check input
   data
@@ -535,7 +536,7 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize =
   if (NA_ignore) {
     if (any(is.na(df))) {
       df = df %>% na.omit()
-      message("Missing data removed.")
+      if (messages) message("Missing data removed.")
     }
   }
 
@@ -557,7 +558,8 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize =
     fit_cv = glmnet::cv.glmnet(x = as_num_matrix(df[predictors]), #predictor vars matrix
                        y = as_num_matrix(df[dependent]), #dep var matrix
                        weights = df$weights_, #weights
-                       alpha = alpha_) #type of shrinkage
+                       alpha = alpha_,
+                       nfolds = nfolds)
 
     #fetch coefs and names
     pred_betas = coef(fit_cv) #coefs

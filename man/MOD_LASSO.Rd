@@ -5,8 +5,8 @@
 \title{Repeatedly run glmnet.cv()}
 \usage{
 MOD_LASSO(data, dependent, predictors, weights_ = NULL, standardize = T,
-  runs = 100, alpha_ = 1, NA_ignore = T, seed = 1, messages = T,
-  progress = T)
+  runs = 100, nfolds = 10, alpha_ = 1, NA_ignore = T, seed = 1,
+  messages = T, progress = T)
 }
 \arguments{
 \item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}
@@ -20,6 +20,8 @@ MOD_LASSO(data, dependent, predictors, weights_ = NULL, standardize = T,
 \item{standardize}{(log scalar) Whether to standardize the data beforehand.}
 
 \item{runs}{(int scalar) Number of times to run.}
+
+\item{nfolds}{(int) Number of folds.}
 
 \item{alpha_}{(num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.}
 
