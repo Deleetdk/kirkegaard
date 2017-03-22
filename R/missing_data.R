@@ -233,7 +233,7 @@ miss_analyze = function(data, robust = F) {
   #for each variable, analyze relationship each other variable
   d_NA_diffs = plyr::ldply(.data = colnames(data), .fun = function(var) {
     #for each variable
-    sapply(colnames(data), FUN = function(var2) {
+    purrr::map_dbl(colnames(data), function(var2) {
       #if same
       if (var == var2) return(NA)
 
@@ -241,18 +241,17 @@ miss_analyze = function(data, robust = F) {
       if (all(m_d[, var] == 0)) return(NA)
 
       #if factor, use cramer's V
-      if (data[[var2]] %>% is.factor()) {
+      if (data[[var2]] %>% is.factor) {
 
         return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>%
                          compute.es::res(r = ., n = 100, verbose = F)) %>%
                  magrittr::extract("d") %>%
-                 unlist() %>%
-                 as.vector()) #silence to avoid chi sq warnings
+                 unlist %>%
+                 as.vector) #silence to avoid chi sq warnings
       }
 
       #if numeric, use standardized mean difference
       if (!robust) { #parametric measures
-
         d_val = SMD_matrix(x = data[[var2]], group = m_d[, var])[1, 2]
       } else { #robust measures
         d_val = SMD_matrix(x = data[[var2]], group = m_d[, var], central_tendency = median, dispersion = mad)[1, 2]
