@@ -26,7 +26,7 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
   is_(reverse, class = "logical", error_on_false = T, size = 1)
   is_(superunit_recursive, class = "logical", error_on_false = T, size = 1)
-  is_(messages, class = "numeric", error_on_false = T, size = 1)
+  is_(messages, class = c("numeric", "logical"), error_on_false = T, size = 1)
   if (!is_between(messages, 0, 2)) stop(sprintf("messages was %f but must be 0>=x<=2. You probably made a mistake.", messages), call. = F)
   is_(standardize_name, class = "logical", error_on_false = T, size = 1)
   if (!is.null(stringdist_params)) is_(stringdist_params, class = "list", error_on_false = T)
