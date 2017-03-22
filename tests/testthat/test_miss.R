@@ -39,11 +39,12 @@ test_that("miss_filter", {
 # miss_analyze --------------------------------------------------
 #large dataset with missing data
 set.seed(1)
-t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% miss_add_random() %>% miss_analyze()
+t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame %>% miss_add_random %>% miss_analyze
 
 test_that("miss_analyze", {
   expect_true(all(get_dims(t2) == c(10, 10)))
   expect_true((t2 < .8) %>% sum(na.rm = T) == 90)
+  expect_equivalent(diag(as.matrix(t2)), rep(NA_real_, 10))
 })
 
 

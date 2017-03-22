@@ -4,7 +4,7 @@
 \alias{wtd_mean}
 \title{Calculate a weighted mean}
 \usage{
-wtd_mean(x, w = NULL, error = T)
+wtd_mean(x, w = NULL, error = F)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}

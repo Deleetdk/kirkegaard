@@ -4,7 +4,7 @@
 \alias{wtd_sd}
 \title{Calculate weighted standard deviation}
 \usage{
-wtd_sd(x, w = NULL, sample = T, error = T)
+wtd_sd(x, w = NULL, sample = T, error = F)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}

@@ -4,7 +4,7 @@
 \alias{wtd_sum}
 \title{Calculate a weighted sum}
 \usage{
-wtd_sum(x, w = NULL, error = T)
+wtd_sum(x, w = NULL, error = F)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}

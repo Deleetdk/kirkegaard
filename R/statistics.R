@@ -709,18 +709,18 @@ homogeneity = function(x, reverse = F, summary = F) {
   if (!summary) {
     #reversed
     if (!reverse) {
-      return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum())
+      return(table(x) %>% prop.table %>% as.vector %>% raise_to_power(2) %>% sum)
     }
 
     #reversed
-    return(table(x) %>% prop.table() %>% as.vector() %>% raise_to_power(2) %>% sum() %>% subtract(1, .))
+    return(table(x) %>% prop.table %>% as.vector %>% raise_to_power(2) %>% sum %>% subtract(1, .))
   }
 
   #using summary statistics
   if (sum(x) %>% is_between(.99, 1.01)) {
     #not reversed
     if (!reverse) {
-      return(x %>% raise_to_power(2) %>% sum())
+      return(x %>% raise_to_power(2) %>% sum)
     }
 
     #reversed
@@ -728,11 +728,11 @@ homogeneity = function(x, reverse = F, summary = F) {
   } else if (sum(x) %>% is_between(99, 101)) {
     #not reversed
     if (!reverse) {
-      return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum())
+      return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum)
     }
 
     #reversed
-    return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum() %>% subtract(1, .))
+    return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum %>% subtract(1, .))
 
   } else {
       stop("Tried to use summary statistics, but they did not sum to either around 1 or 100 (±1%)")
@@ -757,7 +757,7 @@ homogeneity = function(x, reverse = F, summary = F) {
 #' sd(X) #0.898
 #' wtd_sd(X, W) #0.894, slightly different
 #' wtd_sd(X) #0.898, not using weights
-wtd_sd = function(x, w = NULL, sample = T, error = T) {
+wtd_sd = function(x, w = NULL, sample = T, error = F) {
   #x vector
   x = as.vector(x)
 
@@ -769,12 +769,11 @@ wtd_sd = function(x, w = NULL, sample = T, error = T) {
   }
 
   #make temp df
-  d = data.frame(x = x, w = w) %>% na.omit()
+  d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
-  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
-  if (nrow(d) == 0) return(NaN) #return NaN on no cases
+  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #weighted mean
   wtd_mean = wtd_mean(x, w, error = error)
@@ -808,7 +807,7 @@ wtd_sd = function(x, w = NULL, sample = T, error = T) {
 #' wtd_mean(X) # not using weights
 #' mean(X) #same as above
 #' wtd_mean(X, W) #slightly different
-wtd_mean = function(x, w = NULL, error = T) {
+wtd_mean = function(x, w = NULL, error = F) {
 
   #x vector
   x = as.vector(x)
@@ -824,11 +823,11 @@ wtd_mean = function(x, w = NULL, error = T) {
   if (!lengths_match(x, w)) stop("Lengths of x and w do not match!")
 
   #make temp df
-  d = data.frame(x = x, w = w) %>% na.omit()
+  d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
-  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
+  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #else
   weighted.mean(x = d$x, w = d$w)
@@ -851,7 +850,7 @@ wtd_mean = function(x, w = NULL, error = T) {
 #' wtd_sum(X) # not using weights
 #' sum(X) #same as above
 #' wtd_sum(X, W) #different
-wtd_sum = function(x, w = NULL, error=T) {
+wtd_sum = function(x, w = NULL, error=F) {
   #x vector
   x = as.vector(x)
 
@@ -866,11 +865,11 @@ wtd_sum = function(x, w = NULL, error=T) {
   lengths_match(x, w)
 
   #make temp df
-  d = data.frame(x = x, w = w) %>% na.omit()
+  d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (count_NA(x) == length(x) & error) stop("There were non-missing cases!")
-  if (nrow(d) == 0 & error) stop("There were no pairwise complete cases!")
+  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #calculate
   x_w = sum(d$x * d$w, na.rm = T) # sum of x * w
@@ -961,7 +960,7 @@ find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precisi
   #dangerous loop!
   cutoff = mean_pop #begin with unselected group
   iter = 1
-  while(T) {
+  while (T) {
     #replicable
     set.seed(1)
 
