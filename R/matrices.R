@@ -6,7 +6,7 @@
 #' @export
 #' @examples
 #' MAT_find_size(3)
-MAT_find_size = function(x, diag=F) {
+MAT_find_size = function(x, diag = F) {
   #this is based on the equations
   #k = length of
 
