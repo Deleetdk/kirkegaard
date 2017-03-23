@@ -1,6 +1,56 @@
 ## STATISTICS functions
 
 
+#' Adjust Cohen's d for measurement error
+#'
+#' Adjust' Cohen's d for measurement error using the Pearson r approach
+#'
+#' Convert the d to Pearson r, then applies Spearman's correction, and then converts back.
+#' @param d (num) Cohen's d.
+#' @param n1 (int) Sample size for group 1.
+#' @param n2 (int) Sample size for group 2.
+#' @param rxx (num) Reliability of x.
+#' @param ryy (num) Reliability of y.
+#' @export
+#' @examples
+#' a4me_cohen_d(1, 100, 100) #no adjustment
+#' a4me_cohen_d(1, 100, 100, rxx = .5) #adjust based on x
+#' a4me_cohen_d(1, 100, 100, ryy = .5) #based on y, same result
+#' a4me_cohen_d(1, 100, 100, rxx = .5, ryy = .5) #based on both; large effect!
+#' a4me_cohen_d(1, 100, 100, rxx = 0) #infinite d if no reliability
+#' a4me_cohen_d(10, 100, 100, rxx = .1, ryy = .1) #infinite also if corrected correlation exceeds the bounds
+a4me_cohen_d = function(d, n1, n2, rxx = 1, ryy = 1) {
+  #check input
+  d
+  n1
+  n2
+
+  #if no adjust necessary
+  if (rxx == 1 & ryy == 1) return(d)
+
+  #impossible reliabilities
+  if (!is_between(rxx, 0, 1)) stop("Reliability for x was not within bounds!")
+  if (!is_between(ryy, 0, 1)) stop("Reliability for y was not within bounds!")
+
+  #convert to pearson r
+  a = (n1 + n2)^2/(n1 * n2)
+  r = d / sqrt(d^2 + a)
+
+  #adjust r
+  r_adj = r / sqrt(rxx * ryy)
+
+  #check if out of bounds
+  if (r_adj >= 1) return(Inf)
+  if (r_adj <= -1) return(-Inf)
+
+  #convert to cohen d
+  d_adj = (2 * r) / sqrt(1 - r_adj^2)
+
+  d_adj
+}
+
+
+
 #' Correlation matrix
 #'
 #' Outputs a correlation matrix. Supports weights, confidence intervals, correcting for measurement error and rounding.
@@ -8,6 +58,8 @@
 #' Correction for measurement error is done using the standard Pearson formula: r_true = r_observed / sqrt(reliability_x * reliability_y).
 #'
 #' Weighted correlations are calculated using wtd.cor or wtd.cors from weights package.
+#'
+#' `rank_order` can take either a logical scalar or a character scalar. If given TRUE, it will use rank ranking method with the default settings (average ranks). If given a chr scalar, it will use that ranking method. If given FALSE, will not use rank data (default).
 #'
 #' Confidence intervals are analytic confidence intervals based on the standard error.
 #' @param data (data.frame or coercible into data.frame) The data.
@@ -20,6 +72,7 @@
 #' @param p_val (log scalar) If p values are desired, the alpha level to use.
 #' @param p_template (chr scalar) If p values are desired, the template to use.
 #' @param p_round (int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.
+#' @param rank_order (lgl or chr) Whether to use rank ordered data so as to compute Spearman's correlations instead.
 #' @export
 #' @examples
 #' cor_matrix(iris) #just correlations
@@ -29,12 +82,15 @@
 #' cor_matrix(iris, p_val = .95, p_template = "%r (%p)") #with p values, with an alternative template
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement error
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
-cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = NULL, p_template = "%r [p=%p]", p_round = 3) {
+#' cor_matrix(iris, rank_order = T) #rank order correlations, default method
+#' cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
+cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = NULL, p_template = "%r [p=%p]", p_round = 3, rank_order = F) {
 
   #checks
   data = as.data.frame(data)
   if (skip_nonnumeric) data = extract_num_vars(data)
   if (!is_numeric(data)) stop("data contains non-numeric columns!")
+  is_(rank_order, class = c("character", "logical"), size = 1, error_on_false = T)
 
   #CI and p vals
   if (!is.null(CI) && !is.null(p_val)) stop("Cannot both calculate CIs and p values!")
@@ -56,10 +112,18 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   }
   if (anyNA(weights)) stop("weights must not have missing values!")
 
-  #simpel weights?
+  #simple weights?
   simpleweights = length(get_dims(weights)) == 1
   if (simpleweights) {
     if (length(weights) != nrow(data)) stop("weights not the same length as the data!")
+  }
+
+  #rank order data?
+  if (is.logical(rank_order) && rank_order) {
+    data = df_rank(data)
+  }
+  if (is.character(rank_order)) {
+    data = df_rank(data, ties.method = rank_order)
   }
 
   ##simple weights and no extras?
