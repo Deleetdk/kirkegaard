@@ -197,6 +197,9 @@ is_ = function(x, class = NULL, size = NULL, type = NULL, error_on_false = F) {
   #check x
   x
 
+  #x name
+  x_name = deparse(substitute(x))
+
   #init
   v_type_check = v_size_check = v_class_check = T
 
@@ -225,9 +228,9 @@ is_ = function(x, class = NULL, size = NULL, type = NULL, error_on_false = F) {
 
   #error?
   if (error_on_false) {
-    if (!v_size_check) stop("Object " + deparse(substitute(x)) + " was not of the right size!", call. = F)
-    if (!v_type_check) stop("Object " + deparse(substitute(x)) + " was not of the right type!", call. = F)
-    if (!v_class_check) stop("Object " + deparse(substitute(x)) + " was not of the right class!", call. = F)
+    if (!v_size_check) stop(sprintf("Object %s was not of the right size!", x_name), call. = F)
+    if (!v_type_check) stop(sprintf("Object %s was not of the right type!", x_name), call. = F)
+    if (!v_class_check) stop(sprintf("Object %s was not of the right class!", x_name), call. = F)
   }
 
   v_size_check & v_type_check & v_class_check
