@@ -54,4 +54,6 @@ cor_matrix(iris, reliabilities = c(.8, .9, .7, .75)) #correct for measurement er
 cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 cor_matrix(iris, rank_order = T) #rank order correlations, default method
 cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
+cor_matrix(iris, weights = "Petal.Width") #weights from name
+cor_matrix(iris, weights = 1:150) #weights from vector
 }

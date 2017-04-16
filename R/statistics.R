@@ -84,6 +84,8 @@ a4me_cohen_d = function(d, n1, n2, rxx = 1, ryy = 1) {
 #' cor_matrix(iris, reliabilities = c(.8, .9, .7, .75), CI = .95) #correct for measurement error + CI
 #' cor_matrix(iris, rank_order = T) #rank order correlations, default method
 #' cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
+#' cor_matrix(iris, weights = "Petal.Width") #weights from name
+#' cor_matrix(iris, weights = 1:150) #weights from vector
 cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = NULL, p_template = "%r [p=%p]", p_round = 3, rank_order = F) {
 
   #checks
@@ -108,7 +110,6 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   if (is.null(weights)) weights = rep(1, nrow(data))
   if (is.character(weights)) {
     weights = data[[weights]] #fetch from data
-    data[weights] = NULL #remove from data
   }
   if (anyNA(weights)) stop("weights must not have missing values!")
 
