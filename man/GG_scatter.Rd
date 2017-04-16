@@ -5,8 +5,8 @@
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
 GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
-  case_names = T, case_names_vector = NA, CI = 0.95, clean_names = T,
-  check_overlap = T)
+  case_names = NULL, CI = 0.95, clean_names = T, check_overlap = T,
+  case_names_vector = NULL)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -21,23 +21,24 @@ GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
 
 \item{case_names}{(lgl scalar) Whether to add case names or not (default true).}
 
-\item{case_names_vector}{(chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.}
-
 \item{CI}{(num scalar) interval. Defaults to .95. Set to NULL to disable.}
 
 \item{clean_names}{(lgl scalar) Whether to clean the axes names using str_clean(). Default=T.}
 
 \item{check_overlap}{(lgl scalar) Whether to avoid overplotting names. Default=T.}
+
+\item{case_names_vector}{(chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
 }
 \examples{
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = "Species") #casenames from variable
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
 }

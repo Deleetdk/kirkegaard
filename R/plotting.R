@@ -191,45 +191,58 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param weights (num scalar) A set of weights to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
-#' @param case_names_vector (chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.
 #' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
 #' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean(). Default=T.
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names. Default=T.
+#' @param case_names_vector (chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
-#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)) #other case names
-#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = "Species") #casenames from variable
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
-#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights
-GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = T, case_names_vector = NA, CI = .95, clean_names = T, check_overlap = T) {
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
+GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, case_names_vector = NULL) {
+
+  if (!is.null(case_names_vector)) stop("This argument is no longer used. Use `case_names`.")
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
   if (!y_var %in% colnames(df)) stop("Y variable not found in data.frame!")
 
   #case names?
-  #default to rownames
-  df$.label = rownames(df)
-  if (case_names) {
+  if (!is.null(case_names) && !are_equal(case_names, NA) && !are_equal(case_names, F)) {
 
-    #any given names?
-    if (!is_scalar_NA(case_names_vector)) {
-      #is it length 1?
-      if (is_scalar(case_names_vector)) {
-        #is it there?
-        if (!case_names_vector %in% names(df)) stop(sprintf("Variable %s wasn't in the data.frame!", case_names_vector))
-        df$.label = df[[case_names_vector]]
+    #chr?
+    if (!is.character(case_names)) stop("`case_names` must be a character, NULL, NA or F, but it was %s", class(case_names))
+
+    #is scalar chr, then assume it is name of variable
+    if (is.character(case_names) && is_scalar(case_names)) {
+      #is .rownames?
+      if (kirkegaard::are_equal(case_names, ".rownames")) {
+        df$.label = rownames(df)
       } else {
-        #if not length 1, does it match the data length?
-        if (!(lengths_match(df, case_names_vector))) stop("Vector of case names is of the wrong length!")
-
-          #use supplied names
-          df$.label = case_names_vector
-        }
+        #does it exist in data?
+        if (!case_names %in% names(df)) stop(sprintf("Case names variable `%s` wasn't in the data.frame!", case_names))
+        df$.label = df[[case_names]]
       }
+    }
+
+    #is non-scalar chr?
+    if (is.character(case_names) && !is_scalar(case_names)) {
+      if (length(case_names) != nrow(df)) stop("`case_names` wasn't the right length!")
+      df$.label = case_names
+    }
+
+    case_names = T
+  } else {
+    #fill with empty
+    #cannot fill with NA because this causes all cases to be dropped!
+    df$.label = rep("", nrow(df))
+    case_names = F
   }
 
 
@@ -237,7 +250,15 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_name
   if (is.null(weights)) {
     df$.weights = rep(1, nrow(df)) #fill with 1's
   } else {
-    df$.weights = weights
+    #chr scalar
+    if (is_scalar(weights) & is.character(weights)) {
+      #does it exist in data?
+      if (!weights %in% names(df)) stop(sprintf("Weights variable `%s` wasn't in the data.frame!", weights))
+      df$.weights = df[[weights]]
+    } else {
+      #vector
+      df$.weights = weights
+    }
   }
 
   #subset + remove NA
