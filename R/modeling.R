@@ -269,7 +269,7 @@ MOD_etas = function(fitted_model) {
 #' @export
 print.model_summary  = function(x) {
 
-  cat("Model coefficients\n")
+  cat("\n    ---- Model summary ----    \nModel coefficients\n")
   print(x$coefs)
 
   cat("\n\nModel meta-data\n")
@@ -632,7 +632,7 @@ MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd",
 #' fit_wtd = lm("Petal.Length ~ Sepal.Length", data = iris, weight = Sepal.Width) #with weights
 #' MOD_k_fold_r2(fit) #raw r2 and cv r2
 #' MOD_k_fold_r2(fit_wtd) #different r2 due to weights
-MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = T) {
+MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = interactive()) {
 
   #get data
   data = lmfit$model

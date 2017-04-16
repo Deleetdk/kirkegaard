@@ -714,3 +714,12 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   gg
 }
 
+
+
+# sensible saving ---------------------------------------------------------
+
+#' Save a ggplot2 figure
+#'
+#' Save a ggplot2 figure. Now with a sensible default size (10 x 6.5 inches). Same arguments as `ggplot2::ggsave`
+#' @export
+GG_save = curry::set_defaults(ggsave, list(width = 10, height = 6.5))

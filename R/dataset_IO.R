@@ -69,7 +69,7 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @examples
 #' iris[-5] %>% cor %>% write_clipboard
 #' iris %>% head %>% miss_add_random %>% write_clipboard
-write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T, write_to_clipboard = T, return_modified = F) {
+write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T, write_to_clipboard = interactive(), return_modified = F) {
 
   #round
   x_orig = x
