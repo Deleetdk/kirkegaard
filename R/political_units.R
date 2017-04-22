@@ -1,25 +1,41 @@
 #' Translate between names of units and abbreviations
 #'
 #' Convert names of political units to standardized abbreviations or convert standardized abbreviations to names.
+#' @details
+#' **Superunits**
 #'
-#' Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit.
+#' Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit. One can supply multiple superunits meaning that all available translations will be used. They are not used in any order of preference and coalitions will result in an error as usual. if you have complex data of mixed level units, it is probably easier to to use a *split-apply-combine* approach. I.e., split the names into those that belong to the world, and to each different country, then translate each subset and combine the results. This can be done e.g. using [plyr::ddply()].
+#'
+#' **Languages**
+#'
+#' The list of translations is being slowly extended as I find the need to do so. Currently, there is good support for Danish and English. There is reasonable support for German and Italian. There is some support for Norwegian and Swedish, but mostly from the name->ISO direction.
+#'
+#' **ISO codes and dependencies**
+#'
+#' In many cases, it is clear whether a given unit belongs to some other unit. Florida clearly belongs to the USA, and Vietnam clearly belongs to the world. But what about Hong Kong and the US Virgin Islands? These are not ordinary first-level administrative units as the usual [Chinese provinces](https://simple.wikipedia.org/wiki/Political_divisions_of_China) or [US states](https://en.wikipedia.org/wiki/Political_divisions_of_the_United_States), but neither are they independent in the same as Norway and Mexico are. Sometimes, these grey zone units have official ISO codes and sometimes not. I made the consistent call to place them under their respective sovereign countries, which in some cases can cause problems. Hong Kong (HKG), for instance, is listed under China but has it's own ISO code. This means that it will *not* be translated when one uses the 'world' superunit. Unfortunately, there doesn't seem to be any obvious solution to these problems, so one will simply have to be careful when using lists of names that contain mixed-level units. Fortunately, the function throws useful messages to warn the user of these problems.
 #' @param x (chr vectr) A chr vector of names to abbreviate.
 #' @param superunit (chr vectr) Optional. A superunit whose subunits are the only ones being considered. Set to "world" if only sovereign countries are desired.
 #' @param fuzzy (lgl scalr) Whether to use fuzzy matching if no exact match exists.
 #' @param reverse (lgl scalr) Whether to translate from abbreviations to names.
-#' @param lang (chr scalr) If translating back to names, which language to use. Default en=English.
-#' @param superunit_recursive (lgl scalr) Whether to also include subunits of subunits. Default no.
-#' @param messages (num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots. Default 1.
+#' @param lang (chr scalr) If translating back to names, which language to use.
+#' @param superunit_recursive (lgl scalr) Whether to also include subunits of subunits.
+#' @param messages (num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots.
 #' @param stringdist_params (list) If using fuzzy matching, a list of parameters to pass to stringdist function.
 #' @param standardize_name (lgl scalr) If true, will translate names to abbreviations, and then back to names. This converts the names to the standard version in the dataset.
 #' @export
-#' @return Returns a character vector.
+#' @return A character vector.
 #' @examples
 #' pu_translate("Denmark")
 #' pu_translate("Dänemark")
 #' pu_translate("DNK", reverse = T)
 #' pu_translate("DNK", reverse = T, lang = "de")
+#' #throws an error due to multiple Georgias
 #' pu_translate("Georgia")
+#' #solve by subsetting to specific superunits
+#' pu_translate("Georgia", superunit = "world")
+#' #complex problems can happen when one has mixed level units, e.g Georgia (country) and Hong Kong (quasi-country under Chinese rule)
+#' pu_translate(c("Hong Kong", "Georgia"), superunit = "world") #clearly wrong!
+#' pu_translate(c("Hong Kong", "Georgia"), superunit = c("world", "CHN")) #right!
 pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params = NULL, standardize_name = F) {
   #check input
   is_(x, class = "character", error_on_false = T)
@@ -47,10 +63,10 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
     #fill in 'world'
     units$Superunit %<>% plyr::mapvalues(from = NA, to = "world")
 
-    #get name of superunit
+    #get names of superunits
     name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
 
-    if (messages > 1) message(sprintf("Subsetting to subunits of %s [%s].", name_superunit, superunit))
+    if (messages > 1) message(sprintf("Subsetting to subunits of: %s [%s].", stringr::str_c(name_superunit, collapse = " | "), stringr::str_c(superunit, collapse = " | ")))
     units = dplyr::filter(units, Superunit %in% superunit)
 
     #no members? give useful feedback
@@ -87,7 +103,7 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
     #subset by lang?
     if (lang != "en") {
       #subset
-      units_sub_by_lang = dplyr::filter(units, str_detect(units$Lang, pattern = lang))
+      units_sub_by_lang = dplyr::filter(units, Lang == lang)
 
       #check length
       if (nrow(units_sub_by_lang) == 0) stop("There were no translations at all in this language!", call. = F)
@@ -98,11 +114,11 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
       # browser()
 
       #look in specific language?
-      if (lang != "en") {
+      if (!are_equal("en", lang)) {
         #any matches?
         abbrev_matches = dplyr::filter(units_sub_by_lang, Abbreviation == s)
         if (nrow(abbrev_matches) == 0) {
-          if (messages > 0) message(sprintf("There was no match in language %s for %s", lang, s))
+          if (messages > 0) message(sprintf("There was no match in language %s for country %s", lang, s))
         }
 
         #use the first match if any

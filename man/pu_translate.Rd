@@ -17,29 +17,45 @@ pu_translate(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en",
 
 \item{reverse}{(lgl scalr) Whether to translate from abbreviations to names.}
 
-\item{lang}{(chr scalr) If translating back to names, which language to use. Default en=English.}
+\item{lang}{(chr scalr) If translating back to names, which language to use.}
 
-\item{superunit_recursive}{(lgl scalr) Whether to also include subunits of subunits. Default no.}
+\item{superunit_recursive}{(lgl scalr) Whether to also include subunits of subunits.}
 
-\item{messages}{(num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots. Default 1.}
+\item{messages}{(num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots.}
 
 \item{stringdist_params}{(list) If using fuzzy matching, a list of parameters to pass to stringdist function.}
 
 \item{standardize_name}{(lgl scalr) If true, will translate names to abbreviations, and then back to names. This converts the names to the standard version in the dataset.}
 }
 \value{
-Returns a character vector.
+A character vector.
 }
 \description{
 Convert names of political units to standardized abbreviations or convert standardized abbreviations to names.
 }
 \details{
-Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit.
+\strong{Superunits}
+
+Superunits are the abbreviations of the units one level above in the hierarchy. Countries have "world" as their superunit. One can supply multiple superunits meaning that all available translations will be used. They are not used in any order of preference and coalitions will result in an error as usual. if you have complex data of mixed level units, it is probably easier to to use a \emph{split-apply-combine} approach. I.e., split the names into those that belong to the world, and to each different country, then translate each subset and combine the results. This can be done e.g. using \code{\link[plyr:ddply]{plyr::ddply()}}.
+
+\strong{Languages}
+
+The list of translations is being slowly extended as I find the need to do so. Currently, there is good support for Danish and English. There is reasonable support for German and Italian. There is some support for Norwegian and Swedish, but mostly from the name->ISO direction.
+
+\strong{ISO codes and dependencies}
+
+In many cases, it is clear whether a given unit belongs to some other unit. Florida clearly belongs to the USA, and Vietnam clearly belongs to the world. But what about Hong Kong and the US Virgin Islands? These are not ordinary first-level administrative units as the usual \href{https://simple.wikipedia.org/wiki/Political_divisions_of_China}{Chinese provinces} or \href{https://en.wikipedia.org/wiki/Political_divisions_of_the_United_States}{US states}, but neither are they independent in the same as Norway and Mexico are. Sometimes, these grey zone units have official ISO codes and sometimes not. I made the consistent call to place them under their respective sovereign countries, which in some cases can cause problems. Hong Kong (HKG), for instance, is listed under China but has it's own ISO code. This means that it will \emph{not} be translated when one uses the 'world' superunit. Unfortunately, there doesn't seem to be any obvious solution to these problems, so one will simply have to be careful when using lists of names that contain mixed-level units. Fortunately, the function throws useful messages to warn the user of these problems.
 }
 \examples{
 pu_translate("Denmark")
 pu_translate("Dänemark")
 pu_translate("DNK", reverse = T)
 pu_translate("DNK", reverse = T, lang = "de")
+#throws an error due to multiple Georgias
 pu_translate("Georgia")
+#solve by subsetting to specific superunits
+pu_translate("Georgia", superunit = "world")
+#complex problems can happen when one has mixed level units, e.g Georgia (country) and Hong Kong (quasi-country under Chinese rule)
+pu_translate(c("Hong Kong", "Georgia"), superunit = "world") #clearly wrong!
+pu_translate(c("Hong Kong", "Georgia"), superunit = c("world", "CHN")) #right!
 }
