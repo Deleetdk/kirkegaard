@@ -31,8 +31,8 @@ test_that("denhist", {
 
 test_that("scatter", {
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width"), "ggplot")
-  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = rep("A", 150)), "ggplot")
-  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names_vector = "Species"), "ggplot")
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)), "ggplot")
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F), "ggplot")
