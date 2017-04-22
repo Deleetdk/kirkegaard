@@ -932,7 +932,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
   }
 
   #plot
-  g = GG_scatter(df3, x_var = "loading", y_var = "crit_vals", case_names_vector = indicator_names, ...) +
+  g = GG_scatter(df3, x_var = "loading", y_var = "crit_vals", case_names = indicator_names, ...) +
     ylab("Criterion-indicator relationship")+
     xlab("Loading")
 
