@@ -1337,10 +1337,10 @@ df_merge_cols = function(df, cols) {
 #' Split factors into multiple columns
 #'
 #' Split factors into multiple columns
+#' @details
+#' This function is a more user-friendly version of [stats::model.matrix()].
 #'
-#' This function is a more user-friendly version of `model.matrix`.
-#'
-#' For the prefix, one can use `%v` to refer to the variable name.
+#' For the prefix, one can use \code{\%v} to refer to the variable name.
 #' @param df (df) A aata frame.
 #' @param fcts (chr) Names of columns to split up.
 #' @param prefix (chr) A prefix to add.

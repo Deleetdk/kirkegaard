@@ -26,6 +26,11 @@ A modified data frame.
 \description{
 Split factors into multiple columns
 }
+\details{
+This function is a more user-friendly version of \code{\link[stats:model.matrix]{stats::model.matrix()}}.
+
+For the prefix, one can use \code{\%v} to refer to the variable name.
+}
 \examples{
 df_fct_split(iris, "Species")
 }
