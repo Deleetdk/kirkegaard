@@ -8,7 +8,7 @@ GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
   case_names = NULL, CI = 0.95, clean_names = T, check_overlap = T, ...)
 }
 \arguments{
-\item{df}{(data.frame) A data.frame with variables.}
+\item{df}{(data.frame) A data frame with variables.}
 
 \item{x_var}{(chr scalar) X variable string.}
 
@@ -20,13 +20,11 @@ GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
 
 \item{case_names}{(lgl scalar) Whether to add case names or not (default true).}
 
-\item{CI}{(num scalar) interval. Defaults to .95. Set to NULL to disable.}
+\item{CI}{(num scalar) Confidence interval as a fraction.}
 
-\item{clean_names}{(lgl scalar) Whether to clean the axes names using str_clean(). Default=T.}
+\item{clean_names}{(lgl scalar) Whether to clean the axes names using str_clean().}
 
-\item{check_overlap}{(lgl scalar) Whether to avoid overplotting names. Default=T.}
-
-\item{case_names_vector}{(chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.}
+\item{check_overlap}{(lgl scalar) Whether to avoid overplotting names.}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.

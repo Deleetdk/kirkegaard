@@ -185,16 +185,16 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' Scatter plot with regression line and correlation information using ggplot2
 #'
 #' Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
-#' @param df (data.frame) A data.frame with variables.
+#' @param df (data.frame) A data frame with variables.
 #' @param x_var (chr scalar) X variable string.
 #' @param y_var (chr scalar) Y variable string.
 #' @param weights (num scalar) A set of weights to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
-#' @param CI (num scalar) interval. Defaults to .95. Set to NULL to disable.
-#' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean(). Default=T.
-#' @param check_overlap (lgl scalar) Whether to avoid overplotting names. Default=T.
-#' @param case_names_vector (chr vector) The case names to use. If NA, uses rownames. If length one, is taken to be a variable in the data.
+#' @param CI (num scalar) Confidence interval as a fraction.
+#' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean().
+#' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
+#'
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
