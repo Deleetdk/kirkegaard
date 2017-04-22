@@ -453,7 +453,7 @@ install_all_dependencies = function(...) {
 
   #CRAN packages
   library(pacman)
-  p_install(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, XLConnect, stringdist, geosphere, fields, rmngb, ape)
+  p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, XLConnect, stringdist, geosphere, fields, rmngb, ape, glmnet)
 
   #github packages
   purrr::map(c("thomasp85/curry"), ~devtools::install_github(.))
