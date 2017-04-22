@@ -6,7 +6,7 @@
 \usage{
 score_accuracy(x, criterion, methods = c("pearson_r", "mean_abs_delta",
   "sd_error_abs", "mean_elevation_error_abs"), aggregate = F,
-  aggregate_function = base::mean, ...)
+  aggregate_function = wtd_mean, ...)
 }
 \arguments{
 \item{x}{(numeric data.frame) A data.frame with estimates. Rows must be cases. Alternatively, a vector of values. If given a vector, it will assume the user wants aggregate-level estimates.}
@@ -15,11 +15,11 @@ score_accuracy(x, criterion, methods = c("pearson_r", "mean_abs_delta",
 
 \item{methods}{(character vector) Which measures to return. Defaults to c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"). Use "all" to get all.}
 
-\item{aggregate}{(boolean) Whether to use aggregated estimates. Default=F.}
+\item{aggregate}{(boolean) Whether to use aggregated estimates.}
 
-\item{aggregate_function}{(function) Which function to use for aggregation. Default=base::mean.}
+\item{aggregate_function}{(function) Which function to use for aggregation.}
 
-\item{...}{(named parameters) Additional parameters to pass to the aggregator function, such as na.rm=T to ignore missing data.}
+\item{...}{(named parameters) Additional parameters to pass to the aggregator function.}
 }
 \description{
 Calculates accuracy measures from a data.frame of estimates using a vector of criteria values.

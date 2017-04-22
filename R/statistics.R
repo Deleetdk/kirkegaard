@@ -532,18 +532,23 @@ MOD_partial = function(df, x, y, z, weights_var = NULL) {
 #' @param x (numeric data.frame) A data.frame with estimates. Rows must be cases. Alternatively, a vector of values. If given a vector, it will assume the user wants aggregate-level estimates.
 #' @param criterion (numeric vector) A vector of criteria values to score estimates against.
 #' @param methods (character vector) Which measures to return. Defaults to c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"). Use "all" to get all.
-#' @param aggregate (boolean) Whether to use aggregated estimates. Default=F.
-#' @param aggregate_function (function) Which function to use for aggregation. Default=base::mean.
-#' @param ... (named parameters) Additional parameters to pass to the aggregator function, such as na.rm=T to ignore missing data.
+#' @param aggregate (boolean) Whether to use aggregated estimates.
+#' @param aggregate_function (function) Which function to use for aggregation.
+#' @param ... (named parameters) Additional parameters to pass to the aggregator function.
 #' @export
-score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = base::mean, ...) {
+score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = wtd_mean, ...) {
+  #other params given
+  other_params = list(...)
+  #is old param there? throw useful error
+  if ("criteria" %in% names(other_params)) stop("`criteria` renamed to `criterion`, please adjust function call.")
+
   #save rownames
   v_rownames = rownames(x)
 
   #check
   x
   criterion
-  if (!is.function(aggregate_function)) stop("Aggregate function isn't a function!")
+  if (!is.function(aggregate_function)) stop("`aggregate_function` isn't a function!")
 
 
   #aggregate?
