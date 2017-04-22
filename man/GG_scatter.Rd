@@ -5,8 +5,7 @@
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
 GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
-  case_names = NULL, CI = 0.95, clean_names = T, check_overlap = T,
-  case_names_vector = NULL)
+  case_names = NULL, CI = 0.95, clean_names = T, check_overlap = T, ...)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}

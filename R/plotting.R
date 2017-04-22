@@ -205,9 +205,10 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
-GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, case_names_vector = NULL) {
+GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, ...) {
 
-  if (!is.null(case_names_vector)) stop("This argument is no longer used. Use `case_names`.")
+  arg_list = list(...)
+  if ("case_names_vector" %in% names(arg_list)) stop("The argument `case_names_vector` is no longer used. Use `case_names`.")
 
   #check if vars exist
   if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
