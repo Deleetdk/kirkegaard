@@ -6,6 +6,7 @@ Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
     use my own functions across projects. Loads a lot of other packages for ease of use for me.
 Depends:
+    tidyverse,
     ggplot2,
     stringr,
     weights,
