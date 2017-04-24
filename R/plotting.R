@@ -1,3 +1,94 @@
+#' Add text to a ggplot
+#'
+#' Convenient function to add text to a ggplot object
+#' @details
+#' Builds a grob using [grid::grobTree()] and [grid::textGrob()]. This text can then be positioned wherever the user wants it. It is more convenient than using [ggplot::geom_text()] because positioning is difficult to get right with that as it depends on the data ranges. This function instead uses fractional positioning, e.g. .95 is the 95th centile of x/y, whatever that happens to be in the data. On top of this, 6 premade positions are made for common placements: top/bottom left/middle/right abbreviated as tl, tm, tr, bl, bm, br, respectively.
+#' @param text (chr) A character scalar with text to use.
+#' @param text_pos (chr) An abbreviation of the easy placement to use. If you want to set these manually, use "manual".
+#' @param font_size (int) Font size.
+#' @param font_color (various) Font color. Can be of various types, see details.
+#' @param ... Extra arguments passed to various functions, see details.
+#' @export
+#' @return The outfrom from [ggplot::annotation_custom()].
+#' @examples
+#' #make a plot with a point at 0,0, and large red text in middle
+#' ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+#'   geom_point() +
+#'   GG_text("red test", text_pos = "mm", font_color = "red", font_size = 20)
+#'
+#' #manually making the text position
+#' ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+#'   geom_point() +
+#'   GG_text("blue test", text_pos = "manual", font_color = "blue", font_size = 20, x = .25, y = .75)
+GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", ...) {
+  text
+  if (!(str_detect(text_pos, "[tmb][lmr]") | text_pos == "manual")) stop("`text_pos` incorrect. See details.")
+  args = list(...)
+
+  #text object location
+  #if manual, let user set
+  if (text_pos != "manual") {
+    #vertical
+    switch (str_sub(text_pos, start = 1, end = 1),
+      t = {y = .98; vjust = 1},
+      m = {y = .50; vjust = .5},
+      b = {y = .02; vjust = -.1}
+    )
+
+    #horizontal
+    switch (str_sub(text_pos, start = 2, end = 2),
+            l = {x = .02; hjust = 0},
+            m = {x = .50; hjust = 0.5},
+            r = {x = .98; hjust = 1}
+    )
+
+  } else {
+    #x and y must be present
+    if (!all(c("x", "y") %in% names(args))) stop('When using `text_pos = "manual"`, you must supply both x and y values.')
+    #set from ...
+    x = args$x
+    y = args$y
+
+    #get hjust and vjust if present
+    if ("hjust" %in% names(args)) {
+      hjust = args$hjust
+    } else {
+      hjust = 0
+    }
+
+    if ("vjust" %in% names(args)) {
+      vjust = args$vjust
+    } else {
+      vjust = 0
+    }
+  }
+
+  #make text object
+  #did the user supply a custom gpar object?
+  if (! "gpar" %in% names(args)) {
+    #use default gpar
+    gpar = grid::gpar(fontsize = font_size,
+                    col = font_color)
+  } else {
+    #use user's
+    gpar = args$gapar
+  }
+
+  #make grob
+  text_object = grid::grobTree(grid::textGrob(text,
+                                              x = x,
+                                              y = y,
+                                              hjust = hjust,
+                                              vjust = vjust),
+                               gp = gpar)
+
+
+  #return grob for ggplot
+  return(annotation_custom(text_object))
+}
+
+
+
 #' Histogram with an empirical density curve
 #'
 #' Plots a histogram with an empirical density curve and a vertical line at desired central tendency measure.
@@ -602,138 +693,6 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
     scale_fill_continuous(name = "Proportion") +
     ylab(substitute(var1)) + xlab(substitute(var2)) +
     ggplot2::theme_bw()
-}
-
-
-
-#' Plot a contingency table with ggplot2
-#'
-#' Makes a pretty contingency table with ggplot2 using geom_tile.
-#' @param .analysis (rma object) The rma analysis from metafor.
-#' @param .names (chr vector) An optional vector of names to use.
-#' @param .alphabetic_sort_names (lgl sclar) Alphabetically sort names? Default yes.
-#' @export
-#' @examples
-#' library(metafor); data(european_ancestry)
-#' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
-#' GG_forest(meta, .names = european_ancestry$Author_sample)
-GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
-  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
-
-  #extract effect sizes and SEs
-  d = tibble::data_frame(es = .analysis$yi,
-                         var = .analysis$vi,
-                         se = sqrt(var),
-                         meta = "study")
-
-  #names
-  if (!is.null(.names)) {
-    d$names = .names
-  } else {
-    d$names = "Study " + 1:nrow(d)
-  }
-
-  #make names unique if necessary
-  if (any(duplicated(d$names))) {
-    d$names %<>% str_uniquify
-  }
-
-  #sort?
-  if (.alphabetic_sort_names) {
-    d$names %<>% factor() %>% forcats::fct_rev()
-  }
-
-  #extract main effect
-  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
-                      var = .analysis$se %>% sqrt,
-                      se = .analysis$se,
-                      meta = "meta",
-                      names = "Main effect")
-
-  #horizontal space case
-  d_hline = tibble::data_frame(es = .analysis$b %>% as.vector,
-                       var = .analysis$se %>% sqrt,
-                       se = .analysis$se,
-                       meta = "invis",
-                       names = "")
-
-  #add main effect to d
-  d = rbind(d, d_meta, d_hline)
-
-  #make sure meta effect is in the bottom
-  d$names %<>% factor() %>% forcats::fct_relevel(c("Main effect", ""))
-
-  #plot
-  ggplot2::ggplot(d, aes(es, names, color = meta)) +
-    geom_point() +
-    geom_errorbarh(aes(xmin = es - se * 1.96,
-                       xmax = es + se * 1.96)) +
-    geom_hline(yintercept = 2, linetype = "dashed") +
-    theme_bw() +
-    scale_y_discrete(name = NULL) +
-    scale_colour_manual(values = c("white", "black", "black"), guide = F) +
-    xlab("Effect size")
-}
-
-
-#' Plot a contingency table with ggplot2
-#'
-#' Makes a pretty contingency table with ggplot2 using geom_tile.
-#' @param .analysis (rma object) The rma analysis from metafor.
-#' @param .CI (chr vector) Confidence interval to use. Default = .95.
-#' @param .study_CI (lgl vector) Whether to plot confidence intervals for individual studies. Default no.
-#' @export
-GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
-  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
-
-  #convert CI to se z
-  se_z = qnorm(1 - (1-.CI)/2)
-
-  #extract main effect
-  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
-                      var = .analysis$se %>% sqrt,
-                      se = .analysis$se
-  )
-
-  #extract effect sizes and SEs
-  d = tibble::data_frame(es = .analysis$yi,
-                 var = .analysis$vi,
-                 se = sqrt(var),
-                 upper = d_meta$es + se_z * se,
-                 lower = d_meta$es - se_z * se,
-                 outlier = !is_between(es, lower, upper)
-  )
-
-  #calculate funnel
-  d_funnel = tibble::data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
-                        upper = d_meta$es + se * se_z,
-                        lower = d_meta$es - se * se_z)
-
-  d_polygon = tibble::data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
-                         y = c(max(d_funnel$se), 0, max(d_funnel$se)))
-
-  #plot
-  gg = ggplot2::ggplot() +
-    geom_line(data = d_funnel, aes(upper, se)) +
-    geom_line(data = d_funnel, aes(lower, se)) +
-    geom_polygon(data = d_polygon, aes(x, y), fill = "grey") +
-    geom_vline(linetype = "dashed", xintercept = d_meta$es) +
-    geom_point(data = d, aes(es, se, color = outlier)) +
-    scale_color_manual(guide = F, values = c("black", "red")) +
-    scale_y_reverse() +
-    theme_bw() +
-    xlab("Effect size")
-
-  #study CIs
-  if (.study_CI) {
-    gg = gg +
-      geom_errorbarh(data = d, aes(xmin = es - se_z * se,
-                                   xmax = es + se_z * se,
-                                   x = es,
-                                   y = se))
-  }
-
-  gg
 }
 
 

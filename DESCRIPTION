@@ -34,5 +34,6 @@ Suggests:
     geosphere,
     ape,
     compute.es,
-    testthat
+    testthat,
+    metafor
 Roxygen: list(markdown = TRUE)

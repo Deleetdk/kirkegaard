@@ -3,6 +3,55 @@
 context("GG_")
 
 
+# GG_text -----------------------------------------------------------------
+#convenience function for adding text to ggplots
+#hard to do formally
+
+base_plot = ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+  geom_point()
+
+test_that("text", {
+  #blank
+  expect_s3_class({base_plot + GG_text("red test")}, "ggplot")
+
+  #positions
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "tl")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "tm")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "tr")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "ml")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "mm")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "mr")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "bl")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "bl")}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test", text_pos = "bl")}, "ggplot")
+
+  #color
+  expect_s3_class({base_plot + GG_text("red test", font_color = "red")}, "ggplot")
+
+  #size
+  expect_s3_class({base_plot + GG_text("red test", font_size = 99)}, "ggplot")
+
+  #custom position
+  expect_s3_class({base_plot + GG_text("red test",
+                                       text_pos = "manual",
+                                       x = .25,
+                                       y = .75)}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test",
+                                       text_pos = "manual",
+                                       x = .25,
+                                       y = .75,
+                                       hjust = 1)}, "ggplot")
+  expect_s3_class({base_plot + GG_text("red test",
+                                       text_pos = "manual",
+                                       x = .25,
+                                       y = .75,
+                                       vjust = 1)}, "ggplot")
+  #custom gpar
+  #TODO: make a test for this (seems hard)
+
+})
+
+
 # GG_denhist --------------------------------------------------------------
 #just run the plots
 
@@ -77,3 +126,5 @@ test_that("GG_group_means", {
   #reversed levels
   expect_true(all(levels(l_t$order$data$group1) == rev(levels(iris$Species))))
 })
+
+
