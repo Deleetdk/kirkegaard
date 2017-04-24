@@ -159,3 +159,42 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
 }
 
 
+# TIVA --------------------------------------------------------------------
+
+#' Funnel plot with ggplot2
+#'
+#' Makes a pretty funnel plot using [ggplot2].
+#' @param .analysis (rma object) The rma analysis from [metafor].
+#' @param .CI (chr vector) Confidence interval to use.
+#' @param .study_CI (lgl vector) Whether to plot confidence intervals for individual studies.
+#' @export
+#' @examples
+#' library(metafor); data(european_ancestry)
+#' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
+#' meta_TIVA(meta)
+meta_TIVA = function(.rma, print_plot = T) {
+  #extract data
+  d = meta_extract_data(.rma)
+
+  #test
+  ob_var = var(d$z)
+  chi_stat = var(d$z) * (nrow(d) - 1)
+  test_p = pchisq(chi_stat, nrow(d) - 1, lower.tail = T)
+
+  #make text
+  text_ = sprintf("Chi^2 test for variance <1 (TIVA)\ndf=%d\nObserved variance of z = %f\np = %f\n", nrow(d), ob_var, test_p)
+
+  #plot distribution of z's
+  ggplot_ = GG_denhist(d, var = "z", vline = NULL) +
+    GG_text(text_)
+
+  #print plot?
+  if (print_plot) print(ggplot_)
+
+  #return
+  list(observed_var = ob_var,
+       chi_stat = chi_stat,
+       p = test_p,
+       plot = ggplot_)
+}
+

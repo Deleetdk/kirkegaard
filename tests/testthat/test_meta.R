@@ -23,3 +23,16 @@ test_that("forest", {
   #custom names
   expect_s3_class(GG_forest(meta, .names = european_ancestry$Sample_type), "ggplot")
 })
+
+
+
+# meta_TIVA ---------------------------------------------------------------
+
+test_that("TIVA", {
+  #bare
+  expect_length(meta_TIVA(meta), 4)
+
+  #no plot
+  expect_length(meta_TIVA(meta, print_plot = F), 4)
+})
+
