@@ -11,12 +11,12 @@ MAT_find_size = function(x, diag = F) {
   #k = length of
 
   #if diagonal values are present
-  if (diag==T) {
+  if (diag) {
     s = -1/2 + sqrt(1/4 + 2*x)
   }
 
   #if diagonal values are not present
-  if (diag==F) {
+  if (!diag) {
     s = 1/2 + sqrt(1/4 + 2*x)
   }
   #verify
@@ -120,4 +120,37 @@ MAT_divide_rowwise = function(data, divisor) {
 
   #return
   d2
+}
+
+
+#' Half to full matrix
+#'
+#' From a half matrix, recreate a full symmetric matrix. Uses either lower or upper triangle.
+#' @param mat (matrix) A symmetric matrix
+#' @param lower (lgl) Whether to use the lower or higher triangle.
+#' @param diag (lgl) Whether the diagonal values should be included or not.
+#' @export
+#' @return A matrix
+#' @examples
+#' m = matrix(1:9, ncol=3)
+#' rownames(m) = letters[1:3]
+#' colnames(m) = LETTERS[1:3]
+#' m %>% MAT_half2full
+#' m %>% MAT_half2full(lower=F)
+#' m %>% MAT_half2full(diag=T)
+#' m %>% MAT_half2full(lower=F, diag=T)
+MAT_half2full = function(mat, lower = T, diag = F) {
+  mat
+
+  #check symmetry
+  if (!ncol(mat) == nrow(mat)) stop("Matrix must be square.")
+
+  #get half, then transform to full symmetric
+  new_mat = mat %>% MAT_half(lower = lower, diag = diag) %>% MAT_vector2full(byrow = !lower, diag = diag)
+
+  #copy names
+  copy_names(mat, new_mat)
+
+  #out
+  new_mat
 }
