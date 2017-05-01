@@ -5,7 +5,9 @@
 \title{Standardized mean differences}
 \usage{
 SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
-  dispersion_method = "all", ...)
+  dispersion_method = "all", extended_output = F, CI = 0.95,
+  str_template = "\%d [\%lower \%upper]", str_round_to = 2,
+  reliability = 1, ...)
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}
@@ -18,6 +20,14 @@ SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
 
 \item{dispersion_method}{(character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).}
 
+\item{extended_output}{(lgl) Whether to output a list of matrices. Useful for computational reuse.}
+
+\item{CI}{(num) Confidence interval coverage.}
+
+\item{str_template}{(chr) A string template to use.}
+
+\item{reliability}{(num) A reliability to use for correcting for measurement error. Done via \code{\link[kirkegaard:a4me_cohen_d]{kirkegaard::a4me_cohen_d()}}.}
+
 \item{...}{(other arguments) Additional arguments to pass to the central tendency function.}
 }
 \description{
@@ -25,4 +35,5 @@ Calculate standardized mean differneces between all groups.
 }
 \examples{
 SMD_matrix(iris$Sepal.Length, iris$Species)
+SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T)
 }

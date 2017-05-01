@@ -1,5 +1,6 @@
 ## Misc other functions
 
+
 ##Combines lower and upper part of two matrices into one. Additional option for the diagonal.
 #Credit to: http://stackoverflow.com/questions/13115720/how-do-i-combine-the-upper-tri-of-one-matrix-with-the-lower-tri-of-another-in-r
 #' Combine upper and lower part of a matrix.

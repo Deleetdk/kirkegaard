@@ -676,38 +676,69 @@ pool_sd = function(x, group) {
 #' @param central_tendency (function) A function to use for calculating the central tendency. Must support a parameter called na.rm. Ideal choices: mean, median.
 #' @param dispersion (character or numeric scalar) Either the name of the metric to use (sd or mad) or a value to use.
 #' @param dispersion_method (character scalar) If using one of the built in methods for dispersion, then a character indicating whether to use the pooled value from the total dataset (all), the pairwise comparison (pair), or the sd from the total dataset (total).
+#' @param extended_output (lgl) Whether to output a list of matrices. Useful for computational reuse.
+#' @param CI (num) Confidence interval coverage.
+#' @param str_template (chr) A string template to use.
+#' @param reliability (num) A reliability to use for correcting for measurement error. Done via [kirkegaard::a4me_cohen_d()].
 #' @param ... (other arguments) Additional arguments to pass to the central tendency function.
 #' @export
 #' @examples
 #' SMD_matrix(iris$Sepal.Length, iris$Species)
-SMD_matrix = function(x, group, central_tendency = wtd_mean, dispersion = "sd", dispersion_method = "all", ...) {
+#' SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T)
+SMD_matrix = function(x,
+                      group,
+                      central_tendency = wtd_mean,
+                      dispersion = "sd",
+                      dispersion_method = "all",
+                      extended_output = F,
+                      CI = .95,
+                      str_template = "%d [%lower %upper]",
+                      str_round_to = 2,
+                      reliability = 1,
+                      ...) {
   #input
   x
   group
 
+  #CI z score
+  se_CI = qnorm(CI + (1 - CI)/2)
 
   #df form
-  d_x = data.frame(x = x, group = as.factor(group))
+  d_x = data.frame(x = x, group = as.factor(group)) %>%
+    #remove missing data
+    na.omit
 
   #find uniqs
   uniq = levels(d_x$group)
 
-  #how manys groups
+  #how many groups
   n_groups = length(uniq)
 
-  #make matrix for results
+  #group sample sizes
+  group_ns = table2(d_x[[2]], include_NA = F)
+  group_ns = set_names(group_ns$Count, group_ns$Group) #change to named vector
+
+  #make matrices for results
   m = matrix(NA, nrow = n_groups, ncol = n_groups)
 
   #set names
   colnames(m) = rownames(m) = uniq
 
+  #copies
+  CI_lower = m
+  CI_upper = m
+  se = m
+  pairwise_n = m
+  m_str = m
+  pval = m
+
   #loop for each combo
   for (row_i in seq_along(uniq)) {
     for (col_i in seq_along(uniq)) {
-      #skip if dia/above diag
+      #skip effect size if dia/above diag
       if (col_i >= row_i) next
 
-      #set valyes
+      #set values
       col = uniq[col_i]
       row = uniq[row_i]
 
@@ -722,17 +753,17 @@ SMD_matrix = function(x, group, central_tendency = wtd_mean, dispersion = "sd", 
         if (dispersion_method == "pair") {
           disp = pool_sd(d_comb$x, d_comb$group)
         }
-        if (dispersion_method == "total") disp = sd(d_x$x, na.rm = TRUE)
+        if (dispersion_method == "total") disp = sd(d_x$x)
       } else if (dispersion == "mad") {
         #mean of medians, robust
         if (dispersion_method == "all") {
           disp = plyr::daply(d_x, "group", function(part) {
-            stats::mad(part$x, na.rm = TRUE)
+            stats::mad(part$x)
           }) %>% mean
         }
         if (dispersion_method == "pair") {
           disp = plyr::daply(d_comb, "group", function(part) {
-            stats::mad(part$x, na.rm = TRUE)
+            stats::mad(part$x)
           }) %>% mean
         }
       } else if (is.numeric(dispersion)) disp = dispersion #use given number
@@ -743,22 +774,85 @@ SMD_matrix = function(x, group, central_tendency = wtd_mean, dispersion = "sd", 
       #devide by dispersion measure
       SMD = diff / disp
 
-      #save
+      #save effect size
       m[row, col] = SMD
+
+      #pairwise sample size
+      pairwise_n[row, col] = d_comb %>% nrow
+
+      #group sample sizes
+      pair_ns = group_ns[c(row, col)]
+
+      #adjust for reliability?
+      if (reliability != 1) {
+        m[row, col] = a4me_cohen_d(d = m[row, col], n1 = pair_ns[1], n2 = pair_ns[2], rxx = reliability)
+      }
+
+      #standard error
+      se[row, col] = (sum(pair_ns)/prod(pair_ns)) + ((m[row, col]^2) / (2*(sum(pair_ns) - 2)))
+
+      #CIs
+      CI_upper[row, col] = m[row, col] + se_CI * se[row, col]
+      CI_lower[row, col] = m[row, col] - se_CI * se[row, col]
+
+      #p val, 2-tailed
+      pval[row, col] = pnorm(abs(abs(m[row, col]) / se[row, col]), lower.tail = F) * 2
+
+      #make string
+      formater = function(x, round_to = str_round_to) {
+        #as chr
+        format(x, digits = round_to, nsmall = round_to)
+      }
+      m_str[row, col] = str_template %>%
+        #insert estimate
+        str_replace_all(pattern = "%d", replacement = m[row, col] %>% formater) %>%
+        #insert upper CI
+        str_replace_all(pattern = "%upper", replacement = CI_upper[row, col] %>% formater) %>%
+        #insert lower CI
+        str_replace_all(pattern = "%lower", replacement = CI_lower[row, col] %>% formater) %>%
+        #insert n
+        str_replace_all(pattern = "%n", replacement = pairwise_n[row, col] %>% as.character) %>%
+        #insert se
+        str_replace_all(pattern = "%se", replacement = se[row, col] %>% formater)
     }
   }
 
-  #expand to full
-  m_old = m
-  m = m %>% MAT_half() %>% MAT_vector2full()
-  diag(m) = NA
-
   #names
-  copy_names(m_old, m)
+  copy_names(m, m_str)
+  copy_names(m, se)
+  copy_names(m, CI_lower)
+  copy_names(m, CI_upper)
+  copy_names(m, pval)
+  copy_names(m, pairwise_n)
 
-  #
-  m
+  #fill upper halves
+  m %<>% MAT_half2full(diag=T)
+  m_str %<>% MAT_half2full(diag=T)
+  se %<>% MAT_half2full(diag=T)
+  CI_upper %<>% MAT_half2full(diag=T)
+  CI_lower %<>% MAT_half2full(diag=T)
+  pval %<>% MAT_half2full(diag=T)
+  pairwise_n %<>% MAT_half2full(diag=T)
+
+  #output
+  if (!extended_output) {
+    return(m)
+  } else {
+    list(
+      d = m,
+      d_string = m_str,
+      CI_lower = CI_lower,
+      CI_upper = CI_upper,
+      se_z = se_CI,
+      se = se,
+      p = pval,
+      pairwise_n = pairwise_n
+    )
+  }
 }
+
+
+
 
 
 #' Calculate homogeneity/heterogeneity
