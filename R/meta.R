@@ -169,7 +169,8 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
 #' @param .study_CI (lgl vector) Whether to plot confidence intervals for individual studies.
 #' @export
 #' @examples
-#' library(metafor); data(european_ancestry)
+#' library(metafor)
+#' data(european_ancestry)
 #' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 #' meta_TIVA(meta)
 meta_TIVA = function(.rma, print_plot = T) {
@@ -197,4 +198,70 @@ meta_TIVA = function(.rma, print_plot = T) {
        p = test_p,
        plot = ggplot_)
 }
+
+
+# meta_pcurve -------------------------------------------------------------
+
+#' P-curve plot with ggplot2
+#'
+#' Makes a pretty p-curve plot using [ggplot2].
+#' @param .analysis (rma object) The rma analysis from [metafor].
+#' @param p_cutoff (num) P-value cutoff to use.
+#' @param print_plot (lgl) Print the plot?
+#' @param binom_method (chr) Which method to use to calculate binomial p-value.
+#' @export
+#' @examples
+#' library(metafor)
+#' data(european_ancestry)
+#' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
+#' meta_pcurve(meta)
+meta_pcurve = function(.analysis, p_cutoff = .05, print_plot = T, binom_method = "exact", text_pos = "tl") {
+  #get data
+  d = meta_extract_data(.analysis)
+
+  #get p values in less than cutoff
+  d %<>%
+    dplyr::filter(p <= p_cutoff)
+
+  #count by interval
+  p_bins = data_frame(
+    bin = c(".01", ".02", ".03", ".04", ".05"),
+    count = c(sum(is_between(d$p, a = 0, b = .015, include_upper = F)),
+              sum(is_between(d$p, a = .015, b = .025, include_upper = F)),
+              sum(is_between(d$p, a = .025, b = .035, include_upper = F)),
+              sum(is_between(d$p, a = .035, b = .045, include_upper = F)),
+              sum(is_between(d$p, a = .045, b = 1, include_upper = T))
+              ),
+    prop = count/nrow(d)
+  )
+
+  #CIs
+  p_bins$CI_lower = map_dbl(p_bins$count, ~binom::binom.confint(., n = nrow(d), methods = binom_method) %>% .[[1, "lower"]])
+  p_bins$CI_upper = map_dbl(p_bins$count, ~binom::binom.confint(., n = nrow(d), methods = binom_method) %>% .[[1, "upper"]])
+
+  #binomial test
+  binom_025 = binom.test(sum(d$p < .025), nrow(d))
+
+  #plot text
+  plot_text = sprintf("Binomial test for evidential value, p = %.4f\nk = %d", binom_025$p.value, nrow(d))
+
+  #plot
+  plot_ = ggplot(p_bins, aes(bin, prop)) +
+    geom_point() +
+    geom_line(aes(group = 1)) +
+    scale_y_continuous("Percentage of tests", labels = scales::percent) +
+    scale_x_discrete("p-value bin") +
+    GG_text(plot_text, text_pos = text_pos) +
+    theme_bw()
+
+  #print
+  if (print_plot) print(plot_)
+
+  #output
+  list(
+    p_binomial = binom_025,
+    plot = plot_
+  )
+}
+
 

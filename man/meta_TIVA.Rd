@@ -17,7 +17,8 @@ meta_TIVA(.rma, print_plot = T)
 Makes a pretty funnel plot using \link{ggplot2}.
 }
 \examples{
-library(metafor); data(european_ancestry)
+library(metafor)
+data(european_ancestry)
 meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 meta_TIVA(meta)
 }

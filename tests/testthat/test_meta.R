@@ -36,3 +36,8 @@ test_that("TIVA", {
   expect_length(meta_TIVA(meta, print_plot = F), 4)
 })
 
+# meta_pcurve -------------------------------------------------------------
+
+test_that("pcurve", {
+  expect_type(meta_pcurve(meta), "list")
+})
