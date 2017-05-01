@@ -817,10 +817,10 @@ stopifnot({
 #ldf_to_df
 stopifnot({
   #remove by, add back
-  df_to_ldf(iris, "Species", remove_by = T) %>% ldf_to_df() %>% equals(iris)
+  df_to_ldf(iris, "Species", remove_by = T) %>% ldf_to_df() %>% `==`(iris)
 
   #dont remove by, dont add
-  df_to_ldf(iris, "Species", remove_by = F) %>% ldf_to_df(add_by = F) %>% equals(iris)
+  df_to_ldf(iris, "Species", remove_by = F) %>% ldf_to_df(add_by = F) %>% `==`(iris)
 
   #reorder cars, split by cyl, keep by
   df_to_ldf(mtcars[order(mtcars$cyl), ], "cyl", remove_by = F) %>%
@@ -829,7 +829,7 @@ stopifnot({
     #then extract car names
     extract("Car_name") %>%
     #then compare to the orig
-    equals(rownames(mtcars[order(mtcars$cyl), ]))
+    `==`(rownames(mtcars[order(mtcars$cyl), ]))
 
   #complex example
   is.data.frame(ldf_to_df(iris_list))
@@ -925,7 +925,7 @@ set.seed(1)
 
 stopifnot({
   proportion_true(x) == .52 #standard
-  proportion_true(x2) %>% round(2) %>% equals(.42) #no errors or NA output
+  proportion_true(x2) %>% round(2) %>% `==`(.42) #no errors or NA output
   proportion_true(x3) == .62 #numeric/integer
   proportion_true(x4) == .57
   #throws errors if it gets a nonsensical input

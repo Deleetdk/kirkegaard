@@ -31,7 +31,7 @@ set.seed(1)
 df = miss_add_random(df)
 
 test_that("miss_filter", {
-  expect_true(miss_filter(df) %>% nrow %>% equals(8))
+  expect_true(miss_filter(df) %>% nrow %>% `==`(8))
 })
 
 

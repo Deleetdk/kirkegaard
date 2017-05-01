@@ -21,7 +21,7 @@ test_that("cor_matrix", {
 
   #test arguments
   expect_true(cor_matrix(iris, CI = .95) %>% is.character)
-  expect_true(all(cor_matrix(iris, CI = .95) %>% get_dims %>% equals(c(4, 4))))
+  expect_true(all(cor_matrix(iris, CI = .95) %>% get_dims %>% `==`(c(4, 4))))
   expect_true(cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character)
 })
 
@@ -63,6 +63,6 @@ test_that("SMD_matrix", {
   expect_true(all(purrr::map_lgl(t, is.matrix)))
 
   #all different results
-  unique(t) %>% length %>% equals(7)
+  unique(t) %>% length %>% `==`(7)
 })
 
