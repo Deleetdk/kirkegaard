@@ -10,7 +10,7 @@ options("expressions" = 10000)
 #skip these tests on linux
 #only run manually because these are annoying
 if (F) {
-  if (!Sys.info()['sysname'] == "Linux") {
+  if (Sys.info()['sysname'] %in% c("Windows")) {
     write_clipboard(iris, 0, .rownames = F)
     Sys.sleep(.5)
 

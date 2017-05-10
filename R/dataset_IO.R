@@ -102,17 +102,12 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
 
   #write to clipboard
   if (write_to_clipboard) {
-    if (Sys.info()['sysname'] == "Linux") {
-      if (.rownames) write.table(cbind(".rownames" = rownames(x), x), pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
-      if (!.rownames) write.table(x, pipe("xclip -i", "w"), sep = "\t", na = "", row.names = F)
-
-      #was it written?
-      if (!are_equal(silence(read.table("clipboard")), x)) {
-        warning("write.table does not work on linux. I have not found a method to get it to work.")
-      }
-    } else {
+    if (Sys.info()['sysname'] %in% c("Windows")) {
+      #with or without rownames
       if (.rownames) write.table(cbind(".rownames" = rownames(x), x), "clipboard", sep = "\t", na = "", row.names = F)
       if (!.rownames) write.table(x, "clipboard", sep = "\t", na = "", row.names = F)
+    } else {
+      warning("`write.table` to clipboard does not work on linux or Apple.")
     }
   }
 
