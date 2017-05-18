@@ -275,30 +275,47 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 
 #' Scatter plot with regression line and correlation information using ggplot2
 #'
-#' Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
+#' Plots a scatterplot with a regression line and correlation information. Returns a `ggplot2` object.
 #' @details Internally uses the ad hoc variables `.weights`, `.label` and `.color`. If you name your variables these, then you will get odd problems.
 #' @param df (data.frame) A data frame with variables.
 #' @param x_var (chr scalar) X variable string.
 #' @param y_var (chr scalar) Y variable string.
 #' @param weights (num scalar) A set of weights to use.
 #' @param color (chr) A variable to color points by.
+#' @param alpha (num) The alpha to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
 #' @param CI (num scalar) Confidence interval as a fraction.
 #' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean().
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
+#' @param repel_names (lgl) If using case names, should they be repelled?
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #casenames from variable, repelled
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
-GG_scatter = function(df, x_var, y_var, weights = NULL, color = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, ...) {
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species", case_names = "Species") #color points, but labels stay black
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1) #change alpha
+GG_scatter = function(df,
+                      x_var,
+                      y_var,
+                      weights = NULL,
+                      color = NULL,
+                      alpha = 1,
+                      text_pos = NA,
+                      case_names = NULL,
+                      CI = .95,
+                      clean_names = T,
+                      check_overlap = T,
+                      repel_names = F,
+                      ...) {
 
   arg_list = list(...)
   if ("case_names_vector" %in% names(arg_list)) stop("The argument `case_names_vector` is no longer used. Use `case_names`.")
@@ -432,19 +449,19 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, color = NULL, text_pos =
   if (is.null(color)) {
     if (is.null(weights)) {
       g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
-        geom_point()
+        geom_point(alpha = alpha)
     } else {
       g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
-        geom_point(aes(size = .weights)) +
+        geom_point(aes(size = .weights), alpha = alpha) +
         scale_size_continuous(guide = F)
     }
   } else {
     if (is.null(weights)) {
       g = ggplot2::ggplot(df, aes_string(x_var, y_var, color = ".color")) +
-        geom_point()
+        geom_point(alpha = alpha)
     } else {
       g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
-        geom_point(aes(size = .weights)) +
+        geom_point(aes(size = .weights), alpha = alpha) +
         scale_size_continuous(guide = F)
     }
   }
@@ -459,7 +476,13 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, color = NULL, text_pos =
   #case names?
   if (is.null(weights)) {y_nudge = 1.25} else {y_nudge = 2}
   if (case_names) {
-    g = g + geom_text(aes(label = .label), size = 3, vjust = y_nudge, check_overlap = check_overlap)
+    #note, remove color aes
+    if (!repel_names) {
+      #show.legend fix due to http://stackoverflow.com/questions/18337653/remove-a-from-legend-when-using-aesthetics-and-geom-text
+      g = g + geom_text(aes(label = .label, color = NULL), size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
+    } else {
+      g = g + ggrepel::geom_text_repel(aes(label = .label, color = NULL), size = 3, show.legend = FALSE)
+    }
   }
 
   #clean?
