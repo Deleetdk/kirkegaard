@@ -276,16 +276,17 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' Scatter plot with regression line and correlation information using ggplot2
 #'
 #' Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
+#' @details Internally uses the ad hoc variables `.weights`, `.label` and `.color`. If you name your variables these, then you will get odd problems.
 #' @param df (data.frame) A data frame with variables.
 #' @param x_var (chr scalar) X variable string.
 #' @param y_var (chr scalar) Y variable string.
 #' @param weights (num scalar) A set of weights to use.
+#' @param color (chr) A variable to color points by.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
 #' @param CI (num scalar) Confidence interval as a fraction.
 #' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean().
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
-#'
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
@@ -296,7 +297,8 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
-GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, ...) {
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
+GG_scatter = function(df, x_var, y_var, weights = NULL, color = NULL, text_pos = NA, case_names = NULL, CI = .95, clean_names = T, check_overlap = T, ...) {
 
   arg_list = list(...)
   if ("case_names_vector" %in% names(arg_list)) stop("The argument `case_names_vector` is no longer used. Use `case_names`.")
@@ -345,7 +347,7 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_name
     #chr scalar
     if (is_scalar(weights) & is.character(weights)) {
       #does it exist in data?
-      if (!weights %in% names(df)) stop(sprintf("Weights variable `%s` wasn't in the data.frame!", weights))
+      if (!weights %in% names(df)) stop(sprintf("`weights` variable `%s` wasn't in the data frame!", weights))
       df$.weights = df[[weights]]
     } else {
       #vector
@@ -353,8 +355,24 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_name
     }
   }
 
+  #color
+  if (!is.null(color)) {
+    #chr scalar?
+    if (is_scalar(color) & is.character(color)) {
+      #does it exist in data?
+      if (!color %in% names(df)) stop(sprintf("`color` variable `%s` wasn't in the data frame!", color))
+      df$.color = df[[color]]
+    } else {
+      #vector
+      df$.color = color
+    }
+  } else {
+    #insert placeholder .color variable
+    df$.color = seq_along_rows(df)
+  }
+
   #subset + remove NA
-  df = na.omit(df[c(x_var, y_var, ".weights", ".label")])
+  df = na.omit(df[c(x_var, y_var, ".weights", ".label", ".color")])
 
   ## text
   #correlation + CI
@@ -409,19 +427,34 @@ GG_scatter = function(df, x_var, y_var, weights = NULL, text_pos = NA, case_name
   text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
                          gp = grid::gpar(fontsize = 11))
 
-  #plot
-  if (is.null(weights)) {
-    g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
-      geom_point()
+  #plot!
+  #4 options due to weights and coloring params
+  if (is.null(color)) {
+    if (is.null(weights)) {
+      g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
+        geom_point()
+    } else {
+      g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+        geom_point(aes(size = .weights)) +
+        scale_size_continuous(guide = F)
+    }
   } else {
-    g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
-      geom_point(aes(size = .weights)) +
-      scale_size_continuous(guide = F)
+    if (is.null(weights)) {
+      g = ggplot2::ggplot(df, aes_string(x_var, y_var, color = ".color")) +
+        geom_point()
+    } else {
+      g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
+        geom_point(aes(size = .weights)) +
+        scale_size_continuous(guide = F)
+    }
   }
 
-  #add the rest
+
+  #add regression line
+  #note that weights are automatically taken into account because they are set above
   g = g + geom_smooth(method = lm, se = F, color = "orange") +
     annotation_custom(text_object)
+
 
   #case names?
   if (is.null(weights)) {y_nudge = 1.25} else {y_nudge = 2}

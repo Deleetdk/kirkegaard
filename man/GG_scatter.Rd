@@ -4,7 +4,7 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
+GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, text_pos = NA,
   case_names = NULL, CI = 0.95, clean_names = T, check_overlap = T, ...)
 }
 \arguments{
@@ -15,6 +15,8 @@ GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
 \item{y_var}{(chr scalar) Y variable string.}
 
 \item{weights}{(num scalar) A set of weights to use.}
+
+\item{color}{(chr) A variable to color points by.}
 
 \item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 
@@ -29,6 +31,9 @@ GG_scatter(df, x_var, y_var, weights = NULL, text_pos = NA,
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a ggplot2 object.
 }
+\details{
+Internally uses the ad hoc variables \code{.weights}, \code{.label} and \code{.color}. If you name your variables these, then you will get odd problems.
+}
 \examples{
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
@@ -38,4 +43,5 @@ GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
 }
