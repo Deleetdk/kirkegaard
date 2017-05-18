@@ -301,14 +301,20 @@ miss_add_random =  function(df, prop = .1){
 #' Useful wrapper for VIM's irmi function. Can skip cases without changing case order depending on the number of missing values
 #' @param data (data.frame) A data.frame.
 #' @param max_na (num scalar) The maximum number of missing datapoints per case.
-#' @return A data.frame with missing data imputed for the desired cases.
+#' @return A data frame with missing data imputed for the desired cases.
 #' @export
 #' @examples
 #' df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
 #' miss_impute(df) #impute missing
+#' #preserves rownames for ease of use
+#' df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
+#' miss_impute(df)
 miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
   #tibbles do not work here
   data = as.data.frame(data)
+
+  #save rownames
+  .rownames = rownames(data)
 
   #convert ordered with <3 levels to factors
   needs_conversion = purrr::map_lgl(data, ~is.ordered(.) && nlevels(.) < 3)
@@ -359,6 +365,9 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
     #remove ids
     data$.tmpid = NULL
   }
+
+  #set original rownames
+  rownames(data) = .rownames
 
   #return
   data

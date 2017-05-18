@@ -50,6 +50,13 @@ SAC_knsn_reg = defunct("This function has been moved to SAC_knsnr")
 #' @export
 get_SAC_measures = defunct("This function has been moved to SAC_measures")
 
+
+# MAT_ --------------------------------------------------------------------
+
+#' @export
+matrix.combine = defunct("This function has been moved to combine_upperlower")
+
+
 # missing related ---------------------------------------------------------
 
 #' @export
@@ -58,6 +65,11 @@ plot_miss = defunct("This function has been moved to miss_plot")
 #' @export
 filter_by_missing_values = defunct("This function has been moved to miss_filter")
 
+#' @export
+miss.case = defunct("This function has been moved to miss_by_case")
+
+#' @export
+miss.var = defunct("This function has been moved to miss_by_var")
 
 # df_ related ---------------------------------------------------------------------
 
@@ -121,6 +133,8 @@ remove_NA_vars = defunct("remove_NA_vars changed name to df_remove_NA_vars")
 
 #' @export
 df_addNA = defunct("This function has been moved to miss_add_random")
+
+
 
 # MOD_ --------------------------------------------------------------------
 

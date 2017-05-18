@@ -12,7 +12,7 @@ miss_impute(data, max_na = floor(ncol(data)/2), noise = F)
 \item{max_na}{(num scalar) The maximum number of missing datapoints per case.}
 }
 \value{
-A data.frame with missing data imputed for the desired cases.
+A data frame with missing data imputed for the desired cases.
 }
 \description{
 Useful wrapper for VIM's irmi function. Can skip cases without changing case order depending on the number of missing values
@@ -20,4 +20,7 @@ Useful wrapper for VIM's irmi function. Can skip cases without changing case ord
 \examples{
 df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
 miss_impute(df) #impute missing
+#preserves rownames for ease of use
+df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) \%>\% set_rownames(letters[1:5])
+miss_impute(df)
 }

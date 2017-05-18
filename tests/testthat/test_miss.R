@@ -54,12 +54,22 @@ set.seed(1)
 #test the dealing with ordinals with 2 levels
 iris_with_ord2 = iris %>% dplyr::filter(Species %in% c("setosa", "versicolor")) %>% dplyr::mutate(Species = ordered(Species))
 
+#rownames preserve
+df = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
+df2 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[5:1])
+df3 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
+
 test_that("miss_impute", {
   #ordinary
   expect_is(iris %>% miss_add_random() %>% miss_impute(), class = "data.frame")
 
   #ordinal with 2 levels
   expect_warning(iris_with_ord2 %>% miss_add_random() %>%  miss_impute())
+
+  #preserve rownames
+  expect_equivalent(rownames(miss_impute(df)), letters[1:5])
+  expect_equivalent(rownames(miss_impute(df2)), letters[5:1])
+  expect_equivalent(rownames(miss_impute(df3, max_na = Inf)), letters[1:5])
 })
 
 
