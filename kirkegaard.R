@@ -19,7 +19,7 @@ library(kirkegaard)
 
 
 # installing from scratch -------------------------------------------------
-#for whatever reason, it is hard to get it to install the dependencies automatically
+#for whatever reason, it is sometimes hard to get it to install the dependencies automatically
 #so here's a small call to manually install them
 
 if (F) {
@@ -32,4 +32,7 @@ if (F) {
 
   #github packages
   purrr::map(c("thomasp85/curry", "rOpenGov/dkstat"), ~devtools::install_github(.))
+
+  #finally
+  devtools::install_github("deleetdk/kirkegaard")
 }
