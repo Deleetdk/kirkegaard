@@ -512,10 +512,8 @@ fa_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T
 #' Calculate congruence coefficient matrix.
 #'
 #' Takes an input either a list of factor analysis objects from fa() (psych package) or a data.frame/matrix of loadings. Returns a matrix of congruence coefficients. These are calculated using factor.congruence() from psych package.
-#' @param x A list of factor analysis objects from fa() or a data.frame/matrix of factor loadings.
+#' @param x A list of factor analysis objects from [psych::fa()] or a data.frame/matrix of factor loadings.
 #' @export
-#' @examples
-#' fa_congruence_matrix()
 fa_congruence_matrix = function(x) {
 
   #right input type?

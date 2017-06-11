@@ -10,8 +10,14 @@ test_that("fa_all_methods", {
 
 
 # fa_congruence_matrix ----------------------------------------------------
+#TODO: bug in psych package caused tests to fail
 fa_am_congru = fa_congruence_matrix(fa_am$loadings)
-fa_iris4 = list(fa(iris[-5]), fa(iris[-5]), fa(iris[-5]), fa(iris[-5]))
+fa_iris4 = list(
+  fa(iris[-5]),
+  fa(iris[-5]),
+  fa(iris[-5]),
+  fa(iris[-5])
+  )
 fa_iris4_congru = fa_congruence_matrix(fa_iris4)
 
 test_that("fa_congruence_matrix",{

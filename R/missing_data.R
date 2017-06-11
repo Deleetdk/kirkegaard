@@ -339,7 +339,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
     cases_excl = case_na > max_na
 
     #add id
-    case_ids = (1:nrow(data)) %>% as.character()
+    case_ids = (1:nrow(data)) %>% as.character
     # data$.tmpid = case_ids
     # rownames(data) = case_ids
 

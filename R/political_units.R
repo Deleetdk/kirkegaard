@@ -53,7 +53,8 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
 
   #read polunits
   data_file_location = system.file("extdata", "political_units.xlsx", package = "kirkegaard")
-  units = XLConnect::readWorksheetFromFile(data_file_location, sheet = "Abbreviations")
+  #units = XLConnect::readWorksheetFromFile(data_file_location, sheet = "Abbreviations")
+  units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
   #remove removed units
   units = dplyr::filter(units, is.na(Removed))
@@ -78,15 +79,15 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
     #loop over names
     x_exact = sapply(x, FUN = function(s) {
       #check if there is exactly one match
-      if (sum(s == units$Names) == 1) {
-        s_match = units$Abbreviation[which(s == units$Names)]
+      if (sum(s == units$Name) == 1) {
+        s_match = units$Abbreviation[which(s == units$Name)]
         if (messages > 1) message(sprintf("Exact match: %s -> %s", s, s_match))
         return(s_match)
       }
 
       #check if multiple matches
-      if (sum(s == units$Names) > 1) {
-        s_match = units$Abbreviation[which(s == units$Names)]
+      if (sum(s == units$Name) > 1) {
+        s_match = units$Abbreviation[which(s == units$Name)]
         str = sprintf("More than one exact match for %s. Perhaps you want to use a superunit to limit the options? Matches were: ", s)
         str = str + stringr::str_c(s_match, collapse = " | ")
         stop(str, call. = F)
@@ -111,8 +112,6 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
 
     #loop over abbreviations
     x_exact = sapply(x, FUN = function(s) {
-      # browser()
-
       #look in specific language?
       if (!are_equal("en", lang)) {
         #any matches?
@@ -138,7 +137,7 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
   }
 
   #standardize name and not fuzzy?
-  if (standardize_name & !fuzzy) return(pu_translate(x_exact %>% as.character(), reverse = T, lang = lang, messages = messages))
+  if (standardize_name & !fuzzy) return(pu_translate(x_exact %>% as.character, reverse = T, lang = lang, messages = messages))
 
   #return?
   #if either not using fuzzy matching or doing back translations or no missing matches, return
@@ -153,10 +152,10 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
     #skip if already have exact match
     if (exact) return(NA)
     #measure distances
-    dst = stringdist::stringdist(s, units$Names)
+    dst = stringdist::stringdist(s, units$Name)
 
     #make into df, and sort
-    d_dst = data.frame(name = units$Names, abbrev = units$Abbreviation, dst = dst, stringsAsFactors = F) %>%
+    d_dst = data.frame(name = units$Name, abbrev = units$Abbreviation, dst = dst, stringsAsFactors = F) %>%
       df_sort("dst")
 
     #are there multiple best with different results?

@@ -7,11 +7,8 @@
 fa_congruence_matrix(x)
 }
 \arguments{
-\item{x}{A list of factor analysis objects from fa() or a data.frame/matrix of factor loadings.}
+\item{x}{A list of factor analysis objects from \code{\link[psych:fa]{psych::fa()}} or a data.frame/matrix of factor loadings.}
 }
 \description{
 Takes an input either a list of factor analysis objects from fa() (psych package) or a data.frame/matrix of loadings. Returns a matrix of congruence coefficients. These are calculated using factor.congruence() from psych package.
-}
-\examples{
-fa_congruence_matrix()
 }

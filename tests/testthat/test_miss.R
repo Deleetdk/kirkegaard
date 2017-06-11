@@ -61,10 +61,10 @@ df3 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames
 
 test_that("miss_impute", {
   #ordinary
-  expect_is(iris %>% miss_add_random() %>% miss_impute(), class = "data.frame")
+  expect_is(iris %>% miss_add_random %>% miss_impute, class = "data.frame")
 
   #ordinal with 2 levels
-  expect_warning(iris_with_ord2 %>% miss_add_random() %>%  miss_impute())
+  expect_warning(iris_with_ord2 %>% miss_add_random() %>% miss_impute())
 
   #preserve rownames
   expect_equivalent(rownames(miss_impute(df)), letters[1:5])
