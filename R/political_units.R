@@ -57,6 +57,7 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
   units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
   #remove removed units
+  units_all = units #keep orig
   units = dplyr::filter(units, is.na(Removed))
 
   #subset to subunits if desired
@@ -104,16 +105,17 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
     #subset by lang?
     if (lang != "en") {
       #subset
-      units_sub_by_lang = dplyr::filter(units, Lang == lang)
+      units_sub_by_lang = dplyr::filter(units_all, Lang == lang)
+      #include legacy abbreviations for reverse translations
 
       #check length
-      if (nrow(units_sub_by_lang) == 0) stop("There were no translations at all in this language!", call. = F)
+      if (nrow(units_sub_by_lang) == 0) stop(sprintf("There are no translations for this language: %s", lang), call. = F)
     }
 
     #loop over abbreviations
-    x_exact = sapply(x, FUN = function(s) {
+    x_exact = purrr::map_chr(x, function(s) {
       #look in specific language?
-      if (!are_equal("en", lang)) {
+      if (lang != "en") {
         #any matches?
         abbrev_matches = dplyr::filter(units_sub_by_lang, Abbreviation == s)
         if (nrow(abbrev_matches) == 0) {
@@ -125,7 +127,7 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
       }
 
       #any matches?
-      abbrev_matches = dplyr::filter(units, Abbreviation == s)
+      abbrev_matches = dplyr::filter(units_all, Abbreviation == s)
       if (nrow(abbrev_matches) > 0) {
         return(abbrev_matches$Name[1])
       }
