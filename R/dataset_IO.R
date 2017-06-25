@@ -152,6 +152,39 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
 #' @export
 write_clipboard.matrix = write_clipboard.data.frame
 
+#Read Clipboard
+read_clipboard = function(header = T,
+                          sep = "\t",
+                          na.strings = c("", "NA"),
+                          check.names = T,
+                          stringsAsFactors = F,
+                          dec = ".",
+                          ...) {
+  #decide how to read
+  #windows is easy!
+  if (Sys.info()['sysname'] %in% c("Windows")) {
+    #just read as normal
+    read.table(file = con, sep = sep, header = header, check.names = check.names, na.strings = na.strings, stringsAsFactors = stringsAsFactors, dec = dec, ...)
+  } else {
+    #for non-windows, try xclip approach
+    #https://stackoverflow.com/a/10960498/3980197
+    read.xclip = function(x) {
+      #if xclip not installed
+      if (!isTRUE(file.exists(Sys.which("xclip")[1L]))) {
+        stop("Cannot find xclip")
+      }
+      con <- pipe("xclip -o -selection c", "r")
+      on.exit(close(con))
+      read.table(file = con, sep = sep, header = header, check.names = check.names, na.strings = na.strings, stringsAsFactors = stringsAsFactors, dec = dec, ...)
+    }
+
+    tryCatch({
+      read.xclip(x)
+    }, error = function(e) {
+      message(sprintf("error: %s", e$message))
+    })
+  }
+}
 
 #helper function for printing lists of heterogenous data frames
 ldf_to_long_mat = function(x, rowname_headers = NULL, only_interesting_rownames = T, clean_colnames = T, clean_rownames = T) {
