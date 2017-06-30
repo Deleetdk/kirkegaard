@@ -113,7 +113,7 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
     #windows is easy!
     if (Sys.info()['sysname'] %in% c("Windows")) {
       #just write as normal
-      write.table(x, "clipboard", sep = "\t", na = "", row.names = F)
+      write.table(x_modded, "clipboard", sep = "\t", na = "", row.names = F)
     } else {
       #for non-windows, try xclip approach
       #https://stackoverflow.com/a/10960498/3980197
@@ -128,7 +128,7 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
       }
 
       tryCatch({
-        write.xclip(x)
+        write.xclip(x_modded)
       }, error = function(e) {
         message("Could not write using xclip")
       })
@@ -152,7 +152,21 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
 #' @export
 write_clipboard.matrix = write_clipboard.data.frame
 
-#Read Clipboard
+
+#' Read data frame from clipboard
+#'
+#' A wrapper function to \code{\link{write.table}} for reading from the clipboard. Useful to quickly read data copied from a table or spreadsheet.
+#' @param header (lgl) Whether to use the first row as headers (column names).
+#' @param sep (chr) Which separator to use.
+#' @param na.strings (chr) Which cell values to interpret as missing data.
+#' @param check.names (lgl) Whether to convert illegal names to legal ones using [base::make.names()].
+#' @param stringsAsFactors (lgl) Whether to automatically convert strings to factors (GOD PLEASE NO).
+#' @param dec (chr) Which symbol to interpret as decimal separator.
+#' @param ... Any other arguments passed to [utils::read.table()].
+#' @export
+#' @examples
+#' iris[-5] %>% cor %>% write_clipboard
+#' iris %>% head %>% miss_add_random %>% write_clipboard
 read_clipboard = function(header = T,
                           sep = "\t",
                           na.strings = c("", "NA"),

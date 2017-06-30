@@ -485,3 +485,28 @@ seq_along_rows = function(df) {
 }
 
 
+#' Remove duplicate elements
+#'
+#' Remove duplicated elements from an object. Simple wrapper for [base::duplicated()] to use in functional contexts.
+#' @details
+#' Calls either `x[!duplicated(x)]` or `x[!duplicated(x), ]` depending on input dimensions. Will work for objects with a defined method for [base::duplicated()] e.g. [GenomicRanges::GRanges()].
+#' @param x An object.
+#' @return Object of the same type as input.
+#' @export
+#' @examples
+#' #simple vector
+#' simple_vector = sample(1:5, size = 20, replace = T) %T>% print
+#' simple_vector %>% unduplicate
+#' #example on iris (data frame)
+#' iris_with_dups = iris[c(1, 1, 2, 2, 3, 4, 1, 5, 2, 4), ] %T>% print
+#' iris_with_dups %>% unduplicate
+unduplicate = function(x) {
+  #is multidimensional?
+  #this catches matrices and data frames, and d>2 possibly arrays
+  if (length(dim(x)) > 1) {
+    return(x[!duplicated(x), ])
+  }
+
+  #rely on generic function
+  x[!duplicated(x)]
+}

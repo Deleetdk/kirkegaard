@@ -14,7 +14,7 @@ MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd", "mad",
 
 \item{desc}{A character vector of the desired descriptive statistics. These are extracted using describe() from the psych package. Defaults to c("mean", "median", "sd").}
 
-\item{include_intercept}{(log scalar) Whether to include estimation of the intercept (default false).}
+\item{include_intercept}{Whether to include estimation of the intercept (default false).}
 }
 \description{
 Calculates summary statistics for model betas.

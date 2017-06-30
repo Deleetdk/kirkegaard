@@ -582,7 +582,7 @@ MOD_LASSO = function(data, dependent, predictors, weights_ = NULL, standardize =
 #' @param df A data frame with betas for predictors across models.
 #' @param digits The number of digits to round the results to. Defaults to 3.
 #' @param desc A character vector of the desired descriptive statistics. These are extracted using describe() from the psych package. Defaults to c("mean", "median", "sd").
-#' @param include_intercept (log scalar) Whether to include estimation of the intercept (default false).
+#' @param include_intercept Whether to include estimation of the intercept (default false).
 #' @export
 MOD_summarize_models = function(df, digits = 3, desc = c("mean", "median", "sd", "mad", "fraction_zeroNA"), include_intercept = F) {
 
