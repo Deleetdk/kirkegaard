@@ -842,6 +842,7 @@ SMD_matrix = function(x,
   CI_lower %<>% MAT_half2full(diag=T)
   pval %<>% MAT_half2full(diag=T)
   pairwise_n %<>% MAT_half2full(diag=T)
+  mode(pairwise_n) = "integer" #change to integer to prevent downstream problems
 
   #output
   if (!extended_output) {
