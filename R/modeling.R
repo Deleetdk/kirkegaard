@@ -695,3 +695,40 @@ MOD_k_fold_r2 = function(lmfit, folds = 10, runs = 20, seed = 1, progress = inte
 
 
 
+#' Add terms to a formula from character vector
+#'
+#' Add terms to a formula from character vector.
+#' @param formula. A formula to modify.
+#' @param terms. Terms to add.
+#' @param env. Optionally, input to [base::parent.frame()] so as to use another environment than the function's.
+#'
+#' @return a formula
+#' @export
+#' @examples
+#' MOD_add_str_to_formula(y~x, "z")
+#' MOD_add_str_to_formula(y~x, c("z", "t", "w"))
+#' #change environment
+#' MOD_add_str_to_formula(y~x, "z", 1)
+MOD_add_str_to_formula = function(formula., terms., env. = NULL) {
+  formula.
+  terms.
+
+  #convert to str
+  f_str = as.character(formula.)
+
+  #rearrange
+  f_str = f_str[2] + " ~ " + f_str[3]
+
+  #add
+  f_str = f_str + " + " + paste(terms., collapse = " + ")
+
+  #as formula
+  if (!is.null(env.)) {
+    #fetch call envir
+    as.formula(f_str, parent.frame(env.))
+  }
+
+  #else, use function env
+  as.formula(f_str)
+}
+
