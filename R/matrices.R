@@ -151,6 +151,9 @@ MAT_half2full = function(mat, lower = T, diag = F) {
   #copy names
   copy_names(mat, new_mat)
 
+  #preserve integers
+  if (is.integer(mat)) mode(new_mat) = "integer"
+
   #out
   new_mat
 }
