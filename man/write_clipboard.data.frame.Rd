@@ -31,6 +31,9 @@
 A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
 }
 \examples{
-iris[-5] \%>\% cor \%>\% write_clipboard
-iris \%>\% head \%>\% miss_add_random \%>\% write_clipboard
+iris[-5] \%>\% cor() \%>\% write_clipboard()
+iris \%>\% head() \%>\% miss_add_random() \%>\% write_clipboard()
+#does not pad integers
+test_df = data.frame(int = 1:5, num = rnorm(5))
+test_df \%>\% write_clipboard()
 }

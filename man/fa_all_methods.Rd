@@ -14,7 +14,7 @@ fa_all_methods(DF, ..., skip_methods = "", messages = T)
 \item{skip_methods}{A character vector of methods to skip. Defaults to none.}
 }
 \description{
-Runs factor analysis on a dataset with all 30 possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
+Runs factor analysis to extract a single factor on a dataset with all possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
 }
 \examples{
 fa_all_methods(iris[-5])

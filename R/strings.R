@@ -231,3 +231,28 @@ str_filter = function(string, pattern, reverse = F) {
   if (reverse) return(string[!v])
   string[v]
 }
+
+#legalize names
+#' Make names legal
+#'
+#' Make variable names legal to use in R formulas etc.
+#' @param x (chr) A vector of names.
+#'
+#' @return a vector
+#' @export
+#'
+#' @examples
+#' c("2017x", "male (%)", "Male/female ratio") %>% str_legalize()
+str_legalize = function(x) {
+  x %>%
+    #replace % to pct
+    stringr::str_replace_all("\\%", "pct") %>%
+    #replace illegal chars to underscores
+    stringr::str_replace_all("[^A-Za-z0-9]", "_") %>%
+    #remove double underscores
+    stringr::str_replace_all("_+", "_") %>%
+    #remove trailing underscores
+    stringr::str_replace_all("(^_)|(_$)", "") %>%
+    #insert leading _ if numeral is first
+    stringr::str_replace("^(\\d)", "_\\1")
+}

@@ -67,8 +67,11 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @param return_modified (lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.
 #' @export
 #' @examples
-#' iris[-5] %>% cor %>% write_clipboard
-#' iris %>% head %>% miss_add_random %>% write_clipboard
+#' iris[-5] %>% cor() %>% write_clipboard()
+#' iris %>% head() %>% miss_add_random() %>% write_clipboard()
+#' #does not pad integers
+#' test_df = data.frame(int = 1:5, num = rnorm(5))
+#' test_df %>% write_clipboard()
 write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T, write_to_clipboard = interactive(), return_modified = F) {
 
   #round

@@ -86,7 +86,7 @@ df_round = function(df, digits = 2, NA_as_empty_string = T, simple = F) {
   #simple?
   if (simple) {
     df[] = lapply(df, function(x) {
-      if (is.numeric(x)) round(x, digits = digits) else x
+      if (is.numeric(x) & !is.integer(x)) round(x, digits = digits) else x
     })
 
     return(df)
@@ -100,7 +100,7 @@ df_round = function(df, digits = 2, NA_as_empty_string = T, simple = F) {
   #as strings
   #we want this is we want to print the output
   #otherwise R gets rid of the redundant 0's at the end
-  num_cols = purrr::map_lgl(df, is.numeric) %>% which
+  num_cols = purrr::map_lgl(df, ~is.numeric(.) & !is.integer(.)) %>% which()
 
     for (idx in num_cols) {
       df[[idx]] = round(df[[idx]], digits =  digits) %>%
@@ -1405,3 +1405,24 @@ df_fct_split = function(df, fcts, prefix = "", warn_unused_levels = T, type = "l
   df
 }
 
+
+#legalize names in data frame, keep labels
+#' Legalize variable names for data frame
+#'
+#' Data frames often bad illegal names, which cause problems in formulas. This function makes the names legal and returns the data frame. The original names are added as labels.
+#' @param df (data frame)
+#' @param func (function) A function to use to legalize the names.
+#'
+#' @return a data frame
+#' @export
+df_legalize_names = function(df, func = str_legalize) {
+  #loop and assign labels
+  for (v in names(df)) {
+    attr(df[[v]], which = "label") = v
+  }
+
+  #set clean names
+  names(df) = func(names(df))
+
+  df
+}

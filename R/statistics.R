@@ -680,11 +680,14 @@ pool_sd = function(x, group) {
 #' @param CI (num) Confidence interval coverage.
 #' @param str_template (chr) A string template to use.
 #' @param reliability (num) A reliability to use for correcting for measurement error. Done via [kirkegaard::a4me_cohen_d()].
+#' @param se_analytic (lgl) Use analytic standard errors. If not, then it will bootstrapping (slower). Always uses bootstrapping for non-mean functions.
 #' @param ... (other arguments) Additional arguments to pass to the central tendency function.
 #' @export
 #' @examples
 #' SMD_matrix(iris$Sepal.Length, iris$Species)
 #' SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T)
+#' #pairwise SDs
+#' SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T, dispersion_method = "pair")
 SMD_matrix = function(x,
                       group,
                       central_tendency = wtd_mean,
@@ -695,6 +698,7 @@ SMD_matrix = function(x,
                       str_template = "%d [%lower %upper]",
                       str_round_to = 2,
                       reliability = 1,
+                      se_analytic = T,
                       ...) {
   #input
   x
@@ -745,6 +749,9 @@ SMD_matrix = function(x,
       #partition data
       d_comb = d_x[d_x$group %in% c(col, row), ]
 
+      #remove unused factor levels
+      d_comb$group = forcats::fct_drop(d_comb$group)
+
       #dispersion
       if (dispersion == "sd") {
         if (dispersion_method == "all") {
@@ -789,7 +796,9 @@ SMD_matrix = function(x,
       }
 
       #standard error
-      se[row, col] = (sum(pair_ns)/prod(pair_ns)) + ((m[row, col]^2) / (2*(sum(pair_ns) - 2)))
+      #https://stats.stackexchange.com/questions/144084/variance-of-cohens-d-statistic
+      #note variance vs. se (hence sqrt)!
+      se[row, col] = sqrt((sum(pair_ns)/prod(pair_ns)) + ((m[row, col]^2) / (2*(sum(pair_ns) - 2))))
 
       #CIs
       CI_upper[row, col] = m[row, col] + se_CI * se[row, col]

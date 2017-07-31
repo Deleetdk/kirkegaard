@@ -113,8 +113,7 @@ fa_CFS = function(data, sort = T, include_full_sample = T) {
 
 #' Factor analyze with all methods
 #'
-#'
-#' Runs factor analysis on a dataset with all 30 possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
+#' Runs factor analysis to extract a single factor on a dataset with all possible combinations of extraction and scoring methods. Returns a list with all scores and loadings for further use.
 #' @param DF A data.frame to extract factors from.
 #' @param ... Parameters to fa().
 #' @param skip_methods A character vector of methods to skip. Defaults to none.
@@ -125,7 +124,7 @@ fa_all_methods = function(DF, ..., skip_methods = "", messages = T) {
 
   #settings
   score.methods = c("regression", "Thurstone", "tenBerge", "Anderson", "Bartlett")
-  extraction.methods = c("minres", "wls", "gls", "pa", "ml", "minchi")
+  extraction.methods = c("minres", "ols", "wls", "gls", "pa", "ml", "minchi", "minrank")
   #all combitations of above: choose 1 of 5, choose 1 of 6
   perms = as.matrix(expand.grid(1:length(score.methods), 1:length(extraction.methods)))
 

@@ -7,7 +7,7 @@
 SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
   dispersion_method = "all", extended_output = F, CI = 0.95,
   str_template = "\%d [\%lower \%upper]", str_round_to = 2,
-  reliability = 1, ...)
+  reliability = 1, se_analytic = T, ...)
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}
@@ -28,6 +28,8 @@ SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
 
 \item{reliability}{(num) A reliability to use for correcting for measurement error. Done via \code{\link[kirkegaard:a4me_cohen_d]{kirkegaard::a4me_cohen_d()}}.}
 
+\item{se_analytic}{(lgl) Use analytic standard errors. If not, then it will bootstrapping (slower). Always uses bootstrapping for non-mean functions.}
+
 \item{...}{(other arguments) Additional arguments to pass to the central tendency function.}
 }
 \description{
@@ -36,4 +38,6 @@ Calculate standardized mean differneces between all groups.
 \examples{
 SMD_matrix(iris$Sepal.Length, iris$Species)
 SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T)
+#pairwise SDs
+SMD_matrix(iris$Sepal.Length, iris$Species, extended_output = T, dispersion_method = "pair")
 }
