@@ -72,7 +72,16 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' #does not pad integers
 #' test_df = data.frame(int = 1:5, num = rnorm(5))
 #' test_df %>% write_clipboard()
-write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what = c("_", "\\."), pad_digits = T, print = T, .rownames = T, write_to_clipboard = interactive(), return_modified = F) {
+write_clipboard.data.frame = function(x,
+                                      digits = 2,
+                                      clean_names = T,
+                                      clean_what = c("_", "\\."),
+                                      pad_digits = T,
+                                      print = T,
+                                      .rownames = T,
+                                      write_to_clipboard = interactive(),
+                                      return_modified = F,
+                                      capitalize_dimnames = T) {
 
   #round
   x_orig = x
@@ -98,6 +107,12 @@ write_clipboard.data.frame = function(x, digits = 2, clean_names = T, clean_what
         names(x) = stringr::str_replace_all(names(x), "_", " ")
       }
     }
+  }
+
+  #capitalization
+  if (capitalize_dimnames) {
+    rownames(x)[1] = str_to_upper(rownames(x)[1])
+    colnames(x)[1] = str_to_upper(colnames(x)[1])
   }
 
   #print
