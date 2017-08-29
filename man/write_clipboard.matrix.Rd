@@ -6,7 +6,8 @@
 \usage{
 \method{write_clipboard}{matrix}(x, digits = 2, clean_names = T,
   clean_what = c("_", "\\\\."), pad_digits = T, print = T,
-  .rownames = T, write_to_clipboard = interactive(), return_modified = F)
+  .rownames = T, write_to_clipboard = interactive(), return_modified = F,
+  capitalize_dimnames = T)
 }
 \description{
 Write a matrix to the clipboard with clean formating. Calls \code{\link{write_clipboard.data.frame}}.

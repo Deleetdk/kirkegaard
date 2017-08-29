@@ -65,6 +65,7 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @param .rownames (lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.
 #' @param write_to_clipboard (lgl) Whether to write to the clipboard. Can be useful to disable in rare cases.
 #' @param return_modified (lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.
+#' @param capitalize_dimnames (lgl) Whether to capitalize the first letter in the dimnames.
 #' @export
 #' @examples
 #' iris[-5] %>% cor() %>% write_clipboard()
@@ -111,8 +112,8 @@ write_clipboard.data.frame = function(x,
 
   #capitalization
   if (capitalize_dimnames) {
-    rownames(x)[1] = str_to_upper(rownames(x)[1])
-    colnames(x)[1] = str_to_upper(colnames(x)[1])
+    rownames(x) = str_to_upper_initial(rownames(x))
+    colnames(x) = str_to_upper_initial(colnames(x))
   }
 
   #print

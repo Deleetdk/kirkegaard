@@ -6,7 +6,8 @@
 \usage{
 \method{write_clipboard}{data.frame}(x, digits = 2, clean_names = T,
   clean_what = c("_", "\\\\."), pad_digits = T, print = T,
-  .rownames = T, write_to_clipboard = interactive(), return_modified = F)
+  .rownames = T, write_to_clipboard = interactive(), return_modified = F,
+  capitalize_dimnames = T)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}
@@ -26,6 +27,8 @@
 \item{write_to_clipboard}{(lgl) Whether to write to the clipboard. Can be useful to disable in rare cases.}
 
 \item{return_modified}{(lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.}
+
+\item{capitalize_dimnames}{(lgl) Whether to capitalize the first letter in the dimnames.}
 }
 \description{
 A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.

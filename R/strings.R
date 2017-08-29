@@ -256,3 +256,25 @@ str_legalize = function(x) {
     #insert leading _ if numeral is first
     stringr::str_replace("^(\\d)", "_\\1")
 }
+
+
+#' Capitalize initial letter
+#'
+#' Capitalize the initial letter in a string. Vectorized.
+#' @param x (chr) A character vector.
+#'
+#' @return A character vector same length as the input.
+#' @export
+#' @details
+#' Just a simple wrapper around stringr functions. Mainly useful for when writing tables to clipboard/supplementary files for writing studies.
+#' @examples
+#' #make iris colnames lowercase, then capitalize initial letter.
+#' colnames(iris) %>% str_to_lower() %>% str_to_upper_initial()
+str_to_upper_initial = function(x) {
+  #convert to character
+  #useful bc people might pass e.g. factors
+  x = as.character(x)
+
+  #functional wrapper for purrr
+  purrr::map_chr(x, ~stringr::str_sub(., 1, 1) %>% stringr::str_to_upper() + stringr::str_sub(., 2))
+}

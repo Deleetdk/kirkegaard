@@ -48,3 +48,13 @@ test_that("fail_if_NA", {
 #browse_if_equals
 #try_browse
 
+
+# try_else ----------------------------------------------------------------
+#better version of fail_with
+
+test_that("try_else", {
+  expect_equivalent(try_else(log(1)), 0)
+  expect_equivalent(try_else(log("abc")), NULL)
+  expect_equivalent(try_else(log("abc"), else. = 5), 5)
+  #expect_output(try_else(log("abc"), silent = F)) #does not work for some reason
+})

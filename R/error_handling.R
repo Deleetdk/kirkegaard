@@ -153,3 +153,120 @@ browse_if = function(condition, extended = F) {
   #return output
   invisible(T)
 }
+
+
+#' Try and fail with a default value
+#'
+#' @param expr (expression) An expression to execute.
+#' @param else. (any) Value returned on error.
+#' @param silent (lgl) Whether to silence the error messages.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' try_else(log(1))
+#' try_else(log("abc"))
+#' try_else(log("abc"), silent = F)
+try_else = function(expr, else. = NULL, silent = T) {
+  #execute in parent frame envir
+  .trial = try({
+    y = eval(substitute(expr), parent.frame())
+  }, silent = silent)
+
+  #error?
+  if (inherits(.trial, "try-error")) return(else.)
+
+  #return as normal
+  y
+}
+
+#' Retry while error
+#'
+#' Run an expression repeatedly until it doesn't produce an error or a max number of attempts has been reached.
+#' @param expr An expression.
+#' @param retry_interval (num) Time interval between retries in seconds.
+#' @param silent (lgl) Whether to output dated errors while trying is ongoing.
+#' @param max_tries (num) Max number of tries.
+#' @param max_time (num) Max time to try, including run and sleep time.
+#'
+#' @return The output of expr.
+#' @export
+#'
+#' @examples
+#' #this one eventually succeeds
+#' retry_while_error(log(unlist(sample(list("", 0), size = 1, prob = c(1, .01)))), retry_interval = 0, max_time = Inf, max_tries = Inf, silent = T)
+#'
+#' #note: these produce errors
+#' retry_while_error(log(""), retry_interval = 0)
+#' retry_while_error(log(""), retry_interval = 0, max_time = 1, max_tries = Inf)
+retry_while_error = function(expr, retry_interval = 60, silent = F, max_tries = 10, max_time = Inf) {
+  #begin error log
+  error_log = data_frame(
+    datetime = lubridate::as_datetime(character()),
+    error = character()
+  )
+
+  #tries
+  tries = 0
+
+  #start of trying
+  time_start = lubridate::now()
+
+  #keep trying
+  while (T) {
+    #increment tries
+    tries = tries + 1
+
+    #try, silently
+    trial = try({
+      y = eval(substitute(expr), parent.frame())
+    }, silent = T)
+
+    #error?
+    if (is_error(trial)) {
+      #make error data frame
+      this_error = data_frame(
+        datetime = lubridate::now(),
+        error = trial[1]
+      )
+
+      #output if desired
+      if (!silent) message(sprintf("%s -- %s", lubridate::now() %>% as.character(), trial[1]))
+
+      #log error
+      error_log = rbind(
+        error_log,
+        this_error
+      )
+
+      #max tries reached?
+      if (tries == max_tries) {
+        stop(sprintf("Stopped trying after %d tries", tries), call. = F)
+      }
+
+      #max time reached?
+      time_tried = lubridate::now() - time_start
+      if (time_tried > max_time) {
+        stop(sprintf("Stopped trying after %d seconds", as.integer(time_tried)), call. = F)
+      }
+
+      #sleep
+      Sys.sleep(retry_interval)
+
+      #start over
+      next
+    }
+
+    #break
+    break
+  }
+
+  #attach error log as attr
+  attr(trial, "error_log") = error_log
+
+  #return output
+  trial
+}
+
+

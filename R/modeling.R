@@ -286,7 +286,7 @@ print.model_summary  = function(x) {
 #'
 #' Tidys information from linear models or generalized linear models.
 #' @param fitted_model (lm or glm) The fitted model.
-#' @param level (num scalar) The level of confidence to use.
+#' @param level (num scalar) The level of confidence (alpha) to use.
 #' @param round (num scalar) At which digit to round the numbers.
 #' @param standardize (log scalar) Whether to report standardized betas.
 #' @param kfold (log scalar) Whether to also calculate a k fold cross-validated r2 value.
@@ -299,7 +299,7 @@ print.model_summary  = function(x) {
 #' #then summarize the model
 #' MOD_summary(fit1) #unstd. data, std. betas
 #' MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \code{summary}
-MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, folds = 10, runs = 20, ...) {
+MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = F, folds = 10, runs = 20, ...) {
   #check for model errors
   fail_if_NA(fitted_model$coef, msg = "The model parameters contained missing values. This is usually because of perfect linear dependency between predictors.")
 
@@ -332,7 +332,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = T, fo
   df = model_sum$df[2]
 
   #init coefs
-  coefs = model_sum$coefficients[-1, 1:2, drop = F] %>% as.data.frame
+  coefs = model_sum$coefficients[-1, 1:2, drop = F] %>% as.data.frame()
   colnames(coefs) = c("Beta", "SE") #rename cols
   p_vals = model_sum$coefficients[, 4]
 
