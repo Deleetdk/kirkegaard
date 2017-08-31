@@ -760,3 +760,35 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #' Save a ggplot2 figure. Now with a sensible default size (10 x 6.5 inches). Same arguments as `ggplot2::ggsave`
 #' @export
 GG_save = curry::set_defaults(ggsave, list(width = 10, height = 6.5))
+
+
+
+# ggplot2 pdf saving ------------------------------------------------------
+
+#' Save list of ggplot2 objects to single pdf
+#'
+#' @param list (list) List of ggplot2 objects.
+#' @param filename (chr) What to call the pdf.
+#'
+#' @return Invisible NULL.
+#' @export
+#'
+#' @examples
+#' #plot histogram of each numeric variable in iris
+#' list_iris = map(names(iris[-5]), ~ggplot(iris, aes_string(.)) + geom_histogram())
+#' #save to a single pdf
+#' GG_save_pdf(list_iris, "test.pdf")
+GG_save_pdf = function(list, filename) {
+  #start pdf
+  pdf(filename)
+
+  #loop
+  for (p in list) {
+    print(p)
+  }
+
+  #end pdf
+  dev.off()
+
+  invisible(NULL)
+}
