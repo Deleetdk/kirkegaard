@@ -25,3 +25,5 @@ test_that("str_uniquify", {
   #multiple strings
   expect_true(all(str_to_upper_initial(c("bleh blah", "bleh blah", "bleh blah")) == c("Bleh blah", "Bleh blah", "Bleh blah")))
 })
+
+

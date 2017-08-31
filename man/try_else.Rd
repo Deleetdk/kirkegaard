@@ -13,6 +13,9 @@ try_else(expr, else. = NULL, silent = T)
 
 \item{silent}{(lgl) Whether to silence the error messages.}
 }
+\value{
+The output from the expression or the else value.
+}
 \description{
 Try and fail with a default value
 }

@@ -278,3 +278,35 @@ str_to_upper_initial = function(x) {
   #functional wrapper for purrr
   purrr::map_chr(x, ~stringr::str_sub(., 1, 1) %>% stringr::str_to_upper() + stringr::str_sub(., 2))
 }
+
+
+#' Extract filename from a file path.
+#'
+#' @param x (chr) A path to a filename.
+#'
+#' @return A character.
+#' @export
+#' @details
+#' Just a thin wrapper for [base::basename()].
+#'
+#' @examples
+#' dir(full.names = T) %>% str_filename()
+str_filename = function(x) {
+  base::basename(x)
+}
+
+
+#' Extract directory path from a file path.
+#'
+#' @param x (chr) A path to a filename.
+#'
+#' @return A character.
+#' @export
+#' @details
+#' Just a thin wrapper for [base::dirname()].
+#'
+#' @examples
+#' dir(getwd(), full.names = T) %>% str_dirname()
+str_dirname = function(x) {
+  base::dirname(x)
+}

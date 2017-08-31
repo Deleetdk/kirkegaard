@@ -161,7 +161,7 @@ browse_if = function(condition, extended = F) {
 #' @param else. (any) Value returned on error.
 #' @param silent (lgl) Whether to silence the error messages.
 #'
-#' @return
+#' @return The output from the expression or the else value.
 #' @export
 #'
 #' @examples
