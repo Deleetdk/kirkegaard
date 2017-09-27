@@ -22,6 +22,7 @@
 #' @param messages (num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots.
 #' @param stringdist_params (list) If using fuzzy matching, a list of parameters to pass to stringdist function.
 #' @param standardize_name (lgl scalr) If true, will translate names to abbreviations, and then back to names. This converts the names to the standard version in the dataset.
+#' @param add_parens (chr or NULL) Adds parenthesized versions of units. Useful for diambiguation.
 #' @export
 #' @return A character vector.
 #' @examples
@@ -36,7 +37,10 @@
 #' #complex problems can happen when one has mixed level units, e.g Georgia (country) and Hong Kong (quasi-country under Chinese rule)
 #' pu_translate(c("Hong Kong", "Georgia"), superunit = "world") #clearly wrong!
 #' pu_translate(c("Hong Kong", "Georgia"), superunit = c("world", "CHN")) #right!
-pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params = NULL, standardize_name = F) {
+#' #duplicated names in Latin America
+#' pu_translate("Córdoba") #bad, multiple matches
+#' pu_translate("Córdoba (ARG)") #works
+pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params = NULL, standardize_name = F, add_parens = c("ISO3", "ISO2", "name")) {
   #check input
   is_(x, class = "character", error_on_false = T)
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
@@ -53,12 +57,40 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
 
   #read polunits
   data_file_location = system.file("extdata", "political_units.xlsx", package = "kirkegaard")
-  #units = XLConnect::readWorksheetFromFile(data_file_location, sheet = "Abbreviations")
   units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
   #remove removed units
   units_all = units #keep orig
   units = dplyr::filter(units, is.na(Removed))
+
+  #add duplicates with country ISO in parens
+  #this is so we dont need to manually specify these
+  if (!is.null(add_parens) & !reverse) {
+    sub_units_clean = units %>% filter(!is.na(Superunit))
+
+    #add the country ISO3 in parens
+    if ("ISO3" %in% add_parens) {
+      sub_units = sub_units_clean
+      sub_units$Name = sprintf("%s (%s)", sub_units$Name, sub_units$Superunit)
+      units = rbind(units, sub_units)
+    }
+
+    #ISO2
+    #TODO: add ISO2
+    # if ("ISO2" %in% add_parens) {
+    #   sub_units$Name = sprintf("%s (%s)", sub_units$Name, sub_units$Superunit)
+    #   units = rbind(units, sub_units)
+    # }
+
+    #full names
+    if ("name" %in% add_parens) {
+      sub_units = sub_units_clean
+      superunit_names = pu_translate(sub_units$Superunit, reverse = T)
+      sub_units$Name = sprintf("%s (%s)", sub_units$Name, superunit_names)
+      units = rbind(units, sub_units)
+    }
+
+  }
 
   #subset to subunits if desired
   if (!is.null(superunit)) {

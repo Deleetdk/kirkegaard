@@ -6,7 +6,7 @@
 \usage{
 pu_translate(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en",
   superunit_recursive = F, messages = 1, stringdist_params = NULL,
-  standardize_name = F)
+  standardize_name = F, add_parens = c("ISO3", "ISO2", "name"))
 }
 \arguments{
 \item{x}{(chr vectr) A chr vector of names to abbreviate.}
@@ -26,6 +26,8 @@ pu_translate(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en",
 \item{stringdist_params}{(list) If using fuzzy matching, a list of parameters to pass to stringdist function.}
 
 \item{standardize_name}{(lgl scalr) If true, will translate names to abbreviations, and then back to names. This converts the names to the standard version in the dataset.}
+
+\item{add_parens}{(chr or NULL) Adds parenthesized versions of units. Useful for diambiguation.}
 }
 \value{
 A character vector.
@@ -58,4 +60,7 @@ pu_translate("Georgia", superunit = "world")
 #complex problems can happen when one has mixed level units, e.g Georgia (country) and Hong Kong (quasi-country under Chinese rule)
 pu_translate(c("Hong Kong", "Georgia"), superunit = "world") #clearly wrong!
 pu_translate(c("Hong Kong", "Georgia"), superunit = c("world", "CHN")) #right!
+#duplicated names in Latin America
+pu_translate("Córdoba") #bad, multiple matches
+pu_translate("Córdoba (ARG)") #works
 }
