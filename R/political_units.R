@@ -90,6 +90,10 @@ pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en"
       units = rbind(units, sub_units)
     }
 
+    #get rid of any duplicates that might have arisen
+    #these happen if country names are the same as ISO (e.g. USA)
+    units %<>% filter(!duplicated(Name))
+
   }
 
   #subset to subunits if desired
