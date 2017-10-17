@@ -266,17 +266,18 @@ proportion_true = function(x) {
 #' rescale(1:10, new_min = 0, new_max = 5) #converts to 0, ..., 5
 #' rescale(rnorm(10), new_min = 1, new_max = 100) %>% sort #converts to 1, ..., 1
 #' rescale(c(.1, .5, 1), new_min = 10, new_max = 20, old_min = 0, old_max = 1) #assume old numbers belong to scale 0-1, rescale to 10-20 scale, i.e. 11, 15, 20
-rescale = function(x, new_min, new_max, old_min = min(x), old_max = max(x)) {
+rescale = function(x, new_min, new_max, old_min = min(x, na.rm=T), old_max = max(x, na.rm=T)) {
   #check input
   is_(x, class = "numeric", error_on_false = T)
+  if (length(x) == 0) return(numeric())
   is_(new_min, class = "numeric", size = 1, error_on_false = T)
   is_(new_max, class = "numeric", size = 1, error_on_false = T)
   is_(old_min, class = "numeric", size = 1, error_on_false = T)
   is_(old_min, class = "numeric", size = 1, error_on_false = T)
 
   #check if impossible old_min or old_max given
-  if (min(x) < old_min) stop(sprintf("The min value in x is smaller than the minimum possible value given!: old_min = %f vs. min(x) = %f", old_min, min(x)))
-  if (max(x) > old_max) stop(sprintf("The max value in x is larger than the maximum possible value given!: old_max = %f vs. max(x) = %f", old_max, max(x)))
+  if (min(x, na.rm=T) < old_min) stop(sprintf("The min value in x is smaller than the minimum possible value given!: old_min = %f vs. min(x) = %f", old_min, min(x)))
+  if (max(x, na.rm=T) > old_max) stop(sprintf("The max value in x is larger than the maximum possible value given!: old_max = %f vs. max(x) = %f", old_max, max(x)))
 
   #calculate ranges
   old_range = old_max - old_min
@@ -366,5 +367,10 @@ helper_breaks = function(x, factors = c(2.5, 5)) {
     y = c(y, x * fct)
   }
   sort(y)
+}
+
+#useful minor function
+min_max = function(x) {
+  c(min(x, na.rm = T), max(x, na.rm = T))
 }
 
