@@ -40,7 +40,16 @@
 #' #duplicated names in Latin America
 #' pu_translate("Córdoba") #bad, multiple matches
 #' pu_translate("Córdoba (ARG)") #works
-pu_translate = function(x, superunit = NULL, fuzzy = T, reverse = F, lang = "en", superunit_recursive = F, messages = 1, stringdist_params = NULL, standardize_name = F, add_parens = c("ISO3", "ISO2", "name")) {
+pu_translate = function(x,
+                        superunit = NULL,
+                        fuzzy = T,
+                        reverse = F,
+                        lang = "en",
+                        superunit_recursive = F,
+                        messages = 1,
+                        stringdist_params = NULL,
+                        standardize_name = F,
+                        add_parens = c("ISO3", "ISO2", "name")) {
   #check input
   is_(x, class = "character", error_on_false = T)
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
