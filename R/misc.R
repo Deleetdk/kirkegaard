@@ -510,3 +510,24 @@ unduplicate = function(x) {
   #rely on generic function
   x[!duplicated(x)]
 }
+
+
+#' Equality infix operator
+#'
+#' @param x An object
+#' @param y An object
+#'
+#' @return A boolean scalar
+#' @export
+#'
+#' @examples
+#' #simple
+#' 1 %equals% 1
+#' 1 %equals% 2
+#' #works for vectors too
+#' 1:3 %equals% 1:3
+#' #compare with
+#' 1:3 == 1:3
+`%equals%` = function(x, y) {
+  kirkegaard::are_equal(x, y)
+}
