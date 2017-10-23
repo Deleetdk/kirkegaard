@@ -269,7 +269,14 @@ proportion_true = function(x) {
 rescale = function(x, new_min, new_max, old_min = min(x, na.rm=T), old_max = max(x, na.rm=T)) {
   #check input
   is_(x, class = "numeric", error_on_false = T)
+
+  #no content
   if (length(x) == 0) return(numeric())
+
+  #no non-na content
+  if (length(na.omit(x)) == 0) return(x)
+
+  #check min pars
   is_(new_min, class = "numeric", size = 1, error_on_false = T)
   is_(new_max, class = "numeric", size = 1, error_on_false = T)
   is_(old_min, class = "numeric", size = 1, error_on_false = T)

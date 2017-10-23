@@ -4,7 +4,7 @@ context("simple_math")
 
 # rescale ------------------------------------------------------------------
 
-test_that("df_standardize", {
+test_that("rescale", {
   #basic
   expect_true(min_max(rescale(1:10, new_min = 0, new_max = 1)) %equals% c(0, 1))
   expect_true(min_max(rescale(1:10, new_min = 1, new_max = 5)) %equals% c(1, 5))
@@ -16,6 +16,7 @@ test_that("df_standardize", {
 
   #NAs
   expect_true(min_max(rescale(c(1:5, NA, 6:10), 0, 1)) %equals% c(0, 1))
+  expect_true(rescale(rep(NA_real_, 1e4), 0, 1) %equals% rep(NA_real_, 1e4))
 
   #empty input
   expect_true(rescale(numeric(), 0, 1) %equals% numeric())
