@@ -1289,45 +1289,7 @@ df_flexsubset = function(data, vars, messages = T) {
   data[, vars_overlap, drop = F]
 }
 
-# df_merge_cols -----------------------------------------------
 
-#' Merge columns
-#'
-#' Combines columns by filling in missing values with values from other columns in a designated order.
-#' @param df (df) Data frame.
-#' @param cols (chr) Variable names to merge.
-#' @return A vector.
-#' @export
-#' @examples
-#' data_frame(
-#' a = c(1, NA, NA),
-#' b = c(-1, 2, NA),
-#' c = c(-5, -9, 3)
-#' ) %>% df_merge_cols(letters[1:3])
-df_merge_cols = function(df, cols) {
-  df
-  cols
-
-  #1 col? use that
-  if (length(cols) == 1) return(df[[cols]])
-
-  #0 col? error
-  if (length(cols) == 0) stop("cols must be a length ≥1 chr vector")
-
-  #make vector, begin with last col
-  y = df[[cols[1]]]
-
-  #fill in in reverse order
-  for (col_ in cols[-1]) {
-    #which are NA?
-    y_NA = is.na(y)
-
-    #fill in the NAs
-    y[y_NA] = df[[col_]][y_NA]
-  }
-
-  y
-}
 
 
 
@@ -1425,4 +1387,45 @@ df_legalize_names = function(df, func = str_legalize) {
   names(df) = func(names(df))
 
   df
+}
+
+
+# df_merge_cols -----------------------------------------------
+
+#' Merge columns
+#'
+#' Combines columns by filling in missing values with values from other columns in a designated order.
+#' @param df (df) Data frame.
+#' @param cols (chr) Variable names to merge.
+#' @return A vector.
+#' @export
+#' @examples
+#' data_frame(
+#' a = c(1, NA, NA),
+#' b = c(-1, 2, NA),
+#' c = c(-5, -9, 3)
+#' ) %>% df_merge_cols(letters[1:3])
+df_merge_cols = function(df, cols) {
+  df
+  cols
+
+  #1 col? use that
+  if (length(cols) == 1) return(df[[cols]])
+
+  #0 col error
+  if (length(cols) == 0) stop('cols must be a length >=1 chr vector')
+
+  #make vector, begin with last col
+  y = df[[cols[1]]]
+
+  #fill in in reverse order
+  for (col_ in cols[-1]) {
+    #which are NA?
+    y_NA = is.na(y)
+
+    #fill in the NAs
+    y[y_NA] = df[[col_]][y_NA]
+  }
+
+  y
 }

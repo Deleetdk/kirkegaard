@@ -594,7 +594,7 @@ fa_nfactors = function(.fa) {
 
 #' Plot factor loadings
 #'
-#' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting.
+#' Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing of any factors that are reversed. Dodges to avoid overplotting.
 #'
 #' Non-overlapping indicates are put in the bottom. Note that internally, x and y coods have been flipped, so to modify the scales, use the opposite command, e.g. ylim to modify x axis limits.
 #' @param fa_objects (list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.

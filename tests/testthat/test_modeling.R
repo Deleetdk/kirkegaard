@@ -56,7 +56,8 @@ test_that("MOD_summary_lm", {
   expect_false(are_equal(lm_1$aov, lm_2$aov))
 
   #test cv
-  expect_false(lm_3$meta$`R2-cv` %>% is.na)
+  expect_true(lm_3$meta$`R2-cv` %>% is.na)
+  expect_true(lm_3$meta$`R2-cv` %>% is.na)
 
   #error
   expect_error(lm_5 %>% MOD_summary())

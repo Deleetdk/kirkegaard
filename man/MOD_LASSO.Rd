@@ -25,7 +25,7 @@ MOD_LASSO(data, dependent, predictors, weights_ = NULL, standardize = T,
 
 \item{alpha_}{(num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.}
 
-\item{NA_ignore}{(log scalar) Whether to remove cases with missing data.´´}
+\item{NA_ignore}{(log scalar) Whether to remove cases with missing data.}
 
 \item{seed}{(int scalar) The seed to use. For reproducible results.}
 

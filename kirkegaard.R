@@ -28,7 +28,7 @@ if (F) {
 
   #CRAN packages
   library(pacman)
-  p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, geosphere, fields, rmngb, ape, glmnet, metafor, binom, ggrepel)
+  p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, geosphere, fields, rmngb, ape, glmnet, metafor, binom, ggrepel, Rcsdp)
 
   #github packages
   purrr::map(c("thomasp85/curry", "rOpenGov/dkstat"), ~devtools::install_github(.))

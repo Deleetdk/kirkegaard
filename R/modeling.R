@@ -488,7 +488,7 @@ MOD_summary = function(fitted_model, level = .95, standardize = T, kfold = F, fo
 #' @param runs (int scalar) Number of times to run.
 #' @param nfolds (int) Number of folds.
 #' @param alpha_ (num scalar) The penalty to use. 1 = lasso regression, 0 = ridge regression.
-#' @param NA_ignore (log scalar) Whether to remove cases with missing data.´´
+#' @param NA_ignore (log scalar) Whether to remove cases with missing data.
 #' @param messages (log scalar) Whether to show messages.
 #' @param progress (log scalar) Whether to show a progress bar.
 #' @param seed (int scalar) The seed to use. For reproducible results.

@@ -27,7 +27,6 @@
 #' @return A character vector.
 #' @examples
 #' pu_translate("Denmark")
-#' pu_translate("Dänemark")
 #' pu_translate("DNK", reverse = T)
 #' pu_translate("DNK", reverse = T, lang = "de")
 #' #throws an error due to multiple Georgias
@@ -38,8 +37,8 @@
 #' pu_translate(c("Hong Kong", "Georgia"), superunit = "world") #clearly wrong!
 #' pu_translate(c("Hong Kong", "Georgia"), superunit = c("world", "CHN")) #right!
 #' #duplicated names in Latin America
-#' pu_translate("Córdoba") #bad, multiple matches
-#' pu_translate("Córdoba (ARG)") #works
+#' pu_translate("Cordoba") #bad, multiple matches
+#' pu_translate("Cordoba (ARG)") #works
 pu_translate = function(x,
                         superunit = NULL,
                         fuzzy = T,

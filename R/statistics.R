@@ -909,7 +909,7 @@ homogeneity = function(x, reverse = F, summary = F) {
     return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum %>% subtract(1, .))
 
   } else {
-      stop("Tried to use summary statistics, but they did not sum to either around 1 or 100 (±1%)")
+      stop("Tried to use summary statistics, but they did not sum to either around 1 or 100 ( 1%)")
     }
 
 }
@@ -1004,8 +1004,10 @@ wtd_mean = function(x, w = NULL, error = F) {
   if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #else
-  weighted.mean(x = d$x, w = d$w)
+  stats::weighted.mean(x = d$x, w = d$w)
 }
+
+
 
 #' Calculate a weighted sum
 #'
@@ -1164,3 +1166,5 @@ find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precisi
     if (iter >= 1e5) stop("Loop reached 100k iterations without finding a solution! Use a lower level of precision!")
   }
 }
+
+

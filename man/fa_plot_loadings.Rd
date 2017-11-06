@@ -20,7 +20,7 @@ fa_plot_loadings(fa_objects, fa_labels = NA, factor_names = NA,
 \item{reorder}{(chr scalar or NA) Which factor analysis to order the loadings by. Can be integers that reprensent each factor analysis. Can also be "mean", "median" to use the means and medians of the loadings. Use "all" for the old method. Default = "mean".}
 }
 \description{
-Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing óf any factors that are reversed. Dodges to avoid overplotting.
+Returns a ggplot2 plot with sorted loadings colored by the analysis they belong to. Supports reversing of any factors that are reversed. Dodges to avoid overplotting.
 }
 \details{
 Non-overlapping indicates are put in the bottom. Note that internally, x and y coods have been flipped, so to modify the scales, use the opposite command, e.g. ylim to modify x axis limits.

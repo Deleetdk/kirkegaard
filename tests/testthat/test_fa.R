@@ -1,7 +1,7 @@
 context("fa_")
 
 # fa_all_methods --------------------------------------------------------
-fa_am = fa_all_methods(iris[-5], skip_methods = "pa", messages = F)
+fa_am = silence(fa_all_methods(iris[-5], skip_methods = "pa", messages = F))
 
 test_that("fa_all_methods", {
   expect_equal(names(fa_am), c("scores", "loadings"))
