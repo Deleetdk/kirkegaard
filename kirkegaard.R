@@ -36,3 +36,5 @@ if (F) {
   #finally
   devtools::install_github("deleetdk/kirkegaard")
 }
+
+#test
