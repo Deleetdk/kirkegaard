@@ -3,7 +3,7 @@ if (!require("pacman")) {
   install.packages("pacman")
   library("pacman")
 }
-p_load(devtools, roxygen2, stringr, testthat)
+pacman::p_load(devtools, roxygen2, stringr, testthat)
 options(digits = 2, scipen = 2)
 
 #make documentation
