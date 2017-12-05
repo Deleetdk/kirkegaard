@@ -310,3 +310,15 @@ test_that("df_merge_rows", {
   #no new name given
   expect_message(df_merge_rows(data = t1, names = c("C", "D")) == t1_cor)
 })
+
+
+
+# df_no_list_cols ---------------------------------------------------------
+
+iris2 = iris
+iris2$list = list(1)
+iris2$df = list(iris)
+
+test_that("df_no_list_cols", {
+  expect_equivalent(datasets::iris, df_no_list_cols(iris2))
+})
