@@ -322,3 +322,39 @@ iris2$df = list(iris)
 test_that("df_no_list_cols", {
   expect_equivalent(datasets::iris, df_no_list_cols(iris2))
 })
+
+
+# df_legalize_names -------------------------------------------------------
+#with spaces
+iris_bad = iris
+names(iris_bad) = str_replace(names(iris_bad), "\\.", " ") #replace with spaces
+
+#duplicated empty
+iris_bad2 = iris
+names(iris_bad2)[1] = "" #empty name
+names(iris_bad2)[2] = "" #another
+
+#duplicated NAs
+iris_bad3 = iris
+names(iris_bad3)[1] = NA #NA
+names(iris_bad3)[2] = NA #NA
+
+#duplicated normal
+iris_bad4 = iris
+names(iris_bad4)[1] = "x"
+names(iris_bad4)[2] = "x"
+
+test_that("df_legalize_names", {
+  #spaces
+  expect_equivalent(df_legalize_names(iris_bad) %>% names(), names(iris) %>% str_replace("\\.", "_"))
+
+  #empty
+  expect_false(df_legalize_names(iris_bad2) %>% names() %>% str_detect("^$") %>% any())
+
+  #NA
+  expect_false(df_legalize_names(iris_bad3) %>% names() %>% {any(is.na(.))})
+
+  #duplicated
+  expect_false(df_legalize_names(iris_bad4) %>% names() %>% {any(duplicated(.))})
+})
+

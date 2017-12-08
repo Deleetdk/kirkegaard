@@ -1377,14 +1377,34 @@ df_fct_split = function(df, fcts, prefix = "", warn_unused_levels = T, type = "l
 #'
 #' @return a data frame
 #' @export
+#'
+#' @examples
+#' iris_bad = iris
+#' names(iris_bad) = str_replace(names(iris_bad), "\\.", " ") #replace with spaces
+#' names(iris_bad)
+#' df_legalize_names(iris_bad) %>% names()
+#' iris_bad = iris
+#' names(iris_bad)[1] = "" #empty name
+#' names(iris_bad)[2] = "" #another
+#' names(iris_bad)[3] = NA #NA
+#' names(iris_bad)
+#' df_legalize_names(iris_bad) %>% names()
 df_legalize_names = function(df, func = str_legalize) {
+  #rename if empty
+  names(df) = purrr::map_chr(names(df), function(name_) {
+    if (name_ %in% c("", NA)) return("unnamed")
+    name_
+  })
+
   #loop and assign labels
   for (v in names(df)) {
     attr(df[[v]], which = "label") = v
   }
 
   #set clean names
-  names(df) = func(names(df))
+  names(df) = names(df) %>%
+    str_uniquify() %>%
+    func()
 
   df
 }

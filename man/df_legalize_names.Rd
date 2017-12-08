@@ -17,3 +17,15 @@ a data frame
 \description{
 Data frames often bad illegal names, which cause problems in formulas. This function makes the names legal and returns the data frame. The original names are added as labels.
 }
+\examples{
+iris_bad = iris
+names(iris_bad) = str_replace(names(iris_bad), "\\\\.", " ") #replace with spaces
+names(iris_bad)
+df_legalize_names(iris_bad) \%>\% names()
+iris_bad = iris
+names(iris_bad)[1] = "" #empty name
+names(iris_bad)[2] = "" #another
+names(iris_bad)[3] = NA #NA
+names(iris_bad)
+df_legalize_names(iris_bad) \%>\% names()
+}
