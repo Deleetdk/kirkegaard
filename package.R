@@ -15,7 +15,7 @@ document()
 install("../kirkegaard", upgrade_dependencies = F)
 
 #load
-library(kirkegaard)
+pacman::p_load(kirkegaard, testthat)
 
 
 # installing from scratch -------------------------------------------------
