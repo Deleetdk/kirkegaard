@@ -100,6 +100,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' @param vline (chr sclr) Whether and how to plot vertical line(s) at some point(s. Set to NULL for none. Default is \code{mean}. Can also be a custom function. Beware, it should ignore values.
 #' @param clean_name (lgl) Wheter to call str_clean on the x axis label.
 #' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
+#' @param no_y_axis_values (lgl) Hide numbers on the Y axis?
 #' @export
 #' @return A ggplot2 object.
 #' @examples
@@ -114,7 +115,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
 #' #warns you if grouping variable has missing data
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
-GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T) {
+GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T, no_y_axis_values = T) {
 
   #check input
   data
@@ -235,6 +236,11 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   #clean name?
   if (clean_name) g = g + scale_x_continuous(name = str_clean(var))
+
+  #y axis values
+  if (no_y_axis_values) {
+    g = g + scale_y_continuous(breaks = NULL)
+  }
 
   return(g + ggplot2::theme_bw())
 }

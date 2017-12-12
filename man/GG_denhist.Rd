@@ -5,7 +5,7 @@
 \title{Histogram with an empirical density curve}
 \usage{
 GG_denhist(data, var = NULL, group = NULL, vline = mean,
-  binwidth = NULL, clean_name = T)
+  binwidth = NULL, clean_name = T, no_y_axis_values = T)
 }
 \arguments{
 \item{data}{(data.frame or something coercible into) A data frame or a vector.}
@@ -19,6 +19,8 @@ GG_denhist(data, var = NULL, group = NULL, vline = mean,
 \item{binwidth}{(num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
 
 \item{clean_name}{(lgl) Wheter to call str_clean on the x axis label.}
+
+\item{no_y_axis_values}{(lgl) Hide numbers on the Y axis?}
 }
 \value{
 A ggplot2 object.
