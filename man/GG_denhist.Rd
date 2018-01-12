@@ -5,7 +5,7 @@
 \title{Histogram with an empirical density curve}
 \usage{
 GG_denhist(data, var = NULL, group = NULL, vline = mean,
-  binwidth = NULL, clean_name = T, no_y_axis_values = T)
+  binwidth = NULL, clean_name = T, no_y_axis_values = T, alpha = 0.2)
 }
 \arguments{
 \item{data}{(data.frame or something coercible into) A data frame or a vector.}
@@ -21,6 +21,8 @@ GG_denhist(data, var = NULL, group = NULL, vline = mean,
 \item{clean_name}{(lgl) Wheter to call str_clean on the x axis label.}
 
 \item{no_y_axis_values}{(lgl) Hide numbers on the Y axis?}
+
+\item{alpha}{Alpha for density fit.}
 }
 \value{
 A ggplot2 object.

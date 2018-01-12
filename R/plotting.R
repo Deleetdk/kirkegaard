@@ -101,6 +101,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' @param clean_name (lgl) Wheter to call str_clean on the x axis label.
 #' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
 #' @param no_y_axis_values (lgl) Hide numbers on the Y axis?
+#' @param alpha Alpha for density fit.
 #' @export
 #' @return A ggplot2 object.
 #' @examples
@@ -115,7 +116,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
 #' #warns you if grouping variable has missing data
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
-GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T, no_y_axis_values = T) {
+GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T, no_y_axis_values = T, alpha = .2) {
 
   #check input
   data
@@ -146,7 +147,6 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   #rename and drop unused
   df = data[c(var, group)]
-  rm(data)
 
   #check if var is in df
   if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data frame!")
@@ -179,13 +179,13 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
     g = ggplot2::ggplot(df, aes_string(var)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                      colour="black", fill="white", binwidth = binwidth) +
-      geom_density(alpha=.2, fill="#FF6666") # Overlay with transparent density plot
+      geom_density(alpha = alpha, fill="#FF6666") # Overlay with transparent density plot
   } else {
 
     g = ggplot2::ggplot(df, aes_string(var, fill = group)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
                      colour="black", binwidth = binwidth, position = "dodge") +
-      geom_density(alpha=.2) # Overlay with transparent density plot
+      geom_density(alpha = alpha) # Overlay with transparent density plot
   }
 
 
@@ -237,12 +237,28 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
   #clean name?
   if (clean_name) g = g + scale_x_continuous(name = str_clean(var))
 
+  #theme
+  g = g + ggplot2::theme_bw()
+
   #y axis values
   if (no_y_axis_values) {
-    g = g + scale_y_continuous(breaks = NULL)
+    #dont show values
+    g = g + scale_y_continuous(labels = function(x) {
+      #first value as lower, last as higher
+      x[1] = "lower"
+      x[length(x)] = "higher"
+      #middle empty
+      x[-c(1, length(x))] = ""
+      x
+    })
+
+    #no ticks lines etc.
+    g = g + theme(panel.grid.major.y = element_blank(),
+                  panel.grid.minor.y = element_blank(),
+                  axis.ticks.y = element_blank())
   }
 
-  return(g + ggplot2::theme_bw())
+  g
 }
 
 #' Scatter plot with kmeans clustering
