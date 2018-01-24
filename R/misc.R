@@ -444,23 +444,6 @@ update_package = function(...) {
 }
 
 
-#' Install all dependent packages for Kirkegaard package. Warning: may take a while!
-#' @export
-#' @examples
-#' install_all_dependencies()
-install_all_dependencies = function(...) {
-  #pacman
-  if (require("pacman")) install.packages("pacman")
-
-  #CRAN packages
-  library(pacman)
-  p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, XLConnect, stringdist, geosphere, fields, rmngb, ape, glmnet)
-
-  #github packages
-  purrr::map(c("thomasp85/curry"), ~devtools::install_github(.))
-}
-
-
 
 #' Seq along rows
 #'

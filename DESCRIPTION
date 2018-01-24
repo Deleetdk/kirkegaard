@@ -30,12 +30,12 @@ Imports:
     ggrepel
 Suggests:
     fields,
-    XLConnect,
     rmngb,
     geosphere,
     ape,
     compute.es,
     testthat,
     metafor,
-    binom
+    binom,
+    readxl
 Roxygen: list(markdown = TRUE)
