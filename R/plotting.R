@@ -230,7 +230,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
       colors = gg_color_hue(length(unique(df[[group]])))
 
       #add it
-      g = g + geom_vline(xintercept = central_tendency, linetype="dashed", size=1, color = colors)
+      g = g + geom_vline(xintercept = central_tendency, linetype = "dashed", size=1, color = colors)
     }
   }
 
@@ -242,8 +242,12 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   #y axis values
   if (no_y_axis_values) {
+    #hack solution to find the highest density
+    gg = suppressMessages(ggplot_build(g))
+    max_density = gg$layout$panel_scales$y[[1]]$range$range[2]
+
     #dont show values
-    g = g + scale_y_continuous(labels = function(x) {
+    g = g + scale_y_continuous(breaks = c(0, max_density), labels = function(x) {
       #first value as lower, last as higher
       x[1] = "lower"
       x[length(x)] = "higher"
@@ -260,6 +264,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   g
 }
+
 
 #' Scatter plot with kmeans clustering
 #'
