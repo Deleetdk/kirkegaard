@@ -567,6 +567,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #subset
     df = df[c(var, groupvar)]
 
+    #enforce factor
+    df[[groupvar]] = as.factor(df[[groupvar]])
+
     #check for missing
     if (count_NA(df) > 0 ) {
       #remove missing?
