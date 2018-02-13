@@ -56,6 +56,7 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' Write data frame to clipboard
 #'
 #' A wrapper function to \code{\link{write.table}} for writing to the clipboard for pasting in a spreadsheet.
+#'
 #' @param x (any object that works with write.table) Something to write to the clipboard.
 #' @param digits (int scalar) A number of digits to round the data to.
 #' @param clean_names (log scalar) Whether to clean the names. Default=T.
@@ -65,7 +66,9 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' @param .rownames (lgl scalar) Whether to write rownames. Default yes. These are written to a column in front called .rownames.
 #' @param write_to_clipboard (lgl) Whether to write to the clipboard. Can be useful to disable in rare cases.
 #' @param return_modified (lgl) Whether to return the modified input instead of the original. Useful if one wants to modify it further.
+#' @param na (chr) How to write `NA`s.
 #' @param capitalize_dimnames (lgl) Whether to capitalize the first letter in the dimnames.
+#'
 #' @export
 #' @examples
 #' iris[-5] %>% cor() %>% write_clipboard()
@@ -82,7 +85,8 @@ write_clipboard.data.frame = function(x,
                                       .rownames = T,
                                       write_to_clipboard = interactive(),
                                       return_modified = F,
-                                      capitalize_dimnames = T) {
+                                      capitalize_dimnames = T,
+                                      na = "") {
 
   #round
   x_orig = x
@@ -91,9 +95,6 @@ write_clipboard.data.frame = function(x,
   #format if desired
   if (pad_digits) {
     x = format(x, nsmall = digits)
-
-    #recode "NAs" as empty strings
-    x[] = lapply(x, str_detect_replace, pattern = " *NA", replacement = "")
   }
 
   #clean
@@ -132,7 +133,7 @@ write_clipboard.data.frame = function(x,
     #windows is easy!
     if (Sys.info()['sysname'] %in% c("Windows")) {
       #just write as normal
-      write.table(x_modded, "clipboard", sep = "\t", na = "", row.names = F)
+      write.table(x_modded, "clipboard", sep = "\t", na = na, row.names = F)
     } else {
       #for non-windows, try xclip approach
       #https://stackoverflow.com/a/10960498/3980197
@@ -143,7 +144,7 @@ write_clipboard.data.frame = function(x,
         }
         con <- pipe("xclip -selection c", "w")
         on.exit(close(con))
-        write.table(x, con, sep = "\t", na = "", row.names = F)
+        write.table(x, con, sep = "\t", na = na, row.names = F)
       }
 
       tryCatch({
