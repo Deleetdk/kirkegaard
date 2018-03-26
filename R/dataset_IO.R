@@ -76,6 +76,9 @@ write_clipboard <- function(...) UseMethod("write_clipboard")
 #' #does not pad integers
 #' test_df = data.frame(int = 1:5, num = rnorm(5))
 #' test_df %>% write_clipboard()
+#' #removes list columns
+#' test_df$lc = list(1:3)
+#' test_df %>% write_clipboard()
 write_clipboard.data.frame = function(x,
                                       digits = 2,
                                       clean_names = T,
@@ -88,13 +91,18 @@ write_clipboard.data.frame = function(x,
                                       capitalize_dimnames = T,
                                       na = "") {
 
+  #remove list columns
+  list_cols = map_lgl(x, is.list)
+  if (any(list_cols)) message(glue::glue("List columns were removed because they cannot be easily transformed to rectangular format. Colnames: {stringr::str_c(names(x[list_cols]), collapse = ', ')}"))
+  x = x[!list_cols]
+
   #round
   x_orig = x
   x = as.data.frame(x) %>% df_round(digits)
 
   #format if desired
   if (pad_digits) {
-    x = format(x, nsmall = digits)
+    x = format(x, nsmall = digits, digits = digits)
   }
 
   #clean

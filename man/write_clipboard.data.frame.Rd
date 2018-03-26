@@ -41,4 +41,7 @@ iris \%>\% head() \%>\% miss_add_random() \%>\% write_clipboard()
 #does not pad integers
 test_df = data.frame(int = 1:5, num = rnorm(5))
 test_df \%>\% write_clipboard()
+#removes list columns
+test_df$lc = list(1:3)
+test_df \%>\% write_clipboard()
 }
