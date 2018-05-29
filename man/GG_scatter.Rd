@@ -6,7 +6,7 @@
 \usage{
 GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, alpha = 1,
   text_pos = NA, case_names = NULL, CI = 0.95, clean_names = T,
-  check_overlap = T, repel_names = F, ...)
+  check_overlap = T, repel_names = F, weight_as_size = T, ...)
 }
 \arguments{
 \item{df}{(data.frame) A data frame with variables.}
@@ -32,6 +32,10 @@ GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, alpha = 1,
 \item{check_overlap}{(lgl scalar) Whether to avoid overplotting names.}
 
 \item{repel_names}{(lgl) If using case names, should they be repelled?}
+
+\item{weight_as_size}{(lgl scalar) Whether to resize points by the weights.}
+
+\item{...}{}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a \code{ggplot2} object.
@@ -49,6 +53,7 @@ GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150, weight_as_size = F) #add weights with vector but dont resize
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species", case_names = "Species") #color points, but labels stay black
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1) #change alpha

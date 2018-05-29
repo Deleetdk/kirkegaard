@@ -304,6 +304,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #'
 #' Plots a scatterplot with a regression line and correlation information. Returns a `ggplot2` object.
 #' @details Internally uses the ad hoc variables `.weights`, `.label` and `.color`. If you name your variables these, then you will get odd problems.
+#'
 #' @param df (data.frame) A data frame with variables.
 #' @param x_var (chr scalar) X variable string.
 #' @param y_var (chr scalar) Y variable string.
@@ -315,7 +316,10 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param CI (num scalar) Confidence interval as a fraction.
 #' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean().
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
+#' @param weight_as_size (lgl scalar) Whether to resize points by the weights.
 #' @param repel_names (lgl) If using case names, should they be repelled?
+#' @param ...
+#'
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
@@ -327,6 +331,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150, weight_as_size = F) #add weights with vector but dont resize
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species", case_names = "Species") #color points, but labels stay black
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1) #change alpha
@@ -342,6 +347,7 @@ GG_scatter = function(df,
                       clean_names = T,
                       check_overlap = T,
                       repel_names = F,
+                      weight_as_size = T,
                       ...) {
 
   arg_list = list(...)
@@ -471,6 +477,14 @@ GG_scatter = function(df,
   text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
                          gp = grid::gpar(fontsize = 11))
 
+  #prepare sizes
+  # if (size_as_weight & !is.null(weights)) {
+  #   df$.size = df$.weights
+  # } else {
+  #   #if no weights or don't resize, use 1
+  #   df$.size = 1
+  # }
+
   #plot!
   #4 options due to weights and coloring params
   if (is.null(color)) {
@@ -478,18 +492,31 @@ GG_scatter = function(df,
       g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
         geom_point(alpha = alpha)
     } else {
-      g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
-        geom_point(aes(size = .weights), alpha = alpha) +
-        scale_size_continuous(guide = F)
+      #weight as size?
+      if (weight_as_size) {
+        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+          geom_point(aes(size = .weights), alpha = alpha) +
+          scale_size_continuous(guide = F)
+      } else {
+        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+          geom_point(alpha = alpha)
+      }
+
     }
   } else {
     if (is.null(weights)) {
       g = ggplot2::ggplot(df, aes_string(x_var, y_var, color = ".color")) +
         geom_point(alpha = alpha)
     } else {
-      g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
-        geom_point(aes(size = .weights), alpha = alpha) +
-        scale_size_continuous(guide = F)
+      if (weight_as_size) {
+        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
+          geom_point(aes(size = .weights), alpha = alpha) +
+          scale_size_continuous(guide = F)
+      } else {
+        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
+          geom_point(alpha = alpha)
+      }
+
     }
   }
 
