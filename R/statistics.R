@@ -1065,6 +1065,7 @@ wtd_sum = function(x, w = NULL, error=F) {
 #' @param w Vector of weights
 #' @param probs Vector of probabilities
 #' @param na.rm Ignore missing data?
+#' @export
 wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
   x <- as.numeric(as.vector(x))
   w <- as.numeric(as.vector(w))
@@ -1101,6 +1102,7 @@ wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
   return(result)
 }
 
+
 #' Weighted median
 #'
 #' Function copied from **spatstat** package.
@@ -1108,6 +1110,7 @@ wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
 #' @param x Vector of values
 #' @param w Vector of weights
 #' @param na.rm Ignore missing data?
+#' @export
 wtd_median <- function(x, w, na.rm=TRUE) {
   unname(wtd_quantile(x, probs=0.5, w=w, na.rm=na.rm))
 }
