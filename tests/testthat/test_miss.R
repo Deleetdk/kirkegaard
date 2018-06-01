@@ -82,3 +82,12 @@ test_that("miss_amount", {
   expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname, c(.42, 1, .10))
 })
 
+
+# miss_by_group -----------------------------------------------------------
+
+test_that("miss_amount", {
+  expect_s3_class(test_data %>% miss_by_group("Species"), "data.frame")
+
+  expect_error(test_data %>% miss_by_group("abc"), "`grouping_vars`")
+  expect_error(test_data %>% miss_by_group("Species", "abc"), "`vars`")
+})

@@ -395,3 +395,44 @@ miss_filter = function(data, missing = 0, reverse = F) {
   if (!reverse) return(data[miss_by_case(data) <= missing, ])
   data[miss_by_case(data, reverse = T) >= missing, ]
 }
+
+
+# examine data availability -----------------------------------------------
+
+#' Calculate proportion missing data by group variables
+#'
+#' @param data Data frame
+#' @param grouping_vars Names of grouping variables
+#' @param vars Names of data variables
+#'
+#' @return A data frame
+#' @export
+miss_by_group = function(data, grouping_vars, vars = NULL) {
+  # browser()
+  data
+  grouping_vars
+  #vars in data
+  assertthat::assert_that(all(vars %in% names(data)), msg = "Some `vars` were not in `data`.")
+  assertthat::assert_that(all(grouping_vars %in% names(data)), msg = "Some `grouping_vars` were not in `data`.")
+
+  #if no data vars given, assume everything else than grouping
+  if (is.null(vars)) {
+    vars = setdiff(names(data), grouping_vars)
+  } else {
+    assertthat::assert_that(all(grouping_vars %in% names(data)))
+  }
+
+  data[c(grouping_vars, vars)] %>%
+    plyr::ddply(grouping_vars, function(d) {
+      y = data_frame(
+        n = nrow(d)
+      )
+
+      #loop and add
+      for (v in vars) {
+        y[[v]] = mean(!is.na(d[[v]]))
+      }
+
+      y
+    })
+}
