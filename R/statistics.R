@@ -1064,24 +1064,40 @@ wtd_sum = function(x, w = NULL, error=F) {
 #' @param x Vector of values
 #' @param w Vector of weights
 #' @param probs Vector of probabilities
-#' @param na.rm Ignore missing data?
 #' @export
-wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
+wtd_quantile <- function(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25)) {
+  #force data type
   x <- as.numeric(as.vector(x))
   w <- as.numeric(as.vector(w))
-  if(anyNA(x) || anyNA(w)) {
+
+  #all NA? return NA
+  if (all(is.na(x))) return(NA_real_)
+
+  #reduce according to NA
+  if (anyNA(x) || anyNA(w)) {
     ok <- !(is.na(x) | is.na(w))
+
+    #no data remaining?
+    if (length(ok) == 0) stop("No non-missing data", call. = FALSE)
+
+    #subset
     x <- x[ok]
     w <- w[ok]
   }
+
+  #negative weights?
   stopifnot(all(w >= 0))
-  if(all(w == 0)) stop("All weights are zero", call.=FALSE)
-  #'
+
+  #zero weights?
+  if (all(w == 0)) stop("All weights are zero", call. = FALSE)
+
+  #calculation code
   oo <- order(x)
   x <- x[oo]
   w <- w[oo]
-  Fx <- cumsum(w)/sum(w)
-  #'
+  Fx <- cumsum(w) / sum(w)
+
+  #
   result <- numeric(length(probs))
   for(i in seq_along(result)) {
     p <- probs[i]
@@ -1099,6 +1115,7 @@ wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
     }
   }
   names(result) <- paste0(format(100 * probs, trim = TRUE), "%")
+
   return(result)
 }
 
@@ -1109,10 +1126,9 @@ wtd_quantile <- function(x, w, probs=seq(0,1,0.25), na.rm=TRUE) {
 #'
 #' @param x Vector of values
 #' @param w Vector of weights
-#' @param na.rm Ignore missing data?
 #' @export
-wtd_median <- function(x, w, na.rm=TRUE) {
-  unname(wtd_quantile(x, probs=0.5, w=w, na.rm=na.rm))
+wtd_median <- function(x, w = rep(1, length(x))) {
+  unname(wtd_quantile(x, probs = 0.5, w = w))
 }
 
 

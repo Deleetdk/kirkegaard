@@ -4,7 +4,7 @@
 \alias{wtd_quantile}
 \title{Weighted quantile}
 \usage{
-wtd_quantile(x, w, probs = seq(0, 1, 0.25), na.rm = TRUE)
+wtd_quantile(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25))
 }
 \arguments{
 \item{x}{Vector of values}
@@ -12,8 +12,6 @@ wtd_quantile(x, w, probs = seq(0, 1, 0.25), na.rm = TRUE)
 \item{w}{Vector of weights}
 
 \item{probs}{Vector of probabilities}
-
-\item{na.rm}{Ignore missing data?}
 }
 \description{
 Function copied from \strong{spatstat} package.

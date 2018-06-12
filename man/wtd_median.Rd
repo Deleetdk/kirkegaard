@@ -4,14 +4,12 @@
 \alias{wtd_median}
 \title{Weighted median}
 \usage{
-wtd_median(x, w, na.rm = TRUE)
+wtd_median(x, w = rep(1, length(x)))
 }
 \arguments{
 \item{x}{Vector of values}
 
 \item{w}{Vector of weights}
-
-\item{na.rm}{Ignore missing data?}
 }
 \description{
 Function copied from \strong{spatstat} package.
