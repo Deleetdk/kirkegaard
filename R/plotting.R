@@ -242,9 +242,10 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   #y axis values
   if (no_y_axis_values) {
+
     #hack solution to find the highest density
     gg = suppressMessages(ggplot_build(g))
-    max_density = gg$layout$panel_scales$y[[1]]$range$range[2]
+    max_density = gg$layout$panel_scales_y[[1]]$range$range[2]
 
     #dont show values
     g = g + scale_y_continuous(breaks = c(0, max_density), labels = function(x) {
@@ -262,7 +263,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
                   axis.ticks.y = element_blank())
   }
 
-  g
+  g + ylab("Density")
 }
 
 
@@ -849,3 +850,4 @@ GG_save_pdf = function(list, filename) {
 
   invisible(NULL)
 }
+
