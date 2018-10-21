@@ -7,12 +7,12 @@ pacman::p_load(devtools, roxygen2, stringr, testthat)
 options(digits = 2, scipen = 2)
 
 #make documentation
-document()
+devtools::document()
 
 #install
 #for some weird reason this sometimes begins reinstalling packages for no reason I can find
 #install("../kirkegaard")
-install("../kirkegaard", upgrade_dependencies = F)
+devtools::install("../kirkegaard", upgrade_dependencies = F)
 
 #load
 pacman::p_load(kirkegaard, testthat)
