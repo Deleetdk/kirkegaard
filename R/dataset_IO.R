@@ -91,14 +91,19 @@ write_clipboard.data.frame = function(x,
                                       capitalize_dimnames = T,
                                       na = "") {
 
+  #save orig
+  x_orig = x
+
+  #change type
+  x = as.data.frame(x_orig)
+
   #remove list columns
   list_cols = map_lgl(x, is.list)
   if (any(list_cols)) message(glue::glue("List columns were removed because they cannot be easily transformed to rectangular format. Colnames: {stringr::str_c(names(x[list_cols]), collapse = ', ')}"))
   x = x[!list_cols]
 
   #round
-  x_orig = x
-  x = as.data.frame(x) %>% df_round(digits)
+  x = df_round(x, digits)
 
   #format if desired
   if (pad_digits) {
