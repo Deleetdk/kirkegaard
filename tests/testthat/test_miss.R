@@ -29,11 +29,9 @@ test_that("count_NA", {
 df = data.frame(1:10, letters[1:10])
 set.seed(1)
 df = miss_add_random(df)
-#test inside the test_that call results in a weird rlang error
 
 test_that("miss_filter", {
-  #there is no error here, problem with testthat and rlang
-  expect_true(miss_filter(df) %>% nrow() %>% `==`(8))
+  expect_equivalent(miss_filter(df) %>% nrow(), 8)
 })
 
 

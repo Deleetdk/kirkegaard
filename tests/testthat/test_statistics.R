@@ -21,8 +21,7 @@ test_that("cor_matrix", {
 
   #test arguments
   expect_true(cor_matrix(iris, CI = .95) %>% is.character)
-  #there is no error here, problem with testthat and rlang
-  expect_true(all(cor_matrix(iris, CI = .95) %>% get_dims %>% `==`(c(4, 4))))
+  expect_true(all((cor_matrix(iris, CI = .95) %>% get_dims()) == (c(4, 4))))
   expect_true(cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character)
 })
 
