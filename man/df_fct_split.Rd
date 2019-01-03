@@ -4,8 +4,8 @@
 \alias{df_fct_split}
 \title{Split factors into multiple columns}
 \usage{
-df_fct_split(df, fcts, prefix = "", warn_unused_levels = T, type = "l",
-  rm_old = F)
+df_fct_split(df, fcts, prefix = "", warn_unused_levels = T,
+  type = "l", rm_old = F)
 }
 \arguments{
 \item{df}{(df) A aata frame.}

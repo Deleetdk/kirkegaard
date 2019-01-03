@@ -4,8 +4,8 @@
 \alias{split_into_n_columns}
 \title{Split data into n columns.}
 \usage{
-split_into_n_columns(data, split_times, pad_rows = T, include_rownames = T,
-  rownames_var = "name", include_colnames = T)
+split_into_n_columns(data, split_times, pad_rows = T,
+  include_rownames = T, rownames_var = "name", include_colnames = T)
 }
 \arguments{
 \item{data}{(data.frame, matrix, or something coercible into a matrix) The data to reshape.}

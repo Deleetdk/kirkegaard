@@ -5,8 +5,8 @@
 \title{Calculate pairwise distances for all pairs for all variables in a data.frame.}
 \usage{
 get_distances(df, dists = NULL, lat_var = NULL, lon_var = NULL,
-  distance_method = NULL, weights_var = NULL, weight_method = "harmonic",
-  auto_detect_dist_method = T)
+  distance_method = NULL, weights_var = NULL,
+  weight_method = "harmonic", auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

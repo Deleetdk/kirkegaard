@@ -4,9 +4,9 @@
 \alias{MOD_LASSO}
 \title{Repeatedly run glmnet.cv()}
 \usage{
-MOD_LASSO(data, dependent, predictors, weights_ = NULL, standardize = T,
-  runs = 100, nfolds = 10, alpha_ = 1, NA_ignore = T, seed = 1,
-  messages = T, progress = T)
+MOD_LASSO(data, dependent, predictors, weights_ = NULL,
+  standardize = T, runs = 100, nfolds = 10, alpha_ = 1,
+  NA_ignore = T, seed = 1, messages = T, progress = T)
 }
 \arguments{
 \item{data}{(data.frame) A data.frame with the data. Must contain dependent and predictor variables.}

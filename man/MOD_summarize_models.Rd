@@ -4,8 +4,8 @@
 \alias{MOD_summarize_models}
 \title{Summarize model coefficients}
 \usage{
-MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd", "mad",
-  "fraction_zeroNA"), include_intercept = F)
+MOD_summarize_models(df, digits = 3, desc = c("mean", "median", "sd",
+  "mad", "fraction_zeroNA"), include_intercept = F)
 }
 \arguments{
 \item{df}{A data frame with betas for predictors across models.}

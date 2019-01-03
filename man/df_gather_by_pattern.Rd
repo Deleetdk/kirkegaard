@@ -4,8 +4,8 @@
 \alias{df_gather_by_pattern}
 \title{Gather by pattern}
 \usage{
-df_gather_by_pattern(data, pattern, key_col = ".varying", id_col = ".id",
-  method = "pure_tidyr")
+df_gather_by_pattern(data, pattern, key_col = ".varying",
+  id_col = ".id", method = "pure_tidyr")
 }
 \arguments{
 \item{data}{(data.frame) A data.frame to tidy.}

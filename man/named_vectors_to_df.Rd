@@ -4,7 +4,8 @@
 \alias{named_vectors_to_df}
 \title{Reshape named vectors to a data.frame.}
 \usage{
-named_vectors_to_df(list, name_suffix = "_name", value_suffix = "_value")
+named_vectors_to_df(list, name_suffix = "_name",
+  value_suffix = "_value")
 }
 \arguments{
 \item{list}{(a list of vectors) The list of vectors.}

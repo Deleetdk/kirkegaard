@@ -6,7 +6,8 @@
 \usage{
 SAC_knsnr(df, dependent, predictor = NULL, k = 3, dists = NULL,
   lat_var = NULL, lon_var = NULL, weights_var = NULL,
-  distance_method = NULL, output = "scores", auto_detect_dist_method = T)
+  distance_method = NULL, output = "scores",
+  auto_detect_dist_method = T)
 }
 \arguments{
 \item{df}{A data.frame with variables.}

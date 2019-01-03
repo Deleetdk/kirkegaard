@@ -19,7 +19,7 @@ Depends:
     tibble
 License: GPL
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Imports:
     plyr,
     glmnet,

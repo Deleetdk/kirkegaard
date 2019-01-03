@@ -4,8 +4,8 @@
 \alias{averages}
 \title{Averages}
 \usage{
-averages(x, trim = 0.1, types = c("arithmetic", "geometric", "harmonic",
-  "mode", "median", "trimmed", "midrange"))
+averages(x, trim = 0.1, types = c("arithmetic", "geometric",
+  "harmonic", "mode", "median", "trimmed", "midrange"))
 }
 \arguments{
 \item{x}{(num vectr) A vector of values.}
