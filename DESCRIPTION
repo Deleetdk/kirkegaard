@@ -16,7 +16,8 @@ Depends:
     tidyr,
     magrittr,
     psych,
-    tibble
+    tibble,
+    metafor
 License: GPL
 LazyData: true
 RoxygenNote: 6.1.0
@@ -29,13 +30,8 @@ Imports:
     GPArotation,
     ggrepel
 Suggests:
-    fields,
-    rmngb,
-    geosphere,
-    ape,
     compute.es,
     testthat,
-    metafor,
     binom,
     readxl
 Roxygen: list(markdown = TRUE)
