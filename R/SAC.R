@@ -742,7 +742,7 @@ SAC_knsnr_partial = function(df, variables, k = 3, dists = NULL, lat_var = NULL,
                               auto_detect_dist_method=auto_detect_dist_method)
   }
 
-  wtd.cors(d_return, use = "p") %>% return
+  wtd.cors(d_return) %>% return
 }
 
 
