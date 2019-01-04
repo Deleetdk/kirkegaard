@@ -260,12 +260,15 @@ format_digits = function(x, digits = 2) {
 #'
 #' A wrapper for writeLines() and capture.output().
 #' @param filename (chr scalar) The filename of the file to write to. Default is "sessions_info.txt".
-#' @param print (logical scalar) Whether to also print the output. Default=FALSE.
+#' @param print (logical scalar) Whether to also print the output.
 #' @export
 #' @examples
 #' write_sessioninfo("session_info.txt", print = TRUE)
-write_sessioninfo = function(filename = "sessions_info.txt", print = FALSE) {
-  writeLines(capture.output(sessionInfo()), con = filename)
+write_sessioninfo = function(filename = "sessions_info.txt", print = T) {
+  y = capture.output(sessionInfo())
+  if (print) cat(paste(y, collapse = "\n"))
+  writeLines(y, con = filename)
+  invisible(y)
 }
 
 
