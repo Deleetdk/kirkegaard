@@ -424,7 +424,7 @@ miss_by_group = function(data, grouping_vars, vars = NULL) {
 
   data[c(grouping_vars, vars)] %>%
     plyr::ddply(grouping_vars, function(d) {
-      y = data_frame(
+      y = tibble(
         n = nrow(d)
       )
 

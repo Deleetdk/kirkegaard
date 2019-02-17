@@ -14,7 +14,7 @@
 #' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 #' meta_extract_data(meta)
 meta_extract_data = function(.rma) {
-  d = data_frame(
+  d = tibble(
     es = .rma$yi,
     var = .rma$vi,
     se = .rma$vi %>% sqrt,
@@ -63,14 +63,14 @@ GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
   }
 
   #extract main effect
-  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::tibble(es = .analysis$b %>% as.vector,
                               se = .analysis$se,
                               name = "Main effect",
                               meta = "meta"
                               )
 
   #horizontal space case
-  d_hline = tibble::data_frame(es = .analysis$b %>% as.vector,
+  d_hline = tibble::tibble(es = .analysis$b %>% as.vector,
                                se = .analysis$se,
                                name = "",
                                meta = "invis"
@@ -114,12 +114,12 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   se_z = qnorm(1 - (1-.CI)/2)
 
   #extract main effect
-  d_meta = tibble::data_frame(es = .analysis$b %>% as.vector,
+  d_meta = tibble::tibble(es = .analysis$b %>% as.vector,
                               se = .analysis$se
   )
 
   #extract effect sizes and SEs
-  d = tibble::data_frame(es = .analysis$yi,
+  d = tibble::tibble(es = .analysis$yi,
                          se = sqrt(.analysis$vi),
                          upper = d_meta$es + se_z * se,
                          lower = d_meta$es - se_z * se,
@@ -127,11 +127,11 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   )
 
   #calculate funnel
-  d_funnel = tibble::data_frame(se = seq(0, max(d$se)*1.1, length.out = 1000),
+  d_funnel = tibble::tibble(se = seq(0, max(d$se)*1.1, length.out = 1000),
                                 upper = d_meta$es + se * se_z,
                                 lower = d_meta$es - se * se_z)
 
-  d_polygon = tibble::data_frame(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
+  d_polygon = tibble::tibble(x = c(min(d_funnel$lower), d_meta$es, max(d_funnel$upper)),
                                  y = c(max(d_funnel$se), 0, max(d_funnel$se)))
 
   #plot
@@ -223,7 +223,7 @@ meta_pcurve = function(.analysis, p_cutoff = .05, print_plot = T, binom_method =
     dplyr::filter(p <= p_cutoff)
 
   #count by interval
-  p_bins = data_frame(
+  p_bins = tibble(
     bin = c(".01", ".02", ".03", ".04", ".05"),
     count = c(sum(is_between(d$p, a = 0, b = .015, include_upper = F)),
               sum(is_between(d$p, a = .015, b = .025, include_upper = F)),

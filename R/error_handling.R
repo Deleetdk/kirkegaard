@@ -202,7 +202,7 @@ try_else = function(expr, else. = NULL, silent = T) {
 #' retry_while_error(log(""), retry_interval = 0, max_time = 1, max_tries = Inf)
 retry_while_error = function(expr, retry_interval = 60, silent = F, max_tries = 10, max_time = Inf) {
   #begin error log
-  error_log = data_frame(
+  tibble = data_frame(
     datetime = lubridate::as_datetime(character()),
     error = character()
   )
@@ -226,7 +226,7 @@ retry_while_error = function(expr, retry_interval = 60, silent = F, max_tries = 
     #error?
     if (is_error(trial)) {
       #make error data frame
-      this_error = data_frame(
+      this_error = tibble(
         datetime = lubridate::now(),
         error = trial[1]
       )

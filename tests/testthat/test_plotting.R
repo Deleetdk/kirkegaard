@@ -7,7 +7,7 @@ context("GG_")
 #convenience function for adding text to ggplots
 #hard to do formally
 
-base_plot = ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+base_plot = ggplot(tibble(x = 0, y = 0), aes(x, y)) +
   geom_point()
 
 test_that("text", {

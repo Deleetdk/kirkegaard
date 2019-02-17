@@ -1420,7 +1420,7 @@ df_legalize_names = function(df, func = str_legalize) {
 #' @return A vector.
 #' @export
 #' @examples
-#' data_frame(
+#' tibble(
 #' a = c(1, NA, NA),
 #' b = c(-1, 2, NA),
 #' c = c(-5, -9, 3)

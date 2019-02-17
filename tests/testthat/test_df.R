@@ -253,7 +253,7 @@ test_that("df_residualize", {
 
 
 test_that("df_merge_cols", {
-  expect_equivalent(data_frame(
+  expect_equivalent(tibble(
     a = c(1, NA, NA),
     b = c(-1, 2, NA),
     c = c(-5, -9, 3)

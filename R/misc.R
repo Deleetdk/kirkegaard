@@ -392,7 +392,7 @@ table2 = function(x, prop = F, include_NA = T, sort_descending = T) {
   tbl = table(x, useNA = NA_param)
 
   #as data frame
-  d = tibble::data_frame("Group" = names(tbl),
+  d = tibble::tibble("Group" = names(tbl),
                          "Count" = as.numeric(tbl)
   )
 

@@ -18,7 +18,7 @@ A vector.
 Combines columns by filling in missing values with values from other columns in a designated order.
 }
 \examples{
-data_frame(
+tibble(
 a = c(1, NA, NA),
 b = c(-1, 2, NA),
 c = c(-5, -9, 3)

@@ -12,12 +12,12 @@
 #' @return The outfrom from [ggplot::annotation_custom()].
 #' @examples
 #' #make a plot with a point at 0,0, and large red text in middle
-#' ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+#' ggplot(tibble(x = 0, y = 0), aes(x, y)) +
 #'   geom_point() +
 #'   GG_text("red test", text_pos = "mm", font_color = "red", font_size = 20)
 #'
 #' #manually making the text position
-#' ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+#' ggplot(tibble(x = 0, y = 0), aes(x, y)) +
 #'   geom_point() +
 #'   GG_text("blue test", text_pos = "manual", font_color = "blue", font_size = 20, x = .25, y = .75)
 GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", ...) {

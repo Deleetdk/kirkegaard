@@ -5,7 +5,7 @@ context("MOD_")
 
 #test with all types of preds
 set.seed(1)
-tmp_data = data = data_frame(x_num = rnorm(100),
+tmp_data = tibble(x_num = rnorm(100),
                              x_lgl = rbinom(100, 1, .5) %>% as.logical(),
                              x_fct = factor(sample(letters[1:3], size = 100, replace = T)),
                              x_ord = ordered(sample(1:3, size = 100, replace = T)),

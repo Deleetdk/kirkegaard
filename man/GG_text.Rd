@@ -29,12 +29,12 @@ Builds a grob using \code{\link[grid:grobTree]{grid::grobTree()}} and \code{\lin
 }
 \examples{
 #make a plot with a point at 0,0, and large red text in middle
-ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+ggplot(tibble(x = 0, y = 0), aes(x, y)) +
   geom_point() +
   GG_text("red test", text_pos = "mm", font_color = "red", font_size = 20)
 
 #manually making the text position
-ggplot(data_frame(x = 0, y = 0), aes(x, y)) +
+ggplot(tibble(x = 0, y = 0), aes(x, y)) +
   geom_point() +
   GG_text("blue test", text_pos = "manual", font_color = "blue", font_size = 20, x = .25, y = .75)
 }
