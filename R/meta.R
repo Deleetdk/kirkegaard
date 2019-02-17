@@ -151,7 +151,6 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
     gg = gg +
       geom_errorbarh(data = d, aes(xmin = es - se_z * se,
                                    xmax = es + se_z * se,
-                                   x = es,
                                    y = se))
   }
 
