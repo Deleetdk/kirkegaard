@@ -351,7 +351,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
   }
 
   #impute
-  data = VIM::irmi(data, noise = noise)
+  data = VIM::irmi(data, noise = noise, imp_var = F)
 
   #add back
   if (exclusion) {
