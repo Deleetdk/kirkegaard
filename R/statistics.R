@@ -182,7 +182,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
         r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
-        r_n = psych::count.pairwise(data[row], data[col])
+        r_n = psych::pairwiseCount(data[row], data[col])
 
         #format cor
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
@@ -210,7 +210,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
         r_obj[1] %<>% winsorise(1, -1)
 
         #sample size
-        r_n = psych::count.pairwise(data[row], data[col])
+        r_n = psych::pairwiseCount(data[row], data[col])
 
         #rounding
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
@@ -239,7 +239,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           r_obj[1] %<>% winsorise(1, -1)
 
           #sample size
-          r_n = psych::count.pairwise(data[row], data[col])
+          r_n = psych::pairwiseCount(data[row], data[col])
 
           #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
@@ -266,7 +266,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           r_obj[1] %<>% winsorise(1, -1)
 
           #n
-          r_n = psych::count.pairwise(data[row], data[col])
+          r_n = psych::pairwiseCount(data[row], data[col])
 
           #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
