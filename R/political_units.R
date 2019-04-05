@@ -49,8 +49,9 @@ pu_translate = function(x,
                         stringdist_params = NULL,
                         standardize_name = F,
                         add_parens = c("ISO3", "ISO2", "name")) {
+
   #check input
-  is_(x, class = "character", error_on_false = T)
+  x = as.character(x) #forces to right type from whatever input was
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
   is_(reverse, class = "logical", error_on_false = T, size = 1)
   is_(superunit_recursive, class = "logical", error_on_false = T, size = 1)
@@ -59,6 +60,12 @@ pu_translate = function(x,
   is_(standardize_name, class = "logical", error_on_false = T, size = 1)
   if (!is.null(stringdist_params)) is_(stringdist_params, class = "list", error_on_false = T)
   if (superunit_recursive) stop("Not implemented yet. But the idea is that one can pass e.g. 'USA' and be able to match county names as well as states.")
+
+  #NAs
+  na_pos = which(is.na(x))
+  x = na.omit(x)
+  #if empty, we just need to return the NAs
+  if (length(x) == 0) return(restore_NAs(x, na_pos))
 
   #impossible settings
   if (standardize_name & reverse) stop("Cannot both standardize names and reverse the translations!")
@@ -140,7 +147,7 @@ pu_translate = function(x,
 
       #if zero
       if (messages>0) message(sprintf("No exact match: %s", s))
-      return(NA)
+      return(NA_character_)
     })
   }
 
@@ -187,7 +194,7 @@ pu_translate = function(x,
 
   #return?
   #if either not using fuzzy matching or doing back translations or no missing matches, return
-  if (!fuzzy | reverse) return(x_exact)
+  if (!fuzzy | reverse) return(restore_NAs(x_exact, na_pos))
 
   #fuzzy matching the remaining names
   x_noexact = is.na(x_exact)
@@ -237,6 +244,11 @@ pu_translate = function(x,
   }
 
   #else return
-  x_combined
+  restore_NAs(x_combined, na_pos)
 }
 
+# pu_translate(NA)
+# pu_translate(rep(NA, 5))
+# pu_translate(c("Denmark", NA, "Sweden"))
+# pu_translate(c("Dennmark", NA, "Sueden"))
+# pu_translate(c("Dennmark", NA, "Sueden")) %>% pu_translate(reverse=T)

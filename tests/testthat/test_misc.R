@@ -2,6 +2,18 @@
 
 context("misc")
 
+
+# restore_NAs -------------------------------------------------------------
+
+test_that("restore_NAs", {
+  expect_equivalent(restore_NAs(c(1, 3, 5), c()), c(1, 3, 5))
+  expect_equivalent(restore_NAs(c(1, 3, 5), 4:10), c(1, 3, 5, rep(NA, 7)))
+  expect_equivalent(restore_NAs(c(1, 3, 5), 1:5), c(rep(NA, 5), 1, 3, 5))
+  expect_equivalent(restore_NAs(c(1, 3, 5), c(2, 4, 6), 6), c(1, NA, 3, NA, 5, NA))
+  expect_equivalent(restore_NAs(c(1, 3, 5), c(2, 4, 6)), c(1, NA, 3, NA, 5, NA))
+})
+
+
 # find_duplicates ---------------------------------------------------------
 
 test_that("find_duplicates",

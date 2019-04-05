@@ -1,6 +1,51 @@
 ## Misc other functions
 
 
+#' Restore NAs in vector
+#'
+#' Restore NAs in a vector from known positions. Useful for dealing with NAs in functions and predictions.
+#'
+#' @param x Non-NA values
+#' @param na_pos Positions of NA, either logical of total length, or integer indexes
+#' @param len Length of vector if known (optional)
+#'
+#' @return A vector with NAs restored in place
+#' @export
+#'
+#' @examples
+#' restore_NAs(c(1, 3, 5), c())
+#' restore_NAs(c(1, 3, 5), 4:10)
+#' restore_NAs(c(1, 3, 5), 1:5)
+#' restore_NAs(c(1, 3, 5), c(2, 4, 6), 6)
+#' restore_NAs(c(1, 3, 5), c(2, 4, 6))
+restore_NAs = function(x, na_pos, len=NULL) {
+  #no NAs? return as is
+  if (length(na_pos) == 0) return(x)
+
+  #if length known
+  #then easy method
+  if (!is.null(len)) {
+    y = rep(NA, len)
+    if (is.logical(na_pos)) na_pos = which(na_pos)
+    y[(setdiff(seq_along(y), na_pos))] = x
+    return(y)
+  }
+
+  #if not, more annoying
+  #if NA is logical, then easy
+  if (is.logical(na_pos)) {
+    len = length(na_pos)
+    na_pos = which(na_pos)
+    return(restore_NAs(x, na_pos, len))
+  }
+
+  #else
+  len = length(x) + length(na_pos)
+  restore_NAs(x, na_pos, len)
+}
+
+
+
 ##Combines lower and upper part of two matrices into one. Additional option for the diagonal.
 #Credit to: http://stackoverflow.com/questions/13115720/how-do-i-combine-the-upper-tri-of-one-matrix-with-the-lower-tri-of-another-in-r
 #' Combine upper and lower part of a matrix.
