@@ -358,3 +358,19 @@ test_that("df_legalize_names", {
   expect_false(df_legalize_names(iris_bad4) %>% names() %>% {any(duplicated(.))})
 })
 
+
+# df_var_table ------------------------------------------------------------
+#read some SPSS data
+
+spss_data = haven::read_sav(system.file("extdata", "survey.sav", package = "kirkegaard"))
+spss_data_table = df_var_table(spss_data)
+
+test_that("df_var_table", {
+  #we got a data frame?
+  expect_s3_class(spss_data_table, "data.frame")
+
+  #test specific data features
+  expect_true(any(spss_data_table$miss_prop > 0))
+  expect_true(any(spss_data_table$classes == "numeric"))
+  expect_true(any(is.na(spss_data_table$label)))
+})

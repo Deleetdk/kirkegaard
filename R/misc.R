@@ -542,3 +542,34 @@ unduplicate = function(x) {
   x[!duplicated(x)]
 }
 
+#' Make variable table
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' df_var_table(iris)
+df_var_table = function(x) {
+  tibble(
+    #name
+    var_name = names(x),
+
+    #label if given
+    label = map_chr(x, function(x) {
+      y = attr(x, "label")
+      if (is.null(y)) return(NA_character_)
+      if (length(y) > 1) return(str_glue("{y}={names(y)}") %>% str_c(collapse = ", "))
+      y[1]
+    }),
+
+    #sample size
+    n = miss_by_var(x, reverse = T),
+    miss_prop = miss_by_var(x, prop = T),
+
+    #type
+    type = purrr::map_chr(x, typeof),
+    classes = purrr::map_chr(x, ~class(.) %>% str_c(collapse = ", "))
+  )
+}
