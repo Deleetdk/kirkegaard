@@ -15,11 +15,12 @@ test_that("miss_plot", {
   expect_is(miss_plot(test_data, reverse = T), "ggplot")
 })
 
-# count_NA ---------------------------------------------------
+# miss_count ---------------------------------------------------
 
-test_that("count_NA", {
-  expect_true(count_NA(c(1:10, rep(NA, 5), 1:10)) == 5)
-  expect_true(count_NA(c(1:10, rep(NA, 5), 1:10), reverse = T) == 20)
+test_that("miss_count", {
+  expect_true(miss_count(c(1:10, rep(NA, 5), 1:10)) == 5)
+  expect_true(miss_count(c(1:10, rep(NA, 5), 1:10), reverse = T) == 20)
+  expect_true(miss_count(c(1:10, rep(NA, 5), 1:10), reverse = T, prop = T) == 0.8)
 })
 
 

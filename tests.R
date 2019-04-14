@@ -30,7 +30,7 @@ if (F) {
     Sys.sleep(.5)
 
     stopifnot({
-      read.delim("clipboard") %>% count_NA() != 0 #make sure there are NAs in the output too
+      read.delim("clipboard") %>% miss_count() != 0 #make sure there are NAs in the output too
     })
   }
 }
@@ -479,7 +479,7 @@ stopifnot({
   percent_cutoff(iris$Sepal.Length, cutoffs = 5, digits = 2, below = T, inclusive = F) == .15
 
   #test if NA cause problems
-  count_NA(percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3)) == 0
+  miss_count(percent_cutoff(c(1:3, NA, NaN, 4:6), cutoffs = 3)) == 0
 })
 
 
@@ -525,12 +525,12 @@ stopifnot({
 
 stopifnot({
   #tests
-  conditional_change(1:10, func_str = "<5", new_value = NA) %>% count_NA == 4
-  conditional_change(1:10, func_str = "> 9", new_value = NA) %>% count_NA == 1
-  conditional_change(data.frame(1:10), func_str = "> 9", new_value = NA) %>% count_NA == 1
+  conditional_change(1:10, func_str = "<5", new_value = NA) %>% miss_count == 4
+  conditional_change(1:10, func_str = "> 9", new_value = NA) %>% miss_count == 1
+  conditional_change(data.frame(1:10), func_str = "> 9", new_value = NA) %>% miss_count == 1
   conditional_change(list(1:10, 1:10), func_str = "> 9", new_value = NA) %>% sapply(is.na) %>% sum == 2
-  conditional_change(matrix(1:9, nrow = 3), func_str = "> 5", new_value = NA) %>% count_NA == 4
-  conditional_change(c(1:10, NA), func_str = "<5", new_value = NA) %>% count_NA == 5
+  conditional_change(matrix(1:9, nrow = 3), func_str = "> 5", new_value = NA) %>% miss_count == 4
+  conditional_change(c(1:10, NA), func_str = "<5", new_value = NA) %>% miss_count == 5
 
   #errors
   throws_error(conditional_change(1:10, func_str = "!1!", new_value = NA))
@@ -611,8 +611,8 @@ stopifnot({
 #fills in values so that a vector reaches a desired length.
 
 stopifnot({
-  fill_in(1:5, 10) %>% count_NA == 5
-  fill_in(1:5, 5) %>% count_NA == 0
+  fill_in(1:5, 10) %>% miss_count == 5
+  fill_in(1:5, 5) %>% miss_count == 0
   fill_in(1:5, 10, value = -1) == c(1:5, rep(-1, 5))
 })
 

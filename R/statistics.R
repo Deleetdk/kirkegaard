@@ -956,8 +956,8 @@ wtd_sd = function(x, w = NULL, sample = T, error = F) {
   diffs_sq = (x - wtd_mean)^2
 
   #weighted variance
-  if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (count_NA(x, reverse = T) - 1)
-  if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / count_NA(x, reverse = T)
+  if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (miss_count(x, reverse = T) - 1)
+  if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / miss_count(x, reverse = T)
 
   #weighted sd
   sqrt(wtd_var)
@@ -1050,7 +1050,7 @@ wtd_sum = function(x, w = NULL, error=F) {
   #calculate
   x_w = sum(d$x * d$w, na.rm = T) # sum of x * w
   w_sum = sum(d$w, na.rm = T) # sum of w
-  (x_w/w_sum) * count_NA(d$x, reverse = T) #weighted sum
+  (x_w / w_sum) * miss_count(d$x, reverse = T) #weighted sum
 }
 
 #the two below functions are from another package, spatstat
@@ -1167,8 +1167,8 @@ standardize = function(x, w = NULL, robust = F, sample = T) {
     diffs_sq = (x - wtd_mean)^2
 
     #weighted variance
-    if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (count_NA(x, reverse = T) - 1)
-    if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / count_NA(x, reverse = T)
+    if (sample) wtd_var = sum(diffs_sq, na.rm = T) / (miss_count(x, reverse = T) - 1)
+    if (!sample) wtd_var = sum(diffs_sq, na.rm = T) / miss_count(x, reverse = T)
 
     #weighted sd (sample)
     wtd_sd = sqrt(wtd_var)

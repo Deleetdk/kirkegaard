@@ -599,7 +599,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df[[groupvar]] = as.factor(df[[groupvar]])
 
     #check for missing
-    if (count_NA(df) > 0 ) {
+    if (miss_count(df) > 0 ) {
       #remove missing?
       if (na.rm) {
         df = miss_filter(df, missing = 0)
@@ -683,7 +683,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df = df[c(var, groupvar, subgroupvar)]
 
     #check for missing
-    if (count_NA(df) > 0 ) {
+    if (miss_count(df) > 0 ) {
       #remove missing?
       if (na.rm) {
         df = miss_filter(df, missing = 0)

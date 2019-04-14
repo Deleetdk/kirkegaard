@@ -9,11 +9,23 @@
 #' @return An integer.
 #' @export
 #' @examples
-#' m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow=3)
-#' count_NA(m)
-count_NA = function(x, reverse = F) {
-  if (reverse) return(sum(!is.na(x)))
-  sum(is.na(x))
+#' m = matrix(c(NA, 1:3, NA, 4:6, NA), nrow = 3)
+#' miss_count(m)
+#' miss_count(m, reverse = T)
+#' miss_count(m, prop = T)
+#' miss_count(m, reverse = T, prop = T)
+miss_count = function(x, reverse = F, prop = F) {
+
+  if (!reverse) {
+    y = sum(is.na(x))
+  } else {
+   y = sum(!is.na(x))
+  }
+
+  #prop
+  if (prop) return(y / length(x))
+
+  y
 }
 
 
@@ -24,11 +36,18 @@ count_NA = function(x, reverse = F) {
 #' @param reverse (lgl) Count non-NA instead.
 #' @export
 #' @examples
-#' miss_by_case(miss_add_random(iris))
 #' miss_by_case(iris)
-#' miss_by_case(iris, reverse = T)
-miss_by_case = function(x, reverse = F){
-  apply(x, 1, count_NA, reverse = reverse)
+#' miss_by_case(miss_add_random(iris))
+#' miss_by_case(miss_add_random(iris), reverse = T)
+#' miss_by_case(miss_add_random(iris), prop = T)
+miss_by_case = function(x, reverse = F, prop = F){
+  #count missing data by row
+  y = apply(x, 1, miss_count, reverse = reverse)
+
+  #if desired, convert to fractions
+  if (prop) return(y / ncol(x))
+
+  y
 }
 
 
@@ -39,11 +58,18 @@ miss_by_case = function(x, reverse = F){
 #' @param reverse (lgl) Count non-NA instead.
 #' @export
 #' @examples
-#' miss_by_var(miss_add_random(iris))
 #' miss_by_var(iris)
-#' miss_by_var(iris, reverse = T)
-miss_by_var = function(x, reverse = F){
-  apply(x, 2, count_NA, reverse = reverse)
+#' miss_by_var(miss_add_random(iris))
+#' miss_by_var(miss_add_random(iris), reverse = T)
+#' miss_by_var(miss_add_random(iris), prop = T)
+miss_by_var = function(x, reverse = F, prop = F){
+  #count missing data by column
+  y = apply(x, 2, miss_count, reverse = reverse)
+
+  #if desired, convert to fractions
+  if (prop) return(y / nrow(x))
+
+  y
 }
 
 
@@ -167,7 +193,7 @@ miss_amount = function(data) {
   #calculate amount of missing
   by_case = miss_by_case(data) %>% percent_cutoff(cutoffs = 1)
   by_var = miss_by_var(data) %>% percent_cutoff(cutoffs = 1)
-  overall = count_NA(data) / total_cells(data)
+  overall = miss_count(data) / total_cells(data)
 
   c("cases with missing data" = as.vector(by_case),
     "vars with missing data" = as.vector(by_var),

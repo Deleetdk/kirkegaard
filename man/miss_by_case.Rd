@@ -4,7 +4,7 @@
 \alias{miss_by_case}
 \title{Missing datapoint counter, case-level}
 \usage{
-miss_by_case(x, reverse = F)
+miss_by_case(x, reverse = F, prop = F)
 }
 \arguments{
 \item{x}{(data frame) The data.}
@@ -15,7 +15,8 @@ miss_by_case(x, reverse = F)
 Counts the number of missing datapoints per case
 }
 \examples{
-miss_by_case(miss_add_random(iris))
 miss_by_case(iris)
-miss_by_case(iris, reverse = T)
+miss_by_case(miss_add_random(iris))
+miss_by_case(miss_add_random(iris), reverse = T)
+miss_by_case(miss_add_random(iris), prop = T)
 }
