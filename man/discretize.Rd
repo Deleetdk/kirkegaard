@@ -4,7 +4,7 @@
 \alias{discretize}
 \title{Discretize a variable}
 \usage{
-discretize(x, breaks, equal_range = T, labels = "numbers",
+discretize(x, breaks, equal_range = T, labels = "interval",
   include_end = T, right = T, ordered_factor = F, ...)
 }
 \arguments{

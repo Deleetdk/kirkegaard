@@ -15,7 +15,7 @@
 #' hist(x)
 #' y = discretize(rnorm(100), 5, equal_range = F)
 #' hist(y)
-discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end = T, right = T, ordered_factor = F, ...) {
+discretize = function(x, breaks, equal_range = T, labels = "interval", include_end = T, right = T, ordered_factor = F, ...) {
   #init
   midpoints = F
 
@@ -27,16 +27,18 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
     }
   }
 
-  #handle labels
-  if (labels == "intervals") {
+  #figure out input
+  labels = match.arg(labels, choices = c("interval", "midpoint", "integer", "number"))
+  if (labels == "number") labels = "integer"
+
+  #switch
+  if (labels == "interval") {
     labels = NULL #the default for cut
-  } else if (labels == "numbers") {
+  } else if (labels == "integer") {
     labels = F
-  } else if (labels == "midpoints") {
+  } else if (labels == "midpoint") {
     labels = NULL #the default for cut, then fix afterwards
     midpoints = T
-  } else if (!labels %in% c("intervals", "numbers", "midpoints")) {
-    stop("Unrecognized labels value!")
   }
 
   #cut
@@ -44,12 +46,19 @@ discretize = function(x, breaks, equal_range=T, labels = "numbers", include_end 
 
   #fix labels
   if (midpoints) {
-    #some code here
-    stringr::str_match_all(string = y, pattern = "[\\d\\.]+")
+    #get the values from the intervals
+    interval_vals = stringr::str_match_all(string = levels(y), pattern = "[\\d\\.]+")
+
+    #get the midpoints
+    interval_mids = purrr::map_dbl(interval_vals, ~mean(as.numeric(.)))
+
+    #replace
+    y = plyr::mapvalues(y, from = levels(y), to = interval_mids)
   }
 
   y
 }
+
 
 
 #' Calculate mean absolute difference for values in a vector
