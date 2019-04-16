@@ -66,3 +66,28 @@ test_that("SMD_matrix", {
   unique(t) %>% length %>% `==`(7)
 })
 
+
+# standardize -------------------------------------------------------------
+
+set.seed(1)
+X = rnorm(100, mean = 10, sd = 5)
+W = runif(100)
+focal = sample(c(T, F), 100, replace = T)
+
+test_that("standardize", {
+  #test normal
+  expect_equal(mean(standardize(X)), 0)
+  expect_equal(sd(standardize(X)), 1)
+
+  #test weights
+  expect_equal(weighted.mean(standardize(X, W), W), 0)
+
+  #robust
+  expect_equal(median(standardize(X, robust = T)), 0)
+  expect_equal(mad(standardize(X, robust = T)), 1)
+
+  #focal group
+  expect_equal(mean(standardize(X, focal_group = focal)[focal]), 0)
+  expect_equal(sd(standardize(X, focal_group = focal)[focal]), 1)
+})
+

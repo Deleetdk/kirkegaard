@@ -4,7 +4,8 @@
 \alias{standardize}
 \title{Standardize a vector}
 \usage{
-standardize(x, w = NULL, robust = F, sample = T)
+standardize(x, w = NULL, robust = F, sample = T,
+  focal_group = NULL)
 }
 \arguments{
 \item{x}{(num vector) A vector of values.}
@@ -14,6 +15,8 @@ standardize(x, w = NULL, robust = F, sample = T)
 \item{robust}{(log vector) Whether to use robust measures (default false). See \code{\link{mad}} and \code{\link{median}}.}
 
 \item{sample}{(log scalar) Whether this is a sample as opposed to a population (default true).}
+
+\item{focal_group}{(lgl vector) A subset of the data to standardize the values to. This is useful when you want one subgroup to be the focal group, using their mean/sd as 0/1.}
 }
 \description{
 Standardize a vector. Can use weights and robust measures of central tendency and dispersion. Returns a clean vector as opposed to base-r's \code{\link{scale}}.

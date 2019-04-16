@@ -882,7 +882,6 @@ stopifnot({
 
 set.seed(1)
 X = rnorm(100, mean = 10, sd = 5)
-set.seed(1)
 W = runif(100)
 
 stopifnot({

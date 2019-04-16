@@ -1139,6 +1139,7 @@ wtd_median <- function(x, w = rep(1, length(x))) {
 #' @param w (num vector) A vector of weights.
 #' @param robust (log vector) Whether to use robust measures (default false). See \code{\link{mad}} and \code{\link{median}}.
 #' @param sample (log scalar) Whether this is a sample as opposed to a population (default true).
+#' @param focal_group (lgl vector) A subset of the data to standardize the values to. This is useful when you want one subgroup to be the focal group, using their mean/sd as 0/1.
 #' @export
 #' @examples
 #' set.seed(1)
@@ -1147,7 +1148,7 @@ wtd_median <- function(x, w = rep(1, length(x))) {
 #' W = runif(100)
 #' standardize(X, W)
 #' standardize(X, robust = T) #almost the same for these data
-standardize = function(x, w = NULL, robust = F, sample = T) {
+standardize = function(x, w = NULL, robust = F, sample = T, focal_group = NULL) {
   #x vector
   x = as.vector(x)
 
@@ -1157,6 +1158,17 @@ standardize = function(x, w = NULL, robust = F, sample = T) {
   } else {
     w = as.vector(w)
   }
+
+  #subset?
+  if (is.null(focal_group)) focal_group = rep(T, length(x))
+  #assert equal lengths
+  assertthat::assert_that(length(focal_group) == length(x))
+  assertthat::assert_that(is.logical(focal_group))
+
+  #full x
+  full_x = x
+  x = x[focal_group]
+  w = w[focal_group]
 
   #parametric
   if (!robust) {
@@ -1174,7 +1186,7 @@ standardize = function(x, w = NULL, robust = F, sample = T) {
     wtd_sd = sqrt(wtd_var)
 
     #standardize
-    return((x - wtd_mean) / wtd_sd)
+    return((full_x - wtd_mean) / wtd_sd)
   }
 
   #robust
@@ -1187,7 +1199,7 @@ standardize = function(x, w = NULL, robust = F, sample = T) {
     mad = mad(x, na.rm = T)
 
     #standardize
-    return((x - mdn) / mad)
+    return((full_x - mdn) / mad)
   }
 }
 
