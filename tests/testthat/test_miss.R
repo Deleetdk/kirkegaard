@@ -78,7 +78,7 @@ test_that("miss_impute", {
 set.seed(1)
 
 test_that("miss_amount", {
-  expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname, c(.42, 1, .10))
+  expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname, c(.40, 1, .10))
 })
 
 
