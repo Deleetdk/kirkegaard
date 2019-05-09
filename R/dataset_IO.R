@@ -660,3 +660,63 @@ read_rvest = function(path) {
   x
 }
 
+
+#' Read VCF file into data frame
+#'
+#' @param x path to VCF
+#' @param var_id Which column(s) to use for IDs. Can be 'ID' or 'chrpos'
+#'
+#' @return a data frame
+#' @export
+read_vcf = function(x, var_id = "ID") {
+
+  #read VCF, all cols forced as character
+  x2 = readr::read_tsv(x, comment = "##", col_types = cols(.default = col_character())) %>% df_legalize_names()
+
+  #drop unwanted columns
+  var_id = match.arg(var_id, c("ID", "chrpos"))
+  if (var_id == "ID") {
+    meta_cols = c("CHROM", "POS", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")
+    x2 = x2[!names(x2) %in% meta_cols]
+  } else if (var_id == "chrpos") {
+    #make chrpos
+    x2$chrpos = str_c(x2$CHROM, ":" , x2$POS, sep = "")
+    meta_cols = c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT")
+    x2 = x2[!names(x2) %in% meta_cols]
+  }
+
+  #ensure ids are unique
+  #warn if not unique
+  if (any(duplicated(x2[[var_id]]))) {
+    warning("There were duplicated IDs among the variants. These were made unique with `str_uniquify()` --  check your data!")
+    x2[[var_id]] %<>% str_uniquify()
+  }
+
+  #restructure to normal format
+  var_id_sym = rlang::sym(var_id)
+  x2_long = suppressWarnings(x2 %>% tidyr::gather(key = id, value = count, -!!var_id_sym))
+
+  #spread snps
+  x3 = x2_long %>% dplyr::select(id, !!var_id_sym, count) %>% tidyr::spread(key = !!var_id_sym, value = count)
+
+  #recode to counts of minor allele
+  for (i in seq_along(x3)) {
+    #skip first col
+    if (i == 1) next
+
+    #extract relevant part if needed
+    if (any(str_detect(x3[[i]], ":"))) {
+      x3[[i]] = x3[[i]] %>% str_match("^([^:]+):") %>% .[, 2]
+    }
+
+    #anything not biallelic?
+    non_biallelic = !x3[[i]] %in% c("./.", "0/0", "0/1", "1/0", "1/1")
+    x3[[i]][non_biallelic] = NA_character_
+
+    #replace
+    x3[[i]] = x3[[i]] %>% plyr::mapvalues(c("./.", "0/0", "0/1", "1/0", "1/1"), c(NA, 0, 1, 1, 2), warn_missing = F) %>%
+      as.numeric()
+  }
+
+  x3
+}
