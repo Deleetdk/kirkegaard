@@ -99,18 +99,3 @@ test_that("MOD_summary_glm", {
 #TODO add tests with missing data
 #TODO add tests with weights
 
-
-# MOD_LASSO ---------------------------------------------------------------
-#frozen results for comparison
-#if these change, there must be a change somewhere
-
-fronzen_lasso_results_1 = structure(list(`(Intercept)` = c(1.73655009992001e-16, 1.98347443814766e-16, 1.83633778654183e-16, 1.83633778654183e-16, 1.64632023345824e-16 ), Sepal.Width = c(0.297148980532032, 0.276529631256926, 0.292747731735248, 0.292747731735248, 0.301135657355685), Petal.Length = c(1.1041969609792, 0.969132600423144, 1.06477735354131, 1.06477735354131, 1.13984930455443 ), Petal.Width = c(-0.123208127060014, 0, -0.0855719138957813, -0.0855719138957813, -0.15725399348871)), row.names = c(NA, -5L ), .Names = c("(Intercept)", "Sepal.Width", "Petal.Length", "Petal.Width" ), class = "data.frame")
-
-fronzen_lasso_results_2 = structure(list( `(Intercept)` = c(1.35900310401617e-16, 1.08229580884873e-16, 1.64632023345824e-16, 2.02585158754315e-16, 1.94562186997914e-16 ), Sepal.Width = c(0.228182761916663, 0.326019759131687, 0.301135657355685, 0.279810804430053, 0.287925286697761), Petal.Length = c(0.920778323339888, 1.36266719668455, 1.13984930455443, 0.972412635641068, 1.02160351472909), Petal.Width = c(0, -0.36999796279568, -0.15725399348871, 0, -0.0443491384825481)), row.names = c(NA, -5L), .Names = c("(Intercept)", "Sepal.Width", "Petal.Length", "Petal.Width"), class = "data.frame")
-
-
-test_that("MOD_LASSO", {
-  #results
-  expect_equivalent(MOD_LASSO(iris, names(iris)[1], predictors = names(iris)[2:4], progress = F, messages = F, runs = 5), fronzen_lasso_results_1)
-  expect_equivalent(MOD_LASSO(iris, names(iris)[1], predictors = names(iris)[2:4], progress = F, messages = F, runs = 5, nfolds = 3), fronzen_lasso_results_2)
-})
