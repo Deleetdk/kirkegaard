@@ -72,7 +72,10 @@ test_that("SMD_matrix", {
 set.seed(1)
 X = rnorm(100, mean = 10, sd = 5)
 W = runif(100)
-focal = sample(c(T, F), 100, replace = T)
+
+#2 groups
+X2 = c(rnorm(10000), rnorm(10000, 1))
+focal = rep(c(T, F), each = 10000)
 
 test_that("standardize", {
   #test normal
@@ -87,7 +90,9 @@ test_that("standardize", {
   expect_equal(mad(standardize(X, robust = T)), 1)
 
   #focal group
-  expect_equal(mean(standardize(X, focal_group = focal)[focal]), 0)
-  expect_equal(sd(standardize(X, focal_group = focal)[focal]), 1)
+  expect_equal(mean(standardize(X2, focal_group = focal)[focal]), 0)
+  expect_equal(sd(standardize(X2, focal_group = focal)[focal]), 1)
+  expect_equal(mean(standardize(X2, focal_group = focal)[!focal]), 1, tol = .02)
+  expect_equal(sd(standardize(X2, focal_group = focal)[!focal]), 1, tol = .05)
 })
 
