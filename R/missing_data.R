@@ -462,3 +462,61 @@ miss_by_group = function(data, grouping_vars, vars = NULL) {
       y
     })
 }
+
+
+# miss_fill ---------------------------------------------------------------
+#fill in missing values based on other variables/vectors
+
+#' Fill in missing values based on other variables/vectors
+#'
+#' Handy function to imputing missing values based on values from other sources instead of statistical methods.
+#'
+#' @param ... Can be a data frame, list of vectors, or just vectors. Vectors must have same length.
+#'
+#' @return A vector with imputed values
+#' @export
+#'
+#' @examples
+#' list(c(1, NA, NA), c(9, 2, NA), c(9, 9, 3)) %>% miss_fill()
+miss_fill = function(...) {
+
+  x = NULL
+  #list
+  lst = list(...)
+
+  #was already a list non-data frame?
+  if (length(lst) == 1 && is.list(lst[[1]]) & !is.data.frame(lst[[1]])) lst = lst[[1]]
+
+  #is a data frame?
+  if (length(lst) == 1 && is.data.frame(lst[[1]])) {
+    x = lst[[1]]
+  }
+
+  #is it vectors?
+  if (is.null(x) && all(purrr::map_lgl(lst, is.vector))) {
+    if (all_the_same(purrr::map_int(lst, length))) {
+      x = data.frame(lst)
+    } else {
+      stop("When inputting vectors, all the vectors must be the same length, but they were not", call. = F)
+    }
+  }
+
+  #something else entirely?
+  if (is.null(x)) stop("Bad input, check your input", call. = F)
+
+  #insert by loop
+  for (v in seq_along(x)) {
+    #skip 1st
+    if (v == 1) next
+
+    #insert missings
+    replaceable = is.na(x[[1]]) & !is.na(x[[v]])
+    x[[1]][replaceable] = x[[v]][replaceable]
+  }
+
+  x[[1]]
+}
+
+
+
+

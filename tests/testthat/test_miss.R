@@ -77,8 +77,9 @@ test_that("miss_impute", {
 # miss_amount -------------------------------------------------------------
 set.seed(1)
 
+#this value changed with R 3.6 due to the sample() change
 test_that("miss_amount", {
-  expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname, c(.40, 1, .10))
+  expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname(), c(.40, 1, .10), tolerance = .02)
 })
 
 
@@ -89,4 +90,22 @@ test_that("miss_amount", {
 
   expect_error(test_data %>% miss_by_group("abc"), "`grouping_vars`")
   expect_error(test_data %>% miss_by_group("Species", "abc"), "`vars`")
+})
+
+
+# miss_fill ---------------------------------------------------------------
+
+test_that("miss_fill", {
+  #ok input
+  expect_identical(miss_fill(c(1, NA, NA), c(9, 2, NA), c(9, 9, 3)), c(1, 2, 3))
+  expect_identical(list(c(1, NA, NA), c(9, 2, NA), c(9, 9, 3)) %>% miss_fill(), c(1, 2, 3))
+  expect_identical(data.frame(
+    x = c(1, NA, NA),
+    y = c(9, 2, NA),
+    z = c(9, 9, 3)
+  ) %>% miss_fill(), c(1, 2, 3))
+
+  #errors
+  expect_error(list(1:3, 1) %>% miss_fill(), regexp = "vectors")
+  expect_error(miss_fill(mean), regexp = "Bad input")
 })
