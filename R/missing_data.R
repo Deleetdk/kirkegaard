@@ -493,7 +493,7 @@ miss_fill = function(...) {
   }
 
   #is it vectors?
-  if (is.null(x) && all(purrr::map_lgl(lst, is.vector))) {
+  if (is.null(x) && all(purrr::map_lgl(lst, is.atomic))) {
     if (all_the_same(purrr::map_int(lst, length))) {
       x = data.frame(lst)
     } else {

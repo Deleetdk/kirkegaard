@@ -105,6 +105,10 @@ test_that("miss_fill", {
     z = c(9, 9, 3)
   ) %>% miss_fill(), c(1, 2, 3))
 
+  #special types
+  expect_true(miss_fill(as.Date(c("2000-01-01", NA)),
+                        as.Date(c(NA, "2001-01-01"))) %>% {class(.) == "Date"})
+
   #errors
   expect_error(list(1:3, 1) %>% miss_fill(), regexp = "vectors")
   expect_error(miss_fill(mean), regexp = "Bad input")
