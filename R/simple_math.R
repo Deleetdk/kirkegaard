@@ -201,7 +201,7 @@ is_between = function(x, a, b, include_lower = TRUE, include_upper = TRUE) {
 #' @export
 #' @examples
 #' winsorise(seq(-3, 13), 10, 0)
-winsorise = function(x, upper, lower) {
+winsorise = function(x, upper = Inf, lower = -Inf) {
   x[x > upper] = upper
   x[x < lower] = lower
   x

@@ -96,3 +96,12 @@ test_that("standardize", {
   expect_equal(sd(standardize(X2, focal_group = focal)[!focal]), 1, tol = .05)
 })
 
+
+# winsorise ---------------------------------------------------------------
+
+test_that("winsorise", {
+  #test normal
+  expect_equal(winsorise(0), 0) #no limits, means no winsorising
+  expect_identical(winsorise(NA), NA_real_) #convert NA to double
+  expect_equal(winsorise(99, upper = 1), 1)
+})

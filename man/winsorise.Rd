@@ -4,7 +4,7 @@
 \alias{winsorise}
 \title{Winsorise numbers}
 \usage{
-winsorise(x, upper, lower)
+winsorise(x, upper = Inf, lower = -Inf)
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}
