@@ -851,3 +851,87 @@ GG_save_pdf = function(list, filename) {
   invisible(NULL)
 }
 
+
+# GG_heatmap --------------------------------------------------------------
+#http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
+
+#' Heatmap correlation matrix with ggplot2
+#'
+#' @param data Data frame)
+#' @param add_values Whether to add the correlation sizes as text to plot
+#' @param reorder_vars Whether to reorder variables so strongly related ones are close to each other
+#' @param digits How many digits to print when plotting them
+#'
+#' @return a ggplot2 object
+#' @export
+#'
+#' @examples
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap()
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2) {
+
+  #correlations
+  cormat = weights::wtd.cors(data)
+
+  #reorder
+  if (reorder_vars) {
+    reorder_cormat <- function(cormat){
+      # Use correlation between variables as distance
+      dd <- as.dist((1-cormat)/2)
+      hc <- hclust(dd)
+      cormat <-cormat[hc$order, hc$order]
+    }
+
+    cormat %<>% reorder_cormat()
+  }
+
+  #remove lower tri values
+  cormat[lower.tri(cormat)] = NA
+
+  #'melt'
+  #https://stackoverflow.com/questions/47475897/correlation-matrix-tidyr-gather-v-reshape2-melt
+  melted_cormat = as.data.frame(cormat) %>%
+    mutate(Var1 = factor(row.names(.), levels=row.names(.))) %>%
+    gather(key = Var2, value = value, -Var1, na.rm = TRUE, factor_key = TRUE)
+
+  #recode out of bounds values
+  #error in weights package
+  melted_cormat$value %<>% winsorise(upper = 1, lower = -1)
+
+  #plot
+  ggheatmap = ggplot(melted_cormat, aes(Var2, Var1, fill = value)) +
+    geom_tile(color = "white") +
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                         midpoint = 0, limit = c(-1,1), space = "Lab",
+                         name="Pearson\nCorrelation") +
+    theme_minimal() + # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1,
+                                     size = 12, hjust = 1),
+          legend.justification = c(1, 0),
+          legend.position = c(0.6, 0.7),
+          legend.direction = "horizontal",
+          axis.title.x = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          axis.ticks = element_blank()
+          ) +
+            guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                                         title.position = "top", title.hjust = 0.5)) +
+            coord_fixed()
+
+  #add values?
+  if (add_values) {
+    # browser()
+    #round values
+    if (!is.null(digits)) melted_cormat$value %<>% round(digits = digits)
+
+    ggheatmap = ggheatmap +
+      geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value), color = "black", size = 4)
+  }
+
+  ggheatmap
+}
+
+

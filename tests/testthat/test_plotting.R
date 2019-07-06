@@ -131,3 +131,28 @@ test_that("GG_group_means", {
 })
 
 
+
+# GG_heatmap --------------------------------------------------------------
+
+#save plots to list
+heatmaps = list(
+  #various options
+  default = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(),
+  no_reorder = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F),
+  no_values = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(add_values = F),
+  many_digits = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(digits = 5)
+)
+
+test_that("GG_heatmap", {
+  #check that plots work
+  walk(heatmaps, ~expect_s3_class(., class = "ggplot"))
+
+  #check for non-identity
+  #cant think of an easy smart way to do this
+  expect_true(!identical(heatmaps$default, heatmaps$no_reorder))
+  expect_true(!identical(heatmaps$default, heatmaps$no_values))
+  expect_true(!identical(heatmaps$default, heatmaps$many_digits))
+  expect_true(!identical(heatmaps$no_reorder, heatmaps$no_values))
+  expect_true(!identical(heatmaps$no_reorder, heatmaps$many_digits))
+  expect_true(!identical(heatmaps$no_values, heatmaps$many_digits))
+})
