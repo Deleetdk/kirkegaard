@@ -24,6 +24,10 @@ test_that("str_uniquify", {
 
   #multiple strings
   expect_true(all(str_to_upper_initial(c("bleh blah", "bleh blah", "bleh blah")) == c("Bleh blah", "Bleh blah", "Bleh blah")))
+
+  #padding
+  expect_true(all_the_same(str_length(str_uniquify(rep("ab", 10), "%d", pad = T))))
+  expect_true(all_the_same(str_length(str_uniquify(rep("ab", 100), "%d", pad = T))))
 })
 
 

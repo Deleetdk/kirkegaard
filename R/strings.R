@@ -178,8 +178,11 @@ str_detect_replace = function(string, pattern, replacement) {
 #' Make strings unique
 #'
 #' Detects duplicate strings and makes them unique by adding a number at the end.
+#'
 #' @param string (chr vector) A character vector.
 #' @param suffix (chr vector) A character to use to make unique suffixes. Must contain \%d.
+#' @param pad Whether to pad numbers by adding 0's in front to keep the same length in all suffixes.
+#'
 #' @return A character vector.
 #' @details This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
 #' @export
@@ -190,7 +193,7 @@ str_detect_replace = function(string, pattern, replacement) {
 #' x %>% str_uniquify
 #' #custom suffix using a second %d.
 #' x %>% str_uniquify(" [%d/%d]")
-str_uniquify = function(string, suffix = " (%d)") {
+str_uniquify = function(string, suffix = " (%d)", pad = F) {
   #make a df
   d = data.frame(names = string,
                  n = seq_along(string))
@@ -199,7 +202,20 @@ str_uniquify = function(string, suffix = " (%d)") {
   if (any(duplicated(d$names))) {
     d = plyr::ddply(d, .variables = "names", .fun = function(x) {
       if (nrow(x) == 1) return(x)
-      x$names = sprintf(x$names + suffix, 1:nrow(x), nrow(x))
+# browser()
+      #pad numbers if wanted
+      d1 = 1:nrow(x)
+      if (pad) {
+        d1 = str_pad(d1, width = max(str_length(d1)), side = "left", pad = "0")
+        # d1 = sprintf("%06d", d1)
+      }
+
+      #add numbers
+      # x$names = sprintf(x$names + suffix, 1:nrow(x), nrow(x))
+      x$names = x$names + suffix %>%
+        str_replace("%d", as.character(d1)) %>%
+        str_replace("%d", as.character(nrow(x)))
+
       x
     })
   }
