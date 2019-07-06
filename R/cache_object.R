@@ -18,6 +18,8 @@ cache_object = function(expr, filename, renew = F, ...) {
   #force renewal?
   if (renew) {
     base::message("Forcing renewal of cached object")
+
+    #delete cache if exists
     if (base::file.exists(filename)) {
       base::file.remove(filename)
     }
@@ -34,7 +36,14 @@ cache_object = function(expr, filename, renew = F, ...) {
     } else {
       base::message("Evaluating expression")
     }
+
+    #eval expr
     x = base::eval(base::quote(expr))
+
+    #create dir if needed
+    dir.create(dirname(filename), recursive = T, showWarnings = F)
+
+    #write file
     readr::write_rds(x, filename, ...)
   }
 
