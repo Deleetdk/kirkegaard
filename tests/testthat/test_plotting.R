@@ -119,6 +119,9 @@ l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
            )
 
+#add more groups to iris
+iris$group2 = sample(letters[1:3], size = 150, replace = T)
+
 test_that("GG_group_means", {
   #all types
   expect_true(all(map_lgl(l_t, function(x) "ggplot" %in% class(x))))
@@ -128,6 +131,10 @@ test_that("GG_group_means", {
 
   #reversed levels
   expect_true(all(levels(l_t$order$data$group1) == rev(levels(iris$Species))))
+
+  #error because removed all groups
+  expect_error(GG_group_means(iris, "Sepal.Length", groupvar = "Species", min_n = 51), regexp = "No groups left after filtering to sample size requirement")
+  expect_error(GG_group_means(iris, "Sepal.Length", groupvar = "Species", subgroupvar = "group2", min_n = 51), regexp = "No groups left after filtering to sample size requirement")
 })
 
 

@@ -727,6 +727,12 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       df_sum$subgroupvar = factor(df_sum[[subgroupvar]], levels = levels(df[[subgroupvar]]))
     }
 
+    #filter too small groups
+    df_sum = df_sum %>% filter(n >= min_n)
+
+    #check for data
+    if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
+
     #calculate CIs
     df_sum$ci_bar = apply(df_sum, 1, function(x) {
       qt(1 - ((1 - CI) / 2), df = as.numeric(x[4]) - 1)
@@ -873,8 +879,8 @@ GG_save_pdf = function(list, filename) {
 #' @export
 #'
 #' @examples
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap()
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
+#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap()
+#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
 GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2) {
 
   #correlations
