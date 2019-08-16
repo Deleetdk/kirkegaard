@@ -562,6 +562,7 @@ GG_scatter = function(df,
 #' @param msg_NA (log scalar) Show a message if NAs were removed? (default true)
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
 #' @param line_length (num scalar) The desired line width (default 95). Only used when split_group_labels = T.
+#' @param min_n Minimum sample size per group.
 #' @export
 #' @examples
 #' #simple examples
@@ -579,7 +580,7 @@ GG_scatter = function(df,
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
-GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95) {
+GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0) {
 
   #convert
   df = as.data.frame(df)
@@ -619,6 +620,12 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
       df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
     }
+
+    #filter too small groups
+    df_sum = df_sum %>% filter(n >= min_n)
+
+    #check for data
+    if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
 
     #calculate CIs
     df_sum$ci_bar = apply(df_sum, 1, function(x) {

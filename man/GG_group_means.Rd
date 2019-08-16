@@ -6,7 +6,7 @@
 \usage{
 GG_group_means(df, var, groupvar = NULL, subgroupvar = NULL,
   CI = 0.95, type = "bar", na.rm = T, msg_NA = T,
-  split_group_labels = T, line_length = 95)
+  split_group_labels = T, line_length = 95, min_n = 0)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}
@@ -26,6 +26,8 @@ GG_group_means(df, var, groupvar = NULL, subgroupvar = NULL,
 \item{split_group_labels}{(log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).}
 
 \item{line_length}{(num scalar) The desired line width (default 95). Only used when split_group_labels = T.}
+
+\item{min_n}{Minimum sample size per group.}
 }
 \description{
 Draws a nice ggplot2 with group means and error bars.
