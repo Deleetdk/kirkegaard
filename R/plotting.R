@@ -830,7 +830,16 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 #'
 #' Save a ggplot2 figure. Now with a sensible default size (10 x 6.5 inches). Same arguments as `ggplot2::ggsave`
 #' @export
-GG_save = curry::set_defaults(ggsave, list(width = 10, height = 6.5))
+GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height = 6.5, ...) {
+  #make dir if needed
+  if (!dir.exists(dirname(filename))) {
+    message("Directory did not exist, creating...")
+    dir.create(dirname(filename), showWarnings = F, recursive = T)
+  }
+
+  # curry::set_defaults(ggsave, list(width = 10, height = 6.5))
+  ggplot2::ggsave(filename = filename, plot = plot, width = width, height = height, path = path, ...)
+}
 
 
 
