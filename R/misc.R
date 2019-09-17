@@ -671,3 +671,57 @@ locf = function(x, reverse = F) {
   y
 }
 
+
+# mapvalues ---------------------------------------------------------------
+#tired of using plyr's
+
+#' Map values
+#'
+#' Copy of plyr::mapvalues
+#'
+#' @param x A vector
+#' @param from A vector to change from
+#' @param to A vector to change to, can be same length or length 1 (recycled)
+#' @param warn_missing Warn if from values not present
+#'
+#' @return A vector
+#' @export
+#'
+#' @examples
+#' mapvalues(0:9, from = 3:5, to = c(-1, -1, -1))
+#' mapvalues(0:9, from = 3:5, to = -1)
+mapvalues = function (x, from, to, warn_missing = T) {
+  #input lengths
+  if (length(from) != length(to)) {
+    #recycle?
+    if (length(to) == 1) {
+      to = rep(to, length(from))
+    } else {
+      stop("`from` and `to` vectors are not the same length, nor is `to` length 1.")
+    }
+  }
+
+  #atomic check
+  if (!is.atomic(x)) {
+    stop("`x` must be an atomic vector.")
+  }
+
+  #just change factor levels if factor
+  if (is.factor(x)) {
+    levels(x) <- mapvalues(levels(x), from, to, warn_missing)
+    return(x)
+  }
+
+  #map values if not
+  mapidx <- match(x, from)
+  mapidxNA <- is.na(mapidx)
+  from_found <- sort(unique(mapidx))
+  if (warn_missing && length(from_found) != length(from)) {
+    message("The following `from` values were not present in `x`: ",
+            paste(from[!(1:length(from) %in% from_found)], collapse = ", "))
+  }
+
+  x[!mapidxNA] <- to[mapidx[!mapidxNA]]
+
+  x
+}
