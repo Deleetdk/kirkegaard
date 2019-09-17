@@ -543,3 +543,131 @@ unduplicate = function(x) {
 }
 
 
+
+# encode to unique values only and back -----------------------------------
+
+#' Unique encoding
+#'
+#' @param x A vector of values
+#'
+#' @return A list
+#' @export
+#'
+#' @examples
+#' c(1, 2, 2, 3, 3, 3) %>% uniq_encoding()
+#' c(3, 1, 3, 2, 3, 2) %>% uniq_encoding()
+#' c(NA, 1, 2, 2, 3, 3, 3, NA) %>% uniq_encoding()
+#' c(1, 2, 2, 3, 3, 3) %>% as.character() %>% uniq_encoding()
+#' c(1, 2, 2, 3, 3, 3) %>% factor() %>% uniq_encoding()
+uniq_encoding = function(x) {
+  #convert to chr
+  if (is.factor(x)) {
+    warning("Factor automatically converted to character", call. = F)
+    x = as.character(x)
+  }
+
+  #unique values
+  #we use this above levels of factor to support NA
+  xu = unique(x)
+
+  #class
+  xclass = class(x)[1] #ignore any secondary classes
+
+  #compute
+  list(
+    class = class(x),
+    levels = xu,
+    positions = purrr::map(xu, function(z) {
+      #for non-NA
+      if (!is.na(z)) return(which(z == x))
+
+      #NAs
+      which(is.na(x))
+    })
+  )
+}
+
+#reverse
+#' Reverse unique encoding
+#'
+#' @param x Output from [kirkegaard::uniq_encoding()]
+#'
+#' @return A vector
+#' @export
+#'
+#' @examples
+#' c(1, 2, 2, 3, 3, 3) %>% uniq_encoding() %>% rev_uniq_encoding()
+#' c(1, 2, 2, 3, 3, 3) %>% uniq_encoding() %>% rev_uniq_encoding()
+rev_uniq_encoding = function(x) {
+  #if empty, return empty
+  if (is.null(x$levels)) return(c())
+  #allocate
+  y = character(length = max(map_int(x$positions, max)))
+
+  #loop and fill
+  for (i in seq_along(x$levels)) {
+    y[x$positions[[i]]] = x$levels[i]
+  }
+
+  #class
+  class(y) = x$class
+
+  y
+}
+
+
+# simple locf -------------------------------------------------------------
+#avoid zoo dependency
+
+#' Last observation carried forward
+#'
+#' @param x A vector
+#' @param reverse Whether to do it in reverse
+#'
+#' @return A vector
+#' @export
+#'
+#' @examples
+#' c(NA, 1, NA, 2, NA) %>% locf()
+#' c(NA, 1, NA, 2, NA) %>% locf(reverse = T)
+#' c(NA, 1, NA, 2, NA, NA, NA) %>% locf()
+locf = function(x, reverse = F) {
+  #reverse?
+  if (reverse) x = rev(x)
+
+  #recode NA
+  #these are kept distinct by rle() by default for same reason ???
+  x_class = class(x)
+  x[is.na(x)] = "___tmp"
+
+  #run level encoding
+  x_rle = rle(x)
+
+  #swap values for NAs
+  which_na = which(x_rle$values == "___tmp")
+
+  #skip 1st
+  which_na = setdiff(which_na, 1)
+
+  #replace values
+  x_rle$values[which_na] = x_rle$values[which_na - 1]
+
+  #back to normal
+  y = inverse.rle(x_rle)
+
+  #NA recode
+  y[y == "___tmp"] = NA
+
+  #fix type/class
+  if (x_class[1] == "logical") y = as.logical(y)
+  if (x_class[1] == "integer") y = as.integer(y)
+  if (x_class[1] == "numeric") y = as.double(y)
+  if (x_class[1] == "factor") y = factor(y, levels = levels(x))
+  if (x_class[1] == "ordered") y = ordered(y, levels = levels(x))
+
+  #reverse?
+  if (reverse) y = rev(y)
+
+  y
+}
+

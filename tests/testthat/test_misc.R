@@ -88,3 +88,52 @@ test_that("total_cells", {
   #questionable input
   expect_equivalent(total_cells(NULL), 0)
 })
+
+
+
+# uniq_encoding -----------------------------------------------------------
+
+test_that("uniq_encoding", {
+  #simple tests
+  expect_identical(c(1, 2, 2, 3, 3, 3),
+                   c(1, 2, 2, 3, 3, 3) %>% uniq_encoding() %>% rev_uniq_encoding())
+  expect_identical(c(3, 1, 3, 2, 3, 2),
+                   c(3, 1, 3, 2, 3, 2) %>% uniq_encoding() %>% rev_uniq_encoding())
+
+  #with NAs
+  expect_identical(c(NA, 1, 2, 2, 3, 3, 3, NA),
+                   c(NA, 1, 2, 2, 3, 3, 3, NA) %>% uniq_encoding() %>% rev_uniq_encoding())
+
+  #empty
+  expect_identical(c(),
+                   c() %>% uniq_encoding() %>% rev_uniq_encoding())
+
+  #classes
+  expect_identical(c(1, 2, 2, 3, 3, 3) %>% as.character(),
+                   c(1, 2, 2, 3, 3, 3) %>% as.character() %>% uniq_encoding() %>% rev_uniq_encoding())
+  expect_identical(c(1, 2, 2, 3, 3, 3) %>% as.character(),
+                   c(1, 2, 2, 3, 3, 3) %>% as.factor() %>% {suppressWarnings(uniq_encoding(.))} %>% rev_uniq_encoding())
+  expect_identical(c(1, 2, 2, 3, 3, 3) %>% as.character(),
+                   c(1, 2, 2, 3, 3, 3) %>% as.ordered() %>% {suppressWarnings(uniq_encoding(.))} %>% rev_uniq_encoding())
+  expect_identical(c(1, 2, 2, 3, 3, 3) %>% as.integer(),
+                   c(1, 2, 2, 3, 3, 3) %>% as.integer() %>% uniq_encoding() %>% rev_uniq_encoding())
+
+  #warning
+  expect_warning(c(1, 2, 2, 3, 3, 3) %>% as.factor() %>% uniq_encoding())
+})
+
+
+# locf --------------------------------------------------------------------
+
+test_that("locf", {
+  expect_identical(c(NA, 1, 1, 2, 2),
+                   c(NA, 1, NA, 2, NA) %>% locf())
+
+  #longer series of NAs
+  expect_identical(c(NA, 1, 1, 2, 2, 2, 2),
+                   c(NA, 1, NA, 2, NA, NA, NA) %>% locf())
+
+  #reverse
+  expect_identical(c(1, 1, 2, 2, NA),
+                   c(NA, 1, NA, 2, NA) %>% locf(reverse = T))
+})

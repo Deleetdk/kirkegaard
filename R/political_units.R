@@ -50,6 +50,37 @@ pu_translate = function(x,
                         standardize_name = F,
                         add_parens = c("ISO3", "ISO2", "name")) {
 
+  #uniq encode
+  x_encoded = uniq_encoding(x)
+
+  #translate unique values
+  x_translated = pu_translate_inner(x = x_encoded$levels,
+                              superunit = superunit,
+                              fuzzy = fuzzy,
+                              reverse = reverse,
+                              lang = lang,
+                              superunit_recursive = superunit_recursive,
+                              messages = messages,
+                              stringdist_params = stringdist_params,
+                              standardize_name = standardize_name,
+                              add_parens = add_parens)
+
+  #reverse uniq
+  x_encoded$levels = x_translated
+  rev_uniq_encoding(x_encoded)
+}
+
+#inner function
+pu_translate_inner = function(x,
+                              superunit = NULL,
+                              fuzzy = T,
+                              reverse = F,
+                              lang = "en",
+                              superunit_recursive = F,
+                              messages = 1,
+                              stringdist_params = NULL,
+                              standardize_name = F,
+                              add_parens = c("ISO3", "ISO2", "name")) {
   #check input
   x = as.character(x) #forces to right type from whatever input was
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
@@ -74,13 +105,33 @@ pu_translate = function(x,
   data_file_location = system.file("extdata", "political_units.xlsx", package = "kirkegaard")
   units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
+  #fill in ISOs
+  units$Abbreviation = units$Abbreviation %>% locf()
+
   #remove removed units
   units_all = units #keep orig
   units = dplyr::filter(units, is.na(Removed))
 
+  #subset to subunits if desired
+  if (!is.null(superunit)) {
+
+    #fill in 'world'
+    units$Superunit %<>% plyr::mapvalues(from = NA, to = "world")
+
+    #get names of superunits
+    name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
+
+    if (messages > 1) message(sprintf("Subsetting to subunits of: %s [%s].", stringr::str_c(name_superunit, collapse = " | "), stringr::str_c(superunit, collapse = " | ")))
+    units = dplyr::filter(units, Superunit %in% superunit)
+
+    #no members? give useful feedback
+    if (nrow(units) == 0) stop(sprintf("There were no subunits of this superunit! %s", superunit))
+  }
+
   #add duplicates with country ISO in parens
   #this is so we dont need to manually specify these
   if (!is.null(add_parens) & !reverse) {
+
     sub_units_clean = units %>% filter(!is.na(Superunit))
 
     #add the country ISO3 in parens
@@ -109,21 +160,6 @@ pu_translate = function(x,
     #these happen if country names are the same as ISO (e.g. USA)
     units %<>% filter(!duplicated(Name))
 
-  }
-
-  #subset to subunits if desired
-  if (!is.null(superunit)) {
-    #fill in 'world'
-    units$Superunit %<>% plyr::mapvalues(from = NA, to = "world")
-
-    #get names of superunits
-    name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
-
-    if (messages > 1) message(sprintf("Subsetting to subunits of: %s [%s].", stringr::str_c(name_superunit, collapse = " | "), stringr::str_c(superunit, collapse = " | ")))
-    units = dplyr::filter(units, Superunit %in% superunit)
-
-    #no members? give useful feedback
-    if (nrow(units) == 0) stop(sprintf("There were no subunits of this superunit! %s", superunit))
   }
 
   #forward translation
@@ -219,10 +255,10 @@ pu_translate = function(x,
 
       #are there disagreements?
       if (!all_the_same(d_dst_min$abbrev)) {
-        str = sprintf("There were more than one equally good matches that did not agree for %s: ", s)
+        str = sprintf("There were multiple equally good matches for %s: ", s)
         str = str + str_c(d_dst_min$name, collapse = " | ")
         str = str + sprintf(". All with distance %.2f", min_dst)
-        stop(str, call. = F)
+        warning(str, call. = F)
       }
     }
 
@@ -252,3 +288,4 @@ pu_translate = function(x,
 # pu_translate(c("Denmark", NA, "Sweden"))
 # pu_translate(c("Dennmark", NA, "Sueden"))
 # pu_translate(c("Dennmark", NA, "Sueden")) %>% pu_translate(reverse=T)
+# pu_translate(c("Dennmark", NA, "Sueden", "Sweden"))
