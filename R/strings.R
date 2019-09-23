@@ -202,7 +202,7 @@ str_uniquify = function(string, suffix = " (%d)", pad = F) {
   if (any(duplicated(d$names))) {
     d = plyr::ddply(d, .variables = "names", .fun = function(x) {
       if (nrow(x) == 1) return(x)
-# browser()
+
       #pad numbers if wanted
       d1 = 1:nrow(x)
       if (pad) {
@@ -224,7 +224,7 @@ str_uniquify = function(string, suffix = " (%d)", pad = F) {
   d %<>% df_sort("n")
 
   #return
-  d$names
+  d$names %>% as.character()
 }
 
 
@@ -252,25 +252,49 @@ str_filter = function(string, pattern, reverse = F) {
 #' Make names legal
 #'
 #' Make variable names legal to use in R formulas etc.
+#'
 #' @param x (chr) A vector of names.
+#' @param ascii Allow ascii only or all letters?
 #'
 #' @return a vector
 #' @export
 #'
 #' @examples
 #' c("2017x", "male (%)", "Male/female ratio") %>% str_legalize()
-str_legalize = function(x) {
-  x %>%
+str_legalize = function(x, ascii = T) {
+
+  #abbreviation symbols to text
+  x %<>%
     #replace % to pct
     stringr::str_replace_all("\\%", "pct") %>%
-    #replace illegal chars to underscores
-    stringr::str_replace_all("[^A-Za-z0-9]", "_") %>%
+    #replace & to _and_
+    stringr::str_replace_all("\\&", "_and_") %>%
+    #replace + to plus
+    stringr::str_replace_all("\\+", "plus") %>%
+    #replace - to _
+    stringr::str_replace_all("\\-", "_")
+
+  #other symbols
+  #replace non-ascii to _
+  if (ascii) {
+    x %<>%
+      stringr::str_replace_all("[^A-Za-z0-9]", "_")
+  } else { #non-latin to _
+    x %<>%
+      stringr::str_replace_all("[^\\p{L}]", "_")
+  }
+
+  x %>%
     #remove double underscores
     stringr::str_replace_all("_+", "_") %>%
     #remove trailing underscores
     stringr::str_replace_all("(^_)|(_$)", "") %>%
-    #insert leading _ if numeral is first
-    stringr::str_replace("^(\\d)", "_\\1")
+    #insert leading x if numeral is first
+    stringr::str_replace("^(\\d)", "x\\1") %>%
+    #empty to x
+    kirkegaard::mapvalues(from = "", to = "x", warn_missing = F) %>%
+    #no duplicates
+    str_uniquify(suffix = "_%d")
 }
 
 

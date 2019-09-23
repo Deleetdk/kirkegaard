@@ -4,10 +4,12 @@
 \alias{str_legalize}
 \title{Make names legal}
 \usage{
-str_legalize(x)
+str_legalize(x, ascii = T)
 }
 \arguments{
 \item{x}{(chr) A vector of names.}
+
+\item{ascii}{Allow ascii only or all letters?}
 }
 \value{
 a vector

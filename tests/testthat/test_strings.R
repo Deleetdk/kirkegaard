@@ -31,3 +31,25 @@ test_that("str_uniquify", {
 })
 
 
+# str_legalize ------------------------------------------------------------
+
+test_that("str_legalize", {
+  #slash
+  expect_identical(str_legalize("a/b"), "a_b")
+  #backslash
+  expect_identical(str_legalize("a\\b"), "a_b")
+  #ambersand
+  expect_identical(str_legalize("a&b"), "a_and_b")
+  #%
+  expect_identical(str_legalize("%a"), "pcta")
+  #dash
+  expect_identical(str_legalize("a-b"), "a_b")
+  #initial digit
+  expect_identical(str_legalize("123"), "x123")
+  #initial ?
+  expect_identical(str_legalize("?123"), "x123")
+  #empty and duplicated
+  expect_identical(str_legalize(c("", "")), c("x_1", "x_2"))
+})
+
+
