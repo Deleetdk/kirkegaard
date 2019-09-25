@@ -495,7 +495,7 @@ miss_fill = function(...) {
   #is it vectors?
   if (is.null(x) && all(purrr::map_lgl(lst, is.atomic))) {
     if (all_the_same(purrr::map_int(lst, length))) {
-      x = data.frame(lst)
+      x = data.frame(lst, stringsAsFactors = F)
     } else {
       stop("When inputting vectors, all the vectors must be the same length, but they were not", call. = F)
     }

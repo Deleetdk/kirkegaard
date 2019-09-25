@@ -109,6 +109,9 @@ test_that("miss_fill", {
   expect_true(miss_fill(as.Date(c("2000-01-01", NA)),
                         as.Date(c(NA, "2001-01-01"))) %>% {class(.) == "Date"})
 
+  #factor issue
+  expect_identical(miss_fill(c("a", NA, "c"), c("x", "b", "x")), c("a", "b", "c"))
+
   #errors
   expect_error(list(1:3, 1) %>% miss_fill(), regexp = "vectors")
   expect_error(miss_fill(mean), regexp = "Bad input")
