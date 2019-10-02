@@ -5,8 +5,9 @@
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
 GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, alpha = 1,
-  text_pos = NA, case_names = NULL, CI = 0.95, clean_names = T,
-  check_overlap = T, repel_names = F, weight_as_size = T, ...)
+  text_pos = NA, case_names = NULL, case_names_color = "black",
+  CI = 0.95, clean_names = T, check_overlap = T, repel_names = F,
+  weight_as_size = T, ...)
 }
 \arguments{
 \item{df}{(data.frame) A data frame with variables.}
@@ -24,6 +25,8 @@ GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, alpha = 1,
 \item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 
 \item{case_names}{(lgl scalar) Whether to add case names or not (default true).}
+
+\item{case_names_color}{(lgl scalar) Color of case names.}
 
 \item{CI}{(num scalar) Confidence interval as a fraction.}
 
@@ -47,6 +50,7 @@ Internally uses the ad hoc variables \code{.weights}, \code{.label} and \code{.c
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #casenames in purple
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #casenames from variable, repelled
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI

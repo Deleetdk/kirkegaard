@@ -314,6 +314,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param alpha (num) The alpha to use.
 #' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
+#' @param case_names_color (lgl scalar) Color of case names.
 #' @param CI (num scalar) Confidence interval as a fraction.
 #' @param clean_names (lgl scalar) Whether to clean the axes names using str_clean().
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
@@ -326,6 +327,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #casenames in purple
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #casenames from variable, repelled
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
@@ -344,6 +346,7 @@ GG_scatter = function(df,
                       alpha = 1,
                       text_pos = NA,
                       case_names = NULL,
+                      case_names_color = "black",
                       CI = .95,
                       clean_names = T,
                       check_overlap = T,
@@ -534,9 +537,9 @@ GG_scatter = function(df,
     #note, remove color aes
     if (!repel_names) {
       #show.legend fix due to http://stackoverflow.com/questions/18337653/remove-a-from-legend-when-using-aesthetics-and-geom-text
-      g = g + geom_text(aes(label = .label, color = NULL), size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
+      g = g + geom_text(aes(label = .label), , color = case_names_color, size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
     } else {
-      g = g + ggrepel::geom_text_repel(aes(label = .label, color = NULL), size = 3, show.legend = FALSE)
+      g = g + ggrepel::geom_text_repel(aes(label = .label), color = case_names_color, size = 3, show.legend = FALSE)
     }
   }
 
