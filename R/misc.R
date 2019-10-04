@@ -628,10 +628,10 @@ rev_uniq_encoding = function(x) {
 #' @export
 #'
 #' @examples
-#' c(NA, 1, NA, 2, NA) %>% locf()
-#' c(NA, 1, NA, 2, NA) %>% locf(reverse = T)
-#' c(NA, 1, NA, 2, NA, NA, NA) %>% locf()
-locf = function(x, reverse = F) {
+#' c(NA, 1, NA, 2, NA) %>% miss_locf()
+#' c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T)
+#' c(NA, 1, NA, 2, NA, NA, NA) %>% miss_locf()
+miss_locf = function(x, reverse = F) {
   #reverse?
   if (reverse) x = rev(x)
 
@@ -724,4 +724,30 @@ mapvalues = function (x, from, to, warn_missing = T) {
   x[!mapidxNA] <- to[mapidx[!mapidxNA]]
 
   x
+}
+
+
+# count_decimals ----------------------------------------------------------
+
+#' Count decimals
+#'
+#' @param x Vector of values
+#'
+#' @return Vector of values
+#' @export
+#'
+#' @examples
+#' c(1, 1.2, 1.23) %>% count_decimals()
+#' c() %>% count_decimals()
+count_decimals = function(x) {
+  #length zero input
+  if (length(x) == 0) return(numeric())
+
+  #count decimals
+  x_nchr = x %>% abs() %>% as.character() %>% nchar() %>% as.numeric()
+  x_int = floor(x) %>% abs() %>% nchar()
+  x_nchr = x_nchr - 1 - x_int
+  x_nchr[x_nchr < 0] = 0
+
+  x_nchr
 }

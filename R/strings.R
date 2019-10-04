@@ -320,6 +320,9 @@ str_to_upper_initial = function(x) {
 }
 
 
+# renamed base functions --------------------------------------------------
+#hard to recall
+
 #' Extract filename from a file path.
 #'
 #' @param x (chr) A path to a filename.
@@ -349,4 +352,33 @@ str_filename = function(x) {
 #' dir(getwd(), full.names = T) %>% str_dirname()
 str_dirname = function(x) {
   base::dirname(x)
+}
+
+
+# rounding ----------------------------------------------------------------
+
+#rounded 0 to less than
+#' Round and use less than symbol if zero
+#'
+#' @param x numerical vector
+#' @param digits Digits count
+#'
+#' @return character vector
+#' @export
+#'
+#' @examples
+#' c(.01) %>% str_zero_to_lt()
+#' c(.01, .009, .001) %>% str_zero_to_lt()
+#' c(.01, .009, .001) %>% str_zero_to_lt(digits = 3)
+str_zero_to_lt = function(x, digits = 2) {
+  #round
+  x2 = round(x, digits = digits)
+
+  #min value can be shown
+  min_val = 1/10^digits
+
+  #replace with less than
+  x2[x < min_val] = "<" + min_val
+
+  x2
 }

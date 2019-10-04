@@ -53,3 +53,15 @@ test_that("str_legalize", {
 })
 
 
+
+# str_zero_to_lt ----------------------------------------------------------
+
+test_that("str_zero_to_lt", {
+  expect_identical(c(.01) %>% str_zero_to_lt(),
+                   "0.01")
+  expect_identical(c(.01, .009, .001) %>% str_zero_to_lt(),
+                   c("0.01", "<0.01", "<0.01"))
+  expect_identical(c(.01, .009, .001) %>% str_zero_to_lt(digits = 3),
+                   c("0.01", "0.009", "0.001"))
+})
+

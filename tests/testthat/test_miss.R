@@ -116,3 +116,19 @@ test_that("miss_fill", {
   expect_error(list(1:3, 1) %>% miss_fill(), regexp = "vectors")
   expect_error(miss_fill(mean), regexp = "Bad input")
 })
+
+
+# miss_locf --------------------------------------------------------------------
+
+test_that("miss_locf", {
+  expect_identical(c(NA, 1, 1, 2, 2),
+                   c(NA, 1, NA, 2, NA) %>% miss_locf())
+
+  #longer series of NAs
+  expect_identical(c(NA, 1, 1, 2, 2, 2, 2),
+                   c(NA, 1, NA, 2, NA, NA, NA) %>% miss_locf())
+
+  #reverse
+  expect_identical(c(1, 1, 2, 2, NA),
+                   c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T))
+})

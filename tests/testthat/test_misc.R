@@ -123,17 +123,28 @@ test_that("uniq_encoding", {
 })
 
 
-# locf --------------------------------------------------------------------
 
-test_that("locf", {
-  expect_identical(c(NA, 1, 1, 2, 2),
-                   c(NA, 1, NA, 2, NA) %>% locf())
 
-  #longer series of NAs
-  expect_identical(c(NA, 1, 1, 2, 2, 2, 2),
-                   c(NA, 1, NA, 2, NA, NA, NA) %>% locf())
+# count_decimals ----------------------------------------------------------
 
-  #reverse
-  expect_identical(c(1, 1, 2, 2, NA),
-                   c(NA, 1, NA, 2, NA) %>% locf(reverse = T))
+test_that("count_decimals", {
+  #basics
+  expect_identical(c(1, 1.1, 1.12, 1.123, 1.1234, 1.1, 1.10, 1.100, 1.1000) %>% count_decimals(),
+                   c(0, 1, 2, 3, 4, 1, 1, 1, 1))
+  expect_identical(seq(0, 1000, by = 100) %>% count_decimals(),
+                   rep(0, 11))
+
+  #negatives
+  expect_identical(c(100.1234, -100.1234) %>% count_decimals(),
+                   c(4, 4))
+
+  #NULL or zero length vector
+  expect_identical(NULL %>% count_decimals(),
+                   numeric())
+  expect_identical(c() %>% count_decimals(),
+                   numeric())
+
 })
+
+
+

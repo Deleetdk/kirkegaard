@@ -106,7 +106,7 @@ pu_translate_inner = function(x,
   units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
   #fill in ISOs
-  units$Abbreviation = units$Abbreviation %>% locf()
+  units$Abbreviation = units$Abbreviation %>% miss_locf()
 
   #remove removed units
   units_all = units #keep orig
