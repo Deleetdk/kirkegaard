@@ -755,6 +755,10 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #subset to wanted cols
   y = y %>% select(term, beta, model)
 
+  #factor levels, so that we spread in the same order as input
+  y$model = factor(y$model, levels = names(x))
+
+  #spread
   y2 = y %>%
     #spread
     spread(key = model, value = beta) %>%
@@ -765,7 +769,10 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #reset to chr so we can add more rows
   y2$term %<>% as.character()
 
-  #fix column name
+  #reorder models to match input
+  # y2 = y2[c(1, )]
+
+  #fix top left column name
   names(y2)[1] = "Predictor/Model"
 
   #add summary stats to end
