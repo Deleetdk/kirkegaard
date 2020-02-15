@@ -4,8 +4,7 @@
 \alias{percent_cutoff}
 \title{Find percentage of numbers that are above given thresholds.}
 \usage{
-percent_cutoff(x, cutoffs = c(0.3, 0.5), digits = 2, below = F,
-  inclusive = T)
+percent_cutoff(x, cutoffs = c(0.3, 0.5), digits = 2, below = F, inclusive = T)
 }
 \arguments{
 \item{x}{(num vector) A vector of numbers.}

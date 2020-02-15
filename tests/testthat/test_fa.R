@@ -71,7 +71,7 @@ test_that("fa_mixedness", {
 
 
 # fa_splitsample_repeat ---------------------------------------------------------------------
-fa_splitsam = fa_splitsample_repeat(ability, runs = 5, messages = F, progress = F)
+fa_splitsam = fa_splitsample_repeat(psychTools::ability, runs = 5, messages = F, progress = F)
 
 test_that("fa_splitsample_repeat", {
   expect_equal(dim(fa_splitsam), c(5, 1))

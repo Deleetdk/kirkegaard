@@ -20,7 +20,7 @@ Depends:
     metafor
 License: GPL
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Imports:
     plyr,
     glmnet,

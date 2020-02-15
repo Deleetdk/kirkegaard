@@ -4,8 +4,12 @@
 \alias{p_to_asterisk}
 \title{Add asterisks to p values}
 \usage{
-p_to_asterisk(x, asterisks = c(0.01, 0.005, 0.001),
-  digits = max(count_decimals(asterisks)), asterisks_only = F)
+p_to_asterisk(
+  x,
+  asterisks = c(0.01, 0.005, 0.001),
+  digits = max(count_decimals(asterisks)),
+  asterisks_only = F
+)
 }
 \arguments{
 \item{x}{p values vector}

@@ -4,9 +4,19 @@
 \alias{GG_group_means}
 \title{ggplot2 with group means and error bars.}
 \usage{
-GG_group_means(df, var, groupvar = NULL, subgroupvar = NULL,
-  CI = 0.95, type = "bar", na.rm = T, msg_NA = T,
-  split_group_labels = T, line_length = 95, min_n = 0)
+GG_group_means(
+  df,
+  var,
+  groupvar = NULL,
+  subgroupvar = NULL,
+  CI = 0.95,
+  type = "bar",
+  na.rm = T,
+  msg_NA = T,
+  split_group_labels = T,
+  line_length = 95,
+  min_n = 0
+)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with variables.}

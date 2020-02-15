@@ -4,10 +4,20 @@
 \alias{SMD_matrix}
 \title{Standardized mean differences}
 \usage{
-SMD_matrix(x, group, central_tendency = wtd_mean, dispersion = "sd",
-  dispersion_method = "all", extended_output = F, CI = 0.95,
-  str_template = "\%d [\%lower \%upper]", str_round_to = 2,
-  reliability = 1, se_analytic = T, ...)
+SMD_matrix(
+  x,
+  group,
+  central_tendency = wtd_mean,
+  dispersion = "sd",
+  dispersion_method = "all",
+  extended_output = F,
+  CI = 0.95,
+  str_template = "\%d [\%lower \%upper]",
+  str_round_to = 2,
+  reliability = 1,
+  se_analytic = T,
+  ...
+)
 }
 \arguments{
 \item{x}{(numeric vector) A vector of values.}

@@ -4,8 +4,7 @@
 \alias{conditional_change}
 \title{Change values conditionally}
 \usage{
-conditional_change(x, func = NULL, func_str = NULL, new_value,
-  handle_NA = T)
+conditional_change(x, func = NULL, func_str = NULL, new_value, handle_NA = T)
 }
 \arguments{
 \item{x}{(vector, data.frame, matrix or list) An object whose values to change.}

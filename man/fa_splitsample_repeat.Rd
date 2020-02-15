@@ -4,8 +4,15 @@
 \alias{fa_splitsample_repeat}
 \title{Repeated splithalf reliability with factor analysis}
 \usage{
-fa_splitsample_repeat(data, runs = 100, save_scores = F,
-  messages = T, progress = T, seed = 1, ...)
+fa_splitsample_repeat(
+  data,
+  runs = 100,
+  save_scores = F,
+  messages = T,
+  progress = T,
+  seed = 1,
+  ...
+)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data.}

@@ -882,7 +882,7 @@ GG_save_pdf = function(list, filename) {
 
 #' Heatmap correlation matrix with ggplot2
 #'
-#' @param data Data frame)
+#' @param data Data frame or a matrix
 #' @param add_values Whether to add the correlation sizes as text to plot
 #' @param reorder_vars Whether to reorder variables so strongly related ones are close to each other
 #' @param digits How many digits to print when plotting them
@@ -891,12 +891,22 @@ GG_save_pdf = function(list, filename) {
 #' @export
 #'
 #' @examples
+#' #data input
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap()
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
+#' #cor matrix input
+#' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
 GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2) {
 
   #correlations
-  cormat = weights::wtd.cors(data)
+  #compute if given as data
+  #coerce to numeric to deal with ordinals
+  if (is.data.frame(data)) {
+    cormat = weights::wtd.cors(map_df(data, as.numeric))
+  }
+  if (is.matrix(data)) {
+    cormat = data
+  }
 
   #reorder
   if (reorder_vars) {

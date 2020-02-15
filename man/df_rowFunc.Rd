@@ -4,8 +4,14 @@
 \alias{df_rowFunc}
 \title{Calculate summary statistics by rows in a data.frame.}
 \usage{
-df_rowFunc(..., standardize = F, func = mean, ignore_NA = T,
-  progress = "text", pattern = NULL)
+df_rowFunc(
+  ...,
+  standardize = F,
+  func = mean,
+  ignore_NA = T,
+  progress = "text",
+  pattern = NULL
+)
 }
 \arguments{
 \item{...}{(data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.}

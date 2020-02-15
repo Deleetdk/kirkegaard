@@ -4,8 +4,14 @@
 \alias{df_as_num}
 \title{Convert convertible columns in a data.frame to numeric.}
 \usage{
-df_as_num(df, stringsAsFactors = F, smart_factor_conversion = T,
-  always_skip_factors = F, remove_commas = T, skip_factors = NULL)
+df_as_num(
+  df,
+  stringsAsFactors = F,
+  smart_factor_conversion = T,
+  always_skip_factors = F,
+  remove_commas = T,
+  skip_factors = NULL
+)
 }
 \arguments{
 \item{df}{A data.frame.}

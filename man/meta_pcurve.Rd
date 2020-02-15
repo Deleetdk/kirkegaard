@@ -4,8 +4,13 @@
 \alias{meta_pcurve}
 \title{P-curve plot with ggplot2}
 \usage{
-meta_pcurve(.analysis, p_cutoff = 0.05, print_plot = T,
-  binom_method = "exact", text_pos = "tl")
+meta_pcurve(
+  .analysis,
+  p_cutoff = 0.05,
+  print_plot = T,
+  binom_method = "exact",
+  text_pos = "tl"
+)
 }
 \arguments{
 \item{.analysis}{(rma object) The rma analysis from \link{metafor}.}

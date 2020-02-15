@@ -4,8 +4,14 @@
 \alias{semi_par_serial}
 \title{Semi-partial correlation with weights}
 \usage{
-semi_par_serial(df, dependent, primary, secondaries, weights = NULL,
-  standardize = T)
+semi_par_serial(
+  df,
+  dependent,
+  primary,
+  secondaries,
+  weights = NULL,
+  standardize = T
+)
 }
 \arguments{
 \item{df}{A data frame with the variables.}

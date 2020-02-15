@@ -4,8 +4,13 @@
 \alias{rescale}
 \title{Rescale numbers}
 \usage{
-rescale(x, new_min, new_max, old_min = min(x, na.rm = T),
-  old_max = max(x, na.rm = T))
+rescale(
+  x,
+  new_min,
+  new_max,
+  old_min = min(x, na.rm = T),
+  old_max = max(x, na.rm = T)
+)
 }
 \arguments{
 \item{x}{(num vectr) A vector of values.}

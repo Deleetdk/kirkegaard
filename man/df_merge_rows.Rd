@@ -4,8 +4,15 @@
 \alias{df_merge_rows}
 \title{Merge rows in data.frame.}
 \usage{
-df_merge_rows(data, key = NULL, names = NULL, new_name = NULL,
-  func = purrr::partial(sum, na.rm = T), numeric = T, ...)
+df_merge_rows(
+  data,
+  key = NULL,
+  names = NULL,
+  new_name = NULL,
+  func = purrr::partial(sum, na.rm = T),
+  numeric = T,
+  ...
+)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data object.}

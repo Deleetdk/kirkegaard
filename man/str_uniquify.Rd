@@ -9,7 +9,7 @@ str_uniquify(string, suffix = " (\%d)", pad = F)
 \arguments{
 \item{string}{(chr vector) A character vector.}
 
-\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain \%d.}
+\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain \\%d.}
 
 \item{pad}{Whether to pad numbers by adding 0's in front to keep the same length in all suffixes.}
 }

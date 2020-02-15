@@ -4,9 +4,14 @@
 \alias{score_accuracy}
 \title{Score accuracy of estimates.}
 \usage{
-score_accuracy(x, criterion, methods = c("pearson_r", "mean_abs_delta",
-  "sd_error_abs", "mean_elevation_error_abs"), aggregate = F,
-  aggregate_function = wtd_mean, ...)
+score_accuracy(
+  x,
+  criterion,
+  methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"),
+  aggregate = F,
+  aggregate_function = wtd_mean,
+  ...
+)
 }
 \arguments{
 \item{x}{(numeric data.frame) A data.frame with estimates. Rows must be cases. Alternatively, a vector of values. If given a vector, it will assume the user wants aggregate-level estimates.}

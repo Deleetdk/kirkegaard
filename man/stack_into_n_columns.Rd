@@ -4,8 +4,13 @@
 \alias{stack_into_n_columns}
 \title{Stack data into n columns.}
 \usage{
-stack_into_n_columns(data, columns, pad_columns = TRUE,
-  include_colnames = TRUE, rowname_colnames = "name")
+stack_into_n_columns(
+  data,
+  columns,
+  pad_columns = TRUE,
+  include_colnames = TRUE,
+  rowname_colnames = "name"
+)
 }
 \arguments{
 \item{data}{(data.frame, matrix, or something coercible into a matrix) The data to reshape.}

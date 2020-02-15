@@ -4,8 +4,12 @@
 \alias{merge_datasets_multi}
 \title{Merge multiple datasets at once, improved version.}
 \usage{
-merge_datasets_multi(..., join = "both", overwrite_NA = FALSE,
-  restore_factors = FALSE)
+merge_datasets_multi(
+  ...,
+  join = "both",
+  overwrite_NA = FALSE,
+  restore_factors = FALSE
+)
 }
 \arguments{
 \item{...}{(data.frames) Two or more data.frames to merge.}

@@ -4,8 +4,14 @@
 \alias{ldf_to_df}
 \title{Transform list of data.frames to a data.frame.}
 \usage{
-ldf_to_df(list, add_by = T, by_name = "group", rownames_to_var = F,
-  rownames_name = "rownames", messages = T)
+ldf_to_df(
+  list,
+  add_by = T,
+  by_name = "group",
+  rownames_to_var = F,
+  rownames_name = "rownames",
+  messages = T
+)
 }
 \arguments{
 \item{list}{(list of data.frames) The data.frames.}

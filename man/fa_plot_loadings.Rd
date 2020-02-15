@@ -4,9 +4,15 @@
 \alias{fa_plot_loadings}
 \title{Plot factor loadings}
 \usage{
-fa_plot_loadings(fa_objects, fa_labels = NA, factor_names = NA,
-  reverse_vector = NA, reorder = "mean", clean_factor_labels = T,
-  clean_indicator_labels = T)
+fa_plot_loadings(
+  fa_objects,
+  fa_labels = NA,
+  factor_names = NA,
+  reverse_vector = NA,
+  reorder = "mean",
+  clean_factor_labels = T,
+  clean_indicator_labels = T
+)
 }
 \arguments{
 \item{fa_objects}{(list of fa-class objects) Factor analyses objects from the fa() function from the \code{\link{psych}} package.}

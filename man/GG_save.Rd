@@ -4,8 +4,14 @@
 \alias{GG_save}
 \title{Save a ggplot2 figure}
 \usage{
-GG_save(filename, plot = last_plot(), path = NULL, width = 10,
-  height = 6.5, ...)
+GG_save(
+  filename,
+  plot = last_plot(),
+  path = NULL,
+  width = 10,
+  height = 6.5,
+  ...
+)
 }
 \description{
 Save a ggplot2 figure. Now with a sensible default size (10 x 6.5 inches). Same arguments as \code{ggplot2::ggsave}

@@ -30,6 +30,6 @@ iris \%>\% head \%>\% df_round(digits = 0)
 data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) \%>\% df_round
 #but this behavior can be toggled
 data.frame(a = c(NA, 1.1, -2.2), b = c("abc", "def", NA)) \%>\% df_round(NA_as_empty_string = F)
-#if for whatever reason you want to just call \\code{\\link{round}} on all the numerical columns, use \\code{simple=T}
+#if for whatever reason you want to just call \code{\link{round}} on all the numerical columns, use \code{simple=T}
 iris \%>\% head \%>\% df_round(digits = 1, simple = T)
 }

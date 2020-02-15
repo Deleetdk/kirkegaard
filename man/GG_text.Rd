@@ -4,8 +4,7 @@
 \alias{GG_text}
 \title{Add text to a ggplot}
 \usage{
-GG_text(text, text_pos = "tl", font_size = 11, font_color = "black",
-  ...)
+GG_text(text, text_pos = "tl", font_size = 11, font_color = "black", ...)
 }
 \arguments{
 \item{text}{(chr) A character scalar with text to use.}

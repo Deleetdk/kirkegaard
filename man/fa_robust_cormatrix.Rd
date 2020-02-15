@@ -7,8 +7,6 @@
 fa_robust_cormatrix(x, method = "lmrob")
 }
 \arguments{
-\item{x}{A data.frame to correlate.}
-
 \item{x}{method Which robust method to use. Options are "lmrob" \link{robustbase} or "rlm" \link{MASS}. Defaults to the first.}
 }
 \description{

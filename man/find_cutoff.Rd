@@ -4,8 +4,14 @@
 \alias{find_cutoff}
 \title{Find a cutoff of a normal distribution that results in a given mean trait value above the cutoff}
 \usage{
-find_cutoff(mean_above, mean_pop = 100, sd_pop = 15, n = 10000,
-  precision = 0.1, below = F)
+find_cutoff(
+  mean_above,
+  mean_pop = 100,
+  sd_pop = 15,
+  n = 10000,
+  precision = 0.1,
+  below = F
+)
 }
 \arguments{
 \item{mean_above}{(num scalar) Mean trait level of population above the cutoff.}

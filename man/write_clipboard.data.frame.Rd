@@ -4,10 +4,19 @@
 \alias{write_clipboard.data.frame}
 \title{Write data frame to clipboard}
 \usage{
-\method{write_clipboard}{data.frame}(x, digits = 2, clean_names = T,
-  clean_what = c("_", "\\\\."), pad_digits = T, print = T,
-  .rownames = T, write_to_clipboard = interactive(),
-  return_modified = F, capitalize_dimnames = T, na = "")
+\method{write_clipboard}{data.frame}(
+  x,
+  digits = 2,
+  clean_names = T,
+  clean_what = c("_", "\\\\."),
+  pad_digits = T,
+  print = T,
+  .rownames = T,
+  write_to_clipboard = interactive(),
+  return_modified = F,
+  capitalize_dimnames = T,
+  na = ""
+)
 }
 \arguments{
 \item{x}{(any object that works with write.table) Something to write to the clipboard.}

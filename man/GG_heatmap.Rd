@@ -7,7 +7,7 @@
 GG_heatmap(data, add_values = T, reorder_vars = T, digits = 2)
 }
 \arguments{
-\item{data}{Data frame)}
+\item{data}{Data frame or a matrix}
 
 \item{add_values}{Whether to add the correlation sizes as text to plot}
 

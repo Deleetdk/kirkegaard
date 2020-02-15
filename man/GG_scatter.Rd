@@ -4,10 +4,23 @@
 \alias{GG_scatter}
 \title{Scatter plot with regression line and correlation information using ggplot2}
 \usage{
-GG_scatter(df, x_var, y_var, weights = NULL, color = NULL, alpha = 1,
-  text_pos = NA, case_names = NULL, case_names_color = "black",
-  CI = 0.95, clean_names = T, check_overlap = T, repel_names = F,
-  weight_as_size = T, ...)
+GG_scatter(
+  df,
+  x_var,
+  y_var,
+  weights = NULL,
+  color = NULL,
+  alpha = 1,
+  text_pos = NA,
+  case_names = NULL,
+  case_names_color = "black",
+  CI = 0.95,
+  clean_names = T,
+  check_overlap = T,
+  repel_names = F,
+  weight_as_size = T,
+  ...
+)
 }
 \arguments{
 \item{df}{(data.frame) A data frame with variables.}

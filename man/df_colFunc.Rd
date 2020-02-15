@@ -4,8 +4,15 @@
 \alias{df_colFunc}
 \title{Apply function to columns of a data.frame}
 \usage{
-df_colFunc(data, func, indices = NULL, pattern = NULL,
-  pattern_inverse = F, keep_unselected = T, ...)
+df_colFunc(
+  data,
+  func,
+  indices = NULL,
+  pattern = NULL,
+  pattern_inverse = F,
+  keep_unselected = T,
+  ...
+)
 }
 \arguments{
 \item{data}{(an object) An object whose colnames should be changed}

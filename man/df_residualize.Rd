@@ -4,9 +4,16 @@
 \alias{df_residualize}
 \title{Residualized data.frame.}
 \usage{
-df_residualize(data, resid.vars, suffix = "", exclude.resid.vars = T,
-  return.resid.vars = T, print.models = F, exclude_vars = NULL,
-  weights = NA)
+df_residualize(
+  data,
+  resid.vars,
+  suffix = "",
+  exclude.resid.vars = T,
+  return.resid.vars = T,
+  print.models = F,
+  exclude_vars = NULL,
+  weights = NA
+)
 }
 \arguments{
 \item{data}{(data.frame or matrix) The data object.}

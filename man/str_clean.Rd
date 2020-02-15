@@ -4,8 +4,14 @@
 \alias{str_clean}
 \title{Clean string}
 \usage{
-str_clean(string, underscores = T, spacing_dots = T, end_dots = T,
-  all_dots = F, multi_dots = T)
+str_clean(
+  string,
+  underscores = T,
+  spacing_dots = T,
+  end_dots = T,
+  all_dots = F,
+  multi_dots = T
+)
 }
 \arguments{
 \item{string}{(chr scalar) A string to clean.}

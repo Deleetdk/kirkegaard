@@ -12,7 +12,7 @@ devtools::document()
 #install
 #for some weird reason this sometimes begins reinstalling packages for no reason I can find
 #install("../kirkegaard")
-devtools::install("../kirkegaard", upgrade_dependencies = F)
+devtools::install("../kirkegaard")
 
 #load
 pacman::p_load(kirkegaard, testthat)

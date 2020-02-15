@@ -4,8 +4,15 @@
 \alias{MOD_summary}
 \title{Convenient summary of a \code{\link{lm}} or \code{\link{glm}} with analytic confidence intervals.}
 \usage{
-MOD_summary(fitted_model, level = 0.95, standardize = T, kfold = F,
-  folds = 10, runs = 20, ...)
+MOD_summary(
+  fitted_model,
+  level = 0.95,
+  standardize = T,
+  kfold = F,
+  folds = 10,
+  runs = 20,
+  ...
+)
 }
 \arguments{
 \item{fitted_model}{(lm or glm) The fitted model.}
@@ -31,5 +38,5 @@ Tidys information from linear models or generalized linear models.
 fit1 = lm("Sepal.Length ~ Sepal.Width + Petal.Length", iris)
 #then summarize the model
 MOD_summary(fit1) #unstd. data, std. betas
-MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \\code{summary}
+MOD_summary(fit1, standardize = F) #unstd. data, don't std. betas, similar to base \code{summary}
 }

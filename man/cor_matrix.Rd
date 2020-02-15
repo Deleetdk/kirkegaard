@@ -4,10 +4,19 @@
 \alias{cor_matrix}
 \title{Correlation matrix}
 \usage{
-cor_matrix(data, weights = NULL, reliabilities = NULL, CI = NULL,
-  CI_template = "\%r [\%lower \%upper]", skip_nonnumeric = T,
-  CI_round = 2, p_val = NULL, p_template = "\%r [p=\%p]",
-  p_round = 3, rank_order = F)
+cor_matrix(
+  data,
+  weights = NULL,
+  reliabilities = NULL,
+  CI = NULL,
+  CI_template = "\%r [\%lower \%upper]",
+  skip_nonnumeric = T,
+  CI_round = 2,
+  p_val = NULL,
+  p_template = "\%r [p=\%p]",
+  p_round = 3,
+  rank_order = F
+)
 }
 \arguments{
 \item{data}{(data.frame or coercible into data.frame) The data.}

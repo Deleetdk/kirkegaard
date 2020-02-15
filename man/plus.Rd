@@ -4,7 +4,7 @@
 \alias{+}
 \title{Easy character concatenation}
 \usage{
-"+"(x, y)
+`+`(x, y)
 }
 \arguments{
 \item{x}{(character vector) A character vector.}

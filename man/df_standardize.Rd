@@ -4,8 +4,7 @@
 \alias{df_standardize}
 \title{Standardize data.frame}
 \usage{
-df_standardize(df, exclude = NULL, messages = T, exclude_factors = T,
-  w = NULL)
+df_standardize(df, exclude = NULL, messages = T, exclude_factors = T, w = NULL)
 }
 \arguments{
 \item{df}{(data frame) The data frame.}

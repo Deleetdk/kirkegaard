@@ -4,8 +4,12 @@
 \alias{remove_redundant_vars}
 \title{Remove redundant variables}
 \usage{
-remove_redundant_vars(df, threshold = 0.9, cor_method = "pearson",
-  messages = T)
+remove_redundant_vars(
+  df,
+  threshold = 0.9,
+  cor_method = "pearson",
+  messages = T
+)
 }
 \arguments{
 \item{df}{(data.frame) A data.frame with numeric variables.}

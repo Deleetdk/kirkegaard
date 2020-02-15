@@ -4,8 +4,15 @@
 \alias{read_clipboard}
 \title{Read data frame from clipboard}
 \usage{
-read_clipboard(header = T, sep = "\\t", na.strings = c("", "NA"),
-  check.names = T, stringsAsFactors = F, dec = ".", ...)
+read_clipboard(
+  header = T,
+  sep = "\\t",
+  na.strings = c("", "NA"),
+  check.names = T,
+  stringsAsFactors = F,
+  dec = ".",
+  ...
+)
 }
 \arguments{
 \item{header}{(lgl) Whether to use the first row as headers (column names).}

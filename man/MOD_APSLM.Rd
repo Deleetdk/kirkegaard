@@ -4,8 +4,16 @@
 \alias{MOD_APSLM}
 \title{Fit all possible simple linear models}
 \usage{
-MOD_APSLM(dependent, predictors, data, standardized = T, .weights = NA,
-  messages = F, progress = T, cv_runs = 20)
+MOD_APSLM(
+  dependent,
+  predictors,
+  data,
+  standardized = T,
+  .weights = NA,
+  messages = F,
+  progress = T,
+  cv_runs = 20
+)
 }
 \arguments{
 \item{dependent}{(chr scalar) The name of the dependent variable.}

@@ -4,8 +4,7 @@
 \alias{math_to_function}
 \title{Convert a half-complete math condition to a function.}
 \usage{
-math_to_function(str, convert_equal = T, silent_try = T,
-  test_function = T)
+math_to_function(str, convert_equal = T, silent_try = T, test_function = T)
 }
 \arguments{
 \item{str}{(chr scalar) A string of a half math conditional}

@@ -4,8 +4,13 @@
 \alias{merge_datasets}
 \title{Improved dataset merger function}
 \usage{
-merge_datasets(DF1, DF2, join = "both", overwrite_NA = FALSE,
-  restore_factors = FALSE)
+merge_datasets(
+  DF1,
+  DF2,
+  join = "both",
+  overwrite_NA = FALSE,
+  restore_factors = FALSE
+)
 }
 \arguments{
 \item{DF1}{(data.frame) A data.frame to merge into.}

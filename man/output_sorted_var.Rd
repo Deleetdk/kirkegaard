@@ -9,8 +9,6 @@ output_sorted_var(df, var, filename)
 \arguments{
 \item{df}{a data frame.}
 
-\item{var}{a string with the name of the variable to write.}
-
 \item{var}{a string with the desired filename to write to.}
 }
 \description{

@@ -4,8 +4,13 @@
 \alias{retry_while_error}
 \title{Retry while error}
 \usage{
-retry_while_error(expr, retry_interval = 60, silent = F,
-  max_tries = 10, max_time = Inf)
+retry_while_error(
+  expr,
+  retry_interval = 60,
+  silent = F,
+  max_tries = 10,
+  max_time = Inf
+)
 }
 \arguments{
 \item{expr}{An expression.}

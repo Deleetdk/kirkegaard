@@ -4,9 +4,18 @@
 \alias{fa_Jensens_method}
 \title{Scatter plot of Jensen's method}
 \usage{
-fa_Jensens_method(fa, df, criterion, reverse_factor = F,
-  loading_reversing = T, check_overlap = TRUE, n_factor = 1,
-  indicator_criterion_method = "auto", .weights = NA, ...)
+fa_Jensens_method(
+  fa,
+  df,
+  criterion,
+  reverse_factor = F,
+  loading_reversing = T,
+  check_overlap = TRUE,
+  n_factor = 1,
+  indicator_criterion_method = "auto",
+  .weights = NA,
+  ...
+)
 }
 \arguments{
 \item{fa}{(fa obj) A factor analysis object from fa().}

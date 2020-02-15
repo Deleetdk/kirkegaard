@@ -4,10 +4,18 @@
 \alias{pu_translate}
 \title{Translate between names of units and abbreviations}
 \usage{
-pu_translate(x, superunit = NULL, fuzzy = T, reverse = F,
-  lang = "en", superunit_recursive = F, messages = 1,
-  stringdist_params = NULL, standardize_name = F,
-  add_parens = c("ISO3", "ISO2", "name"))
+pu_translate(
+  x,
+  superunit = NULL,
+  fuzzy = T,
+  reverse = F,
+  lang = "en",
+  superunit_recursive = F,
+  messages = 1,
+  stringdist_params = NULL,
+  standardize_name = F,
+  add_parens = c("ISO3", "ISO2", "name")
+)
 }
 \arguments{
 \item{x}{(chr vectr) A chr vector of names to abbreviate.}

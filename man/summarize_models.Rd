@@ -4,9 +4,14 @@
 \alias{summarize_models}
 \title{Concise model comparison summary table}
 \usage{
-summarize_models(x, asterisks = c(0.01, 0.005, 0.001),
-  asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits +
-  1, p_digits = 3)
+summarize_models(
+  x,
+  asterisks = c(0.01, 0.005, 0.001),
+  asterisks_only = T,
+  beta_digits = 2,
+  beta_se_digits = beta_digits + 1,
+  p_digits = 3
+)
 }
 \arguments{
 \item{x}{List of models}
