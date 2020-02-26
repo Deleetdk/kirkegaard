@@ -65,10 +65,12 @@ test_that("miss_impute", {
   expect_is(iris %>% miss_add_random %>% miss_impute, class = "data.frame")
 
   #ordinal with 2 levels
-  expect_warning(iris_with_ord2 %>% miss_add_random() %>% miss_impute())
+  expect_message(iris_with_ord2 %>% miss_add_random() %>% miss_impute(method = "rf"))
+  expect_warning(iris_with_ord2 %>% miss_add_random() %>% miss_impute(method = "irmi"))
 
   #preserve rownames
   expect_equivalent(rownames(miss_impute(df)), letters[1:5])
+  expect_equivalent(rownames(miss_impute(df, method = "irmi")), letters[1:5])
   expect_equivalent(rownames(miss_impute(df2)), letters[5:1])
   expect_equivalent(rownames(miss_impute(df3, max_na = Inf)), letters[1:5])
 })

@@ -327,15 +327,18 @@ miss_add_random =  function(df, prop = .1){
 #' Useful wrapper for VIM's irmi function. Can skip cases without changing case order depending on the number of missing values
 #' @param data (data.frame) A data.frame.
 #' @param max_na (num scalar) The maximum number of missing datapoints per case.
+#' @param noise Add randomness to imputations? Needed for multiple imputation
+#' @param method rf (missForest) or irmi (VIM)
 #' @return A data frame with missing data imputed for the desired cases.
 #' @export
 #' @examples
 #' df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
 #' miss_impute(df) #impute missing
+#' miss_impute(df, method = "irmi") #with irmi
 #' #preserves rownames for ease of use
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
 #' miss_impute(df)
-miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
+miss_impute = function(data, max_na = floor(ncol(data)/2), method = "rf", method_args = NULL) {
   #tibbles do not work here
   data = as.data.frame(data)
 
@@ -377,7 +380,17 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), noise = F) {
   }
 
   #impute
-  data = VIM::irmi(data, noise = noise, imp_var = F)
+  if (method == "rf") {
+    method_args = c(list(xmis = data), method_args)
+    data = suppressWarnings(do.call(missForest::missForest, args = method_args)$ximp)
+  } else if (method == "irmi") {
+    method_args = c(list(x = data, imp_var = F, noise = F), method_args)
+    data = do.call(VIM::irmi, args = method_args)
+    # VIM::irmi(data, noise = noise, imp_var = F)
+  } else {
+    stop(str_glue("`method` not recognized {method}, must be either 'rf' or 'irmi'"), call. = F)
+  }
+
 
   #add back
   if (exclusion) {

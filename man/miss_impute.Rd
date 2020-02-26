@@ -4,12 +4,21 @@
 \alias{miss_impute}
 \title{Impute data using VIM::irmi}
 \usage{
-miss_impute(data, max_na = floor(ncol(data)/2), noise = F)
+miss_impute(
+  data,
+  max_na = floor(ncol(data)/2),
+  method = "rf",
+  method_args = NULL
+)
 }
 \arguments{
 \item{data}{(data.frame) A data.frame.}
 
 \item{max_na}{(num scalar) The maximum number of missing datapoints per case.}
+
+\item{method}{rf (missForest) or irmi (VIM)}
+
+\item{noise}{Add randomness to imputations? Needed for multiple imputation}
 }
 \value{
 A data frame with missing data imputed for the desired cases.
@@ -20,6 +29,7 @@ Useful wrapper for VIM's irmi function. Can skip cases without changing case ord
 \examples{
 df = miss_add_random(iris[-5]) #example data, remove data at random from iris num data
 miss_impute(df) #impute missing
+miss_impute(df, method = "irmi") #with irmi
 #preserves rownames for ease of use
 df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) \%>\% set_rownames(letters[1:5])
 miss_impute(df)
