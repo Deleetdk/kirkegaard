@@ -753,7 +753,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   }
 
   #subset to wanted cols
-  y = y %>% select(term, beta, model)
+  y = y %>% dplyr::select(term, beta, model)
 
   #factor levels, so that we spread in the same order as input
   y$model = factor(y$model, levels = names(x))
@@ -761,10 +761,10 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #spread
   y2 = y %>%
     #spread
-    spread(key = model, value = beta) %>%
+    tidyr::spread(key = model, value = beta) %>%
     #put variables in right order, same as their order of appearance in models
-    mutate(term = factor(term, levels = term_order)) %>%
-    arrange(term)
+    dplyr::mutate(term = factor(term, levels = term_order)) %>%
+    dplyr::arrange(term)
 
   #reset to chr so we can add more rows
   y2$term %<>% as.character()
