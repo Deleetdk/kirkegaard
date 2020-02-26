@@ -15,7 +15,8 @@ GG_group_means(
   msg_NA = T,
   split_group_labels = T,
   line_length = 95,
-  min_n = 0
+  min_n = 0,
+  detect_prop = T
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ GG_group_means(
 \item{line_length}{(num scalar) The desired line width (default 95). Only used when split_group_labels = T.}
 
 \item{min_n}{Minimum sample size per group.}
+
+\item{detect_prop}{Detect proportions and use prop.test().}
 }
 \description{
 Draws a nice ggplot2 with group means and error bars.

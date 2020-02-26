@@ -566,6 +566,7 @@ GG_scatter = function(df,
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
 #' @param line_length (num scalar) The desired line width (default 95). Only used when split_group_labels = T.
 #' @param min_n Minimum sample size per group.
+#' @param detect_prop Detect proportions and use prop.test().
 #' @export
 #' @examples
 #' #simple examples
@@ -583,10 +584,17 @@ GG_scatter = function(df,
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
-GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0) {
+GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T) {
 
   #convert
   df = as.data.frame(df)
+  df[[var]] = as.numeric(df[[var]])
+
+  #prop?
+  is_prop = F
+  if (detect_prop) {
+    if (setequal(unique(df[[var]]), c(0, 1))) is_prop = T
+  }
 
   #no subgroupvar variable, simple
   if (is.null(subgroupvar)) {
@@ -617,7 +625,34 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #summarize
-    df_sum = psych::describeBy(df[[var]], df[[groupvar]], mat = T)
+    # browser()
+    # df_sum = psych::describeBy(df[[var]], df[[groupvar]], mat = T)
+    df_sum = plyr::ddply(df, groupvar, function(dd) {
+      # browser()
+      #describe
+      desc = psych::describe(dd[[var]])
+      desc$group1 = dd[[groupvar]][1]
+
+      #add CIs
+      if (is_prop) {
+        #prop
+        proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
+
+        desc %<>% mutate(
+          ci_lower = proptest$conf.int[1],
+          ci_upper = proptest$conf.int[2]
+        )
+      } else {
+        #standard symmetric CI
+        desc %<>% mutate(
+          ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+          ci_lower = mean - ci_bar * se,
+          ci_upper = mean + ci_bar * se
+        )
+      }
+
+      desc
+    })
 
     #reorder groups in line with data
     if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
@@ -630,29 +665,29 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #check for data
     if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
 
-    #calculate CIs
-    df_sum$ci_bar = apply(df_sum, 1, function(x) {
-      qt(1 - ((1 - CI) / 2), df = as.numeric(x[4]) - 1)
-    })
+    #error bar
+    g_eb1 = geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = .2, color = "red")
+    g_eb2 = geom_errorbar(aes(group1, ymin = ci_lower, ymax = ci_upper), width = .2, color = "red")
+    g_eb3 = geom_errorbar(data = df_sum, aes(group1, ymin = ci_lower, ymax = ci_upper), width = .2, color = "red")
 
     #plot
     if (type == "bar") {
       g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
         geom_bar(stat="identity") +
-        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        g_eb1
     }
 
     if (type == "point") {
       g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
         geom_point() +
-        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        g_eb1
     }
 
     if (type == "points") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes_string(groupvar, var)) +
         geom_point(aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        g_eb2
     }
 
     if (type == "violin") {
@@ -660,7 +695,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(data = df_sum, aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        g_eb3
     }
 
     if (type == "violin2") {
@@ -669,7 +704,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         geom_count(data = df, aes_string(groupvar, var)) +
         scale_fill_discrete(guide = F) +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        geom_errorbar(data = df_sum, aes(group1, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), width = .2, color = "red")
+        g_eb3
     }
 
     if (split_group_labels) {
@@ -707,11 +742,30 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #summarize
-    df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(d_sub) {
-      desc = psych::describe(d_sub[[var]])
-      c("mean" = desc$mean,
-        "n" = desc$n,
-        "se" = desc$se)
+    # browser()
+    df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(dd) {
+      #describe
+      desc = psych::describe(dd[[var]])
+
+      #add CIs
+      if (is_prop) {
+        #prop
+        proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
+
+        desc %<>% mutate(
+          ci_lower = proptest$conf.int[1],
+          ci_upper = proptest$conf.int[2]
+        )
+      } else {
+        #standard symmetric CI
+        desc %<>% mutate(
+          ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+          ci_lower = mean - ci_bar * se,
+          ci_upper = mean + ci_bar * se
+        )
+      }
+
+      desc
     })
 
     #copy vars
@@ -736,29 +790,24 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #check for data
     if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
 
-    #calculate CIs
-    df_sum$ci_bar = apply(df_sum, 1, function(x) {
-      qt(1 - ((1 - CI) / 2), df = as.numeric(x[4]) - 1)
-    })
-
-    #plot
+     #plot
     if (type == "bar") {
       g = ggplot2::ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
         geom_bar(stat="identity", position = "dodge") +
-        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+        geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "point") {
       g = ggplot2::ggplot(df_sum, aes(groupvar, mean, color = subgroupvar)) +
         geom_point(position = position_dodge(width = .9)) +
-        geom_errorbar(aes(ymin = mean - ci_bar*se, ymax = mean + ci_bar*se, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
+        geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
     }
 
     if (type == "points") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes(groupvar, y = var, color = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
 
     }
 
@@ -766,7 +815,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2)
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "violin2") {
@@ -774,7 +823,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9), alpha = .5) +
         geom_count(data = df, aes(groupvar, y = var, group = subgroupvar), position = position_dodge(width = .9)) +
         geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = mean - ci_bar*se, ymax = mean + ci_bar*se), position = position_dodge(width = .9), width = .2, color = "red")
+        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2, color = "red")
     }
 
     if (split_group_labels) {
@@ -886,6 +935,7 @@ GG_save_pdf = function(list, filename) {
 #' @param add_values Whether to add the correlation sizes as text to plot
 #' @param reorder_vars Whether to reorder variables so strongly related ones are close to each other
 #' @param digits How many digits to print when plotting them
+#' @param color_label Which label to use for the color scale legend
 #'
 #' @return a ggplot2 object
 #' @export
@@ -894,9 +944,10 @@ GG_save_pdf = function(list, filename) {
 #' #data input
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap()
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
+#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2) {
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, color_label = "Pearson\nCorrelation") {
 
   #correlations
   #compute if given as data
@@ -938,7 +989,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2) {
     geom_tile(color = "white") +
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                          midpoint = 0, limit = c(-1,1), space = "Lab",
-                         name="Pearson\nCorrelation") +
+                         name = color_label) +
     theme_minimal() + # minimal theme
     theme(axis.text.x = element_text(angle = 45, vjust = 1,
                                      size = 12, hjust = 1),

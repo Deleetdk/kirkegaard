@@ -4,7 +4,13 @@
 \alias{GG_heatmap}
 \title{Heatmap correlation matrix with ggplot2}
 \usage{
-GG_heatmap(data, add_values = T, reorder_vars = T, digits = 2)
+GG_heatmap(
+  data,
+  add_values = T,
+  reorder_vars = T,
+  digits = 2,
+  color_label = "Pearson\\nCorrelation"
+)
 }
 \arguments{
 \item{data}{Data frame or a matrix}
@@ -14,6 +20,8 @@ GG_heatmap(data, add_values = T, reorder_vars = T, digits = 2)
 \item{reorder_vars}{Whether to reorder variables so strongly related ones are close to each other}
 
 \item{digits}{How many digits to print when plotting them}
+
+\item{color_label}{Which label to use for the color scale legend}
 }
 \value{
 a ggplot2 object
