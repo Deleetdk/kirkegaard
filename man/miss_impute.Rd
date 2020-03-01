@@ -7,7 +7,7 @@
 miss_impute(
   data,
   max_na = floor(ncol(data)/2),
-  method = "rf",
+  method = "irmi",
   method_args = NULL
 )
 }

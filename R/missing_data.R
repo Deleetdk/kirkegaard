@@ -338,7 +338,7 @@ miss_add_random =  function(df, prop = .1){
 #' #preserves rownames for ease of use
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
 #' miss_impute(df)
-miss_impute = function(data, max_na = floor(ncol(data)/2), method = "rf", method_args = NULL) {
+miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", method_args = NULL) {
   #tibbles do not work here
   data = as.data.frame(data)
 
