@@ -61,4 +61,9 @@ GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "
 GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
 GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
+
+#proportion
+iris$onezero = sample(c(0, 1), size = nrow(iris), replace = T)
+GG_group_means(iris, "onezero", "Species")
+GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
 }

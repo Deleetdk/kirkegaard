@@ -584,6 +584,11 @@ GG_scatter = function(df,
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
+#'
+#' #proportion
+#' iris$onezero = sample(c(0, 1), size = nrow(iris), replace = T)
+#' GG_group_means(iris, "onezero", "Species")
+#' GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
 GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T) {
 
   #convert
@@ -593,7 +598,10 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   #prop?
   is_prop = F
   if (detect_prop) {
-    if (setequal(unique(df[[var]]), c(0, 1))) is_prop = T
+    if (setequal(unique(na.omit(df[[var]])), c(0, 1))) {
+      is_prop = T
+      message("Proportion variable detected, using `prop.test()`")
+    }
   }
 
   #no subgroupvar variable, simple
