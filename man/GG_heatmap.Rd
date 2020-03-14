@@ -9,6 +9,7 @@ GG_heatmap(
   add_values = T,
   reorder_vars = T,
   digits = 2,
+  font_size = 4,
   color_label = "Pearson\\nCorrelation"
 )
 }
@@ -20,6 +21,8 @@ GG_heatmap(
 \item{reorder_vars}{Whether to reorder variables so strongly related ones are close to each other}
 
 \item{digits}{How many digits to print when plotting them}
+
+\item{font_size}{If correlation values are plotted, their size}
 
 \item{color_label}{Which label to use for the color scale legend}
 }

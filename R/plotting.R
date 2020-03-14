@@ -943,6 +943,7 @@ GG_save_pdf = function(list, filename) {
 #' @param add_values Whether to add the correlation sizes as text to plot
 #' @param reorder_vars Whether to reorder variables so strongly related ones are close to each other
 #' @param digits How many digits to print when plotting them
+#' @param font_size If correlation values are plotted, their size
 #' @param color_label Which label to use for the color scale legend
 #'
 #' @return a ggplot2 object
@@ -955,7 +956,7 @@ GG_save_pdf = function(list, filename) {
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, color_label = "Pearson\nCorrelation") {
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation") {
 
   #correlations
   #compute if given as data
@@ -1022,7 +1023,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, color_
     if (!is.null(digits)) melted_cormat$value %<>% round(digits = digits)
 
     ggheatmap = ggheatmap +
-      geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value), color = "black", size = 4)
+      geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value), color = "black", size = font_size)
   }
 
   ggheatmap
