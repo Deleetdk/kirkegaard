@@ -574,6 +574,11 @@ GG_scatter = function(df,
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
+#' #dont want a CI
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = NA)
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = F)
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = NULL)
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = 0)
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
@@ -596,6 +601,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   #convert
   df = as.data.frame(df)
   df[[var]] = as.numeric(df[[var]])
+
+  #draw CIs?
+  draw_CI = !is_nullish(CI)
 
   #prop?
   is_prop = F
@@ -646,22 +654,24 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       desc = psych::describe(dd[[var]])
       desc$group1 = dd[[groupvar]][1]
 
-      #add CIs
-      if (is_prop) {
-        #prop
-        proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
+      #add CIs if wanted
+      if (draw_CI) {
+        if (is_prop) {
+          #prop
+          proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
 
-        desc %<>% mutate(
-          ci_lower = proptest$conf.int[1],
-          ci_upper = proptest$conf.int[2]
-        )
-      } else {
-        #standard symmetric CI
-        desc %<>% mutate(
-          ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
-          ci_lower = mean - ci_bar * se,
-          ci_upper = mean + ci_bar * se
-        )
+          desc %<>% mutate(
+            ci_lower = proptest$conf.int[1],
+            ci_upper = proptest$conf.int[2]
+          )
+        } else {
+          #standard symmetric CI
+          desc %<>% mutate(
+            ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+            ci_lower = mean - ci_bar * se,
+            ci_upper = mean + ci_bar * se
+          )
+        }
       }
 
       desc
@@ -686,8 +696,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #plot
     if (type == "bar") {
       g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
-        geom_bar(stat="identity") +
-        g_eb1
+        geom_bar(stat = "identity")
+
+      if (draw_CI) g = g + g_eb1
     }
 
     if (type == "boxplot") {
@@ -698,23 +709,27 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     if (type == "point") {
       g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
-        geom_point() +
-        g_eb1
+        geom_point()
+
+      if (draw_CI) g = g + g_eb1
     }
 
     if (type == "points") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes_string(groupvar, var)) +
-        geom_point(aes(group1, mean), color = "red", size = 3) +
-        g_eb2
+        geom_point(aes(group1, mean), color = "red", size = 3)
+
+      if (draw_CI) g = g + g_eb2
     }
 
     if (type == "violin") {
       g = ggplot2::ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
         scale_fill_discrete(guide = F) +
-        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        g_eb3
+        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
+
+
+      if (draw_CI) g = g + g_eb3
     }
 
     if (type == "violin2") {
@@ -722,8 +737,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
         geom_count(data = df, aes_string(groupvar, var)) +
         scale_fill_discrete(guide = F) +
-        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3) +
-        g_eb3
+        geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
+
+      if (draw_CI) g = g + g_eb3
     }
 
     if (split_group_labels) {
@@ -731,7 +747,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     }
 
     #labels
-    g = g + xlab(groupvar) + ylab(var)
+    g = g +
+      xlab(groupvar) +
+      ylab(var)
   }
 
   #if plot by subgroup too
@@ -773,21 +791,23 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       desc = psych::describe(dd[[var]])
 
       #add CIs
-      if (is_prop) {
-        #prop
-        proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
+      if (draw_CI) {
+          if (is_prop) {
+            #prop
+            proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
 
-        desc %<>% mutate(
-          ci_lower = proptest$conf.int[1],
-          ci_upper = proptest$conf.int[2]
-        )
-      } else {
-        #standard symmetric CI
-        desc %<>% mutate(
-          ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
-          ci_lower = mean - ci_bar * se,
-          ci_upper = mean + ci_bar * se
-        )
+            desc %<>% mutate(
+              ci_lower = proptest$conf.int[1],
+              ci_upper = proptest$conf.int[2]
+            )
+          } else {
+            #standard symmetric CI
+            desc %<>% mutate(
+              ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+              ci_lower = mean - ci_bar * se,
+              ci_upper = mean + ci_bar * se
+            )
+          }
       }
 
       desc
@@ -818,8 +838,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #plot
     if (type == "bar") {
       g = ggplot2::ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
-        geom_bar(stat="identity", position = "dodge") +
-        geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
+        geom_bar(stat="identity", position = "dodge")
+
+      if (draw_CI) g = g + geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "boxplot") {
@@ -831,31 +852,32 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     if (type == "point") {
       g = ggplot2::ggplot(df_sum, aes(groupvar, mean, color = subgroupvar)) +
-        geom_point(position = position_dodge(width = .9)) +
-        geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
+        geom_point(position = position_dodge(width = .9))
+
+      if (draw_CI) g = g + geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper, group = subgroupvar), position = position_dodge(width = .9), color = "black", width = .2)
     }
 
     if (type == "points") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_point(data = df, aes(groupvar, y = var, color = subgroupvar), position = position_dodge(width = .9)) +
-        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
-
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5)
+      if (draw_CI) g = g + geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "violin") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9)) +
-        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "black", size = 4, position = position_dodge(width = .9), shape = 5)
+      if (draw_CI) g = g + geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
     }
 
     if (type == "violin2") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
         geom_violin(data = df, aes(groupvar, y = var, fill = subgroupvar), position = position_dodge(width = .9), alpha = .5) +
         geom_count(data = df, aes(groupvar, y = var, group = subgroupvar), position = position_dodge(width = .9)) +
-        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5) +
-        geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2, color = "red")
+        geom_point(aes(groupvar, y = mean, group = subgroupvar), color = "red", size = 4, position = position_dodge(width = .9), shape = 5)
+
+      if (draw_CI) g = g + geom_errorbar(aes(groupvar, group = subgroupvar, ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2, color = "red")
     }
 
     if (split_group_labels) {
