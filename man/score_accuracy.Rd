@@ -7,7 +7,8 @@
 score_accuracy(
   x,
   criterion,
-  methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"),
+  methods = c("pearson_r", "mean_abs_delta", "sd_error_abs",
+    "mean_elevation_error_abs"),
   aggregate = F,
   aggregate_function = wtd_mean,
   ...
