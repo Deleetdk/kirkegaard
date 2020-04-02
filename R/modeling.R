@@ -719,6 +719,7 @@ get_n = function(x) {
 #' summarize_models(models, asterisks = c(.05))
 #' summarize_models(models, asterisks_only = F)
 summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits + 1, p_digits = 3) {
+
   #names?
   if (is.null(names(x))) names(x) = 1:length(x) %>% factor()
 
@@ -776,8 +777,11 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   names(y2)[1] = "Predictor/Model"
 
   #add summary stats to end
-  y2[nrow(y2) + 1, ] = c("R2 adj.", get_adj_r2(x) %>% format_digits(3))
-  y2[nrow(y2) + 1, ] = c("N", get_n(x))
+  y2 = rbind(
+    y2,
+    c("R2 adj.", get_adj_r2(x) %>% format_digits(3)),
+    c("N", get_n(x))
+  )
 
   #attribute for asterisks
   attr(y2, "asterisks") = map2_chr(asterisks, seq_along(asterisks), function(v, i) {
