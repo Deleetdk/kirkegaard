@@ -113,11 +113,13 @@ l_t = list(GG_group_means(iris, "Sepal.Length", "Species"),
            GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999),
            GG_group_means(iris_na, "Sepal.Length", "Species", msg_NA = F),
            "order" = GG_group_means(iris_reorder, "Sepal.Length", "Species"),
+           GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot"),
 
            #some more parameters tried
            GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type"),
            GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "point"),
-           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
+           GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points"),
+           GG_group_means(mpg, "displ", "manufacturer", subgroupvar = "drv", type = "boxplot")
            )
 
 #add more groups to iris

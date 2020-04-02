@@ -574,6 +574,7 @@ GG_scatter = function(df,
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "point")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999999)
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
 #'
@@ -582,6 +583,7 @@ GG_scatter = function(df,
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "point")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
+#' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "boxplot")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
 #' GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
 #'
@@ -604,19 +606,22 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     }
   }
 
+  # make symbols
+  var_sym = as.symbol(var)
+
   #no subgroupvar variable, simple
   if (is.null(subgroupvar)) {
 
     #checks
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
     if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
 
     #subset
     df = df[c(var, groupvar)]
 
     #enforce factor
-    df[[groupvar]] = as.factor(df[[groupvar]])
+    df[[groupvar]] = factor(df[[groupvar]])
 
     #check for missing
     if (miss_count(df) > 0 ) {
@@ -685,6 +690,12 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         g_eb1
     }
 
+    if (type == "boxplot") {
+      df$group1 = df[[groupvar]]
+      g = ggplot2::ggplot(df, aes(group1, !!var_sym)) +
+        geom_boxplot()
+    }
+
     if (type == "point") {
       g = ggplot2::ggplot(df_sum, aes(group1, mean)) +
         geom_point() +
@@ -725,15 +736,21 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
   #if plot by subgroup too
   if (!is.null(subgroupvar)) {
+    #make copy of variable
+    df$subgroupvar = df[[subgroupvar]]
 
     #checks
     if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
     if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
     if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
 
     #subset
     df = df[c(var, groupvar, subgroupvar)]
+
+    #enforce factors
+    df[[groupvar]] = factor(df[[groupvar]])
+    df[[subgroupvar]] = factor(df[[subgroupvar]])
 
     #check for missing
     if (miss_count(df) > 0 ) {
@@ -798,11 +815,18 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #check for data
     if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
 
-     #plot
+    #plot
     if (type == "bar") {
       g = ggplot2::ggplot(df_sum, aes(x = groupvar, y = mean, fill = subgroupvar)) +
         geom_bar(stat="identity", position = "dodge") +
         geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), position = position_dodge(width = .9), width = .2)
+    }
+
+    if (type == "boxplot") {
+      # browser()
+      df$group1 = df[[groupvar]]
+      g = ggplot2::ggplot(df, aes(x = group1, y = !!var_sym, fill = subgroupvar)) +
+        geom_boxplot(position = "dodge")
     }
 
     if (type == "point") {
@@ -835,12 +859,17 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     }
 
     if (split_group_labels) {
-      g = g + scale_x_discrete(labels = levels(g$data$groupvar) %>% add_newlines(line_length = line_length))
+      g = g +
+        scale_x_discrete(labels = levels(g$data$groupvar) %>% add_newlines(line_length = line_length))
     }
 
 
     #labels
-    g = g + xlab(groupvar) + scale_color_discrete(name = subgroupvar) + scale_fill_discrete(name = subgroupvar) + ylab(var)
+    g = g +
+      xlab(groupvar) +
+      scale_color_discrete(name = subgroupvar) +
+      scale_fill_discrete(name = subgroupvar) +
+      ylab(var)
   }
 
 
