@@ -1,6 +1,51 @@
 ## Misc other functions
 
 
+#' Is x nullish?
+#'
+#' Sometimes useful to have flexible input to disable a feature that accepts NULL, NA, or F as meaning "no".
+#'
+#' @param x Length 0 or 1 input
+#' @param null Whether NULL means "no"
+#' @param false Whether False means "no"
+#' @param na Whether NA means "no"
+#' @param zero Whether 0 means "no"
+#'
+#' @return Logical scalar
+#' @export
+#'
+#' @examples
+#' is_nullish(NULL)
+#' is_nullish(NA)
+#' is_nullish(F)
+#' is_nullish(0)
+#' is_nullish(NA, na = F)
+is_nullish = function(x, false = T, na = T, zero = T, null = T) {
+  #too long
+  if (length(x) > 1) stop("Length > 1. Wrong input.", call. = F)
+
+  #first try for NULL
+  if (null && is.null(x)) return(T)
+  if (!null && is.null(x)) return(F)
+
+  #then the others
+  x_false = isFALSE(x)
+  x_na = is.na(x)
+  x_zero = identical(x, 0) || identical(x, 0L)
+
+  #either or
+  if (false & na & zero) return(x_false || x_na || x_zero)
+  if (!false & na & zero) return(x_na || x_zero)
+  if (false & !na & zero) return(x_false || x_zero)
+  if (false & na & !zero) return(x_false || x_na)
+  if (!false & !na & zero) return(x_zero)
+  if (!false & na & !zero) return(x_na)
+  if (false & !na & !zero) return(x_false)
+
+  F
+}
+
+
 #' Restore NAs in vector
 #'
 #' Restore NAs in a vector from known positions. Useful for dealing with NAs in functions and predictions.
