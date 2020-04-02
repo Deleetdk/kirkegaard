@@ -705,6 +705,8 @@ get_n = function(x) {
 #' @param beta_digits Digits for betas
 #' @param beta_se_digits Digits for beta SEs
 #' @param p_digits Digits for p values
+#' @param collapse_nonlinear Hide uninterpretable betas for nonlinear terms
+#' @param nonlinear_text If `collapse_nonlinear`, then what text to use
 #'
 #' @return Data frame
 #' @export
@@ -718,7 +720,7 @@ get_n = function(x) {
 #' summarize_models(models)
 #' summarize_models(models, asterisks = c(.05))
 #' summarize_models(models, asterisks_only = F)
-summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits + 1, p_digits = 3) {
+summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits + 1, p_digits = 3, collapse_nonlinear = T, nonlinear_text = "(nonlinear)") {
 
   #names?
   if (is.null(names(x))) names(x) = 1:length(x) %>% factor()
@@ -759,6 +761,23 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #factor levels, so that we spread in the same order as input
   y$model = factor(y$model, levels = names(x))
 
+  #collapse nonlinear terms?
+  if (collapse_nonlinear && any(str_detect(term_order, "'$"))) {
+    y = plyr::ddply(y, "model", function(dd) {
+      #find nonlinear terms
+      nonlinear_clean_terms = dd$term %>% str_subset("'$") %>% str_replace("'+", "") %>% unique()
+
+      #which rows are the non-1st? remove them
+      y = dd
+      y = y[!str_detect(y$term, "'$"), ]
+
+      #then replace the clean one with dummy
+      y[y$term %in% nonlinear_clean_terms, "beta"] = nonlinear_text
+
+      y
+    })
+  }
+
   #spread
   y2 = y %>%
     #spread
@@ -769,9 +788,6 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #reset to chr so we can add more rows
   y2$term %<>% as.character()
-
-  #reorder models to match input
-  # y2 = y2[c(1, )]
 
   #fix top left column name
   names(y2)[1] = "Predictor/Model"
@@ -791,5 +807,4 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #to normal df for printing the attribute
   y2
 }
-
 

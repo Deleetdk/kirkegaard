@@ -10,7 +10,9 @@ summarize_models(
   asterisks_only = T,
   beta_digits = 2,
   beta_se_digits = beta_digits + 1,
-  p_digits = 3
+  p_digits = 3,
+  collapse_nonlinear = T,
+  nonlinear_text = "(nonlinear)"
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ summarize_models(
 \item{beta_se_digits}{Digits for beta SEs}
 
 \item{p_digits}{Digits for p values}
+
+\item{collapse_nonlinear}{Hide uninterpretable betas for nonlinear terms}
+
+\item{nonlinear_text}{If \code{collapse_nonlinear}, then what text to use}
 }
 \value{
 Data frame
