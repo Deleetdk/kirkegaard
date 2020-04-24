@@ -99,9 +99,10 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' @param group (chr sclr) The name of the grouping variable to use.
 #' @param vline (chr sclr) Whether and how to plot vertical line(s) at some point(s. Set to NULL for none. Default is \code{mean}. Can also be a custom function. Beware, it should ignore values.
 #' @param clean_name (lgl) Wheter to call str_clean on the x axis label.
-#' @param binwidth (num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.
+#' @param histogram_pars (list) Histogram pars
 #' @param no_y_axis_values (lgl) Hide numbers on the Y axis?
 #' @param alpha Alpha for density fit.
+#' @param ... Any other params we can try to match, mainly for backwards compatibility with geom_histogram pars
 #' @export
 #' @return A ggplot2 object.
 #' @examples
@@ -116,7 +117,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
 #' #warns you if grouping variable has missing data
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
-GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = NULL, clean_name = T, no_y_axis_values = T, alpha = .2) {
+GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pars = NULL, clean_name = T, no_y_axis_values = T, alpha = .2, ...) {
 
   #check input
   data
@@ -174,17 +175,40 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, binwidth = N
 
   }
 
+  #histogram pars
+  if (is.null(histogram_pars)) histogram_pars = list()
+
+  #backwards compatible, look for pars and put in the par list
+  pars = list(...)
+  if ("binwidth" %in% names(pars)) histogram_pars$binwidth = pars$binwidth
+  if ("bins" %in% names(pars)) histogram_pars$bins = pars$bins
+  if ("center" %in% names(pars)) histogram_pars$center = pars$center
+  if ("boundary" %in% names(pars)) histogram_pars$boundary = pars$boundary
+  if ("breaks" %in% names(pars)) histogram_pars$breaks = pars$breaks
+
   #plot
   if (is.null(group)) {
     g = ggplot2::ggplot(df, aes_string(var)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
-                     colour="black", fill="white", binwidth = binwidth) +
+                     colour="black", fill="white",
+                     binwidth = histogram_pars$binwidth,
+                     bins = histogram_pars$bins,
+                     center = histogram_pars$center,
+                     boundary = histogram_pars$boundary,
+                     breaks = histogram_pars$breaks
+                     ) +
       geom_density(alpha = alpha, fill="#FF6666") # Overlay with transparent density plot
   } else {
 
     g = ggplot2::ggplot(df, aes_string(var, fill = group)) +
       geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
-                     colour="black", binwidth = binwidth, position = "dodge") +
+                     colour="black", position = "dodge",
+                     binwidth = histogram_pars$binwidth,
+                     bins = histogram_pars$bins,
+                     center = histogram_pars$center,
+                     boundary = histogram_pars$boundary,
+                     breaks = histogram_pars$breaks
+                     ) +
       geom_density(alpha = alpha) # Overlay with transparent density plot
   }
 
@@ -948,7 +972,6 @@ GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height
     dir.create(dirname(filename), showWarnings = F, recursive = T)
   }
 
-  # curry::set_defaults(ggsave, list(width = 10, height = 6.5))
   ggplot2::ggsave(filename = filename, plot = plot, width = width, height = height, path = path, ...)
 }
 

@@ -9,10 +9,11 @@ GG_denhist(
   var = NULL,
   group = NULL,
   vline = mean,
-  binwidth = NULL,
+  histogram_pars = NULL,
   clean_name = T,
   no_y_axis_values = T,
-  alpha = 0.2
+  alpha = 0.2,
+  ...
 )
 }
 \arguments{
@@ -24,13 +25,15 @@ GG_denhist(
 
 \item{vline}{(chr sclr) Whether and how to plot vertical line(s) at some point(s. Set to NULL for none. Default is \code{mean}. Can also be a custom function. Beware, it should ignore values.}
 
-\item{binwidth}{(num sclr) The width of the bins to use for the histogram. Default=NULL, which means that stat_bin() chooses one.}
+\item{histogram_pars}{(list) Histogram pars}
 
 \item{clean_name}{(lgl) Wheter to call str_clean on the x axis label.}
 
 \item{no_y_axis_values}{(lgl) Hide numbers on the Y axis?}
 
 \item{alpha}{Alpha for density fit.}
+
+\item{...}{Any other params we can try to match, mainly for backwards compatibility with geom_histogram pars}
 }
 \value{
 A ggplot2 object.
