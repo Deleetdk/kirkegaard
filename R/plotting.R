@@ -134,9 +134,14 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
   }
 
   #data input type
-  if (is_simple_vector(data)) {
+  if (is.atomic(data)) {
+    #get name
     var = deparse(substitute(data))
-    data = data.frame(data)
+
+    #put in a data frame as a vector
+    data = data.frame(x = data %>% as.vector())
+
+    #fix name
     colnames(data) = var
   }
 

@@ -53,6 +53,9 @@ test_that("text", {
 
 
 # GG_denhist --------------------------------------------------------------
+#data prep
+iris$labelled = haven::labelled(iris$Sepal.Length, labels = NULL)
+
 #just run the plots
 
 test_that("denhist", {
@@ -63,6 +66,11 @@ test_that("denhist", {
   expect_s3_class(silence(GG_denhist(iris[1])), "ggplot")
   expect_s3_class(silence(data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")), "ggplot")
   expect_s3_class(silence(data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")), "ggplot")
+
+  #advanced atomic input
+  expect_s3_class(GG_denhist(iris, "labelled"), "ggplot")
+  #bugged unit test
+  # expect_s3_class(GG_denhist(iris$labelled), "ggplot")
 
   #expect warnings
   expect_warning(GG_denhist(iris[1]))
