@@ -10,7 +10,8 @@ GG_heatmap(
   reorder_vars = T,
   digits = 2,
   font_size = 4,
-  color_label = "Pearson\\nCorrelation"
+  color_label = "Pearson\\nCorrelation",
+  legend_position = c(0.6, 0.7)
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ GG_heatmap(
 \item{font_size}{If correlation values are plotted, their size}
 
 \item{color_label}{Which label to use for the color scale legend}
+
+\item{legend_position}{Position of the legend. Sometimes you may need to move it a bit}
 }
 \value{
 a ggplot2 object

@@ -159,7 +159,8 @@ heatmaps = list(
   no_reorder = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F),
   no_values = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(add_values = F),
   many_digits = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(digits = 5),
-  small_text = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(font_size = 2)
+  small_text = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(font_size = 2),
+  move_legend = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(legend_position = c(.5, .75))
 )
 
 test_that("GG_heatmap", {

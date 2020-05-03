@@ -1024,6 +1024,7 @@ GG_save_pdf = function(list, filename) {
 #' @param digits How many digits to print when plotting them
 #' @param font_size If correlation values are plotted, their size
 #' @param color_label Which label to use for the color scale legend
+#' @param legend_position Position of the legend. Sometimes you may need to move it a bit
 #'
 #' @return a ggplot2 object
 #' @export
@@ -1035,7 +1036,7 @@ GG_save_pdf = function(list, filename) {
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation") {
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7)) {
 
   #correlations
   #compute if given as data
@@ -1082,7 +1083,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
     theme(axis.text.x = element_text(angle = 45, vjust = 1,
                                      size = 12, hjust = 1),
           legend.justification = c(1, 0),
-          legend.position = c(0.6, 0.7),
+          legend.position = legend_position,
           legend.direction = "horizontal",
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
