@@ -1464,8 +1464,8 @@ df_merge_cols = function(df, cols) {
 #' @examples
 #' iris$list = list(1)
 #' iris$df = list(iris)
-#' sapply(iris, typeof)
-#' sapply(df_no_list_cols(iris), typeof)
+#' map(iris, typeof)
+#' map(df_no_list_cols(iris), typeof)
 df_no_list_cols = function(x) {
   x[!purrr::map_lgl(x, is.list)]
 }

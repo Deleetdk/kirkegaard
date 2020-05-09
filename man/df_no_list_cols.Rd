@@ -18,6 +18,6 @@ Remove list columns
 \examples{
 iris$list = list(1)
 iris$df = list(iris)
-sapply(iris, typeof)
-sapply(df_no_list_cols(iris), typeof)
+map(iris, typeof)
+map(df_no_list_cols(iris), typeof)
 }

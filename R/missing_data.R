@@ -214,7 +214,7 @@ miss_pattern = function(data) {
   m_d = miss_matrix(data)
 
   #multiply by 2^i, row wise
-  (t(m_d) * (sapply(1:ncol(m_d), function(i) 2^i))) %>% #transpose, then multiply by 2^i
+  (t(m_d) * (purrr::map_dbl(1:ncol(m_d), function(i) 2^i))) %>% #transpose, then multiply by 2^i
     t() %>% #transpose back
     apply(MARGIN = 1, FUN = sum) #get sum by rows
 }
@@ -314,7 +314,7 @@ miss_add_random =  function(df, prop = .1){
   id = sample(0:(m*n-1), num.to.na, replace = FALSE)
   rows = id %/% m + 1
   cols = id %% m + 1
-  sapply(seq(num.to.na), function(x){
+  purrr::walk(seq(num.to.na), function(x){
     df[rows[x], cols[x]] <<- NA
   }
   )
