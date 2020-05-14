@@ -977,7 +977,16 @@ GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height
     dir.create(dirname(filename), showWarnings = F, recursive = T)
   }
 
+  #ggtern
+  #i dont see a way to detect this class easily
+  if (xxx$theme %>% names() %>% str_detect("^tern.") %>% any()) {
+    ggtern::ggsave(filename = filename, plot = plot, width = width, height = height, path = path, ...)
+    return(invisible(NULL))
+  }
+
+  #save standard
   ggplot2::ggsave(filename = filename, plot = plot, width = width, height = height, path = path, ...)
+  return(invisible(NULL))
 }
 
 
