@@ -176,3 +176,49 @@ test_that("GG_heatmap", {
   expect_true(!identical(heatmaps$no_reorder, heatmaps$many_digits))
   expect_true(!identical(heatmaps$no_values, heatmaps$many_digits))
 })
+
+
+
+# GG_save -----------------------------------------------------------------
+
+test_that("GG_save", {
+  #make a plot
+  plot = ggplot(datasets::quakes, aes(mag)) +
+    geom_histogram()
+
+  #save it
+  GG_save(filename = "tmp.png")
+
+  #assert exists
+  expect_true(file.exists("tmp.png"))
+
+  #delete the file
+  file.remove("tmp.png")
+
+  #test ggtern if exists
+  if (require("ggtern")) {
+    #make data
+    tern_data = matrix(runif(60), nrow=20) %>%
+      apply(MARGIN = 1, FUN = function(row) {
+        row/sum(row)
+      }) %>%
+      t() %>%
+      set_colnames(letters[1:3]) %>%
+      as_tibble()
+
+    plot = ggtern::ggtern(tern_data, aes(x = a, y = b, z = c)) +
+      geom_point()
+
+    #assert class
+    expect_true(plot$coordinates %>% is(class2 = "CoordTern"))
+
+    #save it
+    GG_save(filename = "tmp.png")
+
+    #assert exists
+    expect_true(file.exists("tmp.png"))
+
+    #delete the file
+    file.remove("tmp.png")
+  }
+})
