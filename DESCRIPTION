@@ -34,5 +34,8 @@ Suggests:
     testthat,
     binom,
     readxl,
-    ggtern
+    ggtern,
+    missForest,
+    rms,
+    psychTools
 Roxygen: list(markdown = TRUE)
