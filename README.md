@@ -4,7 +4,6 @@ This is my personal R package. The primary purpose of this package is to be a tr
 There are functions for areas including:
 
 * `df_`: Common operations on data.frames, including merging data.frames with overlapping data, standardizing, adding missing data, residualizing and class conversion. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/dataframe.html).
-* `MOD_`: Convenience Functions for statistical modeling such as best subset and penalized (LASSO) regression.
 * `SAC_`: Spatial statistics, including new methods for measuring and controlling for autocorrelation.
 * `MAT_`: Elementary matrix operations such as getting a half and restoring a symmetrical matrix from a half.
 * `fa_`: Factor analysis, including new methods for checking for method variance, finding odd cases, using Jensen's method and plotting loadings.
@@ -20,11 +19,12 @@ so here's a small call to manually install them. This installs all dependencies,
 
 ```
 #pacman
-if (require("pacman")) install.packages("pacman")
+if (!require("pacman")) install.packages("pacman")
 
 #CRAN packages
+#with pacman, but you can also try just running the devtools call below
 library(pacman)
-p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, glmnet, metafor, binom, GPArotation)
+p_install(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, glmnet, metafor, binom, GPArotation)
 
 #finally
 devtools::install_github("deleetdk/kirkegaard")
