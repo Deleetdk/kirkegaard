@@ -117,6 +117,7 @@ test_that("fa_plot_loadings", {
 
 
 test_that("fa_loadings", {
+  fa_bfi = fa(bfi[1:25])
   fa_bfi2 = fa(bfi[1:25], 2)
 
   #1 factor
@@ -140,6 +141,13 @@ test_that("fa_loadings", {
 # fa_nfactors -------------------------------------------------------------
 
 test_that("fa_nfactors", {
+  fa_iris4 = list(
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml")
+  )
+
   expect_equal(fa_nfactors(fa_iris4), rep(1, 4))
 })
 
