@@ -979,7 +979,7 @@ GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height
 
   #ggtern
   #i dont see a way to detect this class easily
-  if (xxx$theme %>% names() %>% str_detect("^tern.") %>% any()) {
+  if (plot$coordinates %>% is(class2 = "CoordTern")) {
     ggtern::ggsave(filename = filename, plot = plot, width = width, height = height, path = path, ...)
     return(invisible(NULL))
   }
