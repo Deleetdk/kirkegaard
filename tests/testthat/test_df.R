@@ -4,12 +4,14 @@ context("df_")
 
 # df_standardize ------------------------------------------------------------------
 set.seed(1)
-l_dfs = list(t1 = df_standardize(iris, messages = F),
-             t2 = df_standardize(iris, exclude_factors = F, messages = F),
-             t3 = df_standardize(iris, w = runif(150), messages = F)
-             )
+
 
 test_that("df_standardize", {
+  l_dfs = list(t1 = df_standardize(iris, messages = F),
+               t2 = df_standardize(iris, exclude_factors = F, messages = F),
+               t3 = df_standardize(iris, w = runif(150), messages = F)
+  )
+
   #not equal
   expect_true(all(head(l_dfs$t1[-5]) != head(iris)[-5]))
   expect_true(all(head(l_dfs$t2) != head(iris)))
@@ -40,12 +42,12 @@ test_that("df_round", {
                                stringsAsFactors = F)
                     )
 
-  expect_equivalent(iris %>% `[`(2, ) %>% df_round(digits = 1, simple = T),
+  expect_equivalent(iris %>% .[2, ] %>% df_round(digits = 1, simple = T),
                     data.frame(Sepal.Length = 4.9,
                                Sepal.Width = 3.0,
                                Petal.Length = 1.4,
                                Petal.Width = 0.2,
-                               Species = "setosa")
+                               Species = iris$Species[2])
   )
 
 
@@ -53,10 +55,12 @@ test_that("df_round", {
 
 # df_as_num ---------------------------------------------------------------
 #converts string vectors in a data.frame to numeric ones if possible
-#make iris into a df with strings
-iris_chr = map_df(iris, as.character)
+
 
 test_that("df_as_num", {
+  #make iris into a df with strings
+  iris_chr = map_df(iris, as.character)
+
   expect_equivalent(map_chr(df_as_num(iris_chr), class),
                     c("numeric", "numeric", "numeric", "numeric", "character"))
   expect_equivalent(map_chr(df_as_num(iris_chr, stringsAsFactors = T), class),
@@ -72,47 +76,49 @@ test_that("df_as_num", {
 # df_add_delta ------------------------------------------------------------
 #this function adds delta (difference) variables to a df, in a semi-intelligent fashion
 
-#these should work
-l_deltas = silence(
-  list(df_add_delta(iris, primary_var = 1),
-       df_add_delta(iris, primary_var = "Sepal.Length"),
-       df_add_delta(iris, primary_var = pi),
-       df_add_delta(iris, primary_var = 1, standardize = T)
-      )
-)
 
-#errors
-l_deltas_errors = list(
-  try({df_add_delta(iris, primary_var = 1, secondary_vars = 1:4)}, T),
-  try({df_add_delta(iris, primary_var = 0)}, T),
-  try({df_add_delta(iris, primary_var = 1, secondary_vars = 99)}, T),
-  try({df_add_delta(iris, primary_var = 1, secondary_vars = -1:1)}, T)
-)
 
 test_that("df_add_delta", {
+  #these should work
+  l_deltas = silence(
+    list(df_add_delta(iris, primary_var = 1),
+         df_add_delta(iris, primary_var = "Sepal.Length"),
+         df_add_delta(iris, primary_var = pi),
+         df_add_delta(iris, primary_var = 1, standardize = T)
+    )
+  )
+
+  #errors
+  l_deltas_errors = list(
+    try({df_add_delta(iris, primary_var = 1, secondary_vars = 1:4)}, T),
+    try({df_add_delta(iris, primary_var = 0)}, T),
+    try({df_add_delta(iris, primary_var = 1, secondary_vars = 99)}, T),
+    try({df_add_delta(iris, primary_var = 1, secondary_vars = -1:1)}, T)
+  )
+
   expect_equal(map_chr(l_deltas, class), rep("data.frame", length(l_deltas)))
   expect_equal(map_chr(l_deltas_errors, class), rep("try-error", length(l_deltas)))
 })
 
 
 # df_rowFunc ------------------------------------------------------------------------
-#
 
-#tests
-l_rowfuncs = list(
-  df_rowFunc(iris[1:4], progress = "none"),
-  df_rowFunc(iris[1], iris[2], iris[3], iris[4], progress = "none"),
-  df_rowFunc(iris[1:4], func = median, progress = "none"),
-  df_rowFunc(iris[1:4], standardize = T, progress = "none"),
-  df_rowFunc(iris[1:4], standardize = T, func = median, progress = "none")
-)
-
-#errors
-l_rowfuncs_errors = list(
-  try({df_rowFunc(iris)}, T)
-)
 
 test_that("df_rowFunc", {
+  #tests
+  l_rowfuncs = list(
+    df_rowFunc(iris[1:4], progress = "none"),
+    df_rowFunc(iris[1], iris[2], iris[3], iris[4], progress = "none"),
+    df_rowFunc(iris[1:4], func = median, progress = "none"),
+    df_rowFunc(iris[1:4], standardize = T, progress = "none"),
+    df_rowFunc(iris[1:4], standardize = T, func = median, progress = "none")
+  )
+
+  #errors
+  l_rowfuncs_errors = list(
+    try({df_rowFunc(iris)}, T)
+  )
+
   expect_equal(map_chr(l_rowfuncs, class), rep("numeric", length(l_rowfuncs)))
   expect_equal(map_chr(l_rowfuncs_errors, class), rep("try-error", length(l_rowfuncs_errors)))
 })
@@ -146,20 +152,22 @@ test_that("df_t", {
 
 
 # df_colFunc --------------------------------------------------------------
-#apply functions selectively to columns of a data.frame
-t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
-#using inverse regex
-t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
-#using integer indices
-t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
-#using logical indices
-t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
-#removing unselected columns
-t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
-#select all by not providing any selector
-t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
+
 
 test_that("df_colFunc", {
+  #apply functions selectively to columns of a data.frame
+  t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
+  #using inverse regex
+  t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
+  #using integer indices
+  t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
+  #using logical indices
+  t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
+  #removing unselected columns
+  t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
+  #select all by not providing any selector
+  t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
+
   expect_equivalent(t1[1, 1], iris[1, 1] * 2)
   expect_true(!t1[1, 2] == iris[1, 1] * 2)
   expect_true(t2[1, 1] == iris[1, 1] * 2)
@@ -190,9 +198,10 @@ test_that("df_subset_by_pattern", {
 
 
 # df_add_id ------------------------------------------------------------------
-x = iris; x["ID"] = "A"
 
 test_that("df_add_id", {
+  x = iris; x["ID"] = "A"
+
   expect_equivalent(df_add_id(iris, "A"), x)
 })
 
@@ -226,11 +235,13 @@ test_that("df_remove", {
 
 # df_residualize ----------------------------------------------------------
 
-set.seed(1)
-df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
-weightsvar = runif(5)
+
 
 test_that("df_residualize", {
+  set.seed(1)
+  df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
+  weightsvar = runif(5)
+
   #test basic function
   expect_true(all(df_residualize(df, resid.vars = "c", print.models = F) %>% `[`(c("a", "b")) != df[c("a", "b")]))
 
@@ -285,15 +296,17 @@ test_that("df_fct_split", {
 # df_merge_rows -----------------------------------------------------------
 #performs row-wise merging
 
-#some objects
-t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
-t_true = data.frame(id = c("a", "b", "c"), value = c(3, 7, 5))
-t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
 
-t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
-t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
 
 test_that("df_merge_rows", {
+  #some objects
+  t = data.frame(id = c("a", "a", "b", "b", "c"), value = 1:5)
+  t_true = data.frame(id = c("a", "b", "c"), value = c(3, 7, 5))
+  t_true2 = data.frame(id = c("a", "b", "c"), value = c(1.5, 3.5, 5))
+
+  t1 = data.frame(X = c(1, 2, 3, NA), Y = c(1, 2, NA, 3));rownames(t1) = LETTERS[1:4]
+  t1_cor = data.frame(X = c(1, 2, 3), Y = c(1, 2, 3));rownames(t1_cor) = LETTERS[1:3]
+
   ##key column
   #basic
   expect_equivalent(df_merge_rows(t, "id"), t_true)
@@ -315,36 +328,38 @@ test_that("df_merge_rows", {
 
 # df_no_list_cols ---------------------------------------------------------
 
-iris2 = iris
-iris2$list = list(1)
-iris2$df = list(iris)
-
 test_that("df_no_list_cols", {
+  iris2 = iris
+  iris2$list = list(1)
+  iris2$df = list(iris)
+
   expect_equivalent(datasets::iris, df_no_list_cols(iris2))
 })
 
 
 # df_legalize_names -------------------------------------------------------
-#with spaces
-iris_bad = iris
-names(iris_bad) = str_replace(names(iris_bad), "\\.", " ") #replace with spaces
 
-#duplicated empty
-iris_bad2 = iris
-names(iris_bad2)[1] = "" #empty name
-names(iris_bad2)[2] = "" #another
-
-#duplicated NAs
-iris_bad3 = iris
-names(iris_bad3)[1] = NA #NA
-names(iris_bad3)[2] = NA #NA
-
-#duplicated normal
-iris_bad4 = iris
-names(iris_bad4)[1] = "x"
-names(iris_bad4)[2] = "x"
 
 test_that("df_legalize_names", {
+  #with spaces
+  iris_bad = iris
+  names(iris_bad) = str_replace(names(iris_bad), "\\.", " ") #replace with spaces
+
+  #duplicated empty
+  iris_bad2 = iris
+  names(iris_bad2)[1] = "" #empty name
+  names(iris_bad2)[2] = "" #another
+
+  #duplicated NAs
+  iris_bad3 = iris
+  names(iris_bad3)[1] = NA #NA
+  names(iris_bad3)[2] = NA #NA
+
+  #duplicated normal
+  iris_bad4 = iris
+  names(iris_bad4)[1] = "x"
+  names(iris_bad4)[2] = "x"
+
   #spaces
   expect_equivalent(df_legalize_names(iris_bad) %>% names(), names(iris) %>% str_replace("\\.", "_"))
 
@@ -360,12 +375,13 @@ test_that("df_legalize_names", {
 
 
 # df_var_table ------------------------------------------------------------
-#read some SPSS data
 
-spss_data = haven::read_sav(system.file("extdata", "survey.sav", package = "kirkegaard"))
-spss_data_table = df_var_table(spss_data)
 
 test_that("df_var_table", {
+  #read some SPSS data
+  spss_data = haven::read_sav(system.file("extdata", "survey.sav", package = "kirkegaard"))
+  spss_data_table = df_var_table(spss_data)
+
   #we got a data frame?
   expect_s3_class(spss_data_table, "data.frame")
 

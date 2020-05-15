@@ -13,15 +13,15 @@ context("fa_")
 
 # fa_congruence_matrix ----------------------------------------------------
 
-fa_iris4 = list(
-  fa(iris[-5], fm = "ml"),
-  fa(iris[-5], fm = "ml"),
-  fa(iris[-5], fm = "ml"),
-  fa(iris[-5], fm = "ml")
-  )
-fa_iris4_congru = fa_congruence_matrix(fa_iris4)
-
 test_that("fa_congruence_matrix",{
+  fa_iris4 = list(
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml"),
+    fa(iris[-5], fm = "ml")
+  )
+  fa_iris4_congru = fa_congruence_matrix(fa_iris4)
+
   expect_is(fa_iris4_congru, "matrix")
   expect_equal(dim(fa_iris4_congru), c(4, 4))
 })
@@ -29,11 +29,13 @@ test_that("fa_congruence_matrix",{
 
 # fa_Jensens_method -------------------------------------------------------------
 #this extract GFP and checks whether the gender difference is GFP-loaded
-fa_bfi = fa(bfi[1:25])
-set.seed(1)
-tmp_num_only = matrix(rnorm(10000), ncol=10) %>% as.data.frame
+
 
 test_that("fa_Jensens_method",{
+  fa_bfi = fa(bfi[1:25])
+  set.seed(1)
+  tmp_num_only = matrix(rnorm(10000), ncol = 10) %>% as.data.frame()
+
   #latents
   expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender"), "ggplot")
   expect_is(fa_Jensens_method(fa_bfi, bfi, criterion = "gender", reverse_factor = T), "ggplot")
@@ -45,49 +47,58 @@ test_that("fa_Jensens_method",{
 
 
 # fa_residuals ------------------------------------------------------------
-fa_resids = fa_residuals(swiss)
 
 test_that("fa_Jensens_method",{
+  fa_resids = fa_residuals(swiss)
+
   expect_is(fa_resids, "data.frame")
   expect_equal(dim(fa_resids), c(47, 6))
 })
 
 # fa_MAR ------------------------------------------------------------------
-fa_mar = fa_MAR(swiss, scores = "Bartlett")
+
 
 test_that("fa_MAR", {
+  fa_mar = fa_MAR(swiss, scores = "Bartlett")
+
   expect_equal(dim(fa_mar), c(47, 1))
   expect_is(fa_mar, "data.frame")
 })
 
 
 # fa_mixedness ------------------------------------------------------------
-fa_mix = fa_mixedness(swiss)
+
 
 test_that("fa_mixedness", {
+  fa_mix = fa_mixedness(swiss)
+
   expect_equal(dim(fa_mix), c(47, 5))
   expect_is(fa_mix, "data.frame")
 })
 
 
 # fa_splitsample_repeat ---------------------------------------------------------------------
-fa_splitsam = fa_splitsample_repeat(psychTools::ability, runs = 5, messages = F, progress = F)
+
 
 test_that("fa_splitsample_repeat", {
+  fa_splitsam = fa_splitsample_repeat(psychTools::ability, runs = 5, messages = F, progress = F)
+
   expect_equal(dim(fa_splitsam), c(5, 1))
   expect_is(fa_splitsam, "data.frame")
 })
 
 
 # fa_plot_loadings fa_rank_fa -----------------------------------------------------
-fa_iris3 = list(part1 = fa(iris[1:50, -5]),
-               part2 = fa(iris[51:100, -5]),
-               part3 = fa(iris[101:150, -5]))
-fa_iris3b = list(part1 = fa(iris[1:50, -c(1, 5)], fm = "ml"),
-                part2 = fa(iris[51:100, -c(2, 5)], fm = "ml"),
-                part3 = fa(iris[101:150, -c(3, 5)], fm = "ml"))
+
 
 test_that("fa_plot_loadings", {
+  fa_iris3 = list(part1 = fa(iris[1:50, -5]),
+                  part2 = fa(iris[51:100, -5]),
+                  part3 = fa(iris[101:150, -5]))
+  fa_iris3b = list(part1 = fa(iris[1:50, -c(1, 5)], fm = "ml"),
+                   part2 = fa(iris[51:100, -c(2, 5)], fm = "ml"),
+                   part3 = fa(iris[101:150, -c(3, 5)], fm = "ml"))
+
   #mono analysis
   expect_is(fa_plot_loadings(fa_iris3[[1]]), "ggplot")
 
@@ -103,9 +114,11 @@ test_that("fa_plot_loadings", {
 
 
 # fa_loadings ----------------------------------------------------
-fa_bfi2 = fa(bfi[1:25], 2)
+
 
 test_that("fa_loadings", {
+  fa_bfi2 = fa(bfi[1:25], 2)
+
   #1 factor
   expect_is(fa_loadings(fa_bfi), "data.frame")
   expect_equal(dim(fa_loadings(fa_bfi)), c(25, 1))
