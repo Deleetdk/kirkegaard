@@ -33,5 +33,6 @@ Suggests:
     compute.es,
     testthat,
     binom,
-    readxl
+    readxl,
+    ggtern
 Roxygen: list(markdown = TRUE)
