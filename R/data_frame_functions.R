@@ -726,24 +726,6 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
 }
 
 
-# add_if ------------------------------------------------------------------
-#simple function to add id to a data.frame
-
-
-#' Add ID column to data.frame
-#'
-#' Add an ID column to a data.frame. Convenience function.
-#' @param data (data.frame) The data.frame.
-#' @param id (vector) A vector of values to use. Will be repeated silently if not long enough. Will throw an error if it's not possible.
-#' @param id_var (character scalar) What to call the id column (default "ID").
-#' @export
-#' @examples
-#' head(df_add_id(iris, "A")) #Add an ID column named "ID" filled with "A"
-df_add_id = function(data, id, id_var = "ID") {
-  data[id_var] = id
-  data
-}
-
 
 #' Remove variables from a data.frame
 #'
