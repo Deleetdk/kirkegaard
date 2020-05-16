@@ -148,23 +148,6 @@ test_that("df_colFunc", {
   expect_true(purrr::map_lgl(t6, is.character) %>% all)
 })
 
-# df_subset_by_pattern -------------------------------------------------------
-#subset using regex for column names
-
-
-test_that("df_subset_by_pattern", {
-  # length columns
-  expect_equivalent(df_subset_by_pattern(iris, "Length"), iris[c(1, 3)])
-
-  # non-length columns
-  expect_equivalent(df_subset_by_pattern(iris, "Length", T), iris[-c(1, 3)])
-
-  # species, 1 col
-  expect_equivalent(df_subset_by_pattern(iris, "Species"), iris[5])
-})
-
-
-
 
 # df_remove ----------------------------------------------------------
 

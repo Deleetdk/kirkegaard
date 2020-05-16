@@ -1057,25 +1057,6 @@ group_by_pattern = function(x, pattern) {
 }
 
 
-#' Subset by pattern
-#'
-#' Subset a data.frame or matrix by a pattern in the column names. A simple wrapper using str_detect().
-#'
-#' Subsets using [] and with drop=FALSE.
-#' @param data (data.frame or matrix) Object to subset.
-#' @param pattern (character scalar) A regex pattern.
-#' @param inverse (logical scalar) Whther to keep the non-matches instead.
-#' @return Returns the subset of the object.
-#' @export
-#' @examples
-#' df_subset_by_pattern(iris, "Length") # length columns
-#' df_subset_by_pattern(iris, "Length", T) # non-length columns
-df_subset_by_pattern = function(data, pattern, inverse = FALSE) {
-  if (!inverse) return(data[, stringr::str_detect(colnames(data), as.character(pattern)), drop = FALSE])
-  if (inverse) return(data[, !stringr::str_detect(colnames(data), as.character(pattern)), drop = FALSE])
-}
-
-
 
 #' Remove NA columns
 #'
