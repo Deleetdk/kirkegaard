@@ -468,29 +468,6 @@ df_rowFunc = function(..., standardize = F, func = mean, ignore_NA = T, progress
 }
 
 
-#sort a df according to a variable
-#just a minor edit of the function in reshape package. Preseres rownames.
-
-#' Sort a data.frame by one or more variables. Can sort by decreasing or increasing order
-#'
-#' Sort a data.frame by one or more variables. Can sort by decreasing or increasing order. Improvement of the reshape::order because it preserves rownames and can sort by decreasing order as well.
-#' @param df (df) A data.frame.
-#' @param vars (str/int) variables to use for sorting.
-#' @param decreasing Whether to use decreasing order. Default=F.
-#' @export
-#' @examples
-#' head(df_sort(iris, 1)) #sort by the first variable, increasing order
-#' head(df_sort(iris, 1, decreasing = T)) #sort by the first variable, decreasing order
-#' head(df_sort(iris, "Species")) #sort by Species variable
-df_sort = function (df, vars = names(df), decreasing = F){
-  df = as.data.frame(df)
-  if (length(vars) == 0 || is.null(vars))
-    return(df)
-  df[do.call("order", list(what = df[, vars, drop = FALSE], decreasing = decreasing)), , drop = FALSE]
-}
-
-
-
 #Thanks to: https://stat.ethz.ch/pipermail/r-help/2011-October/293842.html
 #' Residualized data.frame.
 #'
