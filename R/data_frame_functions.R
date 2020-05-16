@@ -810,67 +810,6 @@ df_add_id = function(data, id, id_var = "ID") {
 }
 
 
-
-#' Rename variables in a data.frame
-#'
-#' Rename variables in a data.frame and keep their positions.
-#' @param data (data.frame) The data.frame.
-#' @param current_names (chr vector) The current names of the variables.
-#' @param new_names (chr scalar) The new names of the variables.
-#' @export
-#' @examples
-#' #rename one variable
-#' names(df_rename(iris, "Sepal.Length", "Sepal_Length"))
-#' #rename multiple variables
-#' names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES")))
-#' #randomly rename iris
-#' df_rename(iris, current_names = names(iris), new_names = rev(names(iris)[sample(1:5)])) %>% names
-#' #warning on non-existent names
-#' head(df_rename(iris, "bleh", "blah"))
-df_rename = function(data, current_names, new_names) {
-
-  #check input
-  is_(data, class="data.frame", error_on_false = T)
-  is_(current_names, class="character", error_on_false = T)
-  is_(new_names, class="character", error_on_false = T)
-
-  #check that lengths match
-  if (length(current_names) != length(new_names)) {
-    stop("The vectors of names must be equally long!")
-  }
-
-  #check not too long
-  if (any(duplicated(current_names))) stop("There were duplicate names in current_names!")
-  if (any(duplicated(new_names))) stop("There were duplicate names in new_names!")
-
-  #check if variables exist
-  purrr::walk(current_names, function(x) {
-    if (!x %in% names(data)) warning(sprintf("Variable %s was not in the data.", x), call. = F)
-  })
-
-  #main loop
-  old_names = names(data)
-  for (i in seq_along(current_names)) {
-    cur = current_names[i]
-    new = new_names[i]
-
-    #skip if not present
-    if (!cur %in% names(data)) next
-
-    #position
-    pos = which(old_names == cur)
-
-    #rename
-    names(data)[pos] = new
-  }
-
-  #return
-  data
-}
-
-
-
-
 #' Remove variables from a data.frame
 #'
 #' Remove variables from a data.frame by name, position or logical.
