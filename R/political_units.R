@@ -245,7 +245,7 @@ pu_translate_inner = function(x,
 
     #make into df, and sort
     d_dst = data.frame(name = units$Name, abbrev = units$Abbreviation, dst = dst, stringsAsFactors = F) %>%
-      df_sort("dst")
+      arrange(dst)
 
     #are there multiple best with different results?
     min_dst = min(dst)

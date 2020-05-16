@@ -221,7 +221,7 @@ str_uniquify = function(string, suffix = " (%d)", pad = F) {
   }
 
   #sort by n to get original order back
-  d %<>% df_sort("n")
+  d %<>% arrange(n)
 
   #return
   d$names %>% as.character()

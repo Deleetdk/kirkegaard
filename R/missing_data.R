@@ -339,7 +339,9 @@ miss_add_random =  function(df, prop = .1){
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
 #' miss_impute(df)
 miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", method_args = NULL) {
+
   #tibbles do not work here
+  was_tibble = is_tibble(data)
   data = as.data.frame(data)
 
   #save rownames
@@ -382,7 +384,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
   #impute
   if (method == "rf") {
     method_args = c(list(xmis = data), method_args)
-    data = suppressWarnings(do.call(missForest::missForest, args = method_args)$ximp)
+    data = do.call(missForest::missForest, args = method_args)$ximp
   } else if (method == "irmi") {
     method_args = c(list(x = data, imp_var = F, noise = F), method_args)
     data = do.call(VIM::irmi, args = method_args)
@@ -399,14 +401,16 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
 
     #sort by ids
     data$.tmpid = as.numeric(c(case_ids[!cases_excl], case_ids[cases_excl]))
-    data = df_sort(data, vars = ".tmpid", decreasing = F)
+    data = dplyr::arrange(data, .tmpid)
 
     #remove ids
     data$.tmpid = NULL
   }
 
-  #set original rownames
+  #set original rownames if not tibble
   rownames(data) = .rownames
+
+  if (was_tibble) data = as_tibble(data)
 
   #return
   data
