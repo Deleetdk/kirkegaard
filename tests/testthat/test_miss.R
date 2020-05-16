@@ -1,13 +1,12 @@
 context("miss_")
 
 
-# missing data ------------------------------------------------------------
-set.seed(1)
-test_data = miss_add_random(iris)
-
 # miss_plot ---------------------------------------------------------------
 
 test_that("miss_plot", {
+  set.seed(1)
+  test_data = miss_add_random(iris)
+
   expect_is(miss_plot(test_data), "ggplot")
   expect_is(miss_plot(test_data, percent = F), "ggplot")
   expect_is(miss_plot(test_data, case = F), "ggplot")
@@ -27,11 +26,13 @@ test_that("miss_count", {
 # miss_filter ------------------------------------------------
 #filters data by number of missing values per case
 
-df = data.frame(1:10, letters[1:10])
-set.seed(1)
-df = miss_add_random(df)
+
 
 test_that("miss_filter", {
+  df = data.frame(1:10, letters[1:10])
+  set.seed(1)
+  df = miss_add_random(df)
+
   expect_equivalent(miss_filter(df) %>% nrow(), 8)
 })
 
@@ -39,10 +40,12 @@ test_that("miss_filter", {
 
 # miss_analyze --------------------------------------------------
 #large dataset with missing data
-set.seed(1)
-t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame %>% miss_add_random %>% miss_analyze
+
 
 test_that("miss_analyze", {
+  set.seed(1)
+  t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame %>% miss_add_random %>% miss_analyze
+
   expect_true(all(get_dims(t2) == c(10, 10)))
   expect_true((t2 < .8) %>% sum(na.rm = T) == 90)
   expect_equivalent(diag(as.matrix(t2)), rep(NA_real_, 10))
@@ -50,19 +53,21 @@ test_that("miss_analyze", {
 
 
 # miss_impute -------------------------------------------------------------
-set.seed(1)
 
-#test the dealing with ordinals with 2 levels
-iris_with_ord2 = iris %>% dplyr::filter(Species %in% c("setosa", "versicolor")) %>% dplyr::mutate(Species = ordered(Species))
-
-#rownames preserve
-df = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
-df2 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[5:1])
-df3 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
 
 test_that("miss_impute", {
+  set.seed(1)
+
+  #test the dealing with ordinals with 2 levels
+  iris_with_ord2 = iris %>% dplyr::filter(Species %in% c("setosa", "versicolor")) %>% dplyr::mutate(Species = ordered(Species))
+
+  #rownames preserve
+  df = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
+  df2 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[5:1])
+  df3 = data.frame(a = 1:5, b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
+
   #ordinary
-  expect_is(iris %>% miss_add_random %>% miss_impute, class = "data.frame")
+  expect_is(iris %>% miss_add_random() %>% miss_impute(), class = "data.frame")
 
   #ordinal with 2 levels
   expect_message(iris_with_ord2 %>% miss_add_random() %>% miss_impute(method = "rf"))
@@ -73,14 +78,21 @@ test_that("miss_impute", {
   expect_equivalent(rownames(miss_impute(df, method = "irmi")), letters[1:5])
   expect_equivalent(rownames(miss_impute(df2)), letters[5:1])
   expect_equivalent(rownames(miss_impute(df3, max_na = Inf)), letters[1:5])
+
+  #preserve tibble status
+  iris %>%
+    miss_add_random() %>%
+    as_tibble() %>%
+    miss_impute() %>%
+    expect_is("tbl_df")
 })
 
 
 # miss_amount -------------------------------------------------------------
-set.seed(1)
 
-#this value changed with R 3.6 due to the sample() change
 test_that("miss_amount", {
+  set.seed(1)
+
   expect_equivalent(miss_amount(iris %>% miss_add_random()) %>% unname(), c(.40, 1, .10), tolerance = .02)
 })
 
@@ -88,6 +100,9 @@ test_that("miss_amount", {
 # miss_by_group -----------------------------------------------------------
 
 test_that("miss_amount", {
+  set.seed(1)
+  test_data = miss_add_random(iris)
+
   expect_s3_class(test_data %>% miss_by_group("Species"), "data.frame")
 
   expect_error(test_data %>% miss_by_group("abc"), "`grouping_vars`")
@@ -133,4 +148,18 @@ test_that("miss_locf", {
   #reverse
   expect_identical(c(1, 1, 2, 2, NA),
                    c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T))
+})
+
+
+
+# miss_add_random ---------------------------------------------------------
+
+test_that("miss_add_random", {
+  #check that data types don't change
+  iris_with_random = iris %>% miss_add_random()
+  iris_with_random_tibble = iris %>% as_tibble() %>% miss_add_random()
+
+  expect_is(iris_with_random, "data.frame")
+  expect_is(iris_with_random_tibble, "data.frame")
+  expect_is(iris_with_random_tibble, "tbl_df")
 })

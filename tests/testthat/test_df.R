@@ -101,39 +101,6 @@ test_that("df_add_delta", {
 })
 
 
-# df_rowFunc ------------------------------------------------------------------------
-
-
-test_that("df_rowFunc", {
-  #tests
-  l_rowfuncs = list(
-    df_rowFunc(iris[1:4], progress = "none"),
-    df_rowFunc(iris[1], iris[2], iris[3], iris[4], progress = "none"),
-    df_rowFunc(iris[1:4], func = median, progress = "none"),
-    df_rowFunc(iris[1:4], standardize = T, progress = "none"),
-    df_rowFunc(iris[1:4], standardize = T, func = median, progress = "none")
-  )
-
-  #errors
-  l_rowfuncs_errors = list(
-    try({df_rowFunc(iris)}, T)
-  )
-
-  expect_equal(map_chr(l_rowfuncs, class), rep("numeric", length(l_rowfuncs)))
-  expect_equal(map_chr(l_rowfuncs_errors, class), rep("try-error", length(l_rowfuncs_errors)))
-})
-
-
-# df_sort ---------------------------------------------------------------
-#worse version of dplyr::arrange
-#but keepts rownames
-
-test_that("df_sort", {
-  expect_true(!are_equal(df_sort(iris, "Sepal.Length"), df_sort(iris, "Sepal.Length", decreasing = T)))
-  expect_true(!are_equal(df_sort(iris, "Sepal.Length"), df_sort(iris, 2)))
-  expect_true(!are_equal(df_sort(iris, "Sepal.Length"), df_sort(iris, 4)))
-})
-
 
 # df_remove_NA_vars -------------------------------------------------------
 
@@ -197,23 +164,6 @@ test_that("df_subset_by_pattern", {
 })
 
 
-# df_add_id ------------------------------------------------------------------
-
-test_that("df_add_id", {
-  x = iris; x["ID"] = "A"
-
-  expect_equivalent(df_add_id(iris, "A"), x)
-})
-
-
-# df_rename -----------------------------------------------------
-
-test_that("df_rename", {
-  expect_equivalent(names(df_rename(iris, "Species", "SPECIES")),
-                    c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "SPECIES"))
-  expect_equivalent(names(df_rename(iris, c("Sepal.Length", "Species"), c("SEPAL_LENGTH", "SPECIES"))),
-                    c("SEPAL_LENGTH", "Sepal.Width", "Petal.Length", "Petal.Width", "SPECIES"))
-})
 
 
 # df_remove ----------------------------------------------------------
