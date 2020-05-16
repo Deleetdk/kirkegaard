@@ -425,48 +425,6 @@ df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta"
 }
 
 
-#' Calculate summary statistics by rows in a data.frame.
-#'
-#' Calculate mean/median/sd/etc values by row. Can be given multiple data.frames, matrices or vectors which are coerced into one data.frame. Can standardize data before calculating. Ignores missing data by default.
-#' @param ... (data.frames, matrices, vectors) The variables to use. They will be coerced to a single data.frame.
-#' @param standardize (boolean) Whether to standardize the data before calculating. Defaults to F.
-#' @param func (function) Which base function to call. Can be mean, median, sd, var and any other suitable function. Default to mean.
-#' @param pattern (string) A pattern to use for finding the columns names.
-#' @param ignore_NA (boolean) Whether to ignore missing data. Defaults to T.
-#' @param progress (chr scalar) Progress parameter passed to aaply. Default is text.
-#' @export
-#' @examples
-#' df_rowFunc(iris[-5]) #get means by row
-#' all(df_rowFunc(iris[-5]) == rowMeans(iris[-5])) #equal to rowMeans
-#' df_rowFunc(iris[-5], func = median) #rowMedians
-df_rowFunc = function(..., standardize = F, func = mean, ignore_NA = T, progress = "text", pattern = NULL) {
-  if (!is.null(pattern)) stop("pattern is depreciated. Use df_subset_by_pattern")
-
-  #make df
-  tmp_df = data.frame(...)
-
-  #check for numericness
-  if(!all(purrr::map_chr(tmp_df, class) %in% c("numeric", "integer"))) stop("Some variables were not numeric!")
-
-  #standardize?
-  if (standardize) tmp_df = df_standardize(tmp_df)
-
-  #get results
-  tryCatch({ #try to pass na.rm=T
-    results = plyr::aaply(tmp_df, .margins = 1, .progress = progress, .expand = F,.fun = function(x) {
-      get("func")(x %>% unlist, na.rm = ignore_NA)
-    })},
-    error = function(e) {
-      results <<- plyr::aaply(tmp_df, .margins = 1, .expand = F, .progress = progress, .fun = function(x) {
-        get("func")(x %>% unlist)
-      })
-    }
-  )
-
-  return(results)
-
-}
-
 
 #Thanks to: https://stat.ethz.ch/pipermail/r-help/2011-October/293842.html
 #' Residualized data.frame.
