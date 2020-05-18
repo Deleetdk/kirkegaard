@@ -1034,6 +1034,8 @@ GG_save_pdf = function(list, filename) {
 #' @param font_size If correlation values are plotted, their size
 #' @param color_label Which label to use for the color scale legend
 #' @param legend_position Position of the legend. Sometimes you may need to move it a bit
+#' @param short_x_labels Adds integers to the y axis labels, and replaces the x labels with the same integers. Useful when there are many variables.
+#' @param axis_labels_clean_func A function to clean the labels with, typically to remove underscores. NULL means disable.
 #'
 #' @return a ggplot2 object
 #' @export
@@ -1044,9 +1046,12 @@ GG_save_pdf = function(list, filename) {
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
+#' #Automatic cleaning of the axis labels, can be turned off
+#' iris[, -5] %>% GG_heatmap()
+#' iris[, -5] %>% GG_heatmap(axis_labels_clean_func = NULL)
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7), short_x_labels = F) {
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7), short_x_labels = F, axis_labels_clean_func = str_clean) {
 
   #correlations
   #compute if given as data
@@ -1086,6 +1091,12 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   #make axis labels
   y_labels = melted_cormat$Var1 %>% levels()
   x_labels = melted_cormat$Var1 %>% levels()
+
+  #clean labels?
+  if (is.function(axis_labels_clean_func)) {
+    y_labels = y_labels %>% axis_labels_clean_func()
+    x_labels = x_labels %>% axis_labels_clean_func()
+  }
 
   #make them short? if many labels, this can help
   if (short_x_labels) {

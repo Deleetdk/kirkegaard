@@ -12,7 +12,8 @@ GG_heatmap(
   font_size = 4,
   color_label = "Pearson\\nCorrelation",
   legend_position = c(0.6, 0.7),
-  short_x_labels = F
+  short_x_labels = F,
+  axis_labels_clean_func = str_clean
 )
 }
 \arguments{
@@ -29,6 +30,10 @@ GG_heatmap(
 \item{color_label}{Which label to use for the color scale legend}
 
 \item{legend_position}{Position of the legend. Sometimes you may need to move it a bit}
+
+\item{short_x_labels}{Adds integers to the y axis labels, and replaces the x labels with the same integers. Useful when there are many variables.}
+
+\item{axis_labels_clean_func}{A function to clean the labels with, typically to remove underscores. NULL means disable.}
 }
 \value{
 a ggplot2 object

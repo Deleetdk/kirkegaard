@@ -165,7 +165,9 @@ test_that("GG_heatmap", {
     no_values = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(add_values = F),
     many_digits = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(digits = 5),
     small_text = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(font_size = 2),
-    move_legend = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(legend_position = c(.5, .75))
+    move_legend = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(legend_position = c(.5, .75)),
+    short_x_labels = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T),
+    axis_labels_clean_func = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(axis_labels_clean_func = NULL)
   )
 
   #check that plots work
@@ -200,9 +202,9 @@ test_that("GG_save", {
   file.remove("tmp.png")
 
   #test ggtern if exists
-  if (require("ggtern")) {
+  if (is_inst("ggtern")) {
     #make data
-    tern_data = matrix(runif(60), nrow=20) %>%
+    tern_data = matrix(runif(60), nrow = 20) %>%
       apply(MARGIN = 1, FUN = function(row) {
         row/sum(row)
       }) %>%

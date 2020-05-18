@@ -796,3 +796,12 @@ count_decimals = function(x) {
 
   x_nchr
 }
+
+
+
+# package installed -------------------------------------------------------
+
+is_inst <- function(pkg) {
+  nzchar(system.file(package = pkg))
+}
+
