@@ -11,7 +11,8 @@ GG_heatmap(
   digits = 2,
   font_size = 4,
   color_label = "Pearson\\nCorrelation",
-  legend_position = c(0.6, 0.7)
+  legend_position = c(0.6, 0.7),
+  short_x_labels = F
 )
 }
 \arguments{

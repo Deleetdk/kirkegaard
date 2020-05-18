@@ -1043,9 +1043,10 @@ GG_save_pdf = function(list, filename) {
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap()
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
 #' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
+#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7)) {
+GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7), short_x_labels = F) {
 
   #correlations
   #compute if given as data
@@ -1082,9 +1083,21 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   #error in weights package
   melted_cormat$value %<>% winsorise(upper = 1, lower = -1)
 
+  #make axis labels
+  y_labels = melted_cormat$Var1 %>% levels()
+  x_labels = melted_cormat$Var1 %>% levels()
+
+  #make them short? if many labels, this can help
+  if (short_x_labels) {
+    y_labels = y_labels + " " + seq_along(y_labels)
+    x_labels = seq_along(y_labels)
+  }
+
   #plot
   ggheatmap = ggplot(melted_cormat, aes(Var2, Var1, fill = value)) +
     geom_tile(color = "white") +
+    scale_x_discrete(labels = x_labels) +
+    scale_y_discrete(labels = y_labels) +
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                          midpoint = 0, limit = c(-1,1), space = "Lab",
                          name = color_label) +

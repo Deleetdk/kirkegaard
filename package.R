@@ -9,7 +9,7 @@ options(digits = 2, scipen = 2)
 #iupdate package description version automatically
 readr::read_lines("DESCRIPTION") %>%
   str_replace("Version: .+", str_glue("Version: {Sys.Date()}")) %>%
-  write_lines("DESCRIPTION")
+  readr::write_lines("DESCRIPTION")
 
 #make documentation
 devtools::document()
