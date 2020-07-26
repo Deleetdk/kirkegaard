@@ -1059,7 +1059,7 @@ wtd_sum = function(x, w = NULL, error=F) {
 
 #' Weighted quantile
 #'
-#' Function copied from **spatstat** package.
+#' Function adapted from **Hmisc** package.
 #'
 #' @param x Vector of values
 #' @param w Vector of weights
@@ -1078,7 +1078,7 @@ wtd_quantile <- function(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25)) {
     ok <- !(is.na(x) | is.na(w))
 
     #no data remaining?
-    if (length(ok) == 0) stop("No non-missing data", call. = FALSE)
+    if (length(ok) == 0) stop("No non-missing data", call. = F)
 
     #subset
     x <- x[ok]
@@ -1086,10 +1086,16 @@ wtd_quantile <- function(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25)) {
   }
 
   #negative weights?
-  stopifnot(all(w >= 0))
+  if (any(w < 0)) stop("Negative weights are not allowed", call. = F)
 
   #zero weights?
-  if (all(w == 0)) stop("All weights are zero", call. = FALSE)
+  if (all(w == 0)) stop("All weights are zero", call. = F)
+
+  #NA probs
+  if (any(is.na(probs))) stop("Probabilities cannot be NA", call. = F)
+
+  #impossible probs
+  if (any(probs > 1) | any(probs < 0)) stop("All probabilities must be between 0 and 1", call. = F)
 
   #calculation code
   oo <- order(x)
@@ -1097,26 +1103,26 @@ wtd_quantile <- function(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25)) {
   w <- w[oo]
   Fx <- cumsum(w) / sum(w)
 
-  #
-  result <- numeric(length(probs))
-  for(i in seq_along(result)) {
-    p <- probs[i]
-    lefties <- which(Fx <= p)
-    if(length(lefties) == 0) {
-      result[i] <- x[1]
-    } else {
-      left <- max(lefties)
-      result[i] <- x[left]
-      if(Fx[left] < p && left < length(x)) {
-        right <- left+1
-        y <- x[left] + (x[right]-x[left]) * (p-Fx[left])/(Fx[right]-Fx[left])
-        if(is.finite(y)) result[i] <- y
-      }
-    }
-  }
-  names(result) <- paste0(format(100 * probs, trim = TRUE), "%")
+  #loop and get results
+  w <- Hmisc::wtd.table(x, w, type = "list")
+  x <- w$x
+  wts <- w$sum.of.weights
+  n <- sum(wts)
+  order <- 1 + (n - 1) * probs
+  low <- pmax(floor(order), 1)
+  high <- pmin(low + 1, n)
+  order <- order%%1
+  allq <- approx(cumsum(wts), x, xout = c(low, high), method = "constant",
+                 f = 1, rule = 2)$y
+  k <- length(probs)
+  quantiles <- (1 - order) * allq[1:k] + order * allq[-(1:k)]
 
-  return(result)
+  #names
+  nams <- paste(format(round(probs * 100, if (length(probs) >
+                                              1) 2 - log10(diff(range(probs))) else 2)), "%", sep = "")
+  names(quantiles) <- nams
+
+  quantiles
 }
 
 

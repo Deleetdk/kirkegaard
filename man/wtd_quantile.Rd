@@ -14,5 +14,5 @@ wtd_quantile(x, w = rep(1, length(x)), probs = seq(0, 1, 0.25))
 \item{probs}{Vector of probabilities}
 }
 \description{
-Function copied from \strong{spatstat} package.
+Function adapted from \strong{Hmisc} package.
 }

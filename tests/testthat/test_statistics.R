@@ -105,3 +105,33 @@ test_that("winsorise", {
   expect_identical(winsorise(NA), NA_real_) #convert NA to double
   expect_equal(winsorise(99, upper = 1), 1)
 })
+
+
+# weighted functions ------------------------------------------------------
+
+#some variables
+set.seed(1)
+rand_norm = rnorm(100)
+rand_uniform = runif(100)
+x = c(1, 1, 2, 2, 2)
+
+test_that("wtd_mean", {
+  expect_true(mean(rand_norm) == wtd_mean(rand_norm))
+  expect_true(weighted.mean(rand_norm, rand_uniform) == wtd_mean(rand_norm, rand_uniform))
+})
+
+test_that("wtd_sd", {
+  expect_true(sd(rand_norm) == wtd_sd(rand_norm))
+  #dont agree, but I think it has to do with the correction Hmisc uses...
+  # expect_equivalent(Hmisc::wtd.var(rand_norm, rand_uniform) %>% sqrt(), wtd_sd(rand_norm, rand_uniform))
+})
+
+test_that("wtd_median", {
+  expect_true(median(rand_norm) == wtd_median(rand_norm))
+  expect_true(Hmisc::wtd.quantile(rand_norm, rand_uniform, probs = .5) == wtd_median(rand_norm, rand_uniform))
+})
+
+test_that("wtd_quantile", {
+  expect_equivalent(Hmisc::wtd.quantile(rand_norm), wtd_quantile(rand_norm))
+  expect_equivalent(Hmisc::wtd.quantile(rand_norm, rand_uniform), wtd_quantile(rand_norm, rand_uniform))
+})
