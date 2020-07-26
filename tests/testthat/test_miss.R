@@ -70,7 +70,15 @@ test_that("miss_impute", {
   expect_is(iris %>% miss_add_random() %>% miss_impute(), class = "data.frame")
 
   #ordinal with 2 levels
-  expect_message(iris_with_ord2 %>% miss_add_random() %>% miss_impute(method = "rf"))
+  #buggy function won't shut up
+  rf_imputed = iris_with_ord2 %>% miss_add_random() %>% {
+    sink("/dev/null")
+    y = miss_impute(., method = "rf")
+    sink()
+    y
+  }
+  expect_true(rf_imputed %>% miss_count() %>% magrittr::equals(0))
+  #does not work
   expect_warning(iris_with_ord2 %>% miss_add_random() %>% miss_impute(method = "irmi"))
 
   #preserve rownames
