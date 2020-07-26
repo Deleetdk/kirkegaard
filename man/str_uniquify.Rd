@@ -23,10 +23,11 @@ Detects duplicate strings and makes them unique by adding a number at the end.
 This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
 }
 \examples{
+
 Example vector with some duplicates
 (x = sample(LETTERS[1:10], size = 20, replace = T))
 #uniquify
-x \%>\% str_uniquify
+x \%>\% str_uniquify()
 #custom suffix using a second \%d.
 x \%>\% str_uniquify(" [\%d/\%d]")
 }

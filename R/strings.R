@@ -187,10 +187,11 @@ str_detect_replace = function(string, pattern, replacement) {
 #' @details This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
 #' @export
 #' @examples
+#'
 #' Example vector with some duplicates
 #' (x = sample(LETTERS[1:10], size = 20, replace = T))
 #' #uniquify
-#' x %>% str_uniquify
+#' x %>% str_uniquify()
 #' #custom suffix using a second %d.
 #' x %>% str_uniquify(" [%d/%d]")
 str_uniquify = function(string, suffix = " (%d)", pad = F) {

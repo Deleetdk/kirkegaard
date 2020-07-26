@@ -13,7 +13,7 @@ cache_object(expr, filename, renew = F, ...)
 
 \item{renew}{Whether to force renewal of the object}
 
-\item{...}{Other arguments passed to \code{\link[readr:write_rds]{readr::write_rds()}}}
+\item{...}{Other arguments passed to \code{\link[readr:read_rds]{readr::write_rds()}}}
 }
 \value{
 An object

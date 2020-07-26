@@ -7,7 +7,7 @@
 rev_uniq_encoding(x)
 }
 \arguments{
-\item{x}{Output from \code{\link[kirkegaard:uniq_encoding]{kirkegaard::uniq_encoding()}}}
+\item{x}{Output from \code{\link[=uniq_encoding]{uniq_encoding()}}}
 }
 \value{
 A vector
