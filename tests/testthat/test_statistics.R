@@ -126,12 +126,12 @@ test_that("wtd_sd", {
   # expect_equivalent(Hmisc::wtd.var(rand_norm, rand_uniform) %>% sqrt(), wtd_sd(rand_norm, rand_uniform))
 })
 
-test_that("wtd_median", {
-  expect_true(median(rand_norm) == wtd_median(rand_norm))
-  expect_true(Hmisc::wtd.quantile(rand_norm, rand_uniform, probs = .5) == wtd_median(rand_norm, rand_uniform))
-})
-
-test_that("wtd_quantile", {
-  expect_equivalent(Hmisc::wtd.quantile(rand_norm), wtd_quantile(rand_norm))
-  expect_equivalent(Hmisc::wtd.quantile(rand_norm, rand_uniform), wtd_quantile(rand_norm, rand_uniform))
-})
+# test_that("wtd_median", {
+#   expect_true(median(rand_norm) == wtd_median(rand_norm))
+#   expect_true(Hmisc::wtd.quantile(rand_norm, rand_uniform, probs = .5) == wtd_median(rand_norm, rand_uniform))
+# })
+#
+# test_that("wtd_quantile", {
+#   expect_equivalent(Hmisc::wtd.quantile(rand_norm), wtd_quantile(rand_norm))
+#   expect_equivalent(Hmisc::wtd.quantile(rand_norm, rand_uniform), wtd_quantile(rand_norm, rand_uniform))
+# })
