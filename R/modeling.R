@@ -82,6 +82,7 @@ get_n = function(x) {
 #' @export
 #'
 #' @examples
+#' #default lm fits
 #' models = list(
 #' lm(Sepal.Width ~ Sepal.Length, data = iris),
 #' lm(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris),
@@ -97,11 +98,33 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #loop and make consise table
   y = map2_df(x, names(x), function(m, name) {
+    # browser()
     #get tidy output
-    y = m %>%
-      summary.lm() %>%
-      broom::tidy() %>%
-      mutate(model = name)
+    #if its lm or rms
+    class_m = class(m)
+    if ("rms" %in% class_m) {
+      y = m %>%
+        summary.lm() %>%
+        broom::tidy() %>%
+        mutate(model = name)
+    } else if ("rlm" %in% class_m) {
+      #need to make the p value manually
+      y = m %>%
+        broom::tidy() %>%
+        mutate(
+          p.value = abs(statistic) %>% pt(df = summary(m)$df[2], lower.tail = F),
+          model = name
+          )
+    } else if ("lm" %in% class_m) {
+      y = m %>%
+        summary.lm() %>%
+        broom::tidy() %>%
+        mutate(model = name)
+    } else { #YOLO
+      y = m %>%
+        broom::tidy() %>%
+        mutate(model = name)
+    }
 
     y
   })

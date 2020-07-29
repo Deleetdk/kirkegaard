@@ -39,6 +39,7 @@ Data frame
 Concise model comparison summary table
 }
 \examples{
+#default lm fits
 models = list(
 lm(Sepal.Width ~ Sepal.Length, data = iris),
 lm(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris),
