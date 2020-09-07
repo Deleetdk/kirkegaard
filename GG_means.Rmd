@@ -1,0 +1,68 @@
+---
+title: "Group differences visualization: GG_group_means()"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+editor_options:
+  chunk_output_type: console
+---
+
+# About
+This shows examples of plotting group differences using `GG_group_means()` in [**kirkegaard** package](https://github.com/Deleetdk/kirkegaard/). These are all based on **ggplot2**.
+
+# Init
+Packages and options.
+
+```{r}
+#options
+options(digits = 2,
+        tibble.print_max = 30)
+
+#packages
+library(pacman)
+p_load(kirkegaard)
+
+#default theme
+theme_set(theme_bw())
+```
+
+# Examples
+
+```{r}
+#simple examples
+#default
+GG_group_means(iris, "Sepal.Length", "Species")
+
+#just a single point, not tied to 0 (for non-ratio data)
+GG_group_means(iris, "Sepal.Length", "Species", type = "point")
+
+#points
+GG_group_means(iris, "Sepal.Length", "Species", type = "points")
+
+#tighter CI
+GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = .999)
+
+#no CI
+GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = NA)
+
+#other plots
+GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot")
+GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
+GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
+
+#subgroups too
+iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type")
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "point")
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "points")
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "boxplot")
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin")
+GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "type", type = "violin2")
+
+#proportions automate the use of proper proportional tests
+iris$onezero = sample(c(0, 1), size = nrow(iris), replace = T)
+GG_group_means(iris, "onezero", "Species")
+GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
+```
+
