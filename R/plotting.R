@@ -1051,6 +1051,11 @@ GG_save_pdf = function(list, filename) {
 #' iris[, -5] %>% GG_heatmap(axis_labels_clean_func = NULL)
 #' #cor matrix input
 #' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
+#' #custom values input
+#' MAT_vector2full(c(.5, .3, .2), diag_value = 1) %>%
+#' set_colnames(letters[1:3]) %>%
+#' set_rownames(letters[1:3]) %>%
+#' GG_heatmap()
 GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7), short_x_labels = F, axis_labels_clean_func = str_clean) {
 
   #correlations
@@ -1065,11 +1070,11 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
 
   #reorder
   if (reorder_vars) {
-    reorder_cormat <- function(cormat){
+    reorder_cormat = function(cormat){
       # Use correlation between variables as distance
-      dd <- as.dist((1-cormat)/2)
-      hc <- hclust(dd)
-      cormat <-cormat[hc$order, hc$order]
+      dd = as.dist((1-cormat)/2)
+      hc = hclust(dd)
+      cormat = cormat[hc$order, hc$order]
     }
 
     cormat %<>% reorder_cormat()
@@ -1078,7 +1083,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   #remove lower tri values
   cormat[lower.tri(cormat)] = NA
 
-  #'melt'
+  #'melt' to long form
   #https://stackoverflow.com/questions/47475897/correlation-matrix-tidyr-gather-v-reshape2-melt
   melted_cormat = as.data.frame(cormat) %>%
     mutate(Var1 = factor(row.names(.), levels=row.names(.))) %>%
@@ -1133,10 +1138,10 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   if (add_values) {
     # browser()
     #round values
-    if (!is.null(digits)) melted_cormat$value %<>% round(digits = digits)
+    if (!is.null(digits)) melted_cormat$value2 = melted_cormat$value %>% format_digits(digits = digits)
 
     ggheatmap = ggheatmap +
-      geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value), color = "black", size = font_size)
+      geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value2), color = "black", size = font_size)
   }
 
   ggheatmap
