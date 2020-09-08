@@ -536,7 +536,7 @@ MOD_partial = function(df, x, y, z, weights_var = NULL) {
 #' @param aggregate_function (function) Which function to use for aggregation.
 #' @param ... (named parameters) Additional parameters to pass to the aggregator function.
 #' @export
-score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_elevation_error_abs"), aggregate = F, aggregate_function = wtd_mean, ...) {
+score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta", "sd_error_abs", "mean_error_abs"), aggregate = F, aggregate_function = wtd_mean, ...) {
   #other params given
   other_params = list(...)
   #is old param there? throw useful error
@@ -599,9 +599,9 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_delta
 
 
   #elevation error
-  d_res$mean_elevation = apply(df, 1, mean, na.rm = T)
-  d_res$mean_elevation_error = d_res$mean_elevation - mean(criterion, na.rm = T)
-  d_res$mean_elevation_error_abs = abs(d_res$mean_elevation_error)
+  d_res$mean = apply(df, 1, mean, na.rm = T) #mean of each persons estimates
+  d_res$mean_error = d_res$mean - mean(criterion, na.rm = T)
+  d_res$mean_error_abs = abs(d_res$mean_error)
 
   #rownames
   if (!aggregate) { #dont set if we are using aggregate data
