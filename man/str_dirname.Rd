@@ -16,7 +16,7 @@ A character.
 Extract directory path from a file path.
 }
 \details{
-Just a thin wrapper for \code{\link[base:dirname]{base::dirname()}}.
+Just a thin wrapper for \code{\link[base:basename]{base::dirname()}}.
 }
 \examples{
 dir(getwd(), full.names = T) \%>\% str_dirname()

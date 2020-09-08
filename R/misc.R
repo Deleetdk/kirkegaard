@@ -565,7 +565,7 @@ seq_along_rows = function(df) {
 #'
 #' Remove duplicated elements from an object. Simple wrapper for [base::duplicated()] to use in functional contexts.
 #' @details
-#' Calls either `x[!duplicated(x)]` or `x[!duplicated(x), ]` depending on input dimensions. Will work for objects with a defined method for [base::duplicated()] e.g. [GenomicRanges::GRanges()].
+#' Calls either `x[!duplicated(x)]` or `x[!duplicated(x), ]` depending on input dimensions. Will work for objects with a defined method for [base::duplicated()].
 #' @param x An object.
 #' @return Object of the same type as input.
 #' @export

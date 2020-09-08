@@ -16,7 +16,7 @@ Object of the same type as input.
 Remove duplicated elements from an object. Simple wrapper for \code{\link[base:duplicated]{base::duplicated()}} to use in functional contexts.
 }
 \details{
-Calls either \code{x[!duplicated(x)]} or \code{x[!duplicated(x), ]} depending on input dimensions. Will work for objects with a defined method for \code{\link[base:duplicated]{base::duplicated()}} e.g. \code{\link[GenomicRanges:GRanges]{GenomicRanges::GRanges()}}.
+Calls either \code{x[!duplicated(x)]} or \code{x[!duplicated(x), ]} depending on input dimensions. Will work for objects with a defined method for \code{\link[base:duplicated]{base::duplicated()}}.
 }
 \examples{
 #simple vector

@@ -2,14 +2,14 @@
 #'
 #' Convenient function to add text to a ggplot object
 #' @details
-#' Builds a grob using [grid::grobTree()] and [grid::textGrob()]. This text can then be positioned wherever the user wants it. It is more convenient than using [ggplot::geom_text()] because positioning is difficult to get right with that as it depends on the data ranges. This function instead uses fractional positioning, e.g. .95 is the 95th centile of x/y, whatever that happens to be in the data. On top of this, 6 premade positions are made for common placements: top/bottom left/middle/right abbreviated as tl, tm, tr, bl, bm, br, respectively.
+#' Builds a grob using [grid::grobTree()] and [grid::textGrob()]. This text can then be positioned wherever the user wants it. It is more convenient than using [ggplot2::geom_text()] because positioning is difficult to get right with that as it depends on the data ranges. This function instead uses fractional positioning, e.g. .95 is the 95th centile of x/y, whatever that happens to be in the data. On top of this, 6 premade positions are made for common placements: top/bottom left/middle/right abbreviated as tl, tm, tr, bl, bm, br, respectively.
 #' @param text (chr) A character scalar with text to use.
 #' @param text_pos (chr) An abbreviation of the easy placement to use. If you want to set these manually, use "manual".
 #' @param font_size (int) Font size.
 #' @param font_color (various) Font color. Can be of various types, see details.
 #' @param ... Extra arguments passed to various functions, see details.
 #' @export
-#' @return The outfrom from [ggplot::annotation_custom()].
+#' @return The outfrom from [ggplot2::annotation_custom()].
 #' @examples
 #' #make a plot with a point at 0,0, and large red text in middle
 #' ggplot(tibble(x = 0, y = 0), aes(x, y)) +
