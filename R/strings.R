@@ -273,7 +273,11 @@ str_legalize = function(x, ascii = T) {
     #replace + to plus
     stringr::str_replace_all("\\+", "plus") %>%
     #replace - to _
-    stringr::str_replace_all("\\-", "_")
+    stringr::str_replace_all("\\-", "_") %>%
+    #replace / to _
+    stringr::str_replace_all("\\/", "_") %>%
+    #and also \ to _
+    stringr::str_replace_all("\\\\", "_")
 
   #other symbols
   #replace non-ascii to _
