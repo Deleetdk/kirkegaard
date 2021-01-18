@@ -387,8 +387,8 @@ GG_scatter = function(df,
   if ("case_names_vector" %in% names(arg_list)) stop("The argument `case_names_vector` is no longer used. Use `case_names`.")
 
   #check if vars exist
-  if (!x_var %in% colnames(df)) stop("X variable not found in data.frame!")
-  if (!y_var %in% colnames(df)) stop("Y variable not found in data.frame!")
+  if (!x_var %in% colnames(df)) stop("X variable not found in data frame!")
+  if (!y_var %in% colnames(df)) stop("Y variable not found in data frame!")
 
   #case names?
   if (!is.null(case_names) && !are_equal(case_names, NA) && !are_equal(case_names, F)) {
@@ -498,10 +498,10 @@ GG_scatter = function(df,
 
   #text
   if (!is.null(CI)) {
-    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " [CI", CI*100,": ", cor_CI[1] %>% format(nsmall = 2, digits = 2), " ", cor_CI[2] %>% format(nsmall = 2, digits = 2), "] (orange line)",
+    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " [CI", CI*100,": ", cor_CI[1] %>% format(nsmall = 2, digits = 2), " ", cor_CI[2] %>% format(nsmall = 2, digits = 2), "]",
                   "\nn=", nrow(df))
   } else {
-    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2), " (orange line)",
+    text = paste0("r=", cor %>% format(nsmall = 2, digits = 2),
                   "\nn=", nrow(df))
   }
 
