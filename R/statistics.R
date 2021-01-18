@@ -1,6 +1,7 @@
 ## STATISTICS functions
 
 
+
 #' Adjust Cohen's d for measurement error
 #'
 #' Adjust' Cohen's d for measurement error using the Pearson r approach
@@ -86,7 +87,8 @@ a4me_cohen_d = function(d, n1, n2, rxx = 1, ryy = 1) {
 #' cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
 #' cor_matrix(iris, weights = "Petal.Width") #weights from name
 #' cor_matrix(iris, weights = 1:150) #weights from vector
-cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = NULL, p_template = "%r [p=%p]", p_round = 3, rank_order = F) {
+cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r%a [p=%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
+
 
   #checks
   data = as.data.frame(data)
@@ -95,8 +97,8 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   is_(rank_order, class = c("character", "logical"), size = 1, error_on_false = T)
 
   #CI and p vals
-  if (!is.null(CI) && !is.null(p_val)) stop("Cannot both calculate CIs and p values!")
-  v_noextras = is.null(CI) && is.null(p_val)
+  if (!is.null(CI) && p_val) stop("Cannot both calculate CIs and p values!")
+  v_noextras = is.null(CI) && !p_val
 
   #reliabities
   if (is.null(reliabilities)) {
@@ -129,12 +131,13 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
 
   ##simple weights and no extras?
   if (simpleweights && v_noextras) {
+
     m = weights::wtd.cors(data, weight = weights)
 
     #correct for unreliability
     m = combine_upperlower(psych::correct.cor(m, reliabilities), psych::correct.cor(m, reliabilities) %>% t)
 
-    #remove impossible values
+    #winsor to -1 to 1
     m[m > 1] = 1
     m[m < -1] = -1
 
@@ -199,7 +202,8 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
       }
 
       #simple weights & p_val
-      if (simpleweights && !is.null(p_val)) {
+      if (simpleweights && p_val) {
+
         #observed r
         r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
@@ -215,19 +219,30 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
         #rounding
         r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
-        #format and save
-        m[row, col] = stringr::str_replace(p_template, "%r", r_r) %>%
-          str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
+        #finalize with p value
+        if (asterisks_only) {
+          m[row, col] = r_r + p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = T)
+        } else {
+
+          m[row, col] = p_template %>%
+            str_replace("%r", r_r) %>%
+            str_replace("%p", p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = F))
+        }
       }
 
       #complex weights
       if (!simpleweights) {
-        v_weights = psych::harmonic.mean((weights[c(row, col)]) %>% t)
+        #for each case, compute the harmonic mean weight
+        v_weights = weights[, c(row, col)] %>%
+          t() %>%
+          psych::harmonic.mean()
 
+        #if plain correlation output, compute and be done
         if (v_noextras) {
           m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
         }
 
+        #if CI wanted
         if (!is.null(CI)) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
@@ -255,7 +270,8 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
             str_replace("%upper", r_CI[2])
         }
 
-        if (!is.null(p_val)) {
+        #if p value wanted
+        if (p_val) {
           #observed r
           r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
 
@@ -271,9 +287,15 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           #format r
           r_r = r_obj[1] %>% format_digits(digits = CI_round)
 
-          #format and save
-          m[row, col] = stringr::str_replace(p_template, "%r", r_r) %>%
-            stringr::str_replace("%p", r_obj[4] %>% format(digits = p_round, nsmall = p_round))
+          #finalize with p value
+          if (asterisks_only) {
+            m[row, col] = r_r + p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = T)
+          } else {
+
+            m[row, col] = p_template %>%
+              str_replace("%r", r_r) %>%
+              str_replace("%p", p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = F))
+          }
         }
 
       }
@@ -281,7 +303,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   }
 
   #make symmetric
-  m = MAT_half(m) %>% MAT_vector2full
+  m = MAT_half(m) %>% MAT_vector2full()
 
   #dimnames
   rownames(m) = colnames(m) = colnames(data)

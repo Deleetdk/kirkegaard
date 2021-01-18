@@ -20,9 +20,14 @@ test_that("cor_matrix", {
   expect_false(are_equal(cor_matrix(iris[-5], weights = iris[-5]), cor(iris[-5])))
 
   #test arguments
-  expect_true(cor_matrix(iris, CI = .95) %>% is.character)
+  expect_true(cor_matrix(iris, CI = .95) %>% is.character())
+  expect_true(cor_matrix(iris, p_val = T) %>% is.character())
+  expect_true(cor_matrix(iris, p_val = T, asterisks_only = T) %>% is.character())
   expect_true(all((cor_matrix(iris, CI = .95) %>% get_dims()) == (c(4, 4))))
-  expect_true(cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character)
+  expect_true(cor_matrix(iris[-5], weights = iris[-5], CI = .95) %>% is.character())
+
+  #errors
+  expect_error(cor_matrix(iris, p_val = T, CI = .95), regexp = "Cannot both calculate CIs and p values")
 })
 
 
