@@ -4,14 +4,14 @@
 \alias{write_rvest}
 \title{Write rvest/xml object}
 \usage{
-write_rvest(x, path, ...)
+write_rvest(x, file, ...)
 }
 \arguments{
 \item{x}{(obj) Object to write to disk.}
 
-\item{path}{(str) Where to save it.}
-
 \item{...}{Other parameters to write_rds.}
+
+\item{path}{(str) Where to save it.}
 }
 \value{
 Invisibly returns x for use in pipelines.
