@@ -44,6 +44,10 @@ test_that("str_legalize", {
   expect_identical(str_legalize("%a"), "pcta")
   #dash
   expect_identical(str_legalize("a-b"), "a_b")
+  #slash
+  expect_identical(str_legalize("a/b"), "a_b")
+  #backslash
+  expect_identical(str_legalize("a\\b"), "a_b")
   #initial digit
   expect_identical(str_legalize("123"), "x123")
   #initial ?
