@@ -4,12 +4,14 @@
 \alias{read_vcf}
 \title{Read VCF file into data frame}
 \usage{
-read_vcf(x, var_id = "ID")
+read_vcf(x, var_id = "ID", n_max = Inf)
 }
 \arguments{
 \item{x}{path to VCF}
 
 \item{var_id}{Which column(s) to use for IDs. Can be 'ID' or 'chrpos'}
+
+\item{n_max}{Max lines to read (including comments)}
 }
 \value{
 a data frame
