@@ -109,13 +109,15 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
         broom::tidy() %>%
         mutate(model = name)
     } else if ("rlm" %in% class_m) {
+
       #need to make the p value manually
       y = m %>%
         broom::tidy() %>%
         mutate(
           p.value = abs(statistic) %>% pt(df = summary(m)$df[2], lower.tail = F),
           model = name
-          )
+        )
+
     } else if ("lm" %in% class_m) {
       y = m %>%
         broom::tidy() %>%
@@ -201,9 +203,4 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   y2
 }
 
-library(rms)
-models = list(
-  ols(Sepal.Width ~ Sepal.Length, data = iris),
-  ols(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris),
-  ols(Sepal.Width ~ Sepal.Length + Petal.Width + Petal.Length, data = iris)
-) %>% summarize_models()
+
