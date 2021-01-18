@@ -614,7 +614,7 @@ merge_datasets_multi = function(..., join = "both", overwrite_NA = FALSE, restor
 #' @param ... Other parameters to write_rds.
 #' @return Invisibly returns x for use in pipelines.
 #' @export
-write_rvest = function(x, path, ...) {
+write_rvest = function(x, file, ...) {
   #convert to character
   #is list?
   if (inherits(x, "list")) {
@@ -634,7 +634,7 @@ write_rvest = function(x, path, ...) {
   }
 
   #save
-  readr::write_rds(x, path = path, ...)
+  readr::write_rds(x, file = file, ...)
 
   invisible(x)
 }
@@ -665,10 +665,11 @@ read_rvest = function(path) {
 #'
 #' @param x path to VCF
 #' @param var_id Which column(s) to use for IDs. Can be 'ID' or 'chrpos'
+#' @param n_max Max lines to read (including comments)
 #'
 #' @return a data frame
 #' @export
-read_vcf = function(x, var_id = "ID") {
+read_vcf = function(x, var_id = "ID", n_max = Inf) {
 
   #read VCF, all cols forced as character
   x2 = readr::read_tsv(x, comment = "##", col_types = cols(.default = col_character())) %>% df_legalize_names()
