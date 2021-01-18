@@ -103,6 +103,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
     #if its lm or rms
     class_m = class(m)
     if ("rms" %in% class_m) {
+
       y = m %>%
         summary.lm() %>%
         broom::tidy() %>%
@@ -117,7 +118,6 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
           )
     } else if ("lm" %in% class_m) {
       y = m %>%
-        summary.lm() %>%
         broom::tidy() %>%
         mutate(model = name)
     } else { #YOLO
@@ -201,3 +201,9 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   y2
 }
 
+library(rms)
+models = list(
+  ols(Sepal.Width ~ Sepal.Length, data = iris),
+  ols(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris),
+  ols(Sepal.Width ~ Sepal.Length + Petal.Width + Petal.Length, data = iris)
+) %>% summarize_models()
