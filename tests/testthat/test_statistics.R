@@ -140,3 +140,19 @@ test_that("wtd_sd", {
 #   expect_equivalent(Hmisc::wtd.quantile(rand_norm), wtd_quantile(rand_norm))
 #   expect_equivalent(Hmisc::wtd.quantile(rand_norm, rand_uniform), wtd_quantile(rand_norm, rand_uniform))
 # })
+
+
+# calc_row_representativeness ---------------------------------------------
+
+test_that("calc_row_representativeness", {
+  #compute for mpg dataset
+  mpg_representativeness = mpg %>%
+    select(displ, cyl, cty, hwy) %>%
+    calc_row_representativeness()
+
+  expect_s3_class(mpg_representativeness, "data.frame")
+  expect_equal(c(234, 7), dim(mpg_representativeness))
+  expect_equal(colnames(mpg_representativeness[-1]), c("displ", "cyl", "cty", "hwy", "mean", "median"))
+  expect_equal(mpg_representativeness %>% arrange(mean) %>% .[[1, "row"]],
+               42)
+})
