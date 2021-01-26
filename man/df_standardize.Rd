@@ -4,7 +4,14 @@
 \alias{df_standardize}
 \title{Standardize data.frame}
 \usage{
-df_standardize(df, exclude = NULL, messages = T, exclude_factors = T, w = NULL)
+df_standardize(
+  df,
+  exclude = NULL,
+  messages = T,
+  exclude_logicals = T,
+  exclude_range_01 = T,
+  w = NULL
+)
 }
 \arguments{
 \item{df}{(data frame) The data frame.}
@@ -13,7 +20,9 @@ df_standardize(df, exclude = NULL, messages = T, exclude_factors = T, w = NULL)
 
 \item{messages}{(lgl scalar) Whether to output messages.}
 
-\item{exclude_factors}{(lgl scalar) Whether to exclude factors.}
+\item{exclude_logicals}{Exclude boolean/logical variables}
+
+\item{exclude_range_01}{Exclude variables that range between 0 and 1}
 
 \item{w}{(num vector) Weights to use, if any.}
 }
@@ -26,6 +35,4 @@ Standardize all variables in a data.frame. Can use weighted standardization. Wra
 \examples{
 head(iris) #not standardized
 head(df_standardize(iris)) #standardized
-head(df_standardize(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
-head(df_standardize(iris, w = runif(150))) #standardized with weights
 }

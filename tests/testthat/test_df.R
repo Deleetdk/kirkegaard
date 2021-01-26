@@ -5,21 +5,41 @@ context("df_")
 # df_standardize ------------------------------------------------------------------
 set.seed(1)
 
+#special iris
+testdata = tibble(
+  normals = rnorm(100),
+  zero_one = runif(100, min = 0, max = 1),
+  logicals = sample(c(T, F), size = 100, replace = T),
+  ordinals = sample(letters[1:3], size = 100, replace = T) %>% ordered(levels = letters[1:3]),
+  factors = sample(letters[1:3], size = 100, replace = T) %>% factor()
+)
+
 
 test_that("df_standardize", {
-  l_dfs = list(t1 = df_standardize(iris, messages = F),
-               t2 = df_standardize(iris, exclude_factors = F, messages = F),
-               t3 = df_standardize(iris, w = runif(150), messages = F)
+  l_dfs = list(
+    #default
+    t1 = df_standardize(testdata, messages = F),
+    #weights
+    t2 = df_standardize(testdata, w = runif(100), messages = F),
+    #convert everything
+    t3 = df_standardize(testdata, exclude_logicals = F, exclude_range_01 = F, messages = F),
+    #specific exclusion, convert nothing
+    t4 = df_standardize(testdata, exclude = names(testdata), messages = F)
   )
 
   #not equal
-  expect_true(all(head(l_dfs$t1[-5]) != head(iris)[-5]))
-  expect_true(all(head(l_dfs$t2) != head(iris)))
-  expect_true(all(l_dfs$t1[-5] != l_dfs$t3[-5]))
+  expect_true(!are_equal(testdata, l_dfs$t1, check.attributes = F))
+  expect_true(!are_equal(testdata, l_dfs$t2, check.attributes = F))
+  expect_true(!are_equal(testdata, l_dfs$t3, check.attributes = F))
 
-  #numeric
-  expect_equivalent(map_dbl(l_dfs$t2, sd), rep(1, 5))
-  expect_false(are_equal(map_dbl(l_dfs$t3[-5], sd), rep(1, 4), check.attributes = F))
+  #weights matter
+  expect_true(!are_equal(l_dfs$t1, l_dfs$t2, check.attributes = F))
+
+  #equal when we ignore all variables
+  expect_equivalent(testdata, l_dfs$t4)
+
+  #they get standardized right
+  expect_equivalent(map_dbl(l_dfs$t3[1:3], sd), rep(1, 3))
 })
 
 # df_round ----------------------------------------------------------------

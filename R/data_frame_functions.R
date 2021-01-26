@@ -4,55 +4,69 @@
 #' @param df (data frame) The data frame.
 #' @param exclude (chr vector) Names of variables to not standardize.
 #' @param messages (lgl scalar) Whether to output messages.
-#' @param exclude_factors (lgl scalar) Whether to exclude factors.
+#' @param exclude_logicals Exclude boolean/logical variables
+#' @param exclude_range_01 Exclude variables that range between 0 and 1
 #' @param w (num vector) Weights to use, if any.
 #' @export
 #' @return Returns a standardized data.frame, i.e. one where every variable has mean 0 and sd 1.
 #' @examples
 #' head(iris) #not standardized
 #' head(df_standardize(iris)) #standardized
-#' head(df_standardize(iris, exclude_factors = F)) #also standardize factors (may be nonsensical)
-#' head(df_standardize(iris, w = runif(150))) #standardized with weights
-df_standardize = function(df, exclude = NULL, messages = T, exclude_factors = T, w = NULL) {
+df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T, exclude_range_01 = T, w = NULL) {
   df
 
   #weights
   if (is.null(w)) w = rep(1, nrow(df))
 
   for (col_idx in 1:ncol(df)) {
+    colname = colnames(df)[col_idx]
 
     #skip if in exclusion vector
-    if (colnames(df)[col_idx] %in% exclude) {
+    if (colname %in% exclude) {
+      if (messages) message(str_glue("Skipped {colname} because it is in the exclude list"))
       next
     }
 
     #logical
-    if (is.logical(df[[col_idx]])) {
-      if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a logical.")
+    if (is.logical(df[[colname]])) {
+      if (exclude_logicals) {
+        if (messages) message(str_glue("Skipped {colname} because it is a logical (boolean)"))
+        next
+      }
+
+      #standardize
+      df[[colname]] = standardize(df[[colname]], w = w)
       next
     }
 
-    #factor
-    if (is.factor(df[[col_idx]])) {
-      if (exclude_factors) {
-        if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a factor.")
-        next
-      } else {
-        df[[col_idx]] = standardize(df[[col_idx]] %>% as.numeric(), w = w)
+    #0-1 range numeric
+    if (is.numeric(df[[colname]]) && all(is_between(df[[colname]], a = 0, b = 1, include_lower = T, include_upper = T))) {
+      if (exclude_range_01) {
+        if (messages) message(str_glue("Skipped {colname} because it is ranged from 0 to 1 (a proportion, maybe)"))
         next
       }
+
+      #standardize
+      df[[colname]] = standardize(df[[colname]], w = w)
+      next
     }
 
     #character
-    if (class(unlist(df[col_idx])) == "character") {
+    if (class(unlist(df[colname])) == "character") {
       if (messages) {
-        if (messages) message("Skipped " + colnames(df)[col_idx] + " because it is a character.")
+        if (messages) message(str_glue("Skipped {colname} because it is a character (string)"))
       }
       next
     }
 
-    #otherwise standardize
-    df[[col_idx]] = standardize(df[[col_idx]], w = w)
+    #standardize numericals
+    if (is.numeric(df[[colname]])) {
+      df[[colname]] = standardize(df[[colname]], w = w)
+      next
+    }
+
+    #skip if it's something else
+    if (messages) message(str_glue("Skipped {colname} because it is class {str_c(class(df[[colname]]), collapse = ', ')}"))
   }
 
   return(df)
