@@ -8,6 +8,7 @@ set.seed(1)
 #special iris
 testdata = tibble(
   normals = rnorm(100),
+  normals_with_missing = rnorm(100) %>% {y = .; y[1] = NA; y},
   zero_one = runif(100, min = 0, max = 1),
   logicals = sample(c(T, F), size = 100, replace = T),
   ordinals = sample(letters[1:3], size = 100, replace = T) %>% ordered(levels = letters[1:3]),
@@ -39,7 +40,10 @@ test_that("df_standardize", {
   expect_equivalent(testdata, l_dfs$t4)
 
   #they get standardized right
-  expect_equivalent(map_dbl(l_dfs$t3[1:3], sd), rep(1, 3))
+  expect_equivalent(map_dbl(l_dfs$t3[1:4], sd, na.rm = T), rep(1, 4))
+
+  #handle NAs
+
 })
 
 # df_round ----------------------------------------------------------------

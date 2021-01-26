@@ -40,7 +40,7 @@ df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T
     }
 
     #0-1 range numeric
-    if (is.numeric(df[[colname]]) && all(is_between(df[[colname]], a = 0, b = 1, include_lower = T, include_upper = T))) {
+    if (is.numeric(df[[colname]]) && all(is_between(df[[colname]], a = 0, b = 1, include_lower = T, include_upper = T), na.rm = T)) {
       if (exclude_range_01) {
         if (messages) message(str_glue("Skipped {colname} because it is ranged from 0 to 1 (a proportion, maybe)"))
         next
