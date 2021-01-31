@@ -46,3 +46,53 @@ test_that("score_bias_metrics", {
   expect_equal(c(1000, 6), dim(scored))
   expect_true(!anyNA(scored))
 })
+
+
+test_that("score_by", {
+  test_data = tibble(
+    a = c(1:4),
+    b = c(5:8)
+  )
+
+  #chr input
+  score_by(test_data, moderator = c("m", "m", "f", "f")) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "5c2c228d2f")
+
+  #specific levels
+  score_by(test_data, moderator = c("m", "m", "f", "f") %>% factor(levels = c("m", "f"))) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "bd9fcb4550")
+
+  #unused levels
+  score_by(test_data, moderator = c("m", "m", "f", "f") %>% factor(levels = c("m", "f", "unused"))) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "bd9fcb4550")
+
+  score_by(test_data, moderator = c("m", "m", "f", "f") %>% factor(levels = c("m", "f", "unused")), drop_unused_levels = F) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "bf900e529f")
+
+  #numerical grouping
+  score_by(test_data, moderator = c(1:4)) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "b91bd92d89")
+
+  score_by(test_data, moderator = seq(0, 1, length.out = 4)) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "5a7e38ec23")
+
+  score_by(test_data, moderator = seq(.2, .8, length.out = 4), extrapolate_to = c(0, 1)) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "3f8ace5820")
+
+  #missing data
+  test_data_NA = tibble(
+    a = c(1:4, NA),
+    b = c(5:8, NA)
+  )
+
+  score_by(test_data_NA, moderator = c("m", "m", "f", "f", "f")) %>%
+    expect_s3_class("data.frame") %>%
+    expect_known_hash(hash = "5c2c228d2f")
+})

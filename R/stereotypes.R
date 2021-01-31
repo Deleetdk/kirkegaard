@@ -172,3 +172,74 @@ score_bias_metrics = function(estimates, criterion, bias_var) {
 
   }, .expand = F, .id = NULL)
 }
+
+
+#' Score stereotypes by moderator
+#'
+#' @param x Data to score (numerical)
+#' @param moderator A moderator variable (vector input, same length as x rows)
+#' @param extrapolate_to Values to extrapolate to if using a numerical moderator. Default is minimum and maximum values of observed moderator values.
+#' @param method Which method to use for numerical extrapolation. Default is a linear model, but could be e.g. loess.
+#' @param drop_unused_levels Whether to drop unused factor levels if categorical moderator (default is to drop them)
+#'
+#' @return A dataframe with expected value by moderator levels or values sought.
+#' @export
+#'
+#' @examples
+#' test_data = tibble(
+#' a = c(1:4),
+#' b = c(5:8)
+#' )
+#'
+#' #chr moderator
+#' score_by(test_data, group = c("m", "m", "f", "f"))
+#' #specified levels and thus order
+#' score_by(test_data, group = c("m", "m", "f", "f") %>% factor(levels = c("m", "f")))
+#' #numerical moderator
+#' score_by(test_data, group = seq(0, 1, length.out = 4))
+score_by = function(x, moderator, extrapolate_to = "minmax", method = lm, drop_unused_levels = T) {
+  #if mod is categorical, we simply split the data
+  if (is.logical(moderator) || is.factor(moderator) || is.character(moderator)) {
+    #convert to factor
+    moderator = as.factor(moderator)
+
+    #drop unused
+    if (drop_unused_levels) moderator = fct_drop(moderator)
+
+    #loop across moderator levels
+    estimates = map_df(levels(moderator), function(g) {
+      x[moderator == g, ] %>% colMeans(na.rm = T)
+    })
+
+    y = bind_cols(
+      moderator = levels(moderator),
+      estimates
+    )
+    return(y)
+  }
+
+  #if continous, extrapolate to which values?
+  if (identical(extrapolate_to, "minmax")) extrapolate_to = c(min(moderator, na.rm = T), max(moderator, na.rm = T))
+  assertthat::is.number(extrapolate_to)
+
+  #fit model for each column, estimate extrapolated values
+  estimates = map_dfc(as.data.frame(x), function(dd) {
+    #fit model
+    i_data = tibble(
+      y = dd,
+      x = moderator
+    ) %>% na.omit()
+
+    i_fit = method(formula = y ~ x, data = i_data)
+
+    y = predict(i_fit, newdata = tibble(x = extrapolate_to))
+
+    y
+  })
+
+  y = bind_cols(
+    moderator = extrapolate_to,
+    estimates
+  )
+  return(y)
+}
