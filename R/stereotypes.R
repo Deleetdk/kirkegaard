@@ -181,6 +181,7 @@ score_bias_metrics = function(estimates, criterion, bias_var) {
 #' @param extrapolate_to Values to extrapolate to if using a numerical moderator. Default is minimum and maximum values of observed moderator values.
 #' @param method Which method to use for numerical extrapolation. Default is a linear model, but could be e.g. loess.
 #' @param drop_unused_levels Whether to drop unused factor levels if categorical moderator (default is to drop them)
+#' @param long_format Transposes the data so that each column has a set of estimates instead of each row.
 #'
 #' @return A dataframe with expected value by moderator levels or values sought.
 #' @export
@@ -192,13 +193,17 @@ score_bias_metrics = function(estimates, criterion, bias_var) {
 #' )
 #'
 #' #chr moderator
-#' score_by(test_data, group = c("m", "m", "f", "f"))
+#' score_by(test_data, moderator = c("m", "m", "f", "f"))
 #' #specified levels and thus order
-#' score_by(test_data, group = c("m", "m", "f", "f") %>% factor(levels = c("m", "f")))
+#' score_by(test_data, moderator = c("m", "m", "f", "f") %>% factor(levels = c("m", "f")))
 #' #numerical moderator
-#' score_by(test_data, group = seq(0, 1, length.out = 4))
-score_by = function(x, moderator, extrapolate_to = "minmax", method = lm, drop_unused_levels = T) {
+#' score_by(test_data, moderator = seq(0, 1, length.out = 4))
+#' #long format
+#' score_by(test_data, moderator = c("m", "m", "f", "f"), long_format = T)
+#' score_by(test_data, moderator = seq(0, 1, length.out = 4), long_format = T)
+score_by = function(x, moderator, extrapolate_to = "minmax", method = lm, drop_unused_levels = T, long_format = F) {
   #if mod is categorical, we simply split the data
+  moderator_name = deparse(substitute(moderator))
   if (is.logical(moderator) || is.factor(moderator) || is.character(moderator)) {
     #convert to factor
     moderator = as.factor(moderator)
@@ -215,6 +220,14 @@ score_by = function(x, moderator, extrapolate_to = "minmax", method = lm, drop_u
       moderator = levels(moderator),
       estimates
     )
+
+    #long format
+    if (long_format) {
+      y = y %>%
+        pivot_longer(cols = -moderator) %>%
+        pivot_wider(names_from = moderator)
+    }
+
     return(y)
   }
 
@@ -241,5 +254,16 @@ score_by = function(x, moderator, extrapolate_to = "minmax", method = lm, drop_u
     moderator = extrapolate_to,
     estimates
   )
+
+  #long format
+  if (long_format) {
+    y = y %>%
+      pivot_longer(cols = -moderator) %>%
+      pivot_wider(names_from = moderator)
+
+    #legalize names
+    names(y)[-1] = "moderator_at_" + names(y)[-1]
+  }
+
   return(y)
 }
