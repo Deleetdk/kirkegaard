@@ -156,3 +156,68 @@ test_that("calc_row_representativeness", {
   expect_equal(mpg_representativeness %>% arrange(mean) %>% .[[1, "row"]],
                42)
 })
+
+
+
+# heteroscedasticity ------------------------------------------------------
+
+test_that("test_HS", {
+  #fix some data in iris
+  iris2 = iris %>%
+    arrange(Petal.Length) %>%
+    mutate(
+      Sepal.Length_linHS = Sepal.Length + rnorm(n()) * seq(1, 3, length.out = n()),
+      Sepal.Length_nonlinHS = Sepal.Length + rnorm(n()) * c(seq(1, 3, length.out = n()/2), seq(3, 1, length.out = n()/2))
+    )
+
+  #fit models
+  test1 = test_HS(resid = resid(lm(Sepal.Length ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
+  test2 = test_HS(resid = resid(lm(Sepal.Length_linHS ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
+  test3 = test_HS(resid = resid(lm(Sepal.Length_nonlinHS ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
+
+  #objects look right
+  expect_s3_class(test1, "tbl")
+  expect_s3_class(test2, "tbl")
+  expect_s3_class(test3, "tbl")
+
+  expect_true(nrow(test1) == 4)
+  expect_true(nrow(test2) == 4)
+  expect_true(nrow(test3) == 4)
+  expect_true(ncol(test1) == 5)
+  expect_true(ncol(test2) == 5)
+  expect_true(ncol(test3) == 5)
+  expect_true(!anyNA(test1))
+  expect_true(!anyNA(test2))
+  expect_true(!anyNA(test3))
+})
+
+
+
+# quantile_smooth ---------------------------------------------------------
+
+
+test_that("quantile_smooth", {
+  default = quantile_smooth(iris$Petal.Length, iris$Sepal.Length, quantile = .90)
+  qgam = quantile_smooth(iris$Petal.Length, iris$Sepal.Length, quantile = .90, method = "Rq")
+  Rq = quantile_smooth(iris$Petal.Length, iris$Sepal.Length, quantile = .90, method = "Rq")
+  running = quantile_smooth(iris$Petal.Length, iris$Sepal.Length, quantile = .90, method = "running")
+
+  #looks right
+  expect_type(default, "double")
+  expect_type(qgam, "double")
+  expect_type(Rq, "double")
+  expect_type(running, "double")
+
+  #length ok
+  expect_true(length(default) == nrow(iris))
+  expect_true(length(qgam) == nrow(iris))
+  expect_true(length(Rq) == nrow(iris))
+  expect_true(length(running) == nrow(iris))
+
+  #no missing
+  expect_true(!anyNA(default))
+  expect_true(!anyNA(qgam))
+  expect_true(!anyNA(Rq))
+  expect_true(!anyNA(running))
+
+})

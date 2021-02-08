@@ -1162,3 +1162,108 @@ calc_row_representativeness = function(x, central_tendency_fun = median, central
     select(row, everything())
 }
 
+#internal helper functions
+#get model R2 adj
+get_r2adj = function(x) {
+  x %>% summary.lm() %>% .$adj.r.squared
+}
+
+#boomer code
+#https://rdrr.io/cran/rms/src/R/ols.s#sym-print.ols
+get_p = function(x) {
+  1 - pchisq(x$stats['Model L.R.'], x$stats['d.f.'])
+}
+
+#' Test for heteroscedasticity
+#'
+#' @param resid Model residuals
+#' @param x Model predictor of interest
+#'
+#' @return Data frame of results
+#' @export
+#'
+#' @examples
+#' #look for mostly nonexistent HS in iris
+#' test_HS(resid = resid(lm(Sepal.Length ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
+#' #a lot of HS here
+#' test_HS(resid = resid(lm(Petal.Width ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
+test_HS = function(resid, x) {
+  #data
+  d = tibble(
+    resid = standardize(abs(resid)),
+    x = standardize(x),
+    resid_rank = rank(resid),
+    x_rank = rank(x)
+  )
+
+  #fits
+  mods = list(
+    fit_linear = rms::ols(resid ~ x, data = d),
+    fit_spline = rms::ols(resid ~ rms::rcs(x), data = d),
+    fit_linear_rank = rms::ols(resid_rank ~ x_rank, data = d),
+    fit_spline_rank = rms::ols(resid_rank ~ rms::rcs(x_rank), data = d)
+  )
+
+  #summarize
+  y = tibble(
+    test = c("linear raw", "spline raw", "linear rank", "spline rank"),
+    r2adj = purrr::map_dbl(mods, get_r2adj),
+    p = purrr::map_dbl(mods, get_p),
+    fit = mods
+  )
+
+  #for the rcs, we have to compute the model improvement vs. linear
+  #https://stackoverflow.com/questions/47937065/how-can-i-interpret-the-p-value-of-nonlinear-term-under-rms-anova
+  #https://stats.stackexchange.com/questions/405961/is-there-formal-test-of-non-linearity-in-linear-regression
+  y$p[2] = rms::lrtest(mods$fit_linear, mods$fit_spline)$stats["P"]
+  y$p[4] = rms::lrtest(mods$fit_linear_rank, mods$fit_spline_rank)$stats["P"]
+
+  y %>% dplyr::mutate(log10_p = -log10(p))
+}
+
+
+#' Quantile smoothening
+#'
+#' @param x Predictor variable
+#' @param y Outcome variable
+#' @param quantile Which quantile (e.g., .95)
+#' @param method Method to use
+#' @param k Number of knots for method qgam, see [qgam::qgam]
+#' @param window Window size for method running, see [caTools::runquantile]
+#'
+#' @return Vector of fitted values
+#' @export
+#'
+#' @examples
+#' quantile_smooth(iris$Petal.Length, iris$Sepal.Length, quantile = .90)
+quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), k = 5, window = 50) {
+
+  #method
+  method = match.arg(method[1], method)
+  if (method == "qgam") {
+    #same as in example here
+    #https://rdrr.io/cran/qgam/man/qgam.html
+    assertthat::assert_that(nchar(system.file(package = "qgam")) > 0)
+    fit = qgam::qgam(list(y~s(x, k = k, bs = "cr"), ~ s(x, k = k, bs = "cr")),
+                     data = data.frame(x = x, y = y), qu = quantile)
+    return(predict(fit))
+
+  } else if (method == "Rq") {
+    #fit with spline
+    #https://rdrr.io/cran/rms/man/Rq.html
+    assertthat::assert_that(nchar(system.file(package = "rms")) > 0)
+    fit = rms::Rq(y ~ rms::rcs(x), data = data.frame(x = x, y = y), tau = quantile)
+    return(fitted(fit) %>% as.vector())
+
+  } else if (method == "running") {
+    #beware, need to sort the y by x first
+    #and then return it to original state
+    assertthat::assert_that(nchar(system.file(package = "caTools")) > 0)
+    x_order = order(x)
+    return(caTools::runquantile(y[x_order], k = k, probs = quantile)[x_order])
+
+  } else {
+    stop(str_glue("method not recognized: {method}"), call. = F)
+  }
+
+}
