@@ -3,6 +3,14 @@
 context("GG_")
 
 
+
+# GG_matrix ---------------------------------------------------------------
+
+test_that("GG_matrix", {
+  expect_s3_class(iris %>% miss_add_random() %>% GG_matrix(), "ggplot")
+})
+
+
 # GG_text -----------------------------------------------------------------
 #convenience function for adding text to ggplots
 #hard to do formally

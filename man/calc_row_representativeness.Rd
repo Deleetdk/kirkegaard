@@ -29,3 +29,6 @@ A data frame of error values and their mean and medians
 \description{
 Calculate row-wise representativeness
 }
+\examples{
+calc_row_representativeness(iris)
+}

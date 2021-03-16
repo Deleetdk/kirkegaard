@@ -1,6 +1,30 @@
 ## STATISTICS functions
 
 
+#' Describe data
+#'
+#' @param ... Inut for [psych::describe]
+#'
+#' @return Tibble subset
+#' @export
+#'
+#' @examples
+#' describe2(iris)
+#' describe2(mpg)
+describe2 = function(...) {
+  #skip factors
+  dots = list(...)
+
+  #get results
+  y = psych::describe(...)
+
+  #fix class
+  class(y) = "data.frame"
+
+  #subset, explicit rownames
+  y %>% rownames_to_column(var = "var") %>% select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>% as_tibble()
+}
+
 
 #' Adjust Cohen's d for measurement error
 #'
@@ -1054,6 +1078,35 @@ standardize = function(x, w = NULL, robust = F, sample = T, focal_group = NULL) 
 }
 
 
+#' Transform to 0-1 scale
+#'
+#' @param x Numeric factor
+#'
+#' @return Numeric factor on scale 0-1
+#' @export
+#'
+#' @examples
+#' transform_01(1:5)
+#' transform_01(c(1:3, NA, 4:5))
+transform_01 = function(x) {
+  assertthat::assert_that(!is.character(x))
+  assertthat::assert_that(!is.factor(x))
+
+  #0 length
+  if (length(x) == 0) return(c())
+
+  #set to 0-1 scale
+  #subtract minimum
+  x = x - min(x, na.rm = T)
+
+  #divide by maximum
+  x = x / max(x, na.rm = T)
+
+  x
+}
+
+
+
 #' Find a cutoff of a normal distribution that results in a given mean trait value above the cutoff
 #'
 #' Assuming a normal distribution for a trait and a cutoff value. Estimate what this cutoff value is to obtain a population above the cutoff with a known mean trait value.
@@ -1120,8 +1173,13 @@ find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precisi
 #' @export
 #'
 #' @examples
+#' calc_row_representativeness(iris)
 calc_row_representativeness = function(x, central_tendency_fun = median, central_tendencies = NULL, standardize = T, absolute = T) {
 
+  #skip non-numeric variables
+  is_num = map_lgl(x, is.numeric)
+  if (any(!is_num)) message("Skipped non-numeric variables")
+  x = x[is_num]
 
   #standardize if desired
   if (standardize) x = map_df(x, kirkegaard::standardize)

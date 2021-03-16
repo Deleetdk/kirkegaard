@@ -1,5 +1,23 @@
 context("statistics")
 
+
+# describe2 ---------------------------------------------------------------
+
+test_that("describe2", {
+  expect_s3_class(describe2(iris), "data.frame")
+
+  expect_equivalent(describe2(iris) %>% colnames(), c("var", "n", "mean", "median", "sd", "mad", "min", "max", "skew", "kurtosis"))
+})
+
+
+# transform_01 ------------------------------------------------------------
+
+test_that("transform_01", {
+  expect_equal(transform_01(1:5), ((1:5)-1)/4)
+  expect_true(anyNA(transform_01(c(1, NA, 2))))
+  expect_equivalent(transform_01(c()), c())
+})
+
 # cor_matrix --------------------------------------------------------------
 #correlation matrix with nice output
 

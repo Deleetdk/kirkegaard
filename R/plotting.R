@@ -1148,3 +1148,24 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
 }
 
 
+# GG_matrix ---------------------------------------------------------------
+
+GG_matrix = function(x) {
+  # browser()
+  #scale numeric data to 0-1 range
+  is_num = map_lgl(x, ~is.numeric(.) & !is.factor(.))
+  for (i in seq_along(x)) {
+    if (is_num[i]) x[[i]] = x[[i]] %>% transform_01()
+  }
+
+  #to long form
+  x_long = x[, is_num] %>% mutate(.id = 1:n()) %>% pivot_longer(cols = -.id)
+
+  #plot
+  ggplot(x_long, aes(.id, name, fill = value)) +
+    geom_tile() +
+    scale_fill_gradient(low = "blue", high = "green", na.value = "red") +
+    xlab("Case number") +
+    ylab("Variable")
+}
+
