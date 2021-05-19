@@ -4,10 +4,21 @@
 \alias{describe2}
 \title{Describe data}
 \usage{
-describe2(...)
-}
-\arguments{
-\item{...}{Inut for \link[psych:describe]{psych::describe}}
+describe2(
+  x,
+  na.rm = TRUE,
+  interp = FALSE,
+  skew = TRUE,
+  ranges = TRUE,
+  trim = 0.1,
+  type = 3,
+  check = TRUE,
+  fast = NULL,
+  quant = NULL,
+  IQR = FALSE,
+  omit = FALSE,
+  data = NULL
+)
 }
 \value{
 Tibble subset

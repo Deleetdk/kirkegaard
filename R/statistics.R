@@ -3,7 +3,6 @@
 
 #' Describe data
 #'
-#' @param ... Inut for [psych::describe]
 #'
 #' @return Tibble subset
 #' @export
@@ -11,18 +10,23 @@
 #' @examples
 #' describe2(iris)
 #' describe2(mpg)
-describe2 = function(...) {
-  #skip factors
-  dots = list(...)
+describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
+                     trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
+                     IQR = FALSE, omit = FALSE, data = NULL) {
 
   #get results
-  y = psych::describe(...)
+  y = psych::describe(as.data.frame(x), na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
+                      trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
+                      IQR = FALSE, omit = FALSE, data = NULL)
 
-  #fix class
+  #fix class of output
   class(y) = "data.frame"
 
   #subset, explicit rownames
-  y %>% rownames_to_column(var = "var") %>% select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>% as_tibble()
+  y %>%
+    rownames_to_column(var = "var") %>%
+    select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>%
+    as_tibble()
 }
 
 
