@@ -6,6 +6,12 @@ context("statistics")
 test_that("describe2", {
   expect_s3_class(describe2(iris), "data.frame")
 
+  #can we handle logical type properly?
+  iris2 = iris
+  iris2$logical = sample(c(T, F), size = nrow(iris2), replace = T)
+
+  describe2(iris2)[6, ] %>% anyNA() %>% expect_false()
+
   expect_equivalent(describe2(iris) %>% colnames(), c("var", "n", "mean", "median", "sd", "mad", "min", "max", "skew", "kurtosis"))
 })
 

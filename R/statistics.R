@@ -14,6 +14,11 @@ describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE
                      trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
                      IQR = FALSE, omit = FALSE, data = NULL) {
 
+  #convert logical variables to numeric
+  for (v in names(x)) {
+    if (is.logical(x[[v]])) x[[v]] = x[[v]] %>% as.numeric()
+  }
+
   #get results
   y = psych::describe(as.data.frame(x), na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
                       trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
