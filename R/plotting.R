@@ -117,7 +117,9 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 #' data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) %>% GG_denhist("x", "y")
 #' #warns you if grouping variable has missing data
 #' data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) %>% GG_denhist("x", "y")
-GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pars = NULL, clean_name = T, no_y_axis_values = T, alpha = .2, ...) {
+#' #autodetect fractional data
+#' runif(1000) %>% GG_denhist()
+GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pars = NULL, clean_name = T, no_y_axis_values = T, alpha = .2, auto_fraction_bounary = T, ...) {
 
   #check input
   data
@@ -185,6 +187,18 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
 
   #backwards compatible, look for pars and put in the par list
   pars = list(...)
+
+  #fractions
+  if (auto_fraction_bounary) {
+    #values are fractions?
+    if (all(is_between(df[[var]], 0, 1), na.rm = T)) {
+      message("Input seems like a fraction, set `boundary=0` and `binwidth=1/30` to avoid issues near the limits. Disable this with `auto_fraction_bounary=F`")
+      histogram_pars$boundary = 0
+      histogram_pars$binwidth = 1/30
+    }
+  }
+
+  #named args
   if ("binwidth" %in% names(pars)) histogram_pars$binwidth = pars$binwidth
   if ("bins" %in% names(pars)) histogram_pars$bins = pars$bins
   if ("center" %in% names(pars)) histogram_pars$center = pars$center
