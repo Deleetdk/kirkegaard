@@ -463,9 +463,20 @@ GG_scatter = function(df,
       #vector
       df$.color = color
     }
+
+    #clean names? we clean the factor levels too
+    if (clean_names) {
+      #factor?
+      if (is.factor(df$.color)) {
+        levels(df$.color) = levels(df$.color) %>% str_clean()
+      } else {
+        #clean the chr
+        df$.color = df$.color %>% str_clean()
+      }
+    }
   } else {
     #insert placeholder .color variable
-    df$.color = seq_along_rows(df)
+    df$.color = T
   }
 
   #subset + remove NA
@@ -524,13 +535,6 @@ GG_scatter = function(df,
   text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
                          gp = grid::gpar(fontsize = 11))
 
-  #prepare sizes
-  # if (size_as_weight & !is.null(weights)) {
-  #   df$.size = df$.weights
-  # } else {
-  #   #if no weights or don't resize, use 1
-  #   df$.size = 1
-  # }
 
   #plot!
   #4 options due to weights and coloring params
@@ -565,6 +569,7 @@ GG_scatter = function(df,
       }
 
     }
+
   }
 
 
@@ -588,6 +593,7 @@ GG_scatter = function(df,
 
   #clean?
   if (clean_names) {
+    #axes labels
     g = g + xlab(str_clean(x_var)) + ylab(str_clean(y_var))
   }
 
