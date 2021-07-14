@@ -13,6 +13,7 @@ GG_denhist(
   clean_name = T,
   no_y_axis_values = T,
   alpha = 0.2,
+  auto_fraction_bounary = T,
   ...
 )
 }
@@ -56,4 +57,6 @@ GG_denhist(iris[1])
 data.frame(x = c(1, 2, NA), y = c(1, 2, 3)) \%>\% GG_denhist("x", "y")
 #warns you if grouping variable has missing data
 data.frame(x = c(1, 2, 3), y = c(1, 2, NA)) \%>\% GG_denhist("x", "y")
+#autodetect fractional data
+runif(1000) \%>\% GG_denhist()
 }

@@ -108,6 +108,11 @@ test_that("scatter", {
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1), "ggplot")
+
+  #test cleaning of color groups
+  iris$Species2 = iris$Species + "_X"
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species2"), "ggplot")
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species2", clean_names = F), "ggplot")
 })
 
 
