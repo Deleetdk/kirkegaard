@@ -368,6 +368,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @export
 #' @examples
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", se = F) #no SE ribbon
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #casenames in purple
@@ -386,6 +387,7 @@ GG_scatter = function(df,
                       y_var,
                       weights = NULL,
                       color = NULL,
+                      se = T,
                       alpha = 1,
                       text_pos = NA,
                       case_names = NULL,
@@ -575,7 +577,7 @@ GG_scatter = function(df,
 
   #add regression line
   #note that weights are automatically taken into account because they are set above
-  g = g + geom_smooth(method = lm, se = F, color = "orange") +
+  g = g + geom_smooth(method = lm, se = se, color = "orange") +
     annotation_custom(text_object)
 
 

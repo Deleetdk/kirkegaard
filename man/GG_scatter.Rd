@@ -10,6 +10,7 @@ GG_scatter(
   y_var,
   weights = NULL,
   color = NULL,
+  se = T,
   alpha = 1,
   text_pos = NA,
   case_names = NULL,
@@ -61,6 +62,7 @@ Internally uses the ad hoc variables \code{.weights}, \code{.label} and \code{.c
 }
 \examples{
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", se = F) #no SE ribbon
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #casenames in purple
