@@ -146,7 +146,6 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   if (is.character(weights)) {
     weights = data[[weights]] #fetch from data
   }
-  if (anyNA(weights)) stop("weights must not have missing values!")
 
   #simple weights?
   simpleweights = length(get_dims(weights)) == 1

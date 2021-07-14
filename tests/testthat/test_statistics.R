@@ -28,6 +28,9 @@ test_that("transform_01", {
 #correlation matrix with nice output
 
 test_that("cor_matrix", {
+  #add missing data
+  iris_miss = miss_add_random(iris[-5])
+
   #validate vs. base-r
   expect_equivalent(cor_matrix(iris[-5]), cor(iris[-5]))
 
@@ -52,6 +55,11 @@ test_that("cor_matrix", {
 
   #errors
   expect_error(cor_matrix(iris, p_val = T, CI = .95), regexp = "Cannot both calculate CIs and p values")
+
+  #missing data
+  expect_equivalent(cor_matrix(iris_miss), cor(iris_miss, use = "pairwise"))
+  expect_true(cor_matrix(iris_miss, CI = .95) %>% is.character())
+  expect_true(cor_matrix(iris_miss, p_val = T) %>% is.character())
 })
 
 
