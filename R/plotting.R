@@ -547,7 +547,7 @@ GG_scatter = function(df,
       if (weight_as_size) {
         g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
           geom_point(aes(size = .weights), alpha = alpha) +
-          scale_size_continuous(guide = F)
+          scale_size_continuous(guide = "none")
       } else {
         g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
           geom_point(alpha = alpha)
@@ -562,7 +562,7 @@ GG_scatter = function(df,
       if (weight_as_size) {
         g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
           geom_point(aes(size = .weights), alpha = alpha) +
-          scale_size_continuous(guide = F)
+          scale_size_continuous(guide = "none")
       } else {
         g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
           geom_point(alpha = alpha)
@@ -774,7 +774,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (type == "violin") {
       g = ggplot2::ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
-        scale_fill_discrete(guide = F) +
+        scale_fill_discrete(guide = "none") +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
 
 
@@ -785,7 +785,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       g = ggplot2::ggplot(df_sum) +
         geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
         geom_count(data = df, aes_string(groupvar, var)) +
-        scale_fill_discrete(guide = F) +
+        scale_fill_discrete(guide = "none") +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
 
       if (draw_CI) g = g + g_eb3

@@ -90,7 +90,7 @@ GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
     geom_hline(yintercept = 2, linetype = "dashed") +
     theme_bw() +
     scale_y_discrete(name = NULL) +
-    scale_colour_manual(values = c("white", "black", "black"), guide = F) +
+    scale_colour_manual(values = c("white", "black", "black"), guide = "none") +
     xlab("Effect size")
 }
 
@@ -141,7 +141,7 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
     geom_polygon(data = d_polygon, aes(x, y), fill = "grey") +
     geom_vline(linetype = "dashed", xintercept = d_meta$es) +
     geom_point(data = d, aes(es, se, color = outlier)) +
-    scale_color_manual(guide = F, values = c("black", "red")) +
+    scale_color_manual(guide = "none", values = c("black", "red")) +
     scale_y_reverse() +
     theme_bw() +
     xlab("Effect size")
