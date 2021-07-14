@@ -103,8 +103,6 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_error
 #'
 #' @return A data frame of scored bias metrics
 #' @export
-#'
-#' @examples
 score_bias_metrics = function(estimates, criterion, bias_var) {
   #assert appropriate sizes
   assertthat::assert_that(length(criterion) == length(bias_var))

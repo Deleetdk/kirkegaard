@@ -9,25 +9,14 @@ str_uniquify(string, suffix = " (\%d)", pad = F)
 \arguments{
 \item{string}{(chr vector) A character vector.}
 
-\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain \\%d.}
+\item{suffix}{(chr vector) A character to use to make unique suffixes. Must contain \verb{\%d}.}
 
 \item{pad}{Whether to pad numbers by adding 0's in front to keep the same length in all suffixes.}
 }
-\value{
-A character vector.
-}
 \description{
-Detects duplicate strings and makes them unique by adding a number at the end.
-}
-\details{
-This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
+Make strings unique by adding a suffix to indicate which number copy it is.
 }
 \examples{
-
-Example vector with some duplicates
-(x = sample(LETTERS[1:10], size = 20, replace = T))
-#uniquify
-x \%>\% str_uniquify()
-#custom suffix using a second \%d.
-x \%>\% str_uniquify(" [\%d/\%d]")
+str_uniquify(letters[rep(1, 3)])
+str_uniquify(letters[rep(1, 3)], suffix = ', \%d')
 }

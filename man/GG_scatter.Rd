@@ -44,7 +44,7 @@ GG_scatter(
 
 \item{CI}{(num scalar) Confidence interval as a fraction.}
 
-\item{clean_names}{(lgl scalar) Whether to clean the axes names using str_clean().}
+\item{clean_names}{(lgl scalar) Whether to clean the axes names using \code{str_clean()}.}
 
 \item{check_overlap}{(lgl scalar) Whether to avoid overplotting names.}
 
@@ -64,15 +64,15 @@ Internally uses the ad hoc variables \code{.weights}, \code{.label} and \code{.c
 GG_scatter(iris, "Sepal.Length", "Sepal.Width") #default plot
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", se = F) #no SE ribbon
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #case names
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #casenames from variable
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #casenames in purple
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #casenames from variable, repelled
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #case names from variable
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #case names in purple
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #case names from variable, repelled
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150) #add weights with vector
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = "Petal.Width") #add weights with name
-GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150, weight_as_size = F) #add weights with vector but dont resize
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150, weight_as_size = F) #add weights with vector but don't resize
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") #color points
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species", case_names = "Species") #color points, but labels stay black
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1) #change alpha

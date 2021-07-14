@@ -174,26 +174,15 @@ str_detect_replace = function(string, pattern, replacement) {
   string
 }
 
-
 #' Make strings unique
 #'
-#' Detects duplicate strings and makes them unique by adding a number at the end.
-#'
+#' Make strings unique by adding a suffix to indicate which number copy it is.
 #' @param string (chr vector) A character vector.
-#' @param suffix (chr vector) A character to use to make unique suffixes. Must contain \%d.
+#' @param suffix (chr vector) A character to use to make unique suffixes. Must contain `%d`.
 #' @param pad Whether to pad numbers by adding 0's in front to keep the same length in all suffixes.
-#'
-#' @return A character vector.
-#' @details This function loops over the groups of identical strings and adds the suffix if the group has more than 1 member. This suffix addition is done using \code{sprintf}.
-#' @export
 #' @examples
-#'
-#' Example vector with some duplicates
-#' (x = sample(LETTERS[1:10], size = 20, replace = T))
-#' #uniquify
-#' x %>% str_uniquify()
-#' #custom suffix using a second %d.
-#' x %>% str_uniquify(" [%d/%d]")
+#' str_uniquify(letters[rep(1, 3)])
+#' str_uniquify(letters[rep(1, 3)], suffix = ', %d')
 str_uniquify = function(string, suffix = " (%d)", pad = F) {
   #make a df
   d = data.frame(names = string,
