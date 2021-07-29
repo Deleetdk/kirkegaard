@@ -23,7 +23,7 @@ if (!require("pacman")) install.packages("pacman")
 #CRAN packages
 #with pacman, but you can also try just running the devtools call below
 library(pacman)
-p_install(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, glmnet, metafor, binom, GPArotation)
+p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, glmnet, metafor, binom, GPArotation)
 
 #finally
 devtools::install_github("deleetdk/kirkegaard")
