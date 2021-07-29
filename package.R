@@ -1,9 +1,10 @@
 #libs
-if (!require("pacman")) {
-  install.packages("pacman")
-  library("pacman")
-}
-pacman::p_load(devtools, roxygen2, stringr, testthat)
+library(devtools)
+library(roxygen2)
+library(stringr)
+library(testthat)
+
+#options
 options(digits = 2, scipen = 2)
 
 #update package description version automatically
@@ -19,5 +20,5 @@ devtools::document()
 devtools::install("../kirkegaard")
 
 #load
-pacman::p_load(kirkegaard, testthat)
-
+library(kirkegaard)
+library(testthat)
