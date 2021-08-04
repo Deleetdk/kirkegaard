@@ -652,6 +652,8 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   #convert
   df = as.data.frame(df)
   df[[var]] = as.numeric(df[[var]])
+  df[[groupvar]] = factor(df[[groupvar]])
+  if (!is.null(subgroupvar)) df[[subgroupvar]] = factor(df[[subgroupvar]])
 
   #draw CIs?
   draw_CI = !is_nullish(CI)
@@ -679,9 +681,6 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #subset
     df = df[c(var, groupvar)]
 
-    #enforce factor
-    df[[groupvar]] = factor(df[[groupvar]])
-
     #check for missing
     if (miss_count(df) > 0 ) {
       #remove missing?
@@ -692,6 +691,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         stop("There must not be missing values in the group variable when na.rm = F!")
       }
     }
+
+    #enforce factor, drop empty
+    df[[groupvar]] = factor(df[[groupvar]]) %>% fct_drop()
 
     #check for no data
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
@@ -718,7 +720,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         } else {
           #standard symmetric CI
           desc %<>% mutate(
-            ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+            ci_bar = suppressWarnings(qt(1 - ((1 - CI) / 1.96), df = n - 1)),
             ci_lower = mean - ci_bar * se,
             ci_upper = mean + ci_bar * se
           )
@@ -728,13 +730,16 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       desc
     })
 
-    #reorder groups in line with data
-    if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
-      df_sum$group1 = factor(df_sum$group1, levels = levels(df[[groupvar]]))
-    }
-
     #filter too small groups
     df_sum = df_sum %>% filter(n >= min_n)
+
+    #drop empty levels
+    df_sum$group1 %<>% fct_drop()
+
+    #drop raw data rows if their level was dropped
+    df %<>% filter(df[[groupvar]] %in% levels(df_sum$group1))
+    #drop empty levels there too
+    df[[groupvar]] %<>% fct_drop()
 
     #check for data
     if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
@@ -817,10 +822,6 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     #subset
     df = df[c(var, groupvar, subgroupvar)]
 
-    #enforce factors
-    df[[groupvar]] = factor(df[[groupvar]])
-    df[[subgroupvar]] = factor(df[[subgroupvar]])
-
     #check for missing
     if (miss_count(df) > 0 ) {
       #remove missing?
@@ -831,6 +832,10 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         stop("There must not be missing values in the group variable when na.rm = F!")
       }
     }
+
+    # enforce factors, drop empty levels
+    df[[groupvar]] = factor(df[[groupvar]]) %>% fct_drop()
+    df[[subgroupvar]] = factor(df[[subgroupvar]]) %>% fct_drop()
 
     #check for no data
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
@@ -854,7 +859,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
           } else {
             #standard symmetric CI
             desc %<>% mutate(
-              ci_bar = qt(1 - ((1 - CI) / 1.96), df = n - 1),
+              ci_bar = suppressWarnings(qt(1 - ((1 - CI) / 1.96), df = n - 1)),
               ci_lower = mean - ci_bar * se,
               ci_upper = mean + ci_bar * se
             )
@@ -871,17 +876,20 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df$groupvar = df[[groupvar]]
     df$subgroupvar = df[[subgroupvar]]
 
-    #reorder factors in line with data
-    if (is.factor(df[[groupvar]])) { #only do it if the data is a factor, if not, use default order
-      df_sum$groupvar = factor(df_sum[[groupvar]], levels = levels(df[[groupvar]]))
-    }
-
-    if (is.factor(df[[subgroupvar]])) { #only do it if the data is a factor, if not, use default order
-      df_sum$subgroupvar = factor(df_sum[[subgroupvar]], levels = levels(df[[subgroupvar]]))
-    }
-
     #filter too small groups
     df_sum = df_sum %>% filter(n >= min_n)
+
+    #drop empty levels again
+    df_sum$groupvar %<>% fct_drop()
+    df_sum$subgroupvar %<>% fct_drop()
+
+    #drop raw data rows if their level was dropped
+    df %<>% filter(groupvar %in% levels(df_sum$groupvar),
+                   subgroupvar %in% levels(df_sum$subgroupvar))
+
+    #drop empty levels there too
+    df[[groupvar]] %<>% fct_drop()
+    df[[subgroupvar]] %<>% fct_drop()
 
     #check for data
     if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)

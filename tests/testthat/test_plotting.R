@@ -163,6 +163,37 @@ test_that("GG_group_means", {
   #error because removed all groups
   expect_error(GG_group_means(iris, "Sepal.Length", groupvar = "Species", min_n = 51), regexp = "No groups left after filtering to sample size requirement")
   expect_error(GG_group_means(iris, "Sepal.Length", groupvar = "Species", subgroupvar = "group2", min_n = 51), regexp = "No groups left after filtering to sample size requirement")
+
+  #empty levels bug!
+  iris4 = bind_rows(tibble(Species = "empty"), iris) %>%
+    mutate(group2 = rep(1:2, length.out = 151))
+
+  GG_group_means(iris, "Sepal.Length", "Species") -> gg1
+  GG_group_means(iris4, "Sepal.Length", "Species") -> gg2
+  GG_group_means(iris4, "Sepal.Length", "Species", subgroupvar = "group2") -> gg3
+  GG_group_means(iris4, "Sepal.Length", "Species", subgroupvar = "group2", type = "points") -> gg4
+
+  #check factor level lengths
+  expect_true(length(levels(gg1$data$group1)) == 3)
+  expect_true(length(levels(gg2$data$group1)) == 3)
+  expect_true(length(levels(gg3$data$groupvar)) == 3)
+  expect_true(length(levels(gg4$data$groupvar)) == 3)
+
+  #almost empty level
+  iris5 = bind_rows(tibble(Species = "size1", Sepal.Length = 6), iris) %>%
+    mutate(group2 = rep(1:2, length.out = 151))
+
+  GG_group_means(iris5, "Sepal.Length", "Species") -> gg1
+  GG_group_means(iris5, "Sepal.Length", "Species", min_n = 2) -> gg2
+  GG_group_means(iris5, "Sepal.Length", "Species", min_n = 2, type = "points") -> gg3
+  GG_group_means(iris5, "Sepal.Length", "Species", subgroupvar = "group2", min_n = 2, type = "points") -> gg4
+  GG_group_means(iris5, "Sepal.Length", "Species", subgroupvar = "group2", type = "points") -> gg5
+
+  expect_true(length(levels(gg1$data$group1)) == 4)
+  expect_true(length(levels(gg2$data$group1)) == 3)
+  expect_true(length(levels(gg3$data$group1)) == 3)
+  expect_true(length(levels(gg4$data$groupvar)) == 3)
+  expect_true(length(levels(gg5$data$groupvar)) == 4)
 })
 
 

@@ -22,4 +22,5 @@ Save list of ggplot2 objects to single pdf
 list_iris = map(names(iris[-5]), ~ggplot(iris, aes_string(.)) + geom_histogram())
 #save to a single pdf
 GG_save_pdf(list_iris, "test.pdf")
+file.remove("test.pdf")
 }
