@@ -30,7 +30,7 @@ GG_group_means(
 
 \item{CI}{(num scalar) The confidence interval to use. Default = .95.}
 
-\item{type}{(chr scalar) The type of plot. Options: bar (default), point, points.}
+\item{type}{(chr scalar) The type of plot. Options: bar, point, points, boxplot, violin, violin2.}
 
 \item{msg_NA}{(log scalar) Show a message if NAs were removed? (default true)}
 

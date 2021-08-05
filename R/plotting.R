@@ -612,7 +612,7 @@ GG_scatter = function(df,
 #' @param groupvar (chr scaler) The name of the grouping variable.
 #' @param subgroupvar (chr scalar) The name of the subgrouping variable, if any.
 #' @param CI (num scalar) The confidence interval to use. Default = .95.
-#' @param type (chr scalar) The type of plot. Options: bar (default), point, points.
+#' @param type (chr scalar) The type of plot. Options: bar, point, points, boxplot, violin, violin2.
 #' @param msg_NA (log scalar) Show a message if NAs were removed? (default true)
 #' @param split_group_labels (log scalar) Whether to automatically insert newlines into group labels if they are too long (default yes).
 #' @param line_length (num scalar) The desired line width (default 95). Only used when split_group_labels = T.
