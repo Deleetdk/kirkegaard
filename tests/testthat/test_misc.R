@@ -3,6 +3,14 @@
 context("misc")
 
 
+
+# NA_to_F -----------------------------------------------------------------
+
+test_that("NA_to_F", {
+  x = c(T, F, NA, T)
+  expect_equivalent(NA_to_F(x), c(T, F, F, T))
+})
+
 # restore_NAs -------------------------------------------------------------
 
 test_that("restore_NAs", {

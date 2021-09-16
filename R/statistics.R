@@ -1046,6 +1046,10 @@ standardize = function(x, w = NULL, robust = F, sample = T, focal_group = NULL) 
   #assert equal lengths
   assertthat::assert_that(length(focal_group) == length(x))
   assertthat::assert_that(is.logical(focal_group))
+  if (anyNA(focal_group)) {
+    warning("`focal_group` contains `NA` values. These were converted to `FALSE` following tidyverse convention.")
+    focal_group = focal_group %>% kirkegaard::NA_to_F()
+  }
 
   #full x
   full_x = x

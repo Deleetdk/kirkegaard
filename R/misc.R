@@ -1,5 +1,23 @@
 ## Misc other functions
 
+#' `NA` to `FALSE`
+#'
+#' Helpful small function when dealing with non-tidyverse subsetting.
+#'
+#' @param x A vector
+#'
+#' @return A vector of the same length as x
+#' @export
+#'
+#' @examples
+#' x = c(T, F, NA, T)
+#' NA_to_F(x)
+NA_to_F = function(x) {
+  assertthat::assert_that(is.logical(x))
+  x[is.na(x)] = F
+  x
+}
+
 
 #' Is x nullish?
 #'
