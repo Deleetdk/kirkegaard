@@ -461,9 +461,14 @@ GG_scatter = function(df,
       #does it exist in data?
       if (!color %in% names(df)) stop(sprintf("`color` variable `%s` wasn't in the data frame!", color))
       df$.color = df[[color]]
+
+      color_axis_title = color
     } else {
       #vector
       df$.color = color
+
+      #get name of object
+      color_axis_title = deparse(substitute(color))
     }
 
     #clean names? we clean the factor levels too
@@ -471,7 +476,10 @@ GG_scatter = function(df,
       #factor?
       if (is.factor(df$.color)) {
         levels(df$.color) = levels(df$.color) %>% str_clean()
-      } else {
+      }
+
+      #character?
+      if (is.character(df$.color)) {
         #clean the chr
         df$.color = df$.color %>% str_clean()
       }
@@ -597,6 +605,11 @@ GG_scatter = function(df,
   if (clean_names) {
     #axes labels
     g = g + xlab(str_clean(x_var)) + ylab(str_clean(y_var))
+  }
+
+  #color label
+  if (!is.null(color)) {
+    g = g + ggplot2::labs(color = color_axis_title)
   }
 
   return(g + ggplot2::theme_bw())

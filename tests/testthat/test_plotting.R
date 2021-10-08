@@ -97,6 +97,8 @@ test_that("denhist", {
 
 
 test_that("scatter", {
+  iris$runif = runif(nrow(iris))
+
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species"), "ggplot")
@@ -106,7 +108,14 @@ test_that("scatter", {
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", weights = 1:150), "ggplot")
-  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species"), "ggplot")
+
+  #color scales
+  #discrete
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species") + scale_color_discrete(), "ggplot")
+  #continuous
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "runif") + scale_color_gradient2(low = "blue", high = "red", mid = "green"), "ggplot")
+
+  #alpha
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", alpha = .1), "ggplot")
 
   #test cleaning of color groups
