@@ -156,3 +156,9 @@ test_that("count_decimals", {
 
 
 
+# inv_table ---------------------------------------------------------------
+
+test_that("inv_table", {
+  #row counts should match before and after back and forth
+  expect_equivalent(nrow(mpg), inv_table(table(mpg$cyl, mpg$manufacturer, mpg$class)) %>% nrow())
+})

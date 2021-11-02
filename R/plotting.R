@@ -1213,3 +1213,108 @@ GG_matrix = function(x) {
     ylab("Variable")
 }
 
+
+#proportions plot
+#like this one but better
+#https://stackoverflow.com/questions/21828475/label-column-with-count-fill-value-in-ggplot2
+
+#' ggplot2 proportions plot
+#'
+#' @param data Data frame
+#' @param x The variable on the x axis, usually years, countries, or similar.
+#' @param group The variable to calculation proportions of, should be a countable. Will be forced to factor.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' #plot the proportions of cylinders by year
+#' GG_proportions(mpg, "year", "cyl")
+#' #remove the 0%'s
+#' GG_proportions(mpg, "year", "cyl", drop_empty = T)
+#' #don't label the values
+#' GG_proportions(mpg, "year", "cyl", add_values = F)
+#' #alternative variable
+#' GG_proportions(mpg, "year", "class")
+#' #not pretty but gets the job done
+#' GG_proportions(mpg, "year", "manufacturer", repel = T)
+#'
+#' #another dataset
+#' datasets::Titanic %>%
+#' inv_table() %>%
+#' GG_proportions("Class", "Survived")
+#'
+#' datasets::Titanic %>%
+#' inv_table() %>%
+#' GG_proportions("Survived", "Sex")
+GG_proportions = function(data, x, group, add_values = T, repel = F, text_size = 3, drop_empty = F) {
+
+  #remove NAs
+  x2 = data %>% filter(!is.na(!!group), !is.na(!!x))
+
+  #force factors
+  x2[[group]] = x2[[group]] %>% as.factor()
+  x2[[x]] = x2[[x]] %>% as.factor()
+
+  #compute proportions by groups
+  props = plyr::ddply(x2, x, function(dd) {
+    # browser()
+    #compute proportions
+    y = table2(dd[[group]], include_NA = F, sort_descending = NULL) %>%
+      #but use reverse categories like ggplot2 does
+      arrange(desc(Group))
+
+    #drop empty counts
+    if (drop_empty) y = y %>% filter(Count != 0)
+
+    #in proportion not precent
+    y$prop = y$Percent / 100
+
+    #add cumulative
+    y$cumsum = cumsum(y$prop)
+
+    #plot locations is halfways between cumsum and prior cumsum (starting at 0)
+    y$text_location = rowMeans(cbind(y$cumsum, c(0, y$cumsum[-length(y$cumsum)])))
+
+    y
+  })
+
+  #make symbol
+  x_sym = as.symbol(x)
+
+  #plot
+  props %>%
+    ggplot(aes(x = !!x_sym, y = prop, fill = Group)) +
+    geom_bar(stat = "identity", position = "fill") ->
+    gg
+
+  #add labels
+  if (add_values) {
+    #normal
+    if (!repel) {
+      gg = gg + geom_text(
+        aes(label = scales::percent(prop),
+            x = !!x_sym,
+            y = text_location),
+        vjust = 0.5, hjust = 0.5, size = text_size
+        )
+    } else {
+      gg = gg + ggrepel::geom_text_repel(
+        aes(label = scales::percent(prop),
+            x = !!x_sym,
+            y = text_location),
+        vjust = 0.5,
+        hjust = 0.5,
+        nudge_x = rep(c(.1, -.1), length.out = nrow(props)),
+        direction = "x",
+        # force = 0.01,
+        size = text_size,
+        min.segment.length = 999
+        )
+    }
+  }
+
+  gg
+}
+
+

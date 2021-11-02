@@ -281,3 +281,41 @@ test_that("GG_save", {
     file.remove("tmp.png")
   }
 })
+
+
+# GG_proportions ----------------------------------------------------------
+
+test_that("GG_proportions", {
+  #plot the proportions of cylinders by year
+  GG_proportions(mpg, "year", "cyl") -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #remove the 0%'s
+  GG_proportions(mpg, "year", "cyl", drop_empty = T) -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #don't label the values
+  GG_proportions(mpg, "year", "cyl", add_values = F) -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #alternative variable
+  GG_proportions(mpg, "year", "class") -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #not pretty but gets the job done
+  GG_proportions(mpg, "year", "manufacturer", repel = T) -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #'
+  #another dataset
+  datasets::Titanic %>%
+    inv_table() %>%
+    GG_proportions("Class", "Survived") -> gg
+  expect_s3_class(gg, "ggplot")
+
+  #'
+  datasets::Titanic %>%
+    inv_table() %>%
+    GG_proportions("Survived", "Sex") -> gg
+  expect_s3_class(gg, "ggplot")
+})

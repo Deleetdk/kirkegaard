@@ -607,7 +607,6 @@ unduplicate = function(x) {
 
 
 
-# encode to unique values only and back -----------------------------------
 
 #' Unique encoding
 #'
@@ -679,7 +678,6 @@ rev_uniq_encoding = function(x) {
 }
 
 
-# simple locf -------------------------------------------------------------
 #avoid zoo dependency
 
 #' Last observation carried forward
@@ -735,7 +733,6 @@ miss_locf = function(x, reverse = F) {
 }
 
 
-# mapvalues ---------------------------------------------------------------
 #tired of using plyr's
 
 #' Map values
@@ -790,7 +787,6 @@ mapvalues = function (x, from, to, warn_missing = T) {
 }
 
 
-# count_decimals ----------------------------------------------------------
 
 #' Count decimals
 #'
@@ -817,9 +813,35 @@ count_decimals = function(x) {
 
 
 
-# package installed -------------------------------------------------------
 
 is_inst <- function(pkg) {
   nzchar(system.file(package = pkg))
+}
+
+
+#' Reverse `table()`
+#'
+#' Function from https://stackoverflow.com/questions/30481496/is-there-a-general-inverse-of-the-table-function.
+#' @param x A table
+#'
+#' @return A data frame
+#' @export
+#'
+#' @examples
+#' mpg %>% nrow() #324
+#' inv_table(table(mpg$cyl, mpg$class, mpg$manufacturer)) #also 324
+#' inv_table(Titanic)
+#'
+inv_table = function(x) {
+  #to data frame
+  x = as.data.frame(x)
+
+  #reverse
+  y <- x[rep(rownames(x),x$Freq),1:(ncol(x)-1)]
+
+  #fix names
+  rownames(y) <- c(1:nrow(y))
+
+  y
 }
 
