@@ -1271,7 +1271,11 @@ GG_proportions = function(data, x, group, add_values = T, repel = F, text_size =
     # browser()
     #compute proportions
     y = table2(dd[[group]], include_NA = F, sort_descending = NULL) %>%
-      #but use reverse categories like ggplot2 does
+      #re-add factor levels
+      mutate(
+        Group = factor(Group, levels = levels(x2[[group]]))
+      ) %>%
+      #use reverse categories like ggplot2 does
       arrange(desc(Group))
 
     #drop empty counts
