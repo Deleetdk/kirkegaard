@@ -1230,14 +1230,24 @@ GG_matrix = function(x) {
 #' @examples
 #' #plot the proportions of cylinders by year
 #' GG_proportions(mpg, "year", "cyl")
+#'
 #' #remove the 0%'s
 #' GG_proportions(mpg, "year", "cyl", drop_empty = T)
+#'
 #' #don't label the values
 #' GG_proportions(mpg, "year", "cyl", add_values = F)
+#'
 #' #alternative variable
 #' GG_proportions(mpg, "year", "class")
+#'
 #' #not pretty but gets the job done
 #' GG_proportions(mpg, "year", "manufacturer", repel = T)
+#'
+#' #remote text
+#' GG_proportions(mpg, "year", "cyl", angle = 90)
+#'
+#' #no decimals
+#' GG_proportions(mpg, "year", "cyl", accuracy = 1)
 #'
 #' #another dataset
 #' datasets::Titanic %>%
@@ -1247,7 +1257,7 @@ GG_matrix = function(x) {
 #' datasets::Titanic %>%
 #' inv_table() %>%
 #' GG_proportions("Survived", "Sex")
-GG_proportions = function(data, x, group, add_values = T, repel = F, text_size = 3, drop_empty = F) {
+GG_proportions = function(data, x, group, add_values = T, repel = F, text_size = 3, drop_empty = F, angle = 0, accuracy = .01) {
 
   #remove NAs
   x2 = data %>% filter(!is.na(!!group), !is.na(!!x))
@@ -1293,18 +1303,22 @@ GG_proportions = function(data, x, group, add_values = T, repel = F, text_size =
     #normal
     if (!repel) {
       gg = gg + geom_text(
-        aes(label = scales::percent(prop),
-            x = !!x_sym,
-            y = text_location),
-        vjust = 0.5, hjust = 0.5, size = text_size
-        )
-    } else {
-      gg = gg + ggrepel::geom_text_repel(
-        aes(label = scales::percent(prop),
+        aes(label = scales::percent(prop, accuracy = accuracy),
             x = !!x_sym,
             y = text_location),
         vjust = 0.5,
         hjust = 0.5,
+        size = text_size,
+        angle = angle
+        )
+    } else {
+      gg = gg + ggrepel::geom_text_repel(
+        aes(label = scales::percent(prop, accuracy = accuracy),
+            x = !!x_sym,
+            y = text_location),
+        vjust = 0.5,
+        hjust = 0.5,
+        angle = angle,
         nudge_x = rep(c(.1, -.1), length.out = nrow(props)),
         direction = "x",
         # force = 0.01,
