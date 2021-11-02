@@ -23,7 +23,7 @@ Returns a data frame table with both counts and percents.
 }
 \examples{
 #table and sort descending
-sample(letters[1:10], size = 100, replace = T) \%>\% table2
+sample(letters[1:10], size = 100, replace = T) \%>\% table2()
 #ascending
 sample(letters[1:10], size = 100, replace = T) \%>\% table2(sort_descending = F)
 #using factor levels

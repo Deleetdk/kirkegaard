@@ -482,7 +482,7 @@ last_value = function(x, na.rm = T) {
 #' @export
 #' @examples
 #' #table and sort descending
-#' sample(letters[1:10], size = 100, replace = T) %>% table2
+#' sample(letters[1:10], size = 100, replace = T) %>% table2()
 #' #ascending
 #' sample(letters[1:10], size = 100, replace = T) %>% table2(sort_descending = F)
 #' #using factor levels
@@ -514,6 +514,9 @@ table2 = function(x, prop = F, include_NA = T, sort_descending = T) {
     } else {
       d %<>% dplyr::arrange(Count)
     }
+  } else {
+    #reset factor levels if existed
+    if (is.factor(x)) d$Group = factor(d$Group, levels = levels(x))
   }
 
   d
