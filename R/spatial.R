@@ -13,7 +13,6 @@
 #'
 #' @examples
 spatial_knn = function(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag") {
-  # browser()
   #fail on bad input data
   if (!is.data.frame(x)) stop("`x` must be a data frame")
   if (!lon %in% names(x)) stop("`lon` ({lon}) not in data frame", call. = F)
