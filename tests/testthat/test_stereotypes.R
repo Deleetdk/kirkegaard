@@ -89,11 +89,11 @@ test_that("score_by", {
   #long format output
   score_by(test_data, moderator = c("m", "m", "f", "f"), long_format = T) %>%
     expect_s3_class("data.frame") %>%
-    expect_known_hash(hash = "30a56f7756")
+    expect_known_hash(hash = "0b06ae0ec4")
 
   score_by(test_data, moderator = seq(0, 1, length.out = 4), long_format = T) %>%
     expect_s3_class("data.frame") %>%
-    expect_known_hash(hash = "febad0d958")
+    expect_known_hash(hash = "113ffa9c1e")
 
   #missing data
   test_data_NA = tibble(
