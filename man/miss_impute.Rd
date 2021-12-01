@@ -8,7 +8,8 @@ miss_impute(
   data,
   max_na = floor(ncol(data)/2),
   method = "irmi",
-  method_args = NULL
+  method_args = NULL,
+  leave_out = c()
 )
 }
 \arguments{
@@ -18,7 +19,9 @@ miss_impute(
 
 \item{method}{rf (missForest) or irmi (VIM)}
 
-\item{noise}{Add randomness to imputations? Needed for multiple imputation}
+\item{method_args}{Arguments to forward to the imputation call.}
+
+\item{leave_out}{Names of variables to leave out of the imputation such as ids.}
 }
 \value{
 A data frame with missing data imputed for the desired cases.

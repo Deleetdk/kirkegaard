@@ -337,10 +337,13 @@ miss_add_random =  function(df, prop = .1){
 #' Impute data using VIM::irmi
 #'
 #' Useful wrapper for VIM's irmi function. Can skip cases without changing case order depending on the number of missing values
+#'
 #' @param data (data.frame) A data.frame.
 #' @param max_na (num scalar) The maximum number of missing datapoints per case.
-#' @param noise Add randomness to imputations? Needed for multiple imputation
+#' @param method_args Arguments to forward to the imputation call.
+#' @param leave_out Names of variables to leave out of the imputation such as ids.
 #' @param method rf (missForest) or irmi (VIM)
+#'
 #' @return A data frame with missing data imputed for the desired cases.
 #' @export
 #' @examples
@@ -350,7 +353,7 @@ miss_add_random =  function(df, prop = .1){
 #' #preserves rownames for ease of use
 #' df = data.frame(a = rnorm(5), b = rnorm(5), c = c(1, NA, NA, 1, 4)) %>% set_rownames(letters[1:5])
 #' miss_impute(df)
-miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", method_args = NULL) {
+miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", method_args = NULL, leave_out = c()) {
 
   #tibbles do not work here
   was_tibble = is_tibble(data)
@@ -358,6 +361,13 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
 
   #save rownames
   .rownames = rownames(data)
+
+  #exclude variables?
+  if (length(leave_out) > 0) {
+    orig_var_order = names(data)
+    left_out_data = data %>% select(!!leave_out)
+    data = data %>% select(-!!leave_out)
+  }
 
   #convert ordered with <3 levels to factors
   needs_conversion = purrr::map_lgl(data, ~is.ordered(.) && nlevels(.) < 3)
@@ -374,7 +384,13 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
     })
   }
 
-  #exclude?
+  #characters are not good, throw a warning
+  chr_vars = purrr::map_lgl(data, is.character)
+  if (any(chr_vars)) {
+    warning(str_glue("There are character type variables. You probably want to convert these to factors or exclude"), call. = F)
+  }
+
+  #exclude cases?
   case_na = miss_by_case(data)
   exclusion = any(case_na > max_na)
   if (exclusion) {
@@ -419,9 +435,18 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
     data$.tmpid = NULL
   }
 
+  #exclude variables?
+  if (length(leave_out) > 0) {
+    #add back in
+    data = bind_cols(data, left_out_data)
+    #reorder
+    data = data[orig_var_order]
+  }
+
   #set original rownames if not tibble
   rownames(data) = .rownames
 
+  #set to tibble if it was before
   if (was_tibble) data = as_tibble(data)
 
   #return
