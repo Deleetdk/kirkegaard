@@ -41,10 +41,16 @@ miss_count = function(x, reverse = F, prop = F) {
 #' miss_by_case(miss_add_random(iris), reverse = T)
 #' miss_by_case(miss_add_random(iris), prop = T)
 miss_by_case = function(x, reverse = F, prop = F){
-  #count missing data by row
-  y = apply(x, 1, miss_count, reverse = reverse)
+  #miss status
+  x_miss = is.na(x)
 
-  #if desired, convert to fractions
+  #reverse
+  if (reverse) x_miss = !x_miss
+
+  #count missing data by row
+  y = apply(x_miss, 1, sum)
+
+  #if desired, convert to fraction
   if (prop) return(y / ncol(x))
 
   y
@@ -63,10 +69,16 @@ miss_by_case = function(x, reverse = F, prop = F){
 #' miss_by_var(miss_add_random(iris), reverse = T)
 #' miss_by_var(miss_add_random(iris), prop = T)
 miss_by_var = function(x, reverse = F, prop = F){
-  #count missing data by column
-  y = apply(x, 2, miss_count, reverse = reverse)
+  #miss status
+  x_miss = is.na(x)
 
-  #if desired, convert to fractions
+  #reverse
+  if (reverse) x_miss = !x_miss
+
+  #count missing data by column
+  y = apply(x_miss, 2, sum)
+
+  #if desired, convert to fraction
   if (prop) return(y / nrow(x))
 
   y
