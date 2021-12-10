@@ -99,6 +99,9 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #names?
   if (is.null(names(x))) names(x) = 1:length(x) %>% factor()
 
+  #ensure model names are factor
+  if (is.character(names(x))) names(x) = factor(names(x), levels = names(x))
+
   #loop and make consise table
   y = map2_df(x, names(x), function(m, name) {
     # browser()
@@ -137,7 +140,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #add reference levels?
   #add clean version
-  y$clean_term = y$term %>% str_replace("=.+", "")
+  y$clean_term = y$term %>% str_replace("=.+", "") %>% factor(levels = unique(.))
   y$factor = y$term %>% str_detect("=")
   y$ref = F #prefill with F
   if (add_ref_level) {
@@ -146,7 +149,8 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
       if (!dd$factor[1]) return(dd)
 
       #if factor, then get the ref level from model fit
-      fct_levels = x[[dd$model[1]]]$Design$parms[[dd$clean_term[1]]]
+
+      fct_levels = x[[dd$model[1]]]$Design$parms[[dd$clean_term[1] %>% as.character()]]
 
       #add ref level
       bind_rows(

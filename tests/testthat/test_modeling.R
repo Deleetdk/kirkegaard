@@ -61,10 +61,12 @@ test_that("summarize_models", {
 
   #special iris for testing collapsing and reference classes
   iris_test = iris %>%
-    mutate(other_factor = rep(
+    mutate(
+      other_factor = rep(
       letters[1:2],
       length.out = 150) %>%
-        factor()
+        factor(),
+      aaa = rnorm(150)
            )
 
   #fit sets of models with different summarize pars
@@ -92,6 +94,11 @@ test_that("summarize_models", {
               mod2 = rms::ols(Sepal.Length ~ Sepal.Width + Species, data = iris_test),
               mod3 = rms::ols(Sepal.Length ~ Sepal.Width + Species + other_factor, data = iris_test)
   ) %>% summarize_models(add_ref_level = F, collapse_factors = F)
+
+  #test variable orderings
+  res6 = list(bb = rms::ols(Sepal.Length ~ Species + aaa, data = iris_test),
+              aa = rms::ols(Sepal.Length ~ Species + other_factor + aaa, data = iris_test)
+  ) %>% summarize_models()
 
   #test contents
   #set 1
@@ -144,6 +151,10 @@ test_that("summarize_models", {
   expect_true(!any(str_detect(res5$mod1, "ref|yes"), na.rm = T))
   expect_true(!any(str_detect(res5$mod2, "ref|yes"), na.rm = T))
   expect_true(!any(str_detect(res5$mod3, "ref|yes"), na.rm = T))
+
+  #set 6, variable orders, should ignore alphabetic sorting
+  expect_true(res6$`Predictor/Model`[1] == "Intercept")
+  expect_true(names(res6)[2] == "bb")
 
 })
 
