@@ -12,7 +12,10 @@ summarize_models(
   beta_se_digits = beta_digits + 1,
   p_digits = 3,
   collapse_nonlinear = T,
-  nonlinear_text = "(nonlinear)"
+  nonlinear_text = "(nonlinear)",
+  collapse_factors = F,
+  add_ref_level = T,
+  ref_class_text = "(ref)"
 )
 }
 \arguments{
@@ -31,6 +34,12 @@ summarize_models(
 \item{collapse_nonlinear}{Hide uninterpretable betas for nonlinear terms}
 
 \item{nonlinear_text}{If \code{collapse_nonlinear}, then what text to use}
+
+\item{collapse_factors}{Whether to collapse factors or not. Can be a logical, or a string of factor names to collapse.}
+
+\item{add_ref_level}{Whether to add reference levels for factors}
+
+\item{ref_class_text}{In case of adding reference levels, which text to fill in}
 }
 \value{
 Data frame

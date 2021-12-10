@@ -38,8 +38,8 @@ p_to_asterisk = function(x, asterisks = c(.01, .005, .001), digits = max(count_d
     asts = str_c(rep('*', i), collapse = '')
 
     #if rounded to 0, then use less than minimal value
-    y[idx] = str_glue("{x2[idx]}{asts}")
-    y[idx_zero] = str_glue("<{min_val}{asts}")
+    y[idx] = str_glue("{x2[idx]}{asts}") %>% as.character()
+    y[idx_zero] = str_glue("<{min_val}{asts}") %>% as.character()
   }
 
   #asterisk only
@@ -77,6 +77,9 @@ get_n = function(x) {
 #' @param p_digits Digits for p values
 #' @param collapse_nonlinear Hide uninterpretable betas for nonlinear terms
 #' @param nonlinear_text If `collapse_nonlinear`, then what text to use
+#' @param collapse_factors Whether to collapse factors or not. Can be a logical, or a string of factor names to collapse.
+#' @param add_ref_level Whether to add reference levels for factors
+#' @param ref_class_text In case of adding reference levels, which text to fill in
 #'
 #' @return Data frame
 #' @export
@@ -91,7 +94,7 @@ get_n = function(x) {
 #' summarize_models(models)
 #' summarize_models(models, asterisks = c(.05))
 #' summarize_models(models, asterisks_only = F)
-summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits + 1, p_digits = 3, collapse_nonlinear = T, nonlinear_text = "(nonlinear)") {
+summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = T, beta_digits = 2, beta_se_digits = beta_digits + 1, p_digits = 3, collapse_nonlinear = T, nonlinear_text = "(nonlinear)", collapse_factors = F, add_ref_level = T, ref_class_text = "(ref)") {
 
   #names?
   if (is.null(names(x))) names(x) = 1:length(x) %>% factor()
@@ -131,14 +134,76 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
     y
   })
 
+
+  #add reference levels?
+  #add clean version
+  y$clean_term = y$term %>% str_replace("=.+", "")
+  y$factor = y$term %>% str_detect("=")
+  y$ref = F #prefill with F
+  if (add_ref_level) {
+    y = plyr::ddply(y, c("model", "clean_term"), function(dd) {
+      #is it a factor? if not, return as is
+      if (!dd$factor[1]) return(dd)
+
+      #if factor, then get the ref level from model fit
+      fct_levels = x[[dd$model[1]]]$Design$parms[[dd$clean_term[1]]]
+
+      #add ref level
+      bind_rows(
+        tibble(
+          term = dd$clean_term[1] + "=" + fct_levels[1],
+          estimate = 0, #we will overwrite this later
+          p.value = 0,
+          clean_term = dd$clean_term[1],
+          model = dd$model[1],
+          ref = T
+        ),
+        dd
+      )
+    })
+  }
+
+
+
   #order of variable appearance
-  term_order = unique(y$term)
+  term_order = y$term %>% unique()
+
+  #deal with factors that have been reduced
+  tibble(
+    term = term_order,
+    term_clean = term %>% str_replace("=.+", "") %>% factor(levels = unique(.)),
+    factor = term %>% str_detect("=")
+  ) %>%
+    plyr::ddply("term_clean", function(dd) {
+      # browser()
+      #any factors?
+      #if not, we don't need to do anything
+      if (!any(dd$factor)) return(dd)
+
+      #where are factors?
+      factors = dd$factor %>% which()
+
+      #if yes, add a dummy row in front
+      bind_rows(
+        dd[0:(min(factors)-1), ],
+        dd[min(factors), ] %>% mutate(term = term_clean),
+        dd[min(factors):nrow(dd), ]
+      ) ->
+        y
+
+      y
+    }) %>%
+    pull(term) ->
+    term_order
+
+
+
 
   #nice numeric values
   #if asterisks wanted, add them
   if (!is.null(asterisks)) {
     y = y %>% mutate(
-      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {p_to_asterisk(p.value, asterisks = asterisks, asterisks_only = asterisks_only)})")
+      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {p_to_asterisk(p.value, asterisks = asterisks, asterisks_only = asterisks_only)})") %>% as.character()
     )
 
     #if no p values, remove comma whitespace
@@ -146,12 +211,12 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   } else { #just round p values
     y = y %>% mutate(
-      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {str_zero_to_lt(p.value, digits = p_digits)})")
+      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {str_zero_to_lt(p.value, digits = p_digits)})") %>% as.character()
     )
   }
 
-  #subset to wanted cols
-  y = y %>% dplyr::select(term, beta, model)
+
+
 
   #factor levels, so that we spread in the same order as input
   y$model = factor(y$model, levels = names(x))
@@ -172,6 +237,57 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
       y
     })
   }
+
+  #replace beta with ref class text
+  y$beta = case_when(
+    y$ref ~ ref_class_text,
+    T ~ y$beta
+  )
+
+  #collapse factors?
+  if (collapse_factors == T || is.character(collapse_factors)) {
+    #which rows to collapse?
+    #find factor terms to collapse
+    if (is.logical(collapse_factors)) {
+      factor_clean_terms = y$term %>% str_subset("=") %>% str_replace("=.+", "") %>% unique()
+    } else {
+      factor_clean_terms = collapse_factors
+    }
+
+    #loop across models
+    y = plyr::ddply(y, "model", function(dd) {
+
+      #if no factors, return what we have
+      if (!any(str_detect(dd$term, "="))) return(dd)
+
+      #if none, return what we have
+      if (length(factor_clean_terms) == 0) return(dd)
+      # browser()
+      #which rows are the non-1st? remove them
+      non_first_rows = map(factor_clean_terms, function(term) {
+        #which rows have it?
+        term_rows = dd$term %>% str_detect("^" + term + "=") %>% which()
+        term_rows[-1]
+      }) %>% c(recursive = T)
+      y = dd[-c(non_first_rows), ]
+
+
+
+      #replace beta with placeholder for the desired rows
+      y[y$term %>% str_detect("=") & y$clean_term %in% factor_clean_terms, "beta"] = "(yes)"
+
+      #remove levels when need to
+      y$term = case_when(
+        y$clean_term %in% factor_clean_terms ~ y$term %>% str_replace("=.+", ""),
+        TRUE ~ y$term
+      )
+
+      y
+    })
+  }
+
+  #subset to wanted cols
+  y = y %>% dplyr::select(term, beta, model)
 
   #spread
   y2 = y %>%
@@ -196,11 +312,12 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #attribute for asterisks
   attr(y2, "asterisks") = map2_chr(asterisks, seq_along(asterisks), function(v, i) {
-    str_glue("<{format(v, digits = count_decimals(v))}{str_c(rep('*', i), collapse = '')}")
+    str_glue("<{format(v, digits = count_decimals(v))}{str_c(rep('*', i), collapse = '')}") %>% as.character()
   })
 
   #to normal df for printing the attribute
   y2
 }
+
 
 
