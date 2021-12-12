@@ -264,9 +264,10 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
       #if no factors, return what we have
       if (!any(str_detect(dd$term, "="))) return(dd)
 
-      #if none, return what we have
-      if (length(factor_clean_terms) == 0) return(dd)
-      # browser()
+      #if no factors in this model to clean, return what we have
+
+      if (!any(dd$clean_term %in% factor_clean_terms)) return(dd)
+
       #which rows are the non-1st? remove them
       non_first_rows = map(factor_clean_terms, function(term) {
         #which rows have it?

@@ -156,5 +156,15 @@ test_that("summarize_models", {
   expect_true(res6$`Predictor/Model`[1] == "Intercept")
   expect_true(names(res6)[2] == "bb")
 
+  #prior bug with missing models
+  #bug
+  brokenmodels = read_rds(system.file("data/brokenmodels.rds", package = "kirkegaard"))
+  brokenmodels %>%
+    summarize_models(asterisks_only = F, collapse_factors = "region") ->
+    res7
+
+  expect_equal(ncol(res7), 4)
+  expect_equal(nrow(res7), 13)
+
 })
 

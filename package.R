@@ -22,3 +22,6 @@ devtools::install("../kirkegaard")
 #load
 library(kirkegaard)
 library(testthat)
+
+
+
