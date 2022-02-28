@@ -17,9 +17,10 @@ fa_loadings(fa, threshold = NA, long_form = F)
 Extract loadings from a factor analysis object of class "fa") into a data.frame.
 }
 \examples{
-fa_loadings(psych::fa(iris[-5]))
-fa_loadings(psych::fa(iris[-5], 2))
-fa_loadings(psych::fa(iris[-5], 2), long_form = T)
-fa_loadings(psych::fa(iris[-5], 2), .40)
-fa_loadings(psych::fa(iris[-5], 2), .20, long_form = T)
+mpg_numeric = mpg \%>\% select(where(is.numeric))
+fa_loadings(psych::fa(mpg_numeric))
+fa_loadings(psych::fa(mpg_numeric, 2))
+fa_loadings(psych::fa(mpg_numeric, 2), long_form = T)
+fa_loadings(psych::fa(mpg_numeric, 2), .40)
+fa_loadings(psych::fa(mpg_numeric, 2), .20, long_form = T)
 }

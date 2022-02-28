@@ -546,11 +546,12 @@ fa_congruence_matrix = function(x) {
 #' @param long_form (lgl) Whether to return data frame in long format. Default is no. Useful for plotting.
 #' @export
 #' @examples
-#' fa_loadings(psych::fa(iris[-5]))
-#' fa_loadings(psych::fa(iris[-5], 2))
-#' fa_loadings(psych::fa(iris[-5], 2), long_form = T)
-#' fa_loadings(psych::fa(iris[-5], 2), .40)
-#' fa_loadings(psych::fa(iris[-5], 2), .20, long_form = T)
+#' mpg_numeric = mpg %>% select(where(is.numeric))
+#' fa_loadings(psych::fa(mpg_numeric))
+#' fa_loadings(psych::fa(mpg_numeric, 2))
+#' fa_loadings(psych::fa(mpg_numeric, 2), long_form = T)
+#' fa_loadings(psych::fa(mpg_numeric, 2), .40)
+#' fa_loadings(psych::fa(mpg_numeric, 2), .20, long_form = T)
 fa_loadings = function(fa, threshold = NA, long_form = F) {
   loads = loadings(fa)
   class(loads) = "matrix"
@@ -565,7 +566,7 @@ fa_loadings = function(fa, threshold = NA, long_form = F) {
   #long form if desired
   if (long_form) {
     df = cbind(indicator = rownames(df), df)
-    df = tidyr::gather_(df, key_col = "factor", value_col = "loading", gather_cols = names(df)[-1]) %>%
+    df = tidyr::gather(df, key = factor, value = loading, !!names(df)[-1]) %>%
       na.omit
   }
 
@@ -895,7 +896,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
       } else {
         message("Using Pearson correlations for the criterion-indicators relationships.")
         #convert all to numeric
-        df2 = df_colFunc(df2, func = as.numeric)
+        df2 = purrr::map_df(df2, as.numeric)
         df2_cors = weights::wtd.cors(df2, weight = .weights)
         criterion_vals = df2_cors[ncol(df2_cors), -ncol(df2_cors)]
       }

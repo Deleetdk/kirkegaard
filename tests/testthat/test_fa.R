@@ -14,13 +14,15 @@ context("fa_")
 # fa_congruence_matrix ----------------------------------------------------
 
 test_that("fa_congruence_matrix",{
-  fa_iris4 = list(
-    fa(iris[-5], fm = "ml"),
-    fa(iris[-5], fm = "ml"),
-    fa(iris[-5], fm = "ml"),
-    fa(iris[-5], fm = "ml")
+  mpg_numeric = mpg %>% select(where(is.numeric))
+
+  fa_mpg4 = list(
+    fa(mpg_numeric, fm = "ml"),
+    fa(mpg_numeric, fm = "minres"),
+    fa(mpg_numeric, fm = "wls"),
+    fa(mpg_numeric, fm = "pa")
   )
-  fa_iris4_congru = fa_congruence_matrix(fa_iris4)
+  fa_iris4_congru = fa_congruence_matrix(fa_mpg4)
 
   expect_is(fa_iris4_congru, "matrix")
   expect_equal(dim(fa_iris4_congru), c(4, 4))
