@@ -126,93 +126,11 @@ test_that("df_add_delta", {
 
 
 
-# df_remove_NA_vars -------------------------------------------------------
-
-test_that("df_remove_NA_vars", {
-  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1)), data.frame(b = 1))
-  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = "a"), data.frame(a = NA, b = 1))
-  expect_equivalent(df_remove_NA_vars(data.frame(a = NA, b = 1), keep = 1), data.frame(a = NA, b = 1))
-})
-
 
 # df_t ---------------------------------------------------------------
 
 test_that("df_t", {
   expect_equivalent(df_t(iris), iris %>% t %>% as.data.frame %>% set_colnames(rownames(iris)) %>% set_rownames(colnames(iris)))
-})
-
-
-# df_colFunc --------------------------------------------------------------
-
-
-test_that("df_colFunc", {
-  #apply functions selectively to columns of a data.frame
-  t1 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length"))
-  #using inverse regex
-  t2 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Species", pattern_inverse = T))
-  #using integer indices
-  t3 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = 2:3))
-  #using logical indices
-  t4 = head(df_colFunc(iris, func = function(x) return(x * 2), indices = c(T, F, T, F, F)))
-  #removing unselected columns
-  t5 = head(df_colFunc(iris, func = function(x) return(x * 2), pattern = "Length", keep_unselected = F))
-  #select all by not providing any selector
-  t6 = head(df_colFunc(iris, func = as.character)) #all have been changed to chr
-
-  expect_equivalent(t1[1, 1], iris[1, 1] * 2)
-  expect_true(!t1[1, 2] == iris[1, 1] * 2)
-  expect_true(t2[1, 1] == iris[1, 1] * 2)
-  expect_true(t2[1, 2] == iris[1, 2] * 2)
-  expect_true(!t3[1, 1] == iris[1, 1] * 2)
-  expect_true(t3[1, 2] == iris[1, 2] * 2)
-  expect_true(t4[1, 1] == iris[1, 1] * 2)
-  expect_true(!t4[1, 2] == iris[1, 2] * 2)
-  expect_true(ncol(t5) == 2)
-  expect_true(t5[1, 1] == iris[1, 1] * 2)
-  expect_true(purrr::map_lgl(t6, is.character) %>% all)
-})
-
-
-# df_remove ----------------------------------------------------------
-
-test_that("df_remove", {
-  #rm one
-  expect_equivalent(df_remove(iris, "Species"), iris[-5])
-
-  #two
-  expect_equivalent(names(df_remove(iris, c("Sepal.Length", "Species"))), names(iris[-c(1, 5)]))
-
-  #all
-  expect_equivalent(df_remove(iris, names(iris)), iris[-c(1:5)])
-
-  #attempt remove same twice
-  expect_warning(df_remove(iris, c("Species", "Species")))
-})
-
-
-# df_residualize ----------------------------------------------------------
-
-
-
-test_that("df_residualize", {
-  set.seed(1)
-  df = data.frame(a = rnorm(5), b = rnorm(5), c = rnorm(5))
-  weightsvar = runif(5)
-
-  #test basic function
-  expect_true(all(df_residualize(df, resid.vars = "c", print.models = F) %>% `[`(c("a", "b")) != df[c("a", "b")]))
-
-  #test suffix + message off
-  expect_true(all(df_residualize(df, resid.vars = "c", suffix = "_r", print.models = F) %>% colnames() != colnames(df)))
-
-  #test exclusion vector
-  expect_equivalent(df_residualize(df, resid.vars = "c", exclude_vars = "b", print.models = F) %>% `[`("b"), df["b"])
-
-  #test return
-  expect_true(all(df_residualize(df, resid.vars = "c", return.resid.vars = F, print.models = F) %>% colnames != "c"))
-
-  #with weights
-  expect_true(all(df_residualize(df, resid.vars = "c", weights = weightsvar, print.models = F) %>% get_dims() == c(5, 3)))
 })
 
 
@@ -226,27 +144,6 @@ test_that("df_merge_cols", {
     b = c(-1, 2, NA),
     c = c(-5, -9, 3)
   ) %>% df_merge_cols(letters[1:3]), 1:3)
-})
-
-
-# df_fct_split -----------------------------------------------------------
-
-test_that("df_fct_split", {
-  #basic uses
-  expect_equivalent(names(df_fct_split(iris, "Species")), c(names(iris), levels(iris$Species)))
-  expect_equivalent(names(df_fct_split(iris, "Species", rm_old = T)), c(names(iris)[-5], levels(iris$Species)))
-  expect_equivalent(names(df_fct_split(iris, "Species", prefix = "%v_")), c(names(iris), "Species_" + levels(iris$Species)))
-  expect_equivalent(names(df_fct_split(iris, "Species", prefix = "%v_")), c(names(iris), "Species_" + levels(iris$Species)))
-
-  #type output
-  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species"), class), c(rep("numeric", 4), "factor", rep("logical", 3)))
-  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "f"), class), c(rep("numeric", 4), "factor", rep("factor", 3)))
-  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "n"), class), c(rep("numeric", 4), "factor", rep("numeric", 3)))
-  expect_equivalent(purrr::map_chr(df_fct_split(iris, "Species", type = "i"), class), c(rep("numeric", 4), "factor", rep("integer", 3)))
-
-  #errors
-  expect_error(df_fct_split(iris, "Sepal.Length"))
-  expect_error(df_fct_split(iris, "wrong"))
 })
 
 
