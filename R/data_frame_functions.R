@@ -614,7 +614,7 @@ df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func =
 }
 
 
-# split unsplit functions -----------------------------------------------------------------
+
 #built in functions have some problems
 
 
@@ -1099,7 +1099,7 @@ df_remove_NA_vars = function(data, keep = "") {
 
 
 
-# df_fct_split -----------------------------------------------
+
 #an improvement as model.matrix
 
 #' Split factors into multiple columns
@@ -1216,7 +1216,7 @@ df_legalize_names = function(df, func = str_legalize) {
 }
 
 
-# df_merge_cols -----------------------------------------------
+
 
 #' Merge columns
 #'
@@ -1258,7 +1258,7 @@ df_merge_cols = function(df, cols) {
 
 
 
-# df_no_list_cols ---------------------------------------------------------
+
 
 #' Remove list columns
 #'
@@ -1278,7 +1278,6 @@ df_no_list_cols = function(x) {
 
 
 
-# df_var_table ------------------------------------------------------------
 
 
 
@@ -1313,3 +1312,75 @@ df_var_table = function(x) {
     classes = purrr::map_chr(x, ~class(.) %>% str_c(collapse = ", "))
   )
 }
+
+
+#winsorize function
+
+#' Winsorsise data
+#'
+#' @param x Data frame
+#' @param variables Names of variables to winsorsise. If not given, defaults to all numeric variables.
+#' @param z Standard z score to winsorise to (mean+sd)
+#' @param rz Robust z score to winsorise to (median+mad)
+#' @param centile Centile to winsorsise to
+#'
+#' @return Data frame with the same variables as input.
+#' @export
+#'
+#' @examples
+#' iris[1, 1] = 100
+#' df_winsorise(iris, z = 2)
+#' df_winsorise(iris, rz = 2)
+#' df_winsorise(iris, centile = .99)
+df_winsorise = function(x, variables = NULL, z = NULL, rz = NULL, centile = NULL) {
+  #variables default to all numeric
+  if (is.null(variables)) variables = names(x)[purrr::map_lgl(x, is.numeric)]
+
+  #exactly 1 method
+  if (sum(c(!is.null(z), !is.null(rz), !is.null(centile))) != 1) stop(str_glue("You must supply exactly one of `z`, `rz`, `centile`"))
+
+  #loop
+  furrr::future_map(variables, function(v) {
+    #z score based, nonrobust
+    if (!is.null(z) | !is.null(rz)) {
+      #compute descriptives
+      v_desc = describe2(x[, v])
+
+      #normal
+      if (!is.null(z)) {
+        #limits
+        v_upper = v_desc$mean + v_desc$sd * z
+        v_lower = v_desc$mean - v_desc$sd * z
+
+        y = x[[v]] %>% kirkegaard::winsorise(upper = v_upper, lower = v_lower)
+      }
+
+      #robust
+      if (!is.null(rz)) {
+        #limits
+        v_upper = v_desc$median + v_desc$mad * rz
+        v_lower = v_desc$median - v_desc$mad * rz
+
+        y = x[[v]] %>% kirkegaard::winsorise(upper = v_upper, lower = v_lower)
+      }
+
+    }
+
+    #centile
+    if (!is.null(centile)) {
+      #limits
+      v_centiles = x[[v]] %>% quantile(probs = c(centile, 1 - centile), na.rm = T)
+      v_upper = v_centiles[1]
+      v_lower = v_centiles[2]
+
+      y = x[[v]] %>% kirkegaard::winsorise(upper = v_upper, lower = v_lower)
+    }
+
+    tibble(
+      y = y
+    ) %>% set_colnames(v)
+
+  }) %>% bind_cols() %>% return()
+}
+
+

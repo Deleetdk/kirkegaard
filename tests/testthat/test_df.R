@@ -347,3 +347,28 @@ test_that("df_var_table", {
   expect_true(any(spss_data_table$classes == "numeric"))
   expect_true(any(is.na(spss_data_table$label)))
 })
+
+
+
+# df_winsorise ------------------------------------------------------------
+
+test_that("df_winsorrise", {
+  #add extreme outlier
+  iris2 = iris
+  iris2[1, 1] = 100
+
+  expect_lt(df_winsorise(iris2, z = 2)[1, 1], 100)
+  expect_lt(df_winsorise(iris2, rz = 2)[1, 1], 100)
+  expect_lt(df_winsorise(iris2, centile = .99)[1, 1], 100)
+
+  #robust to NA
+  iris2[2, 1] = NA
+  expect_lt(df_winsorise(iris2, z = 2)[1, 1], 100)
+  expect_lt(df_winsorise(iris2, rz = 2)[1, 1], 100)
+  expect_lt(df_winsorise(iris2, centile = .99)[1, 1], 100)
+
+  #varied data input
+  expect_s3_class(df_winsorise(mpg, centile = .99), "data.frame")
+
+})
+
