@@ -712,12 +712,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #summarize
-    # browser()
-    # df_sum = psych::describeBy(df[[var]], df[[groupvar]], mat = T)
     df_sum = plyr::ddply(df, groupvar, function(dd) {
-      # browser()
       #describe
-      desc = psych::describe(dd[[var]])
+      desc = describe2(dd[[var]], all_vars = T)
       desc$group1 = dd[[groupvar]][1]
 
       #add CIs if wanted
@@ -854,10 +851,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #summarize
-    # browser()
     df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(dd) {
       #describe
-      desc = psych::describe(dd[[var]])
+      desc = describe2(dd[[var]], all_vars = T)
 
       #add CIs
       if (draw_CI) {

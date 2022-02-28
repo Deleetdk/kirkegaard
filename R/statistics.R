@@ -12,7 +12,7 @@
 #' describe2(mpg)
 describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
                      trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
-                     IQR = FALSE, omit = FALSE, data = NULL) {
+                     IQR = FALSE, omit = FALSE, data = NULL, all_vars = F) {
 
   #convert logical variables to numeric
   for (v in names(x)) {
@@ -28,10 +28,18 @@ describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE
   class(y) = "data.frame"
 
   #subset, explicit rownames
-  y %>%
+  #subset
+  if (!all_vars) {
+      y %>%
     rownames_to_column(var = "var") %>%
     select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>%
-    as_tibble()
+    as_tibble() %>% return()
+  } else {
+    y %>%
+      rownames_to_column(var = "var") %>%
+      as_tibble() %>% return()
+  }
+
 }
 
 

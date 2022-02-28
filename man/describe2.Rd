@@ -17,7 +17,8 @@ describe2(
   quant = NULL,
   IQR = FALSE,
   omit = FALSE,
-  data = NULL
+  data = NULL,
+  all_vars = F
 )
 }
 \value{
