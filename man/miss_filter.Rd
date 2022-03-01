@@ -9,7 +9,7 @@ miss_filter(data, missing = 0, reverse = F)
 \arguments{
 \item{data}{(data frame) The data.}
 
-\item{missing}{(num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).}
+\item{missing}{(num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values). If this is a proportion between 0-1, then it is used as such.}
 
 \item{reverse}{(lgl) Filter based on non-NA data instead.}
 }
@@ -17,7 +17,11 @@ miss_filter(data, missing = 0, reverse = F)
 Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
 }
 \examples{
-df = data.frame(1:10, letters[1:10])
-df = miss_add_random(df)
-miss_filter(df)
+df = data.frame(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
+df = miss_add_random(df, prop = .25)
+df
+miss_filter(df) #allow no missing
+miss_filter(df, missing = 1) #allow 1 missing
+miss_filter(df, missing = 0.5) #allow half missing
+miss_filter(df, missing = 0.25) #allow quarter missing
 }

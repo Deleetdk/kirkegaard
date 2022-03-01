@@ -202,6 +202,15 @@ miss_matrix = function(data) {
 #' @examples
 #' miss_amount(miss_add_random(iris))
 miss_amount = function(data) {
+  #fast shortcut
+  if (!anyNA(data)) {
+    c(
+      "cases with missing data" = 0,
+      "vars with missing data" = 0,
+      "cells with missing data" = 0
+      )
+  }
+
   #calculate amount of missing
   by_case = miss_by_case(data) %>% percent_cutoff(cutoffs = 1)
   by_var = miss_by_var(data) %>% percent_cutoff(cutoffs = 1)
@@ -319,17 +328,23 @@ miss_analyze = function(data, robust = F) {
 #' df = data.frame(c(1:10), letters[1:10]) #example data
 #' miss_add_random(df) #add 10% random NAs
 #' miss_amount(df) #verify that 10% really is missing
-miss_add_random =  function(df, prop = .1){
+miss_add_random =  function(df, prop = .1) {
+  #if nothing, skip
+  if (prop == 0) return(df)
+
+  #add missing
   n = nrow(df)
   m = ncol(df)
   num.to.na = ceiling(prop*n*m)
   id = sample(0:(m*n-1), num.to.na, replace = FALSE)
   rows = id %/% m + 1
   cols = id %% m + 1
-  purrr::walk(seq(num.to.na), function(x){
+
+  #walk and insert
+  purrr::walk(seq(num.to.na), function(x) {
     df[rows[x], cols[x]] <<- NA
-  }
-  )
+  } )
+
   return(df)
 }
 
@@ -458,21 +473,32 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
 #'
 #' Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
 #' @param data (data frame) The data.
-#' @param missing (num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values).
+#' @param missing (num) The maximum number of missing values in cases. Defaults to 0 (keep only cases with no missing values). If this is a proportion between 0-1, then it is used as such.
 #' @param reverse (lgl) Filter based on non-NA data instead.
 #' @export
 #' @examples
-#' df = data.frame(1:10, letters[1:10])
-#' df = miss_add_random(df)
-#' miss_filter(df)
+#' df = data.frame(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
+#' df = miss_add_random(df, prop = .25)
+#' df
+#' miss_filter(df) #allow no missing
+#' miss_filter(df, missing = 1) #allow 1 missing
+#' miss_filter(df, missing = 0.5) #allow half missing
+#' miss_filter(df, missing = 0.25) #allow quarter missing
 miss_filter = function(data, missing = 0, reverse = F) {
   #initial
-  assertthat::assert_that(is_whole_number(missing, scalar = T))
+  assertthat::assert_that(is.numeric(missing) && length(missing) == 1)
   assertthat::assert_that(is.data.frame(data))
   assertthat::assert_that(is_logical(reverse, scalar = T))
 
+  #if proportion
+  if (!is_whole_number(missing)) {
+    if (reverse) missing = 1 - missing
+    missing = floor(missing * ncol(data))
+  }
+
   #filter
   if (!reverse) return(data[miss_by_case(data) <= missing, ])
+
   data[miss_by_case(data, reverse = T) >= missing, ]
 }
 

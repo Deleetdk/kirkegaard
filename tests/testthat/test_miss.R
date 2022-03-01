@@ -26,14 +26,22 @@ test_that("miss_count", {
 # miss_filter ------------------------------------------------
 #filters data by number of missing values per case
 
-
-
 test_that("miss_filter", {
-  df = data.frame(1:10, letters[1:10])
   set.seed(1)
-  df = miss_add_random(df)
+  df = tibble(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
+  df = miss_add_random(df, prop = .33)
+  df
 
-  expect_equivalent(miss_filter(df) %>% nrow(), 8)
+  #no missing allow
+  expect_equivalent(miss_filter(df) %>% nrow(), 2)
+  #allow 1 missing
+  expect_equivalent(miss_filter(df, missing = 1) %>% nrow(), 6)
+  #allow half missing
+  expect_equivalent(miss_filter(df, missing = .5) %>% nrow(), 8)
+  #reverse count
+  expect_equivalent(miss_filter(df, missing = 3, reverse = T) %>% nrow(), 6)
+  #reverse fraction
+  expect_equivalent(miss_filter(df, missing = .5, reverse = T) %>% nrow(), 8)
 })
 
 
