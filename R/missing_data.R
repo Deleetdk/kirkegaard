@@ -293,8 +293,8 @@ miss_analyze = function(data, robust = F) {
         return(silence(lsr::cramersV(m_d[, var], data[[var2]]) %>%
                          compute.es::res(r = ., n = 100, verbose = F)) %>%
                  magrittr::extract("d") %>%
-                 unlist %>%
-                 as.vector) #silence to avoid chi sq warnings
+                 unlist() %>%
+                 as.vector()) #silence to avoid chi sq warnings
       }
 
       #if numeric, use standardized mean difference

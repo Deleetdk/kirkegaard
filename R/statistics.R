@@ -10,9 +10,7 @@
 #' @examples
 #' describe2(iris)
 #' describe2(mpg)
-describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
-                     trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
-                     IQR = FALSE, omit = FALSE, data = NULL, all_vars = F) {
+describe2 = function(x, all_vars = F) {
 
   #convert logical variables to numeric
   for (v in names(x)) {
@@ -31,13 +29,13 @@ describe2 = function(x, na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE
   #subset
   if (!all_vars) {
       y %>%
-    rownames_to_column(var = "var") %>%
-    select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>%
-    as_tibble() %>% return()
+    tibble::rownames_to_column(var = "var") %>%
+    dplyr::select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>%
+    tibble::as_tibble() %>% return()
   } else {
     y %>%
-      rownames_to_column(var = "var") %>%
-      as_tibble() %>% return()
+      tibble::rownames_to_column(var = "var") %>%
+      tibble::as_tibble() %>% return()
   }
 
 }
@@ -775,22 +773,17 @@ SMD_matrix = function(x,
       #p val, 2-tailed
       pval[row, col] = pnorm(abs(abs(m[row, col]) / se[row, col]), lower.tail = F) * 2
 
-      #make string
-      formater = function(x, round_to = str_round_to) {
-        #as chr
-        format(x, digits = round_to, nsmall = round_to)
-      }
       m_str[row, col] = str_template %>%
         #insert estimate
-        str_replace_all(pattern = "%d", replacement = m[row, col] %>% formater) %>%
+        str_replace_all(pattern = "%d", replacement = m[row, col] %>% str_round(round_to = str_round_to)) %>%
         #insert upper CI
-        str_replace_all(pattern = "%upper", replacement = CI_upper[row, col] %>% formater) %>%
+        str_replace_all(pattern = "%upper", replacement = CI_upper[row, col] %>% str_round(round_to = str_round_to)) %>%
         #insert lower CI
-        str_replace_all(pattern = "%lower", replacement = CI_lower[row, col] %>% formater) %>%
+        str_replace_all(pattern = "%lower", replacement = CI_lower[row, col] %>% str_round(round_to = str_round_to)) %>%
         #insert n
-        str_replace_all(pattern = "%n", replacement = pairwise_n[row, col] %>% as.character) %>%
+        str_replace_all(pattern = "%n", replacement = pairwise_n[row, col] %>% as.character()) %>%
         #insert se
-        str_replace_all(pattern = "%se", replacement = se[row, col] %>% formater)
+        str_replace_all(pattern = "%se", replacement = se[row, col] %>% str_round(round_to = str_round_to))
     }
   }
 

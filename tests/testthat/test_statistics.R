@@ -78,24 +78,25 @@ test_that("a4me_cohen_d", {
 # SMD_matrix  --------------------------------------------------------------
 #standardized mean differences
 
-#iris with missing
-set.seed(1)
-iris_miss = miss_add_random(iris)
-
-#tests
-t = list(#parameters
-  SMD_matrix(iris$Sepal.Length, iris$Species),
-  SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = median),
-  SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
-  SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
-  SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
-  SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = mean, trim = .05),
-
-  #with missing data
-  SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
-)
 
 test_that("SMD_matrix", {
+  #iris with missing
+  set.seed(1)
+  iris_miss = miss_add_random(iris)
+
+  #tests
+  t = list(#parameters
+    SMD_matrix(iris$Sepal.Length, iris$Species),
+    SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = median),
+    SMD_matrix(iris$Sepal.Length, iris$Species, dispersion = "mad"),
+    SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
+    SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
+    SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = mean, trim = .05),
+
+    #with missing data
+    SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
+  )
+
   #correct type
   expect_true(all(purrr::map_lgl(t, is.matrix)))
 
@@ -106,15 +107,17 @@ test_that("SMD_matrix", {
 
 # standardize -------------------------------------------------------------
 
-set.seed(1)
-X = rnorm(100, mean = 10, sd = 5)
-W = runif(100)
 
-#2 groups
-X2 = c(rnorm(10000), rnorm(10000, 1))
-focal = rep(c(T, F), each = 10000)
 
 test_that("standardize", {
+  set.seed(1)
+  X = rnorm(100, mean = 10, sd = 5)
+  W = runif(100)
+
+  #2 groups
+  X2 = c(rnorm(10000), rnorm(10000, 1))
+  focal = rep(c(T, F), each = 10000)
+
   #test normal
   expect_equal(mean(standardize(X)), 0)
   expect_equal(sd(standardize(X)), 1)
@@ -146,18 +149,26 @@ test_that("winsorise", {
 
 # weighted functions ------------------------------------------------------
 
-#some variables
-set.seed(1)
-rand_norm = rnorm(100)
-rand_uniform = runif(100)
-x = c(1, 1, 2, 2, 2)
+
 
 test_that("wtd_mean", {
+  #some variables
+  set.seed(1)
+  rand_norm = rnorm(100)
+  rand_uniform = runif(100)
+  x = c(1, 1, 2, 2, 2)
+
   expect_true(mean(rand_norm) == wtd_mean(rand_norm))
   expect_true(weighted.mean(rand_norm, rand_uniform) == wtd_mean(rand_norm, rand_uniform))
 })
 
 test_that("wtd_sd", {
+  #some variables
+  set.seed(1)
+  rand_norm = rnorm(100)
+  rand_uniform = runif(100)
+  x = c(1, 1, 2, 2, 2)
+
   expect_true(sd(rand_norm) == wtd_sd(rand_norm))
   #dont agree, but I think it has to do with the correction Hmisc uses...
   # expect_equivalent(Hmisc::wtd.var(rand_norm, rand_uniform) %>% sqrt(), wtd_sd(rand_norm, rand_uniform))

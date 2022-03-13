@@ -376,3 +376,23 @@ str_zero_to_lt = function(x, digits = 2) {
 
   x2
 }
+
+
+#' Round a number to desired number of shown digits
+#'
+#' @param x A vector of values
+#' @param round_to Number of digits to show
+#'
+#' @return A character vector
+#' @export
+#'
+#' @examples
+#' str_round(1.123, 2)
+#' str_round(1.100, 2)
+#' str_round(1.1000000, 2)
+#' str_round(1.1000000, 3)
+str_round = function(x, round_to = 2) {
+  #as chr
+  format(x, digits = round_to, nsmall = round_to)
+}
+

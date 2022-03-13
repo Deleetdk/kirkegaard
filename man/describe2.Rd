@@ -4,22 +4,7 @@
 \alias{describe2}
 \title{Describe data}
 \usage{
-describe2(
-  x,
-  na.rm = TRUE,
-  interp = FALSE,
-  skew = TRUE,
-  ranges = TRUE,
-  trim = 0.1,
-  type = 3,
-  check = TRUE,
-  fast = NULL,
-  quant = NULL,
-  IQR = FALSE,
-  omit = FALSE,
-  data = NULL,
-  all_vars = F
-)
+describe2(x, all_vars = F)
 }
 \value{
 Tibble subset
