@@ -122,6 +122,11 @@ test_that("scatter", {
   iris$Species2 = iris$Species + "_X"
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species2"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", color = "Species2", clean_names = F), "ggplot")
+
+  #fails
+  expect_error(GG_scatter(iris[numeric(), ], "Sepal.Length", "Sepal.Width"), "no cases")
+  expect_error(GG_scatter(tibble(x = c(1, 2, NA, NA), y = c(NA, NA, 3, 4)), "x", "y"), "no complete cases")
+  expect_error(GG_scatter(tibble(x = c(1, 1, 1, 1), y = c(2, 2, 2, 2)), "x", "y"), "Correlation could not be computed")
 })
 
 

@@ -237,16 +237,14 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
     #if chr func, get the function
     if (is.character(vline)) vline = get(vline)
 
-    #build function
-    tryCatch({
+    #if we can add na.rm=T, do it
+    vline_func = try_else({
       vline_func = purrr::partial(vline, na.rm=T)
       #test it
       vline_func(1)
-    },
-    error = function(e){
-      #just use the supplied one
-      vline_func = vline
-    })
+
+      vline_func
+    }, else. = vline)
 
     #no groups
     if (is.null(group)) {
@@ -406,6 +404,9 @@ GG_scatter = function(df,
   if (!x_var %in% colnames(df)) stop("X variable not found in data frame!")
   if (!y_var %in% colnames(df)) stop("Y variable not found in data frame!")
 
+  #fail on 0 cases
+  if (nrow(df) == 0) stop("There were no cases", call. = F)
+
   #case names?
   if (!is.null(case_names) && !are_equal(case_names, NA) && !are_equal(case_names, F)) {
 
@@ -492,9 +493,17 @@ GG_scatter = function(df,
   #subset + remove NA
   df = na.omit(df[c(x_var, y_var, ".weights", ".label", ".color")])
 
+  #fail on 0 cases
+  if (nrow(df) == 0) stop("There were no complete cases", call. = F)
+
   ## text
   #correlation + CI
-  cor = weights::wtd.cors(df[1:2], weight = df$.weights)[1, 2] #get correlation
+  cor = weights::wtd.cors(df[1:2], weight = df$.weights)[1, 2]
+
+  #fail on NA correlation
+  if (is.na(cor)) stop("Correlation could not be computed because of no variation in complete cases or at all", call. = F)
+
+  #CI
   cor_CI = psychometric::CIr(cor, n = psych::pairwiseCount(df)[1, 2], level = CI)
 
   #auto detect text position
@@ -1003,7 +1012,7 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 
 
 
-# sensible saving ---------------------------------------------------------
+
 
 #' Save a ggplot2 figure
 #'
@@ -1030,7 +1039,7 @@ GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height
 
 
 
-# ggplot2 pdf saving ------------------------------------------------------
+
 
 #' Save list of ggplot2 objects to single pdf
 #'
@@ -1062,7 +1071,7 @@ GG_save_pdf = function(list, filename) {
 }
 
 
-# GG_heatmap --------------------------------------------------------------
+
 #http://www.sthda.com/english/wiki/ggplot2-quick-correlation-matrix-heatmap-r-software-and-data-visualization
 
 #' Heatmap correlation matrix with ggplot2
@@ -1187,8 +1196,6 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   ggheatmap
 }
 
-
-# GG_matrix ---------------------------------------------------------------
 
 GG_matrix = function(x) {
   # browser()
