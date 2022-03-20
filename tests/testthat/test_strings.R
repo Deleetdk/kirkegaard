@@ -57,15 +57,14 @@ test_that("str_legalize", {
 })
 
 
+# str_round ---------------------------------------------------------------
 
-# str_zero_to_lt ----------------------------------------------------------
 
-test_that("str_zero_to_lt", {
-  expect_identical(c(.01) %>% str_zero_to_lt(),
-                   "0.01")
-  expect_identical(c(.01, .009, .001) %>% str_zero_to_lt(),
-                   c("0.01", "<0.01", "<0.01"))
-  expect_identical(c(.01, .009, .001) %>% str_zero_to_lt(digits = 3),
-                   c("0.01", "0.009", "0.001"))
+test_that("str_round", {
+  expect_identical(str_round(seq(0, 7, by = 1), 2, less_than = 2, more_than = 5),
+                   c("<2.00", "<2.00", "2.00", "3.00", "4.00", "5.00", ">5.00",
+                     ">5.00"))
+
+  expect_identical(str_round(1.123, 2), "1.12")
+  expect_identical(str_round(1.1000000, 3), "1.100")
 })
-

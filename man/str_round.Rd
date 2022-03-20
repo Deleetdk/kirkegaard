@@ -4,7 +4,7 @@
 \alias{str_round}
 \title{Round a number to desired number of shown digits}
 \usage{
-str_round(x, round_to = 2)
+str_round(x, digits = 2, less_than = NULL, more_than = NULL)
 }
 \arguments{
 \item{x}{A vector of values}
@@ -22,4 +22,6 @@ str_round(1.123, 2)
 str_round(1.100, 2)
 str_round(1.1000000, 2)
 str_round(1.1000000, 3)
+str_round(0.0000001, 3)
+str_round(seq(0, 7, by = 1), 2, less_than = 2, more_than = 5)
 }

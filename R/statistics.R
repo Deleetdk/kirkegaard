@@ -226,12 +226,12 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
         r_n = psych::pairwiseCount(data[row], data[col])
 
         #format cor
-        r_r = r_obj[1] %>% format_digits(digits = CI_round)
+        r_r = r_obj[1] %>% str_round(digits = CI_round)
 
         #confidence interval
         r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
           winsorise(1, -1) %>% #limit CIs to between -1 and 1
-          format_digits(digits = CI_round)
+          str_round(digits = CI_round)
 
         #format and save
         m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
@@ -255,7 +255,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
         r_n = psych::pairwiseCount(data[row], data[col])
 
         #rounding
-        r_r = r_obj[1] %>% format_digits(digits = CI_round)
+        r_r = r_obj[1] %>% str_round(digits = CI_round)
 
         #finalize with p value
         if (asterisks_only) {
@@ -295,12 +295,12 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           r_n = psych::pairwiseCount(data[row], data[col])
 
           #format r
-          r_r = r_obj[1] %>% format_digits(digits = CI_round)
+          r_r = r_obj[1] %>% str_round(digits = CI_round)
 
           #CI
           r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
             winsorise(1, -1) %>% #limit CIs to between -1 and 1
-            format_digits(digits = CI_round)
+            str_round(digits = CI_round)
 
           #format and save
           m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
@@ -323,7 +323,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           r_n = psych::pairwiseCount(data[row], data[col])
 
           #format r
-          r_r = r_obj[1] %>% format_digits(digits = CI_round)
+          r_r = r_obj[1] %>% str_round(digits = CI_round)
 
           #finalize with p value
           if (asterisks_only) {
@@ -662,7 +662,7 @@ SMD_matrix = function(x,
                       extended_output = F,
                       CI = .95,
                       str_template = "%d [%lower %upper]",
-                      str_round_to = 2,
+                      digits = 2,
                       reliability = 1,
                       se_analytic = T,
                       ...) {
@@ -775,15 +775,15 @@ SMD_matrix = function(x,
 
       m_str[row, col] = str_template %>%
         #insert estimate
-        str_replace_all(pattern = "%d", replacement = m[row, col] %>% str_round(round_to = str_round_to)) %>%
+        str_replace_all(pattern = "%d", replacement = m[row, col] %>% str_round(digits = digits)) %>%
         #insert upper CI
-        str_replace_all(pattern = "%upper", replacement = CI_upper[row, col] %>% str_round(round_to = str_round_to)) %>%
+        str_replace_all(pattern = "%upper", replacement = CI_upper[row, col] %>% str_round(digits = digits)) %>%
         #insert lower CI
-        str_replace_all(pattern = "%lower", replacement = CI_lower[row, col] %>% str_round(round_to = str_round_to)) %>%
+        str_replace_all(pattern = "%lower", replacement = CI_lower[row, col] %>% str_round(digits = digits)) %>%
         #insert n
         str_replace_all(pattern = "%n", replacement = pairwise_n[row, col] %>% as.character()) %>%
         #insert se
-        str_replace_all(pattern = "%se", replacement = se[row, col] %>% str_round(round_to = str_round_to))
+        str_replace_all(pattern = "%se", replacement = se[row, col] %>% str_round(digits = digits))
     }
   }
 

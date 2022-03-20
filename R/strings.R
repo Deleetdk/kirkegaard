@@ -349,35 +349,6 @@ str_dirname = function(x) {
 }
 
 
-# rounding ----------------------------------------------------------------
-
-#rounded 0 to less than
-#' Round and use less than symbol if zero
-#'
-#' @param x numerical vector
-#' @param digits Digits count
-#'
-#' @return character vector
-#' @export
-#'
-#' @examples
-#' c(.01) %>% str_zero_to_lt()
-#' c(.01, .009, .001) %>% str_zero_to_lt()
-#' c(.01, .009, .001) %>% str_zero_to_lt(digits = 3)
-str_zero_to_lt = function(x, digits = 2) {
-  #round
-  x2 = round(x, digits = digits)
-
-  #min value can be shown
-  min_val = 1/10^digits
-
-  #replace with less than
-  x2[x < min_val] = "<" + min_val
-
-  x2
-}
-
-
 #' Round a number to desired number of shown digits
 #'
 #' @param x A vector of values
@@ -391,8 +362,24 @@ str_zero_to_lt = function(x, digits = 2) {
 #' str_round(1.100, 2)
 #' str_round(1.1000000, 2)
 #' str_round(1.1000000, 3)
-str_round = function(x, round_to = 2) {
+#' str_round(0.0000001, 3)
+#' str_round(seq(0, 7, by = 1), 2, less_than = 2, more_than = 5)
+str_round = function(x, digits = 2, less_than = NULL, more_than = NULL) {
   #as chr
-  format(x, digits = round_to, nsmall = round_to)
+  y = format(round(x, digits = digits), nsmall = digits)
+
+  if (!is.null(less_than)) {
+    # browser()
+    y[x < less_than] = stringr::str_glue("<{str_round(less_than, digits = digits)}")
+    y = as.character(y)
+  }
+
+  if (!is.null(more_than)) {
+    # browser()
+    y[x > more_than] = stringr::str_glue(">{str_round(more_than, digits = digits)}")
+    y = as.character(y)
+  }
+
+  y
 }
 

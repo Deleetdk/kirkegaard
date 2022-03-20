@@ -342,28 +342,6 @@ alternate = function(x) {
 }
 
 
-#' Format number of digits
-#'
-#' A wrapper for \code{\link{format}} and \code{\link{round}} that makes sure that a certain number of digits are shown after rounding. Useful for outputting numbers for tables. Vectorized.
-#' @param x (numeric vector) The number(s) to format.
-#' @param digits (whole number scalar) The number of digits to show.
-#' @return Returns a character vector of the same length as x.
-#' @export
-#' @examples
-#' format_digits(c(.1), 2)
-#' format_digits(c(.1), 5)
-#' format_digits(c(.12345), 2)
-#' format_digits(c(.15555), 2)
-format_digits = function(x, digits = 2) {
-  purrr::map_chr(x, function(y) {
-    format(round(y, digits = digits), nsmall = digits)
-  })
-}
-
-
-#function from http://stackoverflow.com/questions/4730551/making-a-string-concatenation-operator-in-r
-
-
 #' Write session information to a file.
 #'
 #' A wrapper for writeLines() and capture.output().

@@ -52,7 +52,7 @@ test_that("miss_filter", {
 
 test_that("miss_analyze", {
   set.seed(1)
-  t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame %>% miss_add_random %>% miss_analyze
+  t2 = rnorm(10e3) %>% matrix(nrow = 1000) %>% as.data.frame() %>% miss_add_random() %>% miss_analyze()
 
   expect_true(all(get_dims(t2) == c(10, 10)))
   expect_true((t2 < .8) %>% sum(na.rm = T) == 90)

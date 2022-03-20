@@ -17,11 +17,9 @@ devtools::document()
 
 #install
 #for some weird reason this sometimes begins reinstalling packages for no reason I can find
-devtools::install("../kirkegaard")
+devtools::install("../kirkegaard", dependencies = F)
 
 #load
 library(kirkegaard)
 library(testthat)
-
-
 

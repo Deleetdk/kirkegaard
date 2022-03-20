@@ -1187,7 +1187,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   if (add_values) {
     # browser()
     #round values
-    if (!is.null(digits)) melted_cormat$value2 = melted_cormat$value %>% format_digits(digits = digits)
+    if (!is.null(digits)) melted_cormat$value2 = melted_cormat$value %>% str_round(digits = digits)
 
     ggheatmap = ggheatmap +
       geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value2), color = "black", size = font_size)

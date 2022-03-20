@@ -13,7 +13,7 @@ SMD_matrix(
   extended_output = F,
   CI = 0.95,
   str_template = "\%d [\%lower \%upper]",
-  str_round_to = 2,
+  digits = 2,
   reliability = 1,
   se_analytic = T,
   ...

@@ -207,7 +207,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #if asterisks wanted, add them
   if (!is.null(asterisks)) {
     y = y %>% mutate(
-      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {p_to_asterisk(p.value, asterisks = asterisks, asterisks_only = asterisks_only)})") %>% as.character()
+      beta = str_glue("{str_round(estimate, beta_digits)} ({str_round(std.error, beta_se_digits)}, {p_to_asterisk(p.value, asterisks = asterisks, asterisks_only = asterisks_only)})") %>% as.character()
     )
 
     #if no p values, remove comma whitespace
@@ -215,7 +215,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   } else { #just round p values
     y = y %>% mutate(
-      beta = str_glue("{format_digits(estimate, beta_digits)} ({format_digits(std.error, beta_se_digits)}, {str_zero_to_lt(p.value, digits = p_digits)})") %>% as.character()
+      beta = str_glue("{str_round(estimate, beta_digits)} ({str_round(std.error, beta_se_digits)}, {str_round(p.value, digits = p_digits)})") %>% as.character()
     )
   }
 
@@ -311,7 +311,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #add summary stats to end
   y2 = rbind(
     y2,
-    c("R2 adj.", get_adj_r2(x) %>% format_digits(3)),
+    c("R2 adj.", get_adj_r2(x) %>% str_round(3)),
     c("N", get_n(x))
   )
 
