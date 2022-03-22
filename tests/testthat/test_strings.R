@@ -67,4 +67,6 @@ test_that("str_round", {
 
   expect_identical(str_round(1.123, 2), "1.12")
   expect_identical(str_round(1.1000000, 3), "1.100")
+  expect_identical(str_round(c(1.11, 11.11, 111.11)), c("1.11", "11.11", "111.11"))
+  expect_identical(str_round(c(1.11, 11.11, 111.11), pad = T), c("  1.11", " 11.11", "111.11"))
 })

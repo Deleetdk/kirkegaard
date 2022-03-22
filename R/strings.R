@@ -351,8 +351,11 @@ str_dirname = function(x) {
 
 #' Round a number to desired number of shown digits
 #'
+#' @param digits How many digits to print
+#' @param less_than A value to add less than sign for
+#' @param more_than A value to add greater than sign for
+#' @param pad Whether to pad whitespace to force equal length strings
 #' @param x A vector of values
-#' @param round_to Number of digits to show
 #'
 #' @return A character vector
 #' @export
@@ -364,7 +367,7 @@ str_dirname = function(x) {
 #' str_round(1.1000000, 3)
 #' str_round(0.0000001, 3)
 #' str_round(seq(0, 7, by = 1), 2, less_than = 2, more_than = 5)
-str_round = function(x, digits = 2, less_than = NULL, more_than = NULL) {
+str_round = function(x, digits = 2, less_than = NULL, more_than = NULL, pad = F) {
   #as chr
   y = format(round(x, digits = digits), nsmall = digits)
 
@@ -379,6 +382,9 @@ str_round = function(x, digits = 2, less_than = NULL, more_than = NULL) {
     y[x > more_than] = stringr::str_glue(">{str_round(more_than, digits = digits)}")
     y = as.character(y)
   }
+
+  #padding
+  if (!pad) y = y %>% str_trim()
 
   y
 }

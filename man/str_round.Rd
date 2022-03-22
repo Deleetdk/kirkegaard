@@ -4,12 +4,18 @@
 \alias{str_round}
 \title{Round a number to desired number of shown digits}
 \usage{
-str_round(x, digits = 2, less_than = NULL, more_than = NULL)
+str_round(x, digits = 2, less_than = NULL, more_than = NULL, pad = F)
 }
 \arguments{
 \item{x}{A vector of values}
 
-\item{round_to}{Number of digits to show}
+\item{digits}{How many digits to print}
+
+\item{less_than}{A value to add less than sign for}
+
+\item{more_than}{A value to add greater than sign for}
+
+\item{pad}{Whether to pad whitespace to force equal length strings}
 }
 \value{
 A character vector
