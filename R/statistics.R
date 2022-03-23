@@ -1338,3 +1338,48 @@ quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), 
   }
 
 }
+
+
+#' Compute many proportion tests
+#'
+#' @param x A factor variable
+#' @param group A grouping variable
+#' @param correct a logical indicating whether Yates' continuity correction should be applied where possible.
+#' @param conf_level confidence level of the returned confidence interval. Must be a single number between 0 and 1. Only used when testing the null that a single proportion equals a given value, or that two proportions are equal; ignored otherwise.
+#' @param alternative a character string specifying the alternative hypothesis, must be one of "two.sided" (default), "greater" or "less". You can specify just the initial letter. Only used for testing the null that a single proportion equals a given value, or that two proportions are equal; ignored otherwise.
+#'
+#' @return A data frame
+#' @export
+#'
+#' @examples
+#' get_propdata(mpg$cyl, mpg$manufacturer)
+prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("two.sided", "less", "greater")) {
+
+  #make data frame
+  tibble(
+    x = x %>% as.factor(),
+    group = group %>% as.factor()
+  ) -> xdata
+
+  #begin pipe
+  xdata %>%
+    #filter NA
+    filter(!is.na(x), !is.na(group)) %>%
+    #loop groups
+    plyr::ddply(("group"), function(dd) {
+      #loop levels
+      map_df(levels(dd$x), function(this_level) {
+        #suppress the continuity correction warnings
+        suppressWarnings(prop.test(sum(dd$x==this_level), n = nrow(dd), correct = correct, conf.level = conf_level, alternative = alternative) %>% broom::tidy())
+      }) %>%
+        mutate(level = levels(dd$x))
+    }) %>%
+    mutate(
+      level = level %>% factor(levels = levels(xdata$x)),
+      group = group %>% factor(levels = levels(xdata$group)),
+    ) %>%
+    as_tibble() %>%
+    select(group, level, everything())
+
+}
+

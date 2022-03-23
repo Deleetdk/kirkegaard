@@ -264,3 +264,16 @@ test_that("quantile_smooth", {
   expect_true(!anyNA(running))
 
 })
+
+
+
+# prop_tests --------------------------------------------------------------
+
+
+test_that("prop_tests", {
+  prop_tests(mpg$cyl, mpg$manufacturer) %>%
+    expect_s3_class("tbl_df") %>%
+    expect_silent() %>%
+    {expect_equal(dim(.), c(60, 10))}
+})
+

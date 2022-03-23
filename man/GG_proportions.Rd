@@ -4,24 +4,14 @@
 \alias{GG_proportions}
 \title{ggplot2 proportions plot}
 \usage{
-GG_proportions(
-  data,
-  x,
-  group,
-  add_values = T,
-  repel = F,
-  text_size = 3,
-  drop_empty = F,
-  angle = 0,
-  accuracy = 0.01
-)
+GG_proportions(x, group, drop_empty = F)
 }
 \arguments{
-\item{data}{Data frame}
+\item{x}{A factor variable}
 
-\item{x}{The variable on the x axis, usually years, countries, or similar.}
+\item{group}{Grouping variable}
 
-\item{group}{The variable to calculation proportions of, should be a countable. Will be forced to factor.}
+\item{drop_empty}{Drop empty combinations}
 }
 \value{
 
@@ -31,32 +21,8 @@ ggplot2 proportions plot
 }
 \examples{
 #plot the proportions of cylinders by year
-GG_proportions(mpg, "year", "cyl")
+GG_proportions(mpg$year, mpg$cyl)
 
 #remove the 0\%'s
-GG_proportions(mpg, "year", "cyl", drop_empty = T)
-
-#don't label the values
-GG_proportions(mpg, "year", "cyl", add_values = F)
-
-#alternative variable
-GG_proportions(mpg, "year", "class")
-
-#not pretty but gets the job done
-GG_proportions(mpg, "year", "manufacturer", repel = T)
-
-#remote text
-GG_proportions(mpg, "year", "cyl", angle = 90)
-
-#no decimals
-GG_proportions(mpg, "year", "cyl", accuracy = 1)
-
-#another dataset
-datasets::Titanic \%>\%
-inv_table() \%>\%
-GG_proportions("Class", "Survived")
-
-datasets::Titanic \%>\%
-inv_table() \%>\%
-GG_proportions("Survived", "Sex")
+GG_proportions(mpg$year, mpg$cyl, drop_empty = T)
 }

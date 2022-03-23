@@ -671,6 +671,9 @@ GG_scatter = function(df,
 #' GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
 GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T) {
 
+  #check input
+  if (is.factor(df[[var]]) | is.character(df[[var]])) stop("You probably want to use `GG_proportions()` for these data", call. = F)
+
   #convert
   df = as.data.frame(df)
   df[[var]] = as.numeric(df[[var]])
@@ -1217,123 +1220,47 @@ GG_matrix = function(x) {
 }
 
 
-#proportions plot
-#like this one but better
-#https://stackoverflow.com/questions/21828475/label-column-with-count-fill-value-in-ggplot2
 
 #' ggplot2 proportions plot
 #'
-#' @param data Data frame
-#' @param x The variable on the x axis, usually years, countries, or similar.
-#' @param group The variable to calculation proportions of, should be a countable. Will be forced to factor.
+#' @param x A factor variable
+#' @param group Grouping variable
+#' @param drop_empty Drop empty combinations
 #'
 #' @return
 #' @export
 #'
 #' @examples
 #' #plot the proportions of cylinders by year
-#' GG_proportions(mpg, "year", "cyl")
+#' GG_proportions(mpg$year, mpg$cyl)
 #'
 #' #remove the 0%'s
-#' GG_proportions(mpg, "year", "cyl", drop_empty = T)
-#'
-#' #don't label the values
-#' GG_proportions(mpg, "year", "cyl", add_values = F)
-#'
-#' #alternative variable
-#' GG_proportions(mpg, "year", "class")
-#'
-#' #not pretty but gets the job done
-#' GG_proportions(mpg, "year", "manufacturer", repel = T)
-#'
-#' #remote text
-#' GG_proportions(mpg, "year", "cyl", angle = 90)
-#'
-#' #no decimals
-#' GG_proportions(mpg, "year", "cyl", accuracy = 1)
-#'
-#' #another dataset
-#' datasets::Titanic %>%
-#' inv_table() %>%
-#' GG_proportions("Class", "Survived")
-#'
-#' datasets::Titanic %>%
-#' inv_table() %>%
-#' GG_proportions("Survived", "Sex")
-GG_proportions = function(data, x, group, add_values = T, repel = F, text_size = 3, drop_empty = F, angle = 0, accuracy = .01) {
+#' GG_proportions(mpg$year, mpg$cyl, drop_empty = T)
+GG_proportions = function(x, group, drop_empty = F) {
 
-  #remove NAs
-  x2 = data %>% filter(!is.na(!!group), !is.na(!!x))
+  #assert data type
+  x = as.factor(x)
+  group = as.factor(group)
 
-  #force factors
-  x2[[group]] = x2[[group]] %>% as.factor()
-  x2[[x]] = x2[[x]] %>% as.factor()
+  #get the proportion tests
+  prop_tests(x, group) ->
+    prop_test_results
 
-  #compute proportions by groups
-  props = plyr::ddply(x2, x, function(dd) {
-    # browser()
-    #compute proportions
-    y = table2(dd[[group]], include_NA = F, sort_descending = NULL) %>%
-      #re-add factor levels
-      mutate(
-        Group = factor(Group, levels = levels(x2[[group]]))
-      ) %>%
-      #use reverse categories like ggplot2 does
-      arrange(desc(Group))
-
-    #drop empty counts
-    if (drop_empty) y = y %>% filter(Count != 0)
-
-    #in proportion not precent
-    y$prop = y$Percent / 100
-
-    #add cumulative
-    y$cumsum = cumsum(y$prop)
-
-    #plot locations is halfways between cumsum and prior cumsum (starting at 0)
-    y$text_location = rowMeans(cbind(y$cumsum, c(0, y$cumsum[-length(y$cumsum)])))
-
-    y
-  })
-
-  #make symbol
-  x_sym = as.symbol(x)
-
-  #plot
-  props %>%
-    ggplot(aes(x = !!x_sym, y = prop, fill = Group)) +
-    geom_bar(stat = "identity", position = "fill") ->
+  #plot them
+  prop_test_results %>%
+    {
+      #drop empty counts
+      if (drop_empty) prop_test_results %>% filter(estimate > 0)
+    } %>%
+    ggplot(aes(group, estimate, fill = level)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    geom_errorbar(aes(ymax = conf.high, ymin = conf.low), position = "dodge", alpha = .3) +
+    theme_bw() +
+    scale_y_continuous(NULL, labels = scales::percent) ->
     gg
 
-  #add labels
-  if (add_values) {
-    #normal
-    if (!repel) {
-      gg = gg + geom_text(
-        aes(label = scales::percent(prop, accuracy = accuracy),
-            x = !!x_sym,
-            y = text_location),
-        vjust = 0.5,
-        hjust = 0.5,
-        size = text_size,
-        angle = angle
-        )
-    } else {
-      gg = gg + ggrepel::geom_text_repel(
-        aes(label = scales::percent(prop, accuracy = accuracy),
-            x = !!x_sym,
-            y = text_location),
-        vjust = 0.5,
-        hjust = 0.5,
-        angle = angle,
-        nudge_x = rep(c(.1, -.1), length.out = nrow(props)),
-        direction = "x",
-        # force = 0.01,
-        size = text_size,
-        min.segment.length = 999
-        )
-    }
-  }
+  #attach results in case people want to reuse
+  attr(gg, "prop_tests") = prop_test_results
 
   gg
 }
