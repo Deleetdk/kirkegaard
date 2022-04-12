@@ -33,4 +33,5 @@ c(.123, .009, .004, .0009, .0001) \%>\% p_to_asterisk(asterisks = c(.05))
 c(.123, .009, .004, .0009, .0001) \%>\% p_to_asterisk(asterisks = c())
 c(.123, .009, .004, .0009, .0001) \%>\% p_to_asterisk(asterisks = NULL)
 c(.123, .009, .004, .0009, .0001) \%>\% p_to_asterisk(asterisks_only = T)
+p_to_asterisk(NA)
 }

@@ -21,6 +21,7 @@
 #' c(.123, .009, .004, .0009, .0001) %>% p_to_asterisk(asterisks = c())
 #' c(.123, .009, .004, .0009, .0001) %>% p_to_asterisk(asterisks = NULL)
 #' c(.123, .009, .004, .0009, .0001) %>% p_to_asterisk(asterisks_only = T)
+#' p_to_asterisk(NA)
 p_to_asterisk = function(x, asterisks = c(.01, .005, .001), digits = max(count_decimals(asterisks)), asterisks_only = F) {
   # browser()
   #do nothing if not desired
@@ -33,7 +34,7 @@ p_to_asterisk = function(x, asterisks = c(.01, .005, .001), digits = max(count_d
 
   #add asterisks
   for (i in seq_along(asterisks)) {
-    idx = x < asterisks[i]
+    idx = (x < asterisks[i]) %>% NA_to_F() #NA as F here
     idx_zero = (x < min_val)
     asts = str_c(rep('*', i), collapse = '')
 
@@ -64,6 +65,25 @@ get_adj_r2 = function(x) {
 get_n = function(x) {
   map_dbl(x, function(m) {
     length(m$residuals)
+  })
+}
+
+clean_term = function(x) {
+  map_chr(x, function(z) {
+    #split it if we need to
+    z_split = str_split(z, pattern = " \\* ", simplify = T)
+
+    #any splits? if no
+    if (length(z_split) == 1) {
+      #clean and return
+      z2 = z %>% str_replace("=.+", "")
+      return(z2)
+
+    } else {
+      #clean, concat, return
+      z2 = z_split %>% str_replace("=.+", "") %>% str_c(collapse = " * ")
+      return(z2)
+    }
   })
 }
 
@@ -102,7 +122,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #ensure model names are factor
   if (is.character(names(x))) names(x) = factor(names(x), levels = names(x))
 
-  #loop and make consise table
+  #loop and make concise table
   y = map2_df(x, names(x), function(m, name) {
     # browser()
     #get tidy output
@@ -140,42 +160,76 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #add reference levels?
   #add clean version
-  y$clean_term = y$term %>% str_replace("=.+", "") %>% factor(levels = unique(.))
+  # browser()
+  y$clean_term = y$term %>%
+    clean_term() %>%
+    factor(levels = unique(.))
+
+
   y$factor = y$term %>% str_detect("=")
+# browser()
+  #add ref levels
   y$ref = F #prefill with F
   if (add_ref_level) {
+
     y = plyr::ddply(y, c("model", "clean_term"), function(dd) {
       #is it a factor? if not, return as is
       if (!dd$factor[1]) return(dd)
 
-      #if factor, then get the ref level from model fit
+      # browser()
 
-      fct_levels = x[[dd$model[1]]]$Design$parms[[dd$clean_term[1] %>% as.character()]]
+      #how many factors are there? for each factor, we have to find the ref level
+      #we can find factors by splitting variables by *
+      vars = str_split(dd$clean_term[1], pattern = " \\* ", simplify = T)
 
-      #add ref level
+      vars_ref_level = map_chr(vars, function(v) {
+        #get from model terms
+        terms_sub = y %>%
+          filter(!!v == clean_term, factor == T)
+
+        #if non-0 length, find ref level in model design object
+        #if length 0, return NA
+        if (nrow(terms_sub) == 0) return(NA_character_)
+
+        #this model's design object
+        terms_model = x[[terms_sub$model[1]]]$Design
+
+        terms_model$parms[[as.character(terms_sub$clean_term[1])]][1]
+      })
+      #for each variable, check if it is a factor, and if so, get the base level
+
+      #add ref level if this is a simple factor, not an interaction
+      fct_count = length(na.omit(vars_ref_level))
+      if (fct_count > 1) return(dd)
+
+      #add it
       bind_rows(
         tibble(
-          term = dd$clean_term[1] + "=" + fct_levels[1],
+          term = dd$clean_term[1] + "=" + str_c(na.omit(vars_ref_level), collapse = ", "),
           estimate = 0, #we will overwrite this later
-          p.value = 0,
+          p.value = NA_real_,
           clean_term = dd$clean_term[1],
           model = dd$model[1],
-          ref = T
+          ref = T,
+          factor = T
         ),
+
         dd
       )
-    })
-  }
+
+    }) #end add ref levels loop
+  } #end add ref levels chuck
 
 
 
   #order of variable appearance
   term_order = y$term %>% unique()
 
-  #deal with factors that have been reduced
+  #add extra preceding levels for factors without levels (factor collapsed)
+  # browser()
   tibble(
     term = term_order,
-    term_clean = term %>% str_replace("=.+", "") %>% factor(levels = unique(.)),
+    term_clean = term %>% clean_term() %>% factor(levels = unique(.)),
     factor = term %>% str_detect("=")
   ) %>%
     plyr::ddply("term_clean", function(dd) {
@@ -206,11 +260,12 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #nice numeric values
   #if asterisks wanted, add them
   if (!is.null(asterisks)) {
+
     y = y %>% mutate(
       beta = str_glue("{str_round(estimate, beta_digits)} ({str_round(std.error, beta_se_digits)}, {p_to_asterisk(p.value, asterisks = asterisks, asterisks_only = asterisks_only)})") %>% as.character()
     )
 
-    #if no p values, remove comma whitespace
+    #if no p values, remove comma white space
     if (asterisks_only) y$beta = str_replace(y$beta, ", ", "")
 
   } else { #just round p values
@@ -265,7 +320,6 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
       if (!any(str_detect(dd$term, "="))) return(dd)
 
       #if no factors in this model to clean, return what we have
-
       if (!any(dd$clean_term %in% factor_clean_terms)) return(dd)
 
       #which rows are the non-1st? remove them
@@ -305,6 +359,9 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #reset to chr so we can add more rows
   y2$term %<>% as.character()
 
+  #add spacing to = for factors
+  y2$term %<>% str_replace_all("=", " = ")
+
   #fix top left column name
   names(y2)[1] = "Predictor/Model"
 
@@ -321,8 +378,30 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   })
 
   #to normal df for printing the attribute
-  y2
+  y2 %>% as_tibble()
 }
 
 
+# list(rms::ols(Sepal.Width ~ Petal.Width * Species, data = iris)) %>% summarize_models()
 
+# mpg$cylfct = mpg$cyl %>% factor()
+# mpg$yearfct = mpg$year %>% factor()
+
+# list(
+#   rms::ols(cty ~ hwy, data = mpg),
+#   rms::ols(cty ~ rcs(hwy), data = mpg),
+#   rms::ols(cty ~ yearfct + cylfct, data = mpg),
+#   rms::ols(cty ~ yearfct * cylfct, data = mpg)
+# ) %>% summarize_models(add_ref_level = T, asterisks_only = F)
+#
+# list(
+#   rms::ols(cty ~ hwy, data = mpg),
+#   rms::ols(cty ~ rcs(hwy), data = mpg),
+#   rms::ols(cty ~ yearfct + cylfct, data = mpg),
+#   rms::ols(cty ~ yearfct * cylfct, data = mpg)
+# ) %>% summarize_models(add_ref_level = T, collapse_factors = T)
+
+#load models with error
+# ideo_models = read_rds("/science/projects/Mental illness politics/data/models.rds")
+#
+# ideo_models %>% summarize_models()

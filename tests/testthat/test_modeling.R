@@ -10,7 +10,10 @@ test_that("summarize_models", {
   models1 = list(
     rms::ols(Sepal.Width ~ Sepal.Length, data = iris),
     rms::ols(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris),
-    rms::ols(Sepal.Width ~ Sepal.Length + Petal.Width + Petal.Length, data = iris)
+    rms::ols(Sepal.Width ~ Sepal.Length + Petal.Width + Petal.Length, data = iris),
+    rms::ols(Sepal.Width ~ Sepal.Length * Petal.Width, data = iris),
+    rms::ols(Sepal.Width ~ Sepal.Length + Petal.Width + Species, data = iris),
+    rms::ols(Sepal.Width ~ Sepal.Length + Petal.Width * Species, data = iris)
   )
 
   #base R

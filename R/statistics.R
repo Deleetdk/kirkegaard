@@ -1342,17 +1342,19 @@ quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), 
 
 #' Compute many proportion tests
 #'
+#' This is a convenient tidy wrapper for `stat::prop.test()`
+#'
 #' @param x A factor variable
 #' @param group A grouping variable
 #' @param correct a logical indicating whether Yates' continuity correction should be applied where possible.
 #' @param conf_level confidence level of the returned confidence interval. Must be a single number between 0 and 1. Only used when testing the null that a single proportion equals a given value, or that two proportions are equal; ignored otherwise.
 #' @param alternative a character string specifying the alternative hypothesis, must be one of "two.sided" (default), "greater" or "less". You can specify just the initial letter. Only used for testing the null that a single proportion equals a given value, or that two proportions are equal; ignored otherwise.
 #'
-#' @return A data frame
+#' @return A data frame, which may have missing levels if a combination did not exist in the data.
 #' @export
 #'
 #' @examples
-#' get_propdata(mpg$cyl, mpg$manufacturer)
+#' prop_tests(mpg$cyl, mpg$manufacturer)
 prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("two.sided", "less", "greater")) {
 
   #make data frame

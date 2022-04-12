@@ -24,11 +24,11 @@ prop_tests(
 \item{alternative}{a character string specifying the alternative hypothesis, must be one of "two.sided" (default), "greater" or "less". You can specify just the initial letter. Only used for testing the null that a single proportion equals a given value, or that two proportions are equal; ignored otherwise.}
 }
 \value{
-A data frame
+A data frame, which may have missing levels if a combination did not exist in the data.
 }
 \description{
-Compute many proportion tests
+This is a convenient tidy wrapper for \code{stat::prop.test()}
 }
 \examples{
-get_propdata(mpg$cyl, mpg$manufacturer)
+prop_tests(mpg$cyl, mpg$manufacturer)
 }
