@@ -10,8 +10,6 @@
 #'
 #' @return A data frame with added variables
 #' @export
-#'
-#' @examples
 spatial_knn = function(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag") {
   #fail on bad input data
   if (!is.data.frame(x)) stop("`x` must be a data frame")
@@ -67,8 +65,6 @@ spatial_knn = function(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag"
 #'
 #' @return A named vector
 #' @export
-#'
-#' @examples
 spatial_lag_cors = function(x, suffix = "_lag", long_output = F) {
   #find pairs of variables with _lag suffix and without
   vars_to_cor = map_lgl(names(x), function(v) {

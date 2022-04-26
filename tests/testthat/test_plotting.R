@@ -299,3 +299,4 @@ test_that("GG_proportions", {
   GG_proportions(mpg$year, mpg$cyl, drop_empty = T) %>%
   expect_s3_class("ggplot")
 })
+

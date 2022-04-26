@@ -1200,6 +1200,15 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
 }
 
 
+#' Matrix of data values
+#'
+#' @param x A data frame
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples
+#' iris[1:4] %>% GG_matrix()
 GG_matrix = function(x) {
   # browser()
   #scale numeric data to 0-1 range
