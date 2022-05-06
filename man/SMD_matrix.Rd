@@ -36,7 +36,7 @@ SMD_matrix(
 
 \item{str_template}{(chr) A string template to use.}
 
-\item{reliability}{(num) A reliability to use for correcting for measurement error. Done via \code{\link[=a4me_cohen_d]{a4me_cohen_d()}}.}
+\item{reliability}{(num) A reliability to use for correcting for measurement error. Done via \code{\link[=adj_d_reliability]{adj_d_reliability()}}.}
 
 \item{se_analytic}{(lgl) Use analytic standard errors. If not, then it will bootstrapping (slower). Always uses bootstrapping for non-mean functions.}
 

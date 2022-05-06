@@ -859,7 +859,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
 
   #get loadings
   if (ncol(fa$loadings) < n_factor) stop(sprintf("You tried to extract a factor that doesn't exist. n_factor was %d but fa only has %d factors.", n_factor, ncol(fa$loadings)))
-  fa_loadings = fa$loadings %>% unclass %>% magrittr::extract(, n_factor)
+  fa_loadings = fa$loadings %>% unclass() %>% .[, n_factor]
 
   #weights
   if (is.na(.weights)) .weights = rep(1, nrow(df))

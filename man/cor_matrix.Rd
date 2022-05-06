@@ -67,4 +67,7 @@ cor_matrix(iris, rank_order = T) #rank order correlations, default method
 cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
 cor_matrix(iris, weights = "Petal.Width") #weights from name
 cor_matrix(iris, weights = 1:150) #weights from vector
+#complex weights
+cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
+cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
 }

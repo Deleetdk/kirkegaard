@@ -63,16 +63,13 @@ test_that("cor_matrix", {
 })
 
 
-# a4me_cohen_d ------------------------------------------------------------
+# adj_d_reliability ------------------------------------------------------------
 
-test_that("a4me_cohen_d", {
-  expect_equivalent(a4me_cohen_d(1, 100, 100), 1)
-  expect_lt(abs(a4me_cohen_d(1, 100, 100, rxx = .5) - 1.155), .001)
-  expect_lt(abs(a4me_cohen_d(1, 100, 100, ryy = .5) - 1.155), .001)
-  expect_equivalent(a4me_cohen_d(1, 100, 100, rxx = .5, ryy = .5), 2)
-  expect_equivalent(a4me_cohen_d(1, 100, 100, rxx = 0), Inf)
-  expect_equivalent(a4me_cohen_d(10, 100, 100, rxx = .1, ryy = .1), Inf)
-  expect_error(a4me_cohen_d(1, 100, 100, rxx = -1))
+test_that("adj_d_reliability", {
+  expect_equivalent(adj_d_reliability(1, 1), 1)
+  expect_equivalent(adj_d_reliability(1, rel = 0), Inf)
+  expect_equivalent(adj_d_reliability(-2, rel = 0), -Inf)
+  expect_error(adj_d_reliability(1, rel = -1))
 })
 
 # SMD_matrix  --------------------------------------------------------------

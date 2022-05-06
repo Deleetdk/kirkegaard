@@ -441,6 +441,7 @@ GG_scatter = function(df,
 
 
   #weights
+  weights_used = !is.null(weights)
   if (is.null(weights)) {
     df$.weights = rep(1, nrow(df)) #fill with 1's
   } else {
@@ -498,13 +499,29 @@ GG_scatter = function(df,
 
   ## text
   #correlation + CI
-  cor = weights::wtd.cors(df[1:2], weight = df$.weights)[1, 2]
+  #with weights, we have to rely on symmetric approach (bad)
+  #without weights, we can use cor.test() from base
+  if (weights_used) {
+    #the warnings are about near-perfect fit, which is not a concern
+    cor_res = suppressWarnings(weights::wtd.cor(df[1:2], weight = df$.weights))
+    cor = cor_res$correlation[1, 2]
+    #CI
+    cor_CI = c(
+      cor - qnorm(CI + ((1-CI)/2), lower.tail = T) * cor_res$std.err[1, 2],
+      cor + qnorm(CI + ((1-CI)/2), lower.tail = T) * cor_res$std.err[1, 2]
+    ) %>% winsorise(upper = 1, lower = -1)
+  } else {
+    #the warning is about 0 SD, but we throw an error about this below instead
+    cor_res = suppressWarnings(cor.test(df[[1]], df[[2]], conf.level = CI))
+    cor = cor_res$estimate
+    cor_CI = cor_res$conf.int
+  }
+
 
   #fail on NA correlation
   if (is.na(cor)) stop("Correlation could not be computed because of no variation in complete cases or at all", call. = F)
 
-  #CI
-  cor_CI = psychometric::CIr(cor, n = psych::pairwiseCount(df)[1, 2], level = CI)
+
 
   #auto detect text position
   if (is.na(text_pos)) {

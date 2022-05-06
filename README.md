@@ -7,23 +7,20 @@ There are functions for areas including:
 * `MAT_`: Elementary matrix operations such as getting a half and restoring a symmetrical matrix from a half.
 * `fa_`: Factor analysis, including new methods for checking for method variance, finding odd cases, using Jensen's method and plotting loadings.
 * `GG_`: Convenience functions for plotting with ggplot2. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/ggplot2.html).
-* `pu_`: Functions that deals with names of political units by converting to and from standardized abbreviations. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/political_units_names.html).
+* `pu_`: A function that deals with names of political units by converting to and from standardized abbreviations. [Examples](https://cdn.rawgit.com/Deleetdk/kirkegaard/master/knitr/political_units_names.html).
 * Various other functions that I often use.
 
-It's probably that when some of these collections get large enough, they will be moved to their own packages (the spatial data functions were already split off to **spatialstatstools** package).
+Some old and deprecated spatial data functions were split off to **spatialstatstools** package (which is not updated). The newer ones are much faster.
 
 ## Installing from scratch
 for whatever reason, it is sometimes hard to get it to install the dependencies automatically
 so here's a small call to manually install them. This installs all dependencies, including those rarely used.
 
 ```
-#pacman
-if (!require("pacman")) install.packages("pacman")
-
 #CRAN packages
-#with pacman, but you can also try just running the devtools call below
-library(pacman)
-p_load(grid, ggplot2, scales, stringr, purrr, assertthat, readr, xml2, plyr, dplyr, tidyr, psych, gtools, robustbase, MASS, forcats, polycor, weights, devtools, VIM, lsr, compute.es, magrittr, tibble, psychometric, Hmisc, stringdist, glmnet, metafor, binom, GPArotation)
+#determine which packages we don't have but need
+pkgs_we_need = c("tidyverse", "assertthat", "plyr", "psych", "gtools", "polycor", "weights", "devtools", "VIM", "lsr", "compute.es", "Hmisc", "stringdist", "glmnet", "metafor", "binom", "GPArotation", "ggrepel", "qgam", "caTools", "furrr", "terra", "rms", "missForest", "psychTools")
+install.packages(setdiff(pkgs_we_need, installed.packages()[, 1]))
 
 #finally
 devtools::install_github("deleetdk/kirkegaard")

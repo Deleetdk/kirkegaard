@@ -41,54 +41,82 @@ describe2 = function(x, all_vars = F) {
 }
 
 
+
 #' Adjust Cohen's d for measurement error
 #'
 #' Adjust' Cohen's d for measurement error using the Pearson r approach
 #'
-#' Convert the d to Pearson r, then applies Spearman's correction, and then converts back.
-#' @param d (num) Cohen's d.
-#' @param n1 (int) Sample size for group 1.
-#' @param n2 (int) Sample size for group 2.
-#' @param rxx (num) Reliability of x.
-#' @param ryy (num) Reliability of y.
+#' @param x A vector of d values
+#' @param rel A vector of reliabilities
+#'
+#' @return A vector of adjusted d values
 #' @export
+#'
 #' @examples
-#' a4me_cohen_d(1, 100, 100) #no adjustment
-#' a4me_cohen_d(1, 100, 100, rxx = .5) #adjust based on x
-#' a4me_cohen_d(1, 100, 100, ryy = .5) #based on y, same result
-#' a4me_cohen_d(1, 100, 100, rxx = .5, ryy = .5) #based on both; large effect!
-#' a4me_cohen_d(1, 100, 100, rxx = 0) #infinite d if no reliability
-#' a4me_cohen_d(10, 100, 100, rxx = .1, ryy = .1) #infinite also if corrected correlation exceeds the bounds
-a4me_cohen_d = function(d, n1, n2, rxx = 1, ryy = 1) {
-  #check input
-  d
-  n1
-  n2
+#' adj_d_reliability(1.00, 0.8)
+adj_d_reliability = function(x, rel) {
+  #nothing to do
+  if (rel == 1) return(x)
+  if (rel == 0) return(Inf * sign(x))
+  if (!is_between(rel, a = 0, b = 1)) stop("Reliability must be within [0:1]", call. = F)
 
-  #if no adjust necessary
-  if (rxx == 1 & ryy == 1) return(d)
+  #convert to r and adjust
+  r = (x/(x^2+4)^0.5)
 
-  #impossible reliabilities
-  if (!is_between(rxx, 0, 1)) stop("Reliability for x was not within bounds!")
-  if (!is_between(ryy, 0, 1)) stop("Reliability for y was not within bounds!")
+  #adjust
+  r_adj = r/sqrt(rel)
 
-  #convert to pearson r
-  a = (n1 + n2)^2/(n1 * n2)
-  r = d / sqrt(d^2 + a)
-
-  #adjust r
-  r_adj = r / sqrt(rxx * ryy)
-
-  #check if out of bounds
-  if (r_adj >= 1) return(Inf)
-  if (r_adj <= -1) return(-Inf)
-
-  #convert to cohen d
-  d_adj = (2 * r) / sqrt(1 - r_adj^2)
-
-  d_adj
+  #back to d
+  2 * r_adj/sqrt(1 - r_adj^2)
 }
 
+
+#' Compute correlation confidence intervals from correlations and standard errors
+#'
+#' @param cor A correlation value or matrix
+#' @param se A standard error value or matrix
+#' @param ci The desired confidence level
+#' @param winsorise Keep values within -1 to 1
+#'
+#' @return If you entered a single value, you get 2 values back: lower and upper confidence numbers. If you entered matrices, you get 2 matrices back in a list.
+#' @export
+#'
+#' @examples
+#' #simple results
+#' cor_CI_from_SE(.50, .10)
+#' cor_CI_from_SE(.50, .10, ci = .99)
+#' #matrices
+#' iris_res = suppressWarnings(weights::wtd.cor(iris[-5]))
+#' cor_CI_from_SE(iris_res$correlation, iris_res$std.err)
+cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
+  #matrix input?
+  assert_that(length(cor) == length(se))
+
+  #CI
+  y = c(
+    cor - qnorm(ci + ((1-ci)/2), lower.tail = T) * se,
+    cor + qnorm(ci + ((1-ci)/2), lower.tail = T) * se
+  )
+
+  if (winsorise) {
+    y %<>% winsorise(upper = 1, lower = -1)
+  }
+
+  #matrix input, then restore the matrix
+  if (is.matrix(cor)) {
+    #split sizes
+    num_in_matrix = nrow(cor) * ncol(cor)
+    y_lower = matrix(y[1:num_in_matrix], nrow = nrow(cor), ncol = ncol(cor))
+    y_upper = matrix(y[(num_in_matrix+1):(num_in_matrix*2)], nrow = nrow(cor), ncol = ncol(cor))
+
+    return(list(
+      lower = y_lower,
+      upper = y_upper
+    ))
+  }
+
+  y
+}
 
 
 #' Correlation matrix
@@ -126,6 +154,9 @@ a4me_cohen_d = function(d, n1, n2, rxx = 1, ryy = 1) {
 #' cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
 #' cor_matrix(iris, weights = "Petal.Width") #weights from name
 #' cor_matrix(iris, weights = 1:150) #weights from vector
+#' #complex weights
+#' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
+#' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
 cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r%a [p=%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
 
 
@@ -148,6 +179,7 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   }
 
   #weights not given or as character
+  weights_used = !is.null(weights)
   if (is.null(weights)) weights = rep(1, nrow(data))
   if (is.character(weights)) {
     weights = data[[weights]] #fetch from data
@@ -169,15 +201,15 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
 
   ##simple weights and no extras?
   if (simpleweights && v_noextras) {
-
-    m = weights::wtd.cors(data, weight = weights)
+    #these just indicate near-1 correlations
+    m_res = suppressWarnings(weights::wtd.cor(data, weight = weights))
+    m = m_res$correlation
 
     #correct for unreliability
-    m = combine_upperlower(psych::correct.cor(m, reliabilities), psych::correct.cor(m, reliabilities) %>% t)
+    m = psych::correct.cor(m, reliabilities)
 
     #winsor to -1 to 1
-    m[m > 1] = 1
-    m[m < -1] = -1
+    m = winsorise(m, lower = -1, upper = 1)
 
     #reliabilities in diagonal
     diag(m) = reliabilities
@@ -212,26 +244,27 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
 
       #simple weights & CI
       if (simpleweights && !is.null(CI)) {
-
         #weighted cor
-        r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
+        #these just indicate near-1 correlations
+        r_obj = suppressWarnings(weights::wtd.cor(data[, c(row, col)], weight = weights))
 
         #correct for unreliability
-        r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+        r_obj$correlation %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
 
         #winsorize
-        r_obj[1] %<>% winsorise(1, -1)
+        r_obj$correlation %<>% winsorise(1, -1)
 
         #sample size
         r_n = psych::pairwiseCount(data[row], data[col])
 
         #format cor
-        r_r = r_obj[1] %>% str_round(digits = CI_round)
+        r_r = r_obj$correlation[1, 2] %>% str_round(digits = CI_round)
 
         #confidence interval
-        r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
-          winsorise(1, -1) %>% #limit CIs to between -1 and 1
-          str_round(digits = CI_round)
+        r_CI = cor_CI_from_SE(r_obj$correlation[1, 2], se = r_obj$std.err[1, 2], ci = CI)
+
+        #rounding
+        r_CI %<>% str_round(digits = CI_round)
 
         #format and save
         m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
@@ -297,10 +330,11 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           #format r
           r_r = r_obj[1] %>% str_round(digits = CI_round)
 
-          #CI
-          r_CI = psychometric::CIr(r = r_obj[1], n = r_n, level = CI) %>%
-            winsorise(1, -1) %>% #limit CIs to between -1 and 1
-            str_round(digits = CI_round)
+          #confidence interval
+          r_CI = cor_CI_from_SE(r_obj[1], se = r_obj[2], ci = CI)
+
+          #rounding
+          r_CI %<>% str_round(digits = CI_round)
 
           #format and save
           m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
@@ -645,7 +679,7 @@ pool_sd = function(x, group) {
 #' @param extended_output (lgl) Whether to output a list of matrices. Useful for computational reuse.
 #' @param CI (num) Confidence interval coverage.
 #' @param str_template (chr) A string template to use.
-#' @param reliability (num) A reliability to use for correcting for measurement error. Done via [kirkegaard::a4me_cohen_d()].
+#' @param reliability (num) A reliability to use for correcting for measurement error. Done via [kirkegaard::adj_d_reliability()].
 #' @param se_analytic (lgl) Use analytic standard errors. If not, then it will bootstrapping (slower). Always uses bootstrapping for non-mean functions.
 #' @param ... (other arguments) Additional arguments to pass to the central tendency function.
 #' @export
@@ -758,7 +792,7 @@ SMD_matrix = function(x,
 
       #adjust for reliability?
       if (reliability != 1) {
-        m[row, col] = a4me_cohen_d(d = m[row, col], n1 = pair_ns[1], n2 = pair_ns[2], rxx = reliability)
+        m[row, col] = adj_d_reliability(d = m[row, col], rel = reliability)
       }
 
       #standard error

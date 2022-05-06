@@ -131,7 +131,9 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
     if ("rms" %in% class_m) {
 
       y = m %>%
-        summary.lm() %>%
+        {
+          suppressWarnings(summary.lm(.))
+        } %>%
         broom::tidy() %>%
         mutate(model = name)
     } else if ("rlm" %in% class_m) {

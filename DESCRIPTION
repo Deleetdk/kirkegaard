@@ -1,35 +1,28 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2022-04-26
+Version: 2022-05-06
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emil@emilkirkegaard.dk", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
     use my own functions across projects. Loads a lot of other packages for ease of use for me.
 Depends:
     tidyverse,
-    ggplot2,
-    stringr,
-    weights,
-    purrr,
-    assertthat,
-    forcats,
-    tidyr,
     magrittr,
-    psych,
-    tibble,
-    metafor,
-    rlang
+    weights,
+    assertthat,
+    psych
 License: GPL
 LazyData: true
 RoxygenNote: 7.1.2
 Imports:
     plyr,
     glmnet,
-    grid,
-    scales,
-    psychometric,
     GPArotation,
-    ggrepel
+    ggrepel,
+    metafor,
+    furrr,
+    terra,
+    psychTools
 Suggests:
     compute.es,
     testthat,
@@ -38,5 +31,7 @@ Suggests:
     missForest,
     rms,
     psychTools,
-    terra
+    terra,
+    qgam,
+    caTools
 Roxygen: list(markdown = TRUE)
