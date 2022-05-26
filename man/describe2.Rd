@@ -4,10 +4,10 @@
 \alias{describe2}
 \title{Describe data}
 \usage{
-describe2(x, all_vars = F)
+describe2(x, group = NULL, all_vars = F)
 }
 \value{
-Tibble subset
+A data frame
 }
 \description{
 Describe data
@@ -15,4 +15,5 @@ Describe data
 \examples{
 describe2(iris)
 describe2(mpg)
+describe2(iris, group = iris$Species)
 }

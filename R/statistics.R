@@ -4,40 +4,57 @@
 #' Describe data
 #'
 #'
-#' @return Tibble subset
+#' @return A data frame
 #' @export
 #'
 #' @examples
 #' describe2(iris)
 #' describe2(mpg)
-describe2 = function(x, all_vars = F) {
+#' describe2(iris, group = iris$Species)
+describe2 = function(x, group = NULL, all_vars = F) {
 
   #convert logical variables to numeric
   for (v in names(x)) {
     if (is.logical(x[[v]])) x[[v]] = x[[v]] %>% as.numeric()
   }
 
-  #get results
-  y = psych::describe(as.data.frame(x), na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
-                      trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
-                      IQR = FALSE, omit = FALSE, data = NULL)
+  #remove factors and chrs
+  x_nonnum = purrr::map_lgl(x, ~is.character(.)|is.factor(.))
+  x = x[!x_nonnum]
 
-  #fix class of output
-  class(y) = "data.frame"
+  #group level?
+  if (!is.null(group)) {
+    #factor for the right order of groups, if the user wants
+    group = as.factor(group)
 
-  #subset, explicit rownames
-  #subset
-  if (!all_vars) {
-      y %>%
-    tibble::rownames_to_column(var = "var") %>%
-    dplyr::select(var, n, mean, median, sd, mad, min, max, skew, kurtosis) %>%
-    tibble::as_tibble() %>% return()
+    #loop groups and bind
+    y = plyr::ddply(bind_cols(x, ..group = group), .variables = "..group", .fun = function(dd) {
+      dd %>% select(-`..group`) %>% describe2(all_vars = all_vars)
+    }) %>% rename(group = ..group)
+
+
   } else {
-    y %>%
-      tibble::rownames_to_column(var = "var") %>%
-      tibble::as_tibble() %>% return()
+    #get results
+    y = psych::describe(as.data.frame(x), na.rm = TRUE, interp = FALSE, skew = TRUE, ranges = TRUE,
+                        trim = 0.1, type = 3, check = TRUE, fast = NULL, quant = NULL,
+                        IQR = FALSE, omit = FALSE, data = NULL)
+
+    #fix class of output
+    class(y) = "data.frame"
+
+    #subset, explicit rownames
+    #subset
+    if (!all_vars) {
+      y %<>%
+        tibble::rownames_to_column(var = "var") %>%
+        dplyr::select(var, n, mean, median, sd, mad, min, max, skew, kurtosis)
+    } else {
+      y %<>%
+        tibble::rownames_to_column(var = "var")
+    }
   }
 
+  as_tibble(y)
 }
 
 

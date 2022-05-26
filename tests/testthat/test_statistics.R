@@ -4,15 +4,28 @@ context("statistics")
 # describe2 ---------------------------------------------------------------
 
 test_that("describe2", {
+  #classes
   expect_s3_class(describe2(iris), "data.frame")
+  expect_s3_class(describe2(iris), "tbl")
 
-  #can we handle logical type properly?
-  iris2 = iris
-  iris2$logical = sample(c(T, F), size = nrow(iris2), replace = T)
+  #non numeric equivalent cols removed automatically
+  tibble(
+    lgl = sample(c(T, F), size = 10, replace = T),
+    dbl = rnorm(10),
+    int = sample(c(1L, 2L), size = 10, replace = T),
+    chr = letters[1:10],
+    fct = as.factor(LETTERS[1:10])
+    ) %>%
+    describe2() %>%
+    {
+      expect_equivalent(c("lgl", "dbl", "int"), .$var)
+    }
 
-  describe2(iris2)[6, ] %>% anyNA() %>% expect_false()
-
+  #correct cols
   expect_equivalent(describe2(iris) %>% colnames(), c("var", "n", "mean", "median", "sd", "mad", "min", "max", "skew", "kurtosis"))
+
+  #grouped version
+  expect_equivalent(describe2(iris, group = iris$Species) %>% colnames(), c("group", "var", "n", "mean", "median", "sd", "mad", "min", "max", "skew", "kurtosis"))
 })
 
 
