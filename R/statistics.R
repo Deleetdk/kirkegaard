@@ -1436,3 +1436,149 @@ prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("
 
 }
 
+
+
+#' Test for differential item functioning (DIF)
+#'
+#' Tests are done following the mirt package approach outlined by Chalmers.
+#'
+#' @param items Item data to use
+#' @param model Item model
+#' @param group Group (2 groups at most)
+#' @param fscores_pars Any extra scoring parameters used
+#' @param messages Show messages
+#' @param method Method
+#' @param technical Further technical args to pass to mirt
+#'
+#' @return A list of results
+#' @export
+DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, full.scores.SE = T), messages = T, method = "EM", technical = list()) {
+  # browser()
+  #regular fit joint group
+  if (messages) message("There are 8 steps")
+  if (messages) message("Step 1: Initial joint fit\n")
+  mirt_fit = mirt(items, model = model, method = method, technical = technical)
+
+  #step 3
+  if (!is.character(group) && !is.factor(group)) group = factor(group)
+  if (messages) message("\nStep 2: Initial MI fit")
+  mirt_fit_MI = multipleGroup(items, model = model, group = group, invariance = c('intercepts','slopes', 'free_means', 'free_var'), method = method, technical = technical)
+
+  #DIFs
+  if (messages) message("\nStep 3: Leave one out MI testing")
+  DIFs = DIF(mirt_fit_MI,
+             which.par = c('a1', 'd'),
+             scheme = 'drop',
+             method = method,
+             technical = technical
+  )
+  DIFs = DIFs %>% rownames_to_column("item")
+  DIFs$number = 1:nrow(DIFs)
+
+  #adjust p values
+  DIFs$p_adj = DIFs$p * nrow(DIFs)
+
+  #with significant DIF
+  DIFs_detected_liberal = DIFs %>% filter(p < .05)
+  DIFs_detected_conservative = DIFs %>% filter(p_adj < .05)
+
+  #subset itmes
+  items_noDIF_liberal = items %>% select(!!setdiff(DIFs$item, DIFs_detected_liberal$item))
+  items_noDIF_conservative = items %>% select(!!setdiff(DIFs$item, DIFs_detected_conservative$item))
+
+  #subset models
+  #tricky!
+  #if its a g only model, we dont have to do anything
+  #but if its complex we need name format or Q matrix format
+  #extract loadings matrix
+  #convert to Q matrix
+  # browser()
+  mirt_fit_loadings = mirt_fit@Fit$`F`
+  model_noDIF_liberal_Q = mirt_fit_loadings %>% apply(MARGIN = 2, as.logical) %>% set_rownames(rownames(mirt_fit_loadings))
+  model_noDIF_conservative_Q = model_noDIF_liberal_Q
+
+  #set unused items' rows to FALSE
+  model_noDIF_liberal_Q[DIFs_detected_liberal$item, ] = F
+  model_noDIF_conservative_Q[DIFs_detected_conservative$item, ] = F
+
+  #fit together without DIF
+  if (messages) message("\nStep 4: Fit without DIF items, liberal threshold")
+  mirt_fit_noDIF_liberal = mirt(items, model = mirt.model(model_noDIF_liberal_Q), method = method, technical = technical)
+  if (messages) message("\nStep 5: Fit without DIF items, conservative threshold")
+  mirt_fit_noDIF_conservative = mirt(items, model = mirt.model(model_noDIF_conservative_Q), method = method, technical = technical)
+
+  #with anchors
+  if (messages) message("\nStep 6: Fit with anchor items, liberal threshold")
+  mirt_fit_anchors_liberal = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_liberal %>% names(), 'free_means', 'free_var'), method = method, technical = technical)
+  if (messages) message("\nStep 7: Fit with anchor items, conservative threshold")
+  mirt_fit_anchors_conservative = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_conservative %>% names(), 'free_means', 'free_var'), method = method, technical = technical)
+
+  #get scores
+  if (messages) message("\nStep 8: Get scores")
+  orig_scores = do.call(what = mirt::fscores, args = c(list(object = mirt_fit), fscores_pars))
+  noDIF_scores_liberal = do.call(what = mirt::fscores, args = c(list(object = mirt_fit_noDIF_liberal), fscores_pars))
+  noDIF_scores_conservative = do.call(what = mirt::fscores, args = c(list(object = mirt_fit_noDIF_conservative), fscores_pars))
+  anchor_scores_liberal = do.call(what = mirt::fscores, args = c(list(object = mirt_fit_anchors_liberal), fscores_pars))
+  anchor_scores_conservative = do.call(what = mirt::fscores, args = c(list(object = mirt_fit_anchors_conservative), fscores_pars))
+
+  #in a data frame
+  scores = list(
+    #original scores
+    original = orig_scores,
+
+    #after DIF removal
+    noDIF_liberal = noDIF_scores_liberal,
+    noDIF_conservative = noDIF_scores_conservative,
+
+    #anchor scores
+    anchor_liberal = anchor_scores_liberal,
+    anchor_conservative = anchor_scores_conservative
+  )
+
+  #effect sizes
+  #this only works with 1 dimensional models
+  #https://groups.google.com/forum/#!topic/mirt-package/hAj7jfdzsxY
+  if (ncol(mirt_fit_loadings) == 1) {
+    #item level
+    effect_size_items = list(
+      liberal = empirical_ES(mirt_fit_anchors_liberal, DIF = T, plot = F),
+      conservative = empirical_ES(mirt_fit_anchors_conservative, DIF = T, plot = F)
+    )
+
+    #test level
+    effect_size_test = list(
+      liberal = empirical_ES(mirt_fit_anchors_liberal, DIF = F, plot = F),
+      conservative = empirical_ES(mirt_fit_anchors_conservative, DIF = F, plot = F)
+    )
+  } else {
+    #we fill in NULLS to keep structure
+    #item
+    effect_size_items = list(
+      liberal = NULL,
+      conservative = NULL
+    )
+
+    #test
+    effect_size_test = list(
+      liberal = NULL,
+      conservative = NULL
+    )
+  }
+
+  #out
+  list(
+    scores = scores,
+    fits = list(
+      original = mirt_fit,
+      noDIF_liberal = mirt_fit_noDIF_liberal,
+      noDIF_conservative = mirt_fit_noDIF_conservative,
+      anchor_liberal = mirt_fit_anchors_liberal,
+      anchor_conservative = mirt_fit_anchors_conservative
+    ),
+    DIF_stats = DIFs,
+    effect_size_items = effect_size_items,
+    effect_size_test = effect_size_test
+  )
+
+}
+
