@@ -1457,12 +1457,12 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
   #regular fit joint group
   if (messages) message("There are 8 steps")
   if (messages) message("Step 1: Initial joint fit\n")
-  mirt_fit = mirt(items, model = model, method = method, technical = technical)
+  mirt_fit = mirt(items, model = model, method = method, technical = technical, verbose = messages)
 
   #step 3
   if (!is.character(group) && !is.factor(group)) group = factor(group)
   if (messages) message("\nStep 2: Initial MI fit")
-  mirt_fit_MI = multipleGroup(items, model = model, group = group, invariance = c('intercepts','slopes', 'free_means', 'free_var'), method = method, technical = technical)
+  mirt_fit_MI = multipleGroup(items, model = model, group = group, invariance = c('intercepts','slopes', 'free_means', 'free_var'), method = method, technical = technical, verbose = messages)
 
   #DIFs
   if (messages) message("\nStep 3: Leave one out MI testing")
@@ -1470,7 +1470,8 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
              which.par = c('a1', 'd'),
              scheme = 'drop',
              method = method,
-             technical = technical
+             technical = technical,
+             verbose = messages
   )
   DIFs = DIFs %>% rownames_to_column("item")
   DIFs$number = 1:nrow(DIFs)
@@ -1503,15 +1504,15 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
 
   #fit together without DIF
   if (messages) message("\nStep 4: Fit without DIF items, liberal threshold")
-  mirt_fit_noDIF_liberal = mirt(items, model = mirt.model(model_noDIF_liberal_Q), method = method, technical = technical)
+  mirt_fit_noDIF_liberal = mirt(items, model = mirt.model(model_noDIF_liberal_Q), method = method, technical = technical, verbose = messages)
   if (messages) message("\nStep 5: Fit without DIF items, conservative threshold")
-  mirt_fit_noDIF_conservative = mirt(items, model = mirt.model(model_noDIF_conservative_Q), method = method, technical = technical)
+  mirt_fit_noDIF_conservative = mirt(items, model = mirt.model(model_noDIF_conservative_Q), method = method, technical = technical, verbose = messages)
 
   #with anchors
   if (messages) message("\nStep 6: Fit with anchor items, liberal threshold")
-  mirt_fit_anchors_liberal = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_liberal %>% names(), 'free_means', 'free_var'), method = method, technical = technical)
+  mirt_fit_anchors_liberal = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_liberal %>% names(), 'free_means', 'free_var'), method = method, technical = technical, verbose = messages)
   if (messages) message("\nStep 7: Fit with anchor items, conservative threshold")
-  mirt_fit_anchors_conservative = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_conservative %>% names(), 'free_means', 'free_var'), method = method, technical = technical)
+  mirt_fit_anchors_conservative = multipleGroup(items, model = model, group = group, invariance = c(items_noDIF_conservative %>% names(), 'free_means', 'free_var'), method = method, technical = technical, verbose = messages)
 
   #get scores
   if (messages) message("\nStep 8: Get scores")
