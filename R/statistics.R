@@ -147,6 +147,7 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #' `rank_order` can take either a logical scalar or a character scalar. If given TRUE, it will use rank ranking method with the default settings (average ranks). If given a chr scalar, it will use that ranking method. If given FALSE, will not use rank data (default).
 #'
 #' Confidence intervals are analytic confidence intervals based on the standard error.
+#'
 #' @param data (data.frame or coercible into data.frame) The data.
 #' @param weights (numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).
 #' @param reliabilities (num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.
@@ -154,10 +155,13 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #' @param CI_template (character scalar) A template to use for formatting the confidence intervals.
 #' @param skip_nonnumeric (logical scalar) Whether to skip non-numeric variables. Defaults to TRUE.
 #' @param CI_round (whole number scalar) If confidence intervals are used, how many digits should be shown?
-#' @param p_val (log scalar) If p values are desired, the alpha level to use.
+#' @param p_val (log scalar) Add p values or not.
 #' @param p_template (chr scalar) If p values are desired, the template to use.
 #' @param p_round (int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.
+#' @param asterisks The thresholds to use for p value asterisks
+#' @param asterisks_only Whether to only include astrisks not numerical values
 #' @param rank_order (lgl or chr) Whether to use rank ordered data so as to compute Spearman's correlations instead.
+#'
 #' @export
 #' @examples
 #' cor_matrix(iris) #just correlations

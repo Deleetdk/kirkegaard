@@ -35,13 +35,17 @@ cor_matrix(
 
 \item{CI_round}{(whole number scalar) If confidence intervals are used, how many digits should be shown?}
 
-\item{p_val}{(log scalar) If p values are desired, the alpha level to use.}
+\item{p_val}{(log scalar) Add p values or not.}
 
 \item{p_template}{(chr scalar) If p values are desired, the template to use.}
 
 \item{p_round}{(int scalar) Number of digits to round p values to. Uses scientific notation for small numbers.}
 
 \item{rank_order}{(lgl or chr) Whether to use rank ordered data so as to compute Spearman's correlations instead.}
+
+\item{asterisks}{The thresholds to use for p value asterisks}
+
+\item{asterisks_only}{Whether to only include astrisks not numerical values}
 }
 \description{
 Outputs a correlation matrix. Supports weights, confidence intervals, correcting for measurement error and rounding.
