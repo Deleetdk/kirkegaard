@@ -54,6 +54,10 @@ test_that("pu_translate", {
   #reverse
   expect_true(all(pu_translate(v_abbrevs, messages = 0, reverse = T) == v_abbrevs_reversed))
 
+  #italian subunits
+  expect_true(all(c("ITA-VEN", "ITA-VEN") == pu_translate(c("veneto", "VENeto"), superunit = "ITA", ad_level = 1, messages = 0)))
+  expect_true(all(c("ITA-VE", "ITA-VE") == pu_translate(c("veneziia", "venetia"), superunit = "ITA", ad_level = 2, messages = 0)))
+
   #standardize odd names by exact match
   expect_true(all(pu_translate(v_odd_names, messages = 0, standardize_name = T) == v_nonodd_names))
 

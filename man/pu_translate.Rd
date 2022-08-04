@@ -9,8 +9,8 @@ pu_translate(
   superunit = NULL,
   fuzzy = T,
   reverse = F,
+  ad_level = NULL,
   lang = "en",
-  superunit_recursive = F,
   messages = 1,
   stringdist_params = NULL,
   standardize_name = F,
@@ -26,9 +26,9 @@ pu_translate(
 
 \item{reverse}{(lgl scalr) Whether to translate from abbreviations to names.}
 
-\item{lang}{(chr scalr) If translating back to names, which language to use.}
+\item{ad_level}{The administrative level of the unit. 0 = countries, 1 = first level (e.g. US states), 2 = second level (e.g. US counties). By default searches any level, which may give bad results!}
 
-\item{superunit_recursive}{(lgl scalr) Whether to also include subunits of subunits.}
+\item{lang}{(chr scalr) If translating back to names, which language to use.}
 
 \item{messages}{(num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots.}
 

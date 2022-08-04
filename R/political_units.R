@@ -18,7 +18,7 @@
 #' @param fuzzy (lgl scalr) Whether to use fuzzy matching if no exact match exists.
 #' @param reverse (lgl scalr) Whether to translate from abbreviations to names.
 #' @param lang (chr scalr) If translating back to names, which language to use.
-#' @param superunit_recursive (lgl scalr) Whether to also include subunits of subunits.
+#' @param ad_level The administrative level of the unit. 0 = countries, 1 = first level (e.g. US states), 2 = second level (e.g. US counties). By default searches any level, which may give bad results!
 #' @param messages (num scalr) Whether to give helpful messages. 0 = none, 1 = some, 2 = lots.
 #' @param stringdist_params (list) If using fuzzy matching, a list of parameters to pass to stringdist function.
 #' @param standardize_name (lgl scalr) If true, will translate names to abbreviations, and then back to names. This converts the names to the standard version in the dataset.
@@ -43,8 +43,8 @@ pu_translate = function(x,
                         superunit = NULL,
                         fuzzy = T,
                         reverse = F,
+                        ad_level = NULL,
                         lang = "en",
-                        superunit_recursive = F,
                         messages = 1,
                         stringdist_params = NULL,
                         standardize_name = F,
@@ -59,7 +59,7 @@ pu_translate = function(x,
                               fuzzy = fuzzy,
                               reverse = reverse,
                               lang = lang,
-                              superunit_recursive = superunit_recursive,
+                              ad_level = ad_level,
                               messages = messages,
                               stringdist_params = stringdist_params,
                               standardize_name = standardize_name,
@@ -76,7 +76,7 @@ pu_translate_inner = function(x,
                               fuzzy = T,
                               reverse = F,
                               lang = "en",
-                              superunit_recursive = F,
+                              ad_level = NULL,
                               messages = 1,
                               stringdist_params = NULL,
                               standardize_name = F,
@@ -85,12 +85,10 @@ pu_translate_inner = function(x,
   x = as.character(x) #forces to right type from whatever input was
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
   is_(reverse, class = "logical", error_on_false = T, size = 1)
-  is_(superunit_recursive, class = "logical", error_on_false = T, size = 1)
   is_(messages, class = c("numeric", "logical"), error_on_false = T, size = 1)
   if (!is_between(messages, 0, 2)) stop(sprintf("messages was %f but must be 0>=x<=2. You probably made a mistake.", messages), call. = F)
   is_(standardize_name, class = "logical", error_on_false = T, size = 1)
   if (!is.null(stringdist_params)) is_(stringdist_params, class = "list", error_on_false = T)
-  if (superunit_recursive) stop("Not implemented yet. But the idea is that one can pass e.g. 'USA' and be able to match county names as well as states.")
 
   #NAs
   na_pos = which(is.na(x))
@@ -105,6 +103,18 @@ pu_translate_inner = function(x,
   data_file_location = system.file("extdata", "political_units.xlsx", package = "kirkegaard")
   units = readxl::read_xlsx(data_file_location, sheet = "Abbreviations", guess_max = 10000)
 
+  #skip empty rows (used for human readability)
+  units = units %>% filter(!is.na(Name))
+
+  #subset to desired level of administrative division
+  if (!is.null(ad_level)) {
+    #fill in 0's when empty because these are assumed to be country-level
+    units$AD_level[is.na(units$AD_level)] = 0
+
+    #subset
+    units = units %>% filter(AD_level %in% ad_level)
+  }
+
   #fill in ISOs
   units$Abbreviation = units$Abbreviation %>% miss_locf()
 
@@ -116,7 +126,7 @@ pu_translate_inner = function(x,
   if (!is.null(superunit)) {
 
     #fill in 'world'
-    units$Superunit %<>% plyr::mapvalues(from = NA, to = "world")
+    units$Superunit %<>% mapvalues(from = NA, to = "world", warn_missing = F)
 
     #get names of superunits
     name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
@@ -170,6 +180,7 @@ pu_translate_inner = function(x,
       if (sum(s == units$Name) == 1) {
         s_match = units$Abbreviation[which(s == units$Name)]
         if (messages > 1) message(sprintf("Exact match: %s -> %s", s, s_match))
+
         return(s_match)
       }
 
@@ -259,10 +270,13 @@ pu_translate_inner = function(x,
         str = str + str_c(d_dst_min$name, collapse = " | ")
         str = str + sprintf(". All with distance %.2f", min_dst)
         warning(str, call. = F)
+
+        #return NA
+        return(NA_character_)
       }
     }
 
-    #pick the first
+    #return best
     x_best = d_dst[1, "name"]
     if (messages > 0) {
       message(sprintf("Best fuzzy match found: %s -> %s with distance %.2f", s, x_best, d_dst[1, "dst"]))
