@@ -13,7 +13,7 @@ cor_matrix(
   skip_nonnumeric = T,
   CI_round = 2,
   p_val = F,
-  p_template = "\%r\%a [p=\%p]",
+  p_template = "\%r [\%p]",
   p_round = 3,
   rank_order = F,
   asterisks = c(0.01, 0.005, 0.001),

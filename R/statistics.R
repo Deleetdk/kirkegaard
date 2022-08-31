@@ -178,7 +178,7 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #' #complex weights
 #' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
 #' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
-cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r%a [p=%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
+cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r [%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
 
 
   #checks
