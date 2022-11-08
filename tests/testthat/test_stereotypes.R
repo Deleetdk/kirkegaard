@@ -80,7 +80,7 @@ test_that("score_by", {
 
   score_by(test_data, moderator = seq(0, 1, length.out = 4)) %>%
     expect_s3_class("data.frame") %>%
-    expect_known_hash(hash = "5a7e38ec23")
+    expect_known_hash(hash = "e1b905b995")
 
   score_by(test_data, moderator = seq(.2, .8, length.out = 4), extrapolate_to = c(0, 1)) %>%
     expect_s3_class("data.frame") %>%
@@ -93,7 +93,7 @@ test_that("score_by", {
 
   score_by(test_data, moderator = seq(0, 1, length.out = 4), long_format = T) %>%
     expect_s3_class("data.frame") %>%
-    expect_known_hash(hash = "113ffa9c1e")
+    expect_known_hash(hash = "7a4ec8580c")
 
   #missing data
   test_data_NA = tibble(

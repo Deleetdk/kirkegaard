@@ -207,8 +207,9 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   }
 
   #simple weights?
-  simpleweights = length(get_dims(weights)) == 1
+  simpleweights = !(is.matrix(weights) || is.data.frame(weights))
   if (simpleweights) {
+    weights = as.numeric(weights) #this prevents some weird data type errors!
     if (length(weights) != nrow(data)) stop("weights not the same length as the data!")
   }
 
@@ -1427,7 +1428,7 @@ prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("
       #loop levels
       map_df(levels(dd$x), function(this_level) {
         #suppress the continuity correction warnings
-        suppressWarnings(prop.test(sum(dd$x==this_level), n = nrow(dd), correct = correct, conf.level = conf_level, alternative = alternative) %>% broom::tidy())
+        suppressWarnings(prop.test(sum(dd$x==this_level), n = nrow(dd), correct = correct, conf.level = conf_level, alternative = alternative) %>% broom::tidy() %>% mutate(n = nrow(dd), n_level = sum(dd$x == this_level)))
       }) %>%
         mutate(level = levels(dd$x))
     }) %>%

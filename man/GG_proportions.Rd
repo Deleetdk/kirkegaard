@@ -14,7 +14,7 @@ GG_proportions(x, group, drop_empty = F)
 \item{drop_empty}{Drop empty combinations}
 }
 \value{
-
+A ggplot2 of proportions
 }
 \description{
 ggplot2 proportions plot

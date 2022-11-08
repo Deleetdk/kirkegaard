@@ -1253,7 +1253,7 @@ GG_matrix = function(x) {
 #' @param group Grouping variable
 #' @param drop_empty Drop empty combinations
 #'
-#' @return
+#' @return A ggplot2 of proportions
 #' @export
 #'
 #' @examples
@@ -1276,7 +1276,8 @@ GG_proportions = function(x, group, drop_empty = F) {
   prop_test_results %>%
     {
       #drop empty counts
-      if (drop_empty) prop_test_results %>% filter(estimate > 0)
+      if (drop_empty) . = filter(., n_level > 0)
+      .
     } %>%
     ggplot(aes(group, estimate, fill = level)) +
     geom_bar(position = "dodge", stat = "identity") +

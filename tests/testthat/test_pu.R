@@ -32,20 +32,6 @@ v_quiteright = c("USA", "Denmark", "Vietnam", "Belgium", "Bolivia")
 
 # tests -------------------------------------------------------------------
 
-stopifnot({
-  #test argentina results
-  pu_translate(v_argentinian_provinces, superunit = "ARG", messages = 0) == v_argentina_abbrev
-
-  #reverse
-  pu_translate(v_abbrevs, messages = 0, reverse = T) == v_abbrevs_reversed
-
-  #standardize odd names by exact match
-  pu_translate(v_odd_names, messages = 0, standardize_name = T) == v_nonodd_names
-
-  #fuzzy match
-  pu_translate(v_notquiteright, messages = 0) == c("USA", "DNK", "VNM", "BEL", "BOL")
-  pu_translate(v_notquiteright, messages = 0, standardize_name = T) == v_quiteright
-})
 
 test_that("pu_translate", {
   #test argentina results
