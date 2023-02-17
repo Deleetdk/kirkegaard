@@ -207,8 +207,8 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
 
   #plot
   if (is.null(group)) {
-    g = ggplot2::ggplot(df, aes_string(var)) +
-      geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
+    g = ggplot2::ggplot(df, aes(.data[[var]])) +
+      geom_histogram(aes(y = after_stat(density)),  # Histogram with density instead of count on y-axis
                      colour="black", fill="white",
                      binwidth = histogram_pars$binwidth,
                      bins = histogram_pars$bins,
@@ -219,8 +219,8 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
       geom_density(alpha = alpha, fill="#FF6666") # Overlay with transparent density plot
   } else {
 
-    g = ggplot2::ggplot(df, aes_string(var, fill = group)) +
-      geom_histogram(aes(y=..density..),  # Histogram with density instead of count on y-axis
+    g = ggplot2::ggplot(df, aes(.data[[var]], fill = .data[[group]])) +
+      geom_histogram(aes(y = after_stat(density)),  # Histogram with density instead of count on y-axis
                      colour="black", position = "dodge",
                      binwidth = histogram_pars$binwidth,
                      bins = histogram_pars$bins,
@@ -251,7 +251,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
       #add it
       g = g + geom_vline(xintercept = vline_func(df[[var]]),
                          color="red",
-                         linetype="dashed", size=1)
+                         linetype="dashed", linewidth = 1)
     }
 
     #groups
@@ -271,7 +271,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
       colors = gg_color_hue(length(unique(df[[group]])))
 
       #add it
-      g = g + geom_vline(xintercept = central_tendency, linetype = "dashed", size=1, color = colors)
+      g = g + geom_vline(xintercept = central_tendency, linetype = "dashed", linewidth = 1, color = colors)
     }
   }
 
@@ -576,31 +576,31 @@ GG_scatter = function(df,
   #4 options due to weights and coloring params
   if (is.null(color)) {
     if (is.null(weights)) {
-      g = ggplot2::ggplot(df, aes_string(x_var, y_var)) +
+      g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]])) +
         geom_point(alpha = alpha)
     } else {
       #weight as size?
       if (weight_as_size) {
-        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+        g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]], weight = .weights)) +
           geom_point(aes(size = .weights), alpha = alpha) +
           scale_size_continuous(guide = "none")
       } else {
-        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights")) +
+        g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]], weight = .weights)) +
           geom_point(alpha = alpha)
       }
 
     }
   } else {
     if (is.null(weights)) {
-      g = ggplot2::ggplot(df, aes_string(x_var, y_var, color = ".color")) +
+      g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]], color = .color)) +
         geom_point(alpha = alpha)
     } else {
       if (weight_as_size) {
-        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
+        g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]], weight = .weights, color = .color)) +
           geom_point(aes(size = .weights), alpha = alpha) +
           scale_size_continuous(guide = "none")
       } else {
-        g = ggplot2::ggplot(df, aes_string(x_var, y_var, weight = ".weights", color = ".color")) +
+        g = ggplot2::ggplot(df, aes(.data[[x_var]], .data[[y_var]], weight = .weights, color = .color)) +
           geom_point(alpha = alpha)
       }
 
@@ -621,7 +621,7 @@ GG_scatter = function(df,
     #note, remove color aes
     if (!repel_names) {
       #show.legend fix due to http://stackoverflow.com/questions/18337653/remove-a-from-legend-when-using-aesthetics-and-geom-text
-      g = g + geom_text(aes(label = .label), , color = case_names_color, size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
+      g = g + geom_text(aes(label = .label), color = case_names_color, size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
     } else {
       g = g + ggrepel::geom_text_repel(aes(label = .label), color = case_names_color, size = 3, show.legend = FALSE)
     }
@@ -811,7 +811,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     if (type == "points") {
       g = ggplot2::ggplot(df_sum) + #use summed as the default data, otherwise the code for adding newlines removes the labels
-        geom_point(data = df, aes_string(groupvar, var)) +
+        geom_point(data = df, aes(.data[[groupvar]], .data[[var]])) +
         geom_point(aes(group1, mean), color = "red", size = 3)
 
       if (draw_CI) g = g + g_eb2
@@ -819,7 +819,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     if (type == "violin") {
       g = ggplot2::ggplot(df_sum) +
-        geom_violin(data = df, aes_string(groupvar, var, fill = groupvar), alpha = .5) +
+        geom_violin(data = df, aes(.data[[groupvar]], .data[[var]], fill = .data[[groupvar]]), alpha = .5) +
         scale_fill_discrete(guide = "none") +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
 
@@ -829,8 +829,8 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     if (type == "violin2") {
       g = ggplot2::ggplot(df_sum) +
-        geom_violin(data = df, aes_string(groupvar, var, fill=groupvar), alpha = .5) +
-        geom_count(data = df, aes_string(groupvar, var)) +
+        geom_violin(data = df, aes(.data[[groupvar]], .data[[var]], fill = .data[[groupvar]]), alpha = .5) +
+        geom_count(data = df, aes(.data[[groupvar]], .data[[var]])) +
         scale_fill_discrete(guide = "none") +
         geom_point(data = df_sum, aes(group1, mean), color = "red", size = 3)
 
@@ -1071,7 +1071,7 @@ GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height
 #'
 #' @examples
 #' #plot histogram of each numeric variable in iris
-#' list_iris = map(names(iris[-5]), ~ggplot(iris, aes_string(.)) + geom_histogram())
+#' list_iris = map(names(iris[-5]), ~ggplot(iris, aes(.data[[.]])) + geom_histogram())
 #' #save to a single pdf
 #' GG_save_pdf(list_iris, "test.pdf")
 #' file.remove("test.pdf")

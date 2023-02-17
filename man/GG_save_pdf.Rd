@@ -19,7 +19,7 @@ Save list of ggplot2 objects to single pdf
 }
 \examples{
 #plot histogram of each numeric variable in iris
-list_iris = map(names(iris[-5]), ~ggplot(iris, aes_string(.)) + geom_histogram())
+list_iris = map(names(iris[-5]), ~ggplot(iris, aes(.data[[.]])) + geom_histogram())
 #save to a single pdf
 GG_save_pdf(list_iris, "test.pdf")
 file.remove("test.pdf")
