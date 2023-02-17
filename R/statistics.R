@@ -150,6 +150,7 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #'
 #' @param data (data.frame or coercible into data.frame) The data.
 #' @param weights (numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).
+#' @param by Grouping variable
 #' @param reliabilities (num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.
 #' @param CI (numeric scalar) The confidence level to use as a fraction.
 #' @param CI_template (character scalar) A template to use for formatting the confidence intervals.
@@ -161,6 +162,7 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #' @param asterisks The thresholds to use for p value asterisks
 #' @param asterisks_only Whether to only include astrisks not numerical values
 #' @param rank_order (lgl or chr) Whether to use rank ordered data so as to compute Spearman's correlations instead.
+
 #'
 #' @export
 #' @examples
@@ -176,9 +178,12 @@ cor_CI_from_SE = function(cor, se, ci = .95, winsorise = T) {
 #' cor_matrix(iris, weights = "Petal.Width") #weights from name
 #' cor_matrix(iris, weights = 1:150) #weights from vector
 #' #complex weights
-#' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
-#' cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
-cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r [%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
+#' cor_matrix(iris, weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
+#' cor_matrix(iris, weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
+#' #groups
+#' cor_matrix(iris, by = iris$Species)
+#' cor_matrix(iris, by = iris$Species, weights = 1:150)
+cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI = NULL, CI_template = "%r [%lower %upper]", skip_nonnumeric = T, CI_round = 2, p_val = F, p_template = "%r [%p]", p_round = 3, rank_order = F, asterisks = c(.01, .005, .001), asterisks_only = T) {
 
 
   #checks
@@ -190,6 +195,23 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   #CI and p vals
   if (!is.null(CI) && p_val) stop("Cannot both calculate CIs and p values!")
   v_noextras = is.null(CI) && !p_val
+
+  #grouping
+  if (!is.null(by)) {
+    assert_that(is.character(by) | is.factor(by) | is.logical(by))
+
+    #drop rows where group is NA but throw warning as this might be an error
+    if (anyNA(by)) {
+      warning(call. = F, "Grouping variable contains `NA` values, check your data")
+      data = data[!is.na(by), ]
+
+      #error if no data remaining
+      if (nrow(data) == 0) stop("Grouping variable contains only `NA` values!", call. = F)
+    }
+
+    #groups and their order
+    groups = levels(forcats::fct_drop(as.factor(by)))
+  }
 
   #reliabities
   if (is.null(reliabilities)) {
@@ -223,18 +245,39 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
 
   ##simple weights and no extras?
   if (simpleweights && v_noextras) {
-    #these just indicate near-1 correlations
-    m_res = suppressWarnings(weights::wtd.cor(data, weight = weights))
-    m = m_res$correlation
+    make_cor_mat_simple = function(group) {
+      #subset data if any group
+      if (!is.null(group)) {
+        data = data[NA_to_F(by == group), ]
+        weights = weights[NA_to_F(by == group)]
 
-    #correct for unreliability
-    m = psych::correct.cor(m, reliabilities)
+        #error if no data for group
+        if (nrow(data) == 0) stop(stringr::str_glue("No data for group {group}!"))
+      }
 
-    #winsor to -1 to 1
-    m = winsorise(m, lower = -1, upper = 1)
+      #these just indicate near-1 correlations
+      m_res = suppressWarnings(weights::wtd.cor(data, weight = weights))
+      m = m_res$correlation
 
-    #reliabilities in diagonal
-    diag(m) = reliabilities
+      #correct for unreliability
+      m = psych::correct.cor(m, reliabilities)
+
+      #winsor to -1 to 1
+      m = winsorise(m, lower = -1, upper = 1)
+
+      #reliabilities in diagonal
+      diag(m) = reliabilities
+
+      return(m)
+    }
+
+    #groups or not?
+    if (!is.null(by)) {
+      m = purrr::map(groups, make_cor_mat_simple)
+      names(m) = groups
+    } else {
+      m = make_cor_mat_simple(group = NULL)
+    }
 
     return(m)
   }
@@ -252,108 +295,47 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
   }
 
 
+  #inner function
+  #use a function so it can loop across groups if needed
+  make_cor_mat = function(group = NULL) {
+    #subset data if any group
+    if (!is.null(group)) {
+      data = data[NA_to_F(by == group), ]
+      weights = weights[NA_to_F(by == group), ]
 
+      #error if no data for group
+      if (nrow(data) == 0) stop(stringr::str_glue("No data for group {group}!"))
+    }
 
-  #make matrix
-  m = matrix(ncol = ncol(data), nrow = ncol(data))
+    #make matrix
+    m = matrix(ncol = ncol(data), nrow = ncol(data))
 
+    #fill in results
+    for (row in 1:nrow(m)) {
+      for (col in 1:ncol(m)) {
+        #next if diagonal or above
+        if (col >= row) next
 
-  #fill in results
-  for (row in 1:nrow(m)) {
-    for (col in 1:ncol(m)) {
-      #next if diagonal or above
-      if (col >= row) next
-
-      #simple weights & CI
-      if (simpleweights && !is.null(CI)) {
-        #weighted cor
-        #these just indicate near-1 correlations
-        r_obj = suppressWarnings(weights::wtd.cor(data[, c(row, col)], weight = weights))
-
-        #correct for unreliability
-        r_obj$correlation %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
-
-        #winsorize
-        r_obj$correlation %<>% winsorise(1, -1)
-
-        #sample size
-        r_n = psych::pairwiseCount(data[row], data[col])
-
-        #format cor
-        r_r = r_obj$correlation[1, 2] %>% str_round(digits = CI_round)
-
-        #confidence interval
-        r_CI = cor_CI_from_SE(r_obj$correlation[1, 2], se = r_obj$std.err[1, 2], ci = CI)
-
-        #rounding
-        r_CI %<>% str_round(digits = CI_round)
-
-        #format and save
-        m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
-          str_replace("%lower", r_CI[1]) %>%
-          str_replace("%upper", r_CI[2])
-      }
-
-      #simple weights & p_val
-      if (simpleweights && p_val) {
-
-        #observed r
-        r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
-
-        #correct for unreliability
-        r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
-
-        #winsorize
-        r_obj[1] %<>% winsorise(1, -1)
-
-        #sample size
-        r_n = psych::pairwiseCount(data[row], data[col])
-
-        #rounding
-        r_r = r_obj[1] %>% str_round(digits = CI_round)
-
-        #finalize with p value
-        if (asterisks_only) {
-          m[row, col] = r_r + p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = T)
-        } else {
-
-          m[row, col] = p_template %>%
-            str_replace("%r", r_r) %>%
-            str_replace("%p", p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = F))
-        }
-      }
-
-      #complex weights
-      if (!simpleweights) {
-        #for each case, compute the harmonic mean weight
-        v_weights = weights[, c(row, col)] %>%
-          t() %>%
-          psych::harmonic.mean()
-
-        #if plain correlation output, compute and be done
-        if (v_noextras) {
-          m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
-        }
-
-        #if CI wanted
-        if (!is.null(CI)) {
-          #observed r
-          r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
+        #simple weights & CI
+        if (simpleweights && !is.null(CI)) {
+          #weighted cor
+          #these just indicate near-1 correlations
+          r_obj = suppressWarnings(weights::wtd.cor(data[, c(row, col)], weight = weights))
 
           #correct for unreliability
-          r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+          r_obj$correlation %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
 
           #winsorize
-          r_obj[1] %<>% winsorise(1, -1)
+          r_obj$correlation %<>% winsorise(1, -1)
 
           #sample size
           r_n = psych::pairwiseCount(data[row], data[col])
 
-          #format r
-          r_r = r_obj[1] %>% str_round(digits = CI_round)
+          #format cor
+          r_r = r_obj$correlation[1, 2] %>% str_round(digits = CI_round)
 
           #confidence interval
-          r_CI = cor_CI_from_SE(r_obj[1], se = r_obj[2], ci = CI)
+          r_CI = cor_CI_from_SE(r_obj$correlation[1, 2], se = r_obj$std.err[1, 2], ci = CI)
 
           #rounding
           r_CI %<>% str_round(digits = CI_round)
@@ -364,10 +346,11 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
             str_replace("%upper", r_CI[2])
         }
 
-        #if p value wanted
-        if (p_val) {
+        #simple weights & p_val
+        if (simpleweights && p_val) {
+
           #observed r
-          r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
+          r_obj = weights::wtd.cor(data[row], data[col], weight = weights)
 
           #correct for unreliability
           r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
@@ -375,10 +358,10 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           #winsorize
           r_obj[1] %<>% winsorise(1, -1)
 
-          #n
+          #sample size
           r_n = psych::pairwiseCount(data[row], data[col])
 
-          #format r
+          #rounding
           r_r = r_obj[1] %>% str_round(digits = CI_round)
 
           #finalize with p value
@@ -392,18 +375,98 @@ cor_matrix = function(data, weights = NULL, reliabilities = NULL, CI = NULL, CI_
           }
         }
 
+        #complex weights
+        if (!simpleweights) {
+          #for each case, compute the harmonic mean weight
+          v_weights = weights[, c(row, col)] %>%
+            t() %>%
+            psych::harmonic.mean()
+
+          #if plain correlation output, compute and be done
+          if (v_noextras) {
+            m[row, col] = weights::wtd.cors(data[row], data[col], weight = v_weights) / sqrt(reliabilities[row] * reliabilities[col])
+          }
+
+          #if CI wanted
+          if (!is.null(CI)) {
+            #observed r
+            r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
+
+            #correct for unreliability
+            r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+            #winsorize
+            r_obj[1] %<>% winsorise(1, -1)
+
+            #sample size
+            r_n = psych::pairwiseCount(data[row], data[col])
+
+            #format r
+            r_r = r_obj[1] %>% str_round(digits = CI_round)
+
+            #confidence interval
+            r_CI = cor_CI_from_SE(r_obj[1], se = r_obj[2], ci = CI)
+
+            #rounding
+            r_CI %<>% str_round(digits = CI_round)
+
+            #format and save
+            m[row, col] = stringr::str_replace(CI_template, "%r", r_r) %>%
+              str_replace("%lower", r_CI[1]) %>%
+              str_replace("%upper", r_CI[2])
+          }
+
+          #if p value wanted
+          if (p_val) {
+            #observed r
+            r_obj = weights::wtd.cor(data[row], data[col], weight = v_weights)
+
+            #correct for unreliability
+            r_obj[1] %<>% {. / sqrt(reliabilities[col] * reliabilities[row])}
+
+            #winsorize
+            r_obj[1] %<>% winsorise(1, -1)
+
+            #n
+            r_n = psych::pairwiseCount(data[row], data[col])
+
+            #format r
+            r_r = r_obj[1] %>% str_round(digits = CI_round)
+
+            #finalize with p value
+            if (asterisks_only) {
+              m[row, col] = r_r + p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = T)
+            } else {
+
+              m[row, col] = p_template %>%
+                str_replace("%r", r_r) %>%
+                str_replace("%p", p_to_asterisk(r_obj[, "p.value"], asterisks = asterisks, asterisks_only = F))
+            }
+          }
+
+        }
       }
     }
+
+    #make symmetric
+    m = MAT_half(m) %>% MAT_vector2full()
+
+    #dimnames
+    rownames(m) = colnames(m) = colnames(data)
+
+    #diag
+    diag(m) = reliabilities
+
+    m
   }
 
-  #make symmetric
-  m = MAT_half(m) %>% MAT_vector2full()
-
-  #dimnames
-  rownames(m) = colnames(m) = colnames(data)
-
-  #diag
-  diag(m) = reliabilities
+  #groups or not?
+  if (!is.null(by)) {
+    m = purrr::map(groups, make_cor_mat)
+    names(m) = groups
+  } else {
+    m = make_cor_mat(group = NULL)
+  }
 
   m
 }

@@ -7,6 +7,7 @@
 cor_matrix(
   data,
   weights = NULL,
+  by = NULL,
   reliabilities = NULL,
   CI = NULL,
   CI_template = "\%r [\%lower \%upper]",
@@ -24,6 +25,8 @@ cor_matrix(
 \item{data}{(data.frame or coercible into data.frame) The data.}
 
 \item{weights}{(numeric vector, numeric matrix/data.frame or character scalar) Weights to use for the correlations. Can be a numeric vector with weights, the name of a variable in data, or a matrix/data.frame with weights for each variable. If the latter, then harmonic means are used. If none given, defaults to rep(1, nrow(data)).}
+
+\item{by}{Grouping variable}
 
 \item{reliabilities}{(num vector) Reliabities used to correct for measurement error. If not present, assumed to be 1.}
 
@@ -72,6 +75,9 @@ cor_matrix(iris, rank_order = "first") #rank order correlations, specific method
 cor_matrix(iris, weights = "Petal.Width") #weights from name
 cor_matrix(iris, weights = 1:150) #weights from vector
 #complex weights
-cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
-cor_matrix(iris[-5], weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
+cor_matrix(iris, weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)))
+cor_matrix(iris, weights = matrix(runif(nrow(iris) * 4), nrow = nrow(iris)), CI = .95)
+#groups
+cor_matrix(iris, by = iris$Species)
+cor_matrix(iris, by = iris$Species, weights = 1:150)
 }
