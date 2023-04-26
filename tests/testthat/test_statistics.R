@@ -102,6 +102,7 @@ test_that("SMD_matrix", {
     SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "pair"),
     SMD_matrix(iris$Sepal.Length, iris$Species, dispersion_method = "total"),
     SMD_matrix(iris$Sepal.Length, iris$Species, central_tendency = mean, trim = .05),
+    SMD_matrix(iris$Sepal.Length, iris$Species, reliability = 0.9),
 
     #with missing data
     SMD_matrix(iris_miss$Sepal.Length, iris_miss$Species)
