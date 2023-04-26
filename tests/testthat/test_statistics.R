@@ -288,3 +288,64 @@ test_that("prop_tests", {
     {expect_equal(dim(.), c(60, 12))}
 })
 
+
+# DIF_test ----------------------------------------------------------------
+#https://rpubs.com/EmilOWK/IRT_DIF_examples
+
+
+test_that("DIF_test", {
+  n = 1000
+  n_items = 10
+
+  #slopes
+  set.seed(1)
+  a1 = runif(n_items, min = .5, max = 2)
+  a2 = a1
+
+  a2[1] = 0 #item doesnt work for this group
+
+  #intercepts
+  i1 = rnorm(n_items, mean = -0.5, sd = 2)
+  i2 = i1
+
+  i2[2] = 1 #item much harder for this group
+
+  #simulate data twice
+  d1 = mirt::simdata(
+    a1,
+    i1,
+    N = n,
+    itemtype = "2PL",
+    mu = 0
+  )
+
+  d2 = mirt::simdata(
+    a2,
+    i2,
+    N = n,
+    itemtype = "2PL",
+    mu = 1
+  )
+
+  #combine
+  d = bind_rows(
+    d1 %>% as.data.frame(),
+    d2 %>% as.data.frame()
+  )
+
+  #find the DIF
+  suppressMessages({
+    DIF_fit = DIF_test(
+      d,
+      model = 1,
+      group = rep(c("A", "B"), each = nrow(d1)),
+      verbose = F
+    )
+  })
+
+  #find the two bad items
+  #test we find the 2 positives, and all the others are negative
+  expect_true(DIF_fit$DIF_stats$p_adj[1] < .001)
+  expect_true(DIF_fit$DIF_stats$p_adj[2] < .001)
+  expect_true(all(DIF_fit$DIF_stats$p_adj[3:10] > .001))
+})

@@ -11,7 +11,10 @@ DIF_test(
   fscores_pars = list(full.scores = T, full.scores.SE = T),
   messages = T,
   method = "EM",
-  technical = list()
+  technical = list(),
+  itemtype = NULL,
+  verbose = T,
+  ...
 )
 }
 \arguments{
@@ -28,6 +31,8 @@ DIF_test(
 \item{method}{Method}
 
 \item{technical}{Further technical args to pass to mirt}
+
+\item{...}{Other arguments passed to mirt functions}
 }
 \value{
 A list of results
