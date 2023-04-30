@@ -2,16 +2,9 @@
 % Please edit documentation in R/plotting.R
 \name{save_plot_to_file}
 \alias{save_plot_to_file}
-\title{Save a non-ggplot2 plot to a file}
+\title{Save a non-ggplot2 plot to a png file}
 \usage{
-save_plot_to_file(
-  code,
-  filename,
-  width = 1000,
-  height = 750,
-  graphical_device = png,
-  ...
-)
+save_plot_to_file(code, filename, width = 1000, height = 750)
 }
 \arguments{
 \item{code}{A code chunk that produces a plot}
@@ -21,14 +14,12 @@ save_plot_to_file(
 \item{width}{Width of image}
 
 \item{height}{Height of image}
-
-\item{graphical_device}{the graphical device function to use}
 }
 \value{
 The output of the code chunk if any, invisibly
 }
 \description{
-Save a non-ggplot2 plot to a file
+Save a non-ggplot2 plot to a png file
 }
 \examples{
 plot(1:3)

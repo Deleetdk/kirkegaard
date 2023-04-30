@@ -1293,14 +1293,12 @@ GG_proportions = function(x, group, drop_empty = F) {
 }
 
 
-#' Save a non-ggplot2 plot to a file
+#' Save a non-ggplot2 plot to a png file
 #'
 #' @param code A code chunk that produces a plot
 #' @param filename The desired filename
 #' @param width Width of image
 #' @param height Height of image
-#' @param graphical_device the graphical device function to use
-#' @parem ... Other arguments to png() or other function
 #'
 #' @return The output of the code chunk if any, invisibly
 #' @export
@@ -1309,12 +1307,13 @@ GG_proportions = function(x, group, drop_empty = F) {
 #' plot(1:3)
 #' save_plot_to_file(plot(1:3), filename = "test.png")
 #' file.remove("test.png")
-save_plot_to_file <- function(code, filename, width = 1000, height = 750, graphical_device = png, ...) {
+save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
   #stop graphics device on exit of function
   on.exit(dev.off())
 
   #call png()
-  rlang::exec(graphical_device, filename = filename, width=width, height=height, !!!list(...))
+  # rlang::exec(graphical_device, filename = filename, width=width, height=height, !!!list(...))
+  png(filename = filename, height = height, width = width)
 
   #make plot
   p <- eval(substitute(code))

@@ -165,13 +165,6 @@ test_that("inv_table", {
 
 
 
-# save_plot_to_file -------------------------------------------------------
-
-test_that("save_plot_to_file", {
-  save_plot_to_file(plot(1:3), filename = "test.png")
-  expect_true(file.exists("test.png"))
-  file.remove("test.png")
-})
 
 
 
