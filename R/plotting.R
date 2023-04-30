@@ -1299,19 +1299,29 @@ GG_proportions = function(x, group, drop_empty = F) {
 #' @param filename The desired filename
 #' @param width Width of image
 #' @param height Height of image
-#' @parem ... Other arguments to png()
+#' @param graphical_device the graphical device function to use
+#' @parem ... Other arguments to png() or other function
 #'
-#' @return Nothing
+#' @return The output of the code chunk if any, invisibly
 #' @export
 #'
 #' @examples
 #' plot(1:3)
 #' save_plot_to_file(plot(1:3), filename = "test.png")
 #' file.remove("test.png")
-save_plot_to_file <- function(code, filename, width=1000, height=750, ...) {
+save_plot_to_file <- function(code, filename, width = 1000, height = 750, graphical_device = png, ...) {
+  #stop graphics device on exit of function
   on.exit(dev.off())
-  rlang::exec(png, width=width, height=height, !!!list(...))
+
+  #call png()
+  rlang::exec(graphical_device, filename = filename, width=width, height=height, !!!list(...))
+
+  #make plot
   p <- eval(substitute(code))
+
+  #print plot (sometimes needed)
   if (!is.null(p)) print(p)
+
+  invisible(p)
 }
 

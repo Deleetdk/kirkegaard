@@ -4,7 +4,14 @@
 \alias{save_plot_to_file}
 \title{Save a non-ggplot2 plot to a file}
 \usage{
-save_plot_to_file(code, filename, width = 1000, height = 750, ...)
+save_plot_to_file(
+  code,
+  filename,
+  width = 1000,
+  height = 750,
+  graphical_device = png,
+  ...
+)
 }
 \arguments{
 \item{code}{A code chunk that produces a plot}
@@ -14,9 +21,11 @@ save_plot_to_file(code, filename, width = 1000, height = 750, ...)
 \item{width}{Width of image}
 
 \item{height}{Height of image}
+
+\item{graphical_device}{the graphical device function to use}
 }
 \value{
-Nothing
+The output of the code chunk if any, invisibly
 }
 \description{
 Save a non-ggplot2 plot to a file
