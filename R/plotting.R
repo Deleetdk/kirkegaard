@@ -1293,3 +1293,25 @@ GG_proportions = function(x, group, drop_empty = F) {
 }
 
 
+#' Save a non-ggplot2 plot to a file
+#'
+#' @param code A code chunk that produces a plot
+#' @param filename The desired filename
+#' @param width Width of image
+#' @param height Height of image
+#' @parem ... Other arguments to png()
+#'
+#' @return Nothing
+#' @export
+#'
+#' @examples
+#' plot(1:3)
+#' save_plot_to_file(plot(1:3), filename = "test.png")
+#' file.remove("test.png")
+save_plot_to_file <- function(code, filename, width=1000, height=750, ...) {
+  on.exit(dev.off())
+  rlang::exec(png, width=width, height=height, !!!list(...))
+  p <- eval(substitute(code))
+  if (!is.null(p)) print(p)
+}
+

@@ -826,3 +826,40 @@ inv_table = function(x) {
   y
 }
 
+
+
+#' Calculate overlap metrics
+#'
+#' @param x A vector
+#' @param y A vector
+#'
+#' @return A named vector of metrics of overlap
+#' @export
+#'
+#' @examples
+#' overlap_metrics(
+#' c(1:3),
+#' c(3:6)
+#' )
+overlap_metrics = function(x, y) {
+  #compute
+  xy_intersect = intersect(x, y)
+  xy_union = union(x, y)
+  x_in_y = x[x %in% y]
+  y_in_x = y[y %in% x]
+
+  #summarize
+  c(
+    x_count = length(x),
+    y_count = length(y),
+    xy_union_count = length(xy_union),
+    xy_intersection_count = length(xy_intersect),
+    prop_overlap_of_union = length(xy_intersect) / length(xy_union),
+    x_in_y_count = length(x_in_y),
+    x_in_y_prop = length(x_in_y) / length(x),
+    y_in_x_count = length(y_in_x),
+    y_in_x_prop = length(y_in_x) / length(y)
+  )
+}
+
+
