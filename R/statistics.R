@@ -1659,3 +1659,39 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
 
 }
 
+#convert from slope to loading
+#' Convert from factor loading to discrimination
+#'
+#' @param x Vector of factor loadings
+#' @param logit_scaling Whether to use logit scaling
+#'
+#' @return A vector of slopes (discrimination)
+#' @export
+slope_to_loading = function(x, logit_scaling = T) {
+  if (logit_scaling) {
+    scaling_factor = 3
+  } else {
+    scaling_factor = 1
+  }
+
+  sqrt(x^2 / (x^2 + scaling_factor))
+}
+
+
+#' Convert from slopes to factor loadings
+#'
+#' @param x A vector of slopes
+#' @param logit_scaling Whether to use logit scaling
+#'
+#' @return A vector of loadings
+#' @export
+loading_to_slope = function(x, logit_scaling = T) {
+  if (logit_scaling) {
+    scaling_factor = 3
+  } else {
+    scaling_factor = 1
+  }
+
+  sqrt((scaling_factor*x^2) / (1 - x^2))
+}
+
