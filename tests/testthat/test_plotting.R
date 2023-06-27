@@ -1,6 +1,6 @@
 ### tests for df_ functions
 
-context("GG_")
+context("plotting")
 
 
 

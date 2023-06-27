@@ -1316,7 +1316,7 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
   png(filename = filename, height = height, width = width)
 
   #make plot
-  p <- eval(substitute(code))
+  p <- eval.parent(substitute(code))
 
   #print plot (sometimes needed)
   if (!is.null(p)) print(p)
