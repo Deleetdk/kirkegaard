@@ -14,6 +14,7 @@ DIF_test(
   technical = list(),
   itemtype = NULL,
   verbose = T,
+  multiple_testing_method = "bonferroni",
   ...
 )
 }
@@ -31,6 +32,8 @@ DIF_test(
 \item{method}{Method}
 
 \item{technical}{Further technical args to pass to mirt}
+
+\item{multiple_testing_method}{Which method to use for correction for multiple testing. Default is bonferroni. Calls \code{stats::p.adjust()}.}
 
 \item{...}{Other arguments passed to mirt functions}
 }

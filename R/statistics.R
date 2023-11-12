@@ -1519,11 +1519,17 @@ prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("
 #' @param method Method
 #' @param technical Further technical args to pass to mirt
 #' @param ... Other arguments passed to mirt functions
+#' @param itemtype
+#' @param verbose
+#' @param multiple_testing_method Which method to use for correction for multiple testing. Default is bonferroni. Calls `stats::p.adjust()`.
 #'
 #' @return A list of results
 #' @export
-DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, full.scores.SE = T), messages = T, method = "EM", technical = list(), itemtype = NULL, verbose = T, ...) {
+DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, full.scores.SE = T), messages = T, method = "EM", technical = list(), itemtype = NULL, verbose = T, multiple_testing_method = "bonferroni", ...) {
   # browser()
+  #check input
+  assert_that(nrow(items) == length(group))
+
   #make mirt args
   mirt_args = c(list(data = items, model = model, technical = technical, verbose = verbose, method = method, itemtype = itemtype), list(...))
   mirt_args_set2 = mirt_args[!names(mirt_args) %in% c("model", "itemtype")]
@@ -1549,7 +1555,7 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
   DIFs$number = 1:nrow(DIFs)
 
   #adjust p values
-  DIFs$p_adj = DIFs$p * nrow(DIFs)
+  DIFs$p_adj = p.adjust(DIFs$p, method = multiple_testing_method)
 
   #with significant DIF
   DIFs_detected_liberal = DIFs %>% filter(p < .05)
