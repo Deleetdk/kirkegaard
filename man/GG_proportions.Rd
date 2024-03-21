@@ -4,7 +4,15 @@
 \alias{GG_proportions}
 \title{ggplot2 proportions plot}
 \usage{
-GG_proportions(x, group, drop_empty = F)
+GG_proportions(
+  x,
+  group,
+  drop_empty = F,
+  stacked = F,
+  add_values = F,
+  repel = F,
+  seed = 1
+)
 }
 \arguments{
 \item{x}{A factor variable}
@@ -12,6 +20,14 @@ GG_proportions(x, group, drop_empty = F)
 \item{group}{Grouping variable}
 
 \item{drop_empty}{Drop empty combinations}
+
+\item{stacked}{Stacked bar}
+
+\item{add_values}{Add values to the plot}
+
+\item{repel}{Repel the text labels in case of problematic overplotting}
+
+\item{seed}{Seed for the repel algorithm}
 }
 \value{
 A ggplot2 of proportions
@@ -25,4 +41,10 @@ GG_proportions(mpg$year, mpg$cyl)
 
 #remove the 0\%'s
 GG_proportions(mpg$year, mpg$cyl, drop_empty = T)
+#stacked
+GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T)
+#with values
+GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T, add_values = T)
+#with text repel, but it doesn't work so well
+GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T, add_values = T, repel = T)
 }

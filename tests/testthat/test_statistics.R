@@ -338,6 +338,7 @@ test_that("DIF_test", {
     DIF_fit = DIF_test(
       d,
       model = 1,
+      itemtype = "2PL",
       group = rep(c("A", "B"), each = nrow(d1)),
       verbose = F
     )

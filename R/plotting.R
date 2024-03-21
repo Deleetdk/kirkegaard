@@ -1111,15 +1111,15 @@ GG_save_pdf = function(list, filename) {
 #'
 #' @examples
 #' #data input
-#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap()
-#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
-#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
-#' mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap()
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
 #' #Automatic cleaning of the axis labels, can be turned off
-#' iris[, -5] %>% GG_heatmap()
-#' iris[, -5] %>% GG_heatmap(axis_labels_clean_func = NULL)
+#' iris[-5] %>% GG_heatmap()
+#' iris[-5] %>% GG_heatmap(axis_labels_clean_func = NULL)
 #' #cor matrix input
-#' mtcars[, c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
+#' mtcars[c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
 #' #custom values input
 #' MAT_vector2full(c(.5, .3, .2), diag_value = 1) %>%
 #' set_colnames(letters[1:3]) %>%
@@ -1252,6 +1252,10 @@ GG_matrix = function(x) {
 #' @param x A factor variable
 #' @param group Grouping variable
 #' @param drop_empty Drop empty combinations
+#' @param stacked Stacked bar
+#' @param add_values Add values to the plot
+#' @param repel Repel the text labels in case of problematic overplotting
+#' @param seed Seed for the repel algorithm
 #'
 #' @return A ggplot2 of proportions
 #' @export
@@ -1262,29 +1266,77 @@ GG_matrix = function(x) {
 #'
 #' #remove the 0%'s
 #' GG_proportions(mpg$year, mpg$cyl, drop_empty = T)
-GG_proportions = function(x, group, drop_empty = F) {
+#' #stacked
+#' GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T)
+#' #with values
+#' GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T, add_values = T)
+#' #with text repel, but it doesn't work so well
+#' GG_proportions(mpg$year, mpg$cyl, drop_empty = T, stacked = T, add_values = T, repel = T)
+GG_proportions = function(x, group, drop_empty = F, stacked = F, add_values = F, repel = F, seed = 1) {
 
   #assert data type
   x = as.factor(x)
   group = as.factor(group)
 
+  #not both add_values and non-stacked
+  if (add_values & !stacked) stop("Cannot have both `add_values = T` and `stacked = F`")
+
   #get the proportion tests
   prop_tests(x, group) ->
     prop_test_results
 
+  #filter 0%'s
+  if (drop_empty) {
+    prop_test_results = prop_test_results %>% filter(n_level > 0)
+  }
+
+  # Calculate cumulative percentages and label positions
+  # browser()
+  prop_test_results = prop_test_results %>%
+    arrange(
+      desc(group), desc(level)
+    ) %>%
+    plyr::ddply(c("group"), function(dd) {
+      dd$label = scales::percent(dd$estimate)
+      dd$label_position = cumsum(dd$estimate) - (dd$estimate / 2)
+      dd
+    }
+    )
+
   #plot them
-  prop_test_results %>%
-    {
-      #drop empty counts
-      if (drop_empty) . = filter(., n_level > 0)
-      .
-    } %>%
-    ggplot(aes(group, estimate, fill = level)) +
-    geom_bar(position = "dodge", stat = "identity") +
-    geom_errorbar(aes(ymax = conf.high, ymin = conf.low), position = "dodge", alpha = .3) +
-    theme_bw() +
-    scale_y_continuous(NULL, labels = scales::percent) ->
-    gg
+  if (!stacked) {
+    prop_test_results %>%
+      ggplot(aes(group, estimate, fill = level)) +
+      geom_bar(position = "dodge", stat = "identity") +
+      geom_errorbar(aes(ymax = conf.high, ymin = conf.low), position = "dodge", alpha = .3) +
+      theme_bw() +
+      scale_y_continuous(NULL, labels = scales::percent) ->
+      gg
+  } else {
+    #do stacked proportions plot
+
+    prop_test_results %>%
+      ggplot(aes(group, estimate, fill = level)) +
+      geom_bar(position = "stack", stat = "identity") +
+      theme_bw() +
+      scale_y_continuous(NULL, labels = scales::percent) ->
+      gg
+  }
+
+  #if add values
+  if (add_values) {
+    if (!repel) {
+      gg = gg + geom_text(aes(label = label, y = label_position), vjust = 0)
+    } else {
+      gg = gg + ggrepel::geom_text_repel(aes(label = label, y = label_position),
+                                         vjust = 0,
+                                         direction = "x",
+                                         box.padding = 0,
+                                         point.padding = 0,
+                                         seed = seed)
+    }
+
+  }
 
   #attach results in case people want to reuse
   attr(gg, "prop_tests") = prop_test_results
@@ -1323,4 +1375,6 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
 
   invisible(p)
 }
+
+
 

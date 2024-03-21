@@ -14,6 +14,7 @@ DIF_test(
   technical = list(),
   itemtype = NULL,
   verbose = T,
+  DIF_args = NULL,
   multiple_testing_method = "bonferroni",
   ...
 )
@@ -33,7 +34,13 @@ DIF_test(
 
 \item{technical}{Further technical args to pass to mirt}
 
-\item{multiple_testing_method}{Which method to use for correction for multiple testing. Default is bonferroni. Calls \code{stats::p.adjust()}.}
+\item{itemtype}{Item type}
+
+\item{verbose}{Verbose output}
+
+\item{DIF_args}{Arguments to pass to mirt::DIF}
+
+\item{multiple_testing_method}{Method to use for multiple testing correction, see p.adjust(). Default is "bonferroni"}
 
 \item{...}{Other arguments passed to mirt functions}
 }
@@ -42,4 +49,48 @@ A list of results
 }
 \description{
 Tests are done following the mirt package approach outlined by Chalmers.
+}
+\examples{
+library(mirt)
+n = 1000
+n_items = 10
+
+#slopes
+set.seed(1)
+a1 = runif(n_items, min = .5, max = 2)
+a2 = a1
+a2[1] = 0 #item doesnt work for this group
+#intercepts
+i1 = rnorm(n_items, mean = -0.5, sd = 2)
+i2 = i1
+i2[2] = -2 #item much harder for this group
+
+#simulate data twice
+d1 = simdata(
+a1,
+i1,
+N = n,
+itemtype = "2PL",
+mu = 0
+)
+
+d2 = simdata(
+a2,
+i2,
+N = n,
+  itemtype = "2PL",
+  mu = 1
+)
+
+#combine
+d = rbind(
+  d1 \%>\% set_names("item_" + 1:n_items),
+  d2 \%>\% set_names("item_" + 1:n_items)
+) \%>\% as.data.frame()
+
+#find the bias
+DIF_results = DIF_test(d, model = 1, itemtype = "2PL", group = rep(c(1, 2), each = n))
+DIF_results$effect_size_items$conservative
+plot(DIF_results$fits$anchor_conservative)
+plot(DIF_results$fits$anchor_conservative, type = "trace")
 }
