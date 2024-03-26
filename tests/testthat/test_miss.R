@@ -29,19 +29,29 @@ test_that("miss_count", {
 test_that("miss_filter", {
   set.seed(1)
   df = tibble(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
-  df = miss_add_random(df, prop = .33)
+  df = miss_add_random(df, prop = .25) %>% mutate(nomiss = T, allmiss = NA)
   df
 
   #no missing allow
-  expect_equivalent(miss_filter(df) %>% nrow(), 2)
+  expect_equivalent(miss_filter(df) %>% nrow(), 0)
   #allow 1 missing
-  expect_equivalent(miss_filter(df, missing = 1) %>% nrow(), 6)
-  #allow half missing
-  expect_equivalent(miss_filter(df, missing = .5) %>% nrow(), 8)
-  #reverse count
-  expect_equivalent(miss_filter(df, missing = 3, reverse = T) %>% nrow(), 6)
+  expect_equivalent(miss_filter(df, missing = 1) %>% nrow(), 3)
+  #allow 40% missing
+  expect_equivalent(miss_filter(df, missing = .4) %>% nrow(), 7)
+  #reverse count, at least 3 non-missing values
+  expect_equivalent(miss_filter(df, missing = 3, reverse = T) %>% nrow(), 3)
   #reverse fraction
-  expect_equivalent(miss_filter(df, missing = .5, reverse = T) %>% nrow(), 8)
+  expect_equivalent(miss_filter(df, missing = .6, reverse = T) %>% nrow(), 7)
+  #only count specific variables
+  expect_equivalent(miss_filter(df, missing = 0, vars = c("ints", "letters")) %>% nrow(), 5)
+  #subset variables instead
+  expect_equivalent(miss_filter(df, missing = 0, by_case = F) %>% ncol(), 1)
+  #at most 2 missing values by column
+  expect_equivalent(miss_filter(df, missing = 2, by_case = F) %>% ncol(), 3)
+  #at most 20% missing by column
+  expect_equivalent(miss_filter(df, missing = .2, by_case = F) %>% ncol(), 3)
+  #expect warning for unused argument
+  expect_warning(miss_filter(df, missing = 0, by_case = F, vars = "ints") %>% ncol(), regexp = "will not affect results")
 })
 
 

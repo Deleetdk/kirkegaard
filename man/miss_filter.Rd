@@ -4,7 +4,7 @@
 \alias{miss_filter}
 \title{Filter data by missing values per row.}
 \usage{
-miss_filter(data, missing = 0, reverse = F)
+miss_filter(data, missing = 0, reverse = F, by_case = T, vars = NULL)
 }
 \arguments{
 \item{data}{(data frame) The data.}
@@ -17,11 +17,17 @@ miss_filter(data, missing = 0, reverse = F)
 Counts the number of missing values per row and then keeps rows that have at most a chosen number of missing values.
 }
 \examples{
+set.seed(1)
 df = data.frame(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
-df = miss_add_random(df, prop = .25)
+df = miss_add_random(df, prop = .25) \%>\% mutate(nomiss = T, allmiss = NA)
 df
-miss_filter(df) #allow no missing
-miss_filter(df, missing = 1) #allow 1 missing
-miss_filter(df, missing = 0.5) #allow half missing
-miss_filter(df, missing = 0.25) #allow quarter missing
+#filter cases/rows
+miss_filter(df) #allow no missing values
+miss_filter(df, missing = 1) #allow up to 1 value missing
+miss_filter(df, missing = 0.5) #allow up to a half missing
+#only use certain variables for counting
+miss_filter(df, vars = c("ints", "letters"))
+#filter columns/vars
+miss_filter(df, missing = 0, by_case = F)
+miss_filter(df, missing = 0.5, by_case = F)
 }

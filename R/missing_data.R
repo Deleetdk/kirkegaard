@@ -477,29 +477,70 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
 #' @param reverse (lgl) Filter based on non-NA data instead.
 #' @export
 #' @examples
+#' set.seed(1)
 #' df = data.frame(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
-#' df = miss_add_random(df, prop = .25)
+#' df = miss_add_random(df, prop = .25) %>% mutate(nomiss = T, allmiss = NA)
 #' df
-#' miss_filter(df) #allow no missing
-#' miss_filter(df, missing = 1) #allow 1 missing
-#' miss_filter(df, missing = 0.5) #allow half missing
-#' miss_filter(df, missing = 0.25) #allow quarter missing
-miss_filter = function(data, missing = 0, reverse = F) {
+#' #filter cases/rows
+#' miss_filter(df) #allow no missing values
+#' miss_filter(df, missing = 1) #allow up to 1 value missing
+#' miss_filter(df, missing = 0.5) #allow up to a half missing
+#' #only use certain variables for counting
+#' miss_filter(df, vars = c("ints", "letters"))
+#' #filter columns/vars
+#' miss_filter(df, missing = 0, by_case = F)
+#' miss_filter(df, missing = 0.5, by_case = F)
+miss_filter = function(data, missing = 0, reverse = F, by_case = T, vars = NULL) {
   #initial
   assertthat::assert_that(is.numeric(missing) && length(missing) == 1)
   assertthat::assert_that(is.data.frame(data))
   assertthat::assert_that(is_logical(reverse, scalar = T))
 
-  #if proportion
-  if (!is_whole_number(missing)) {
-    if (reverse) missing = 1 - missing
-    missing = floor(missing * ncol(data))
+  #which variables to include in the filtering?
+  if (is.null(vars)) {
+    vars = names(data)
+  } else {
+    if (!by_case) {
+      warning("`vars` argument will not affect results when `by_case` = FALSE", call. = F)
+    }
+  }
+  assert_that(all(vars %in% names(data)), msg = str_glue("Some `vars` were not in `data`: {str_c(setdiff(vars, names(data), collapse = ', ')}"))
+
+  #subset data to the variables we use for counting
+  y = data[, vars, drop = F]
+
+  #by row or by column?
+  if (by_case) {
+    #if proportion
+    if (!is_whole_number(missing)) {
+      if (reverse) missing = 1 - missing
+      missing = floor(missing * ncol(data))
+    }
+
+    #compute missing values by case
+    y_miss = miss_by_case(y)
+
+    #filter
+    if (!reverse) return(data[y_miss <= missing, ])
+
+    return(data[y_miss >= missing, ])
+  } else { #variable subsetting
+    #if proportion
+    if (!is_whole_number(missing)) {
+      if (reverse) missing = 1 - missing
+      missing = floor(missing * nrow(data))
+    }
+
+    #compute missing values by column
+    y_miss = miss_by_var(data)
+
+    #return the data subset based on the missing values
+    if (!reverse) return(data[, y_miss <= missing, drop = F])
+
+    #do the same, but with reverse = T
+    return(data[, y_miss >= missing, drop = F])
   }
 
-  #filter
-  if (!reverse) return(data[miss_by_case(data) <= missing, ])
-
-  data[miss_by_case(data, reverse = T) >= missing, ]
 }
 
 
