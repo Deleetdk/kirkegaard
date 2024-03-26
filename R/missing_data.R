@@ -514,7 +514,7 @@ miss_filter = function(data, missing = 0, reverse = F, by_case = T, vars = NULL)
     #if proportion
     if (!is_whole_number(missing)) {
       if (reverse) missing = 1 - missing
-      missing = floor(missing * ncol(data))
+      missing = floor(missing * length(vars))
     }
 
     #compute missing values by case
