@@ -353,7 +353,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param weights (num scalar) A set of weights to use.
 #' @param color (chr) A variable to color points by.
 #' @param alpha (num) The alpha to use.
-#' @param text_pos (chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
+#' @param text_pos (chr scalar) Where to put the text. Defaults to top left ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.
 #' @param case_names (lgl scalar) Whether to add case names or not (default true).
 #' @param case_names_color (lgl scalar) Color of case names.
 #' @param CI (num scalar) Confidence interval as a fraction.
@@ -1378,3 +1378,34 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
 
 
 
+#' Plot model coefficients for comparison
+#'
+#' Expects output from `broom::tidy()` on a list of models. Most conveniently from `get_model_coefs()` or `compare_predictors`.
+#'
+#' @param model_coefs A data frame with model coefficients
+#' @param exclude A string to exclude from the plot. Default is "(Intercept)"
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples
+#' #compare the coefficients of two models
+#' iris_model_coefs = compare_predictors(iris, names(iris)[1], names(iris)[-1])
+#' GG_plot_models(iris_model_coefs)
+GG_plot_models = function(model_coefs, exclude = "(Intercept)") {
+  #filter excluded variables
+  model_coefs = model_coefs %>% filter(term != exclude)
+
+  #plot model coefficients
+  model_coefs %>%
+    ggplot(aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high, color = model, group = model)) +
+    geom_pointrange(position = position_dodge(width = 0.5), alpha = 0.8) +
+    geom_hline(yintercept = 0, linetype = 2) +
+    coord_flip() +
+    theme_minimal() +
+    labs(
+      x = "Predictor",
+      y = "Coefficient",
+      color = "Model"
+    )
+}

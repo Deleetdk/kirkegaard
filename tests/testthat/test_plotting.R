@@ -4,14 +4,14 @@ context("plotting")
 
 
 
-# GG_matrix ---------------------------------------------------------------
+
 
 test_that("GG_matrix", {
   expect_s3_class(iris %>% miss_add_random() %>% GG_matrix(), "ggplot")
 })
 
 
-# GG_text -----------------------------------------------------------------
+
 #convenience function for adding text to ggplots
 #hard to do formally
 
@@ -61,7 +61,7 @@ test_that("text", {
 })
 
 
-# GG_denhist --------------------------------------------------------------
+
 
 
 #just run the plots
@@ -93,7 +93,7 @@ test_that("denhist", {
 
 
 
-# GG_scatter --------------------------------------------------------------
+
 
 
 test_that("scatter", {
@@ -130,7 +130,7 @@ test_that("scatter", {
 })
 
 
-# GG_group_means -----------------------------------------------------------
+
 
 
 
@@ -212,7 +212,7 @@ test_that("GG_group_means", {
 
 
 
-# GG_heatmap --------------------------------------------------------------
+
 
 test_that("GG_heatmap", {
   #save plots to list
@@ -243,7 +243,7 @@ test_that("GG_heatmap", {
 
 
 
-# GG_save -----------------------------------------------------------------
+
 
 test_that("GG_save", {
   #make a plot
@@ -288,7 +288,6 @@ test_that("GG_save", {
 })
 
 
-# GG_proportions ----------------------------------------------------------
 
 test_that("GG_proportions", {
   #plot the proportions of cylinders by year
@@ -300,10 +299,26 @@ test_that("GG_proportions", {
   expect_s3_class("ggplot")
 })
 
-# save_plot_to_file -------------------------------------------------------
+
 
 test_that("save_plot_to_file", {
   save_plot_to_file(plot(1:3), filename = "test.png")
   expect_true(file.exists("test.png"))
   file.remove("test.png")
 })
+
+test_that("GG_plot_models", {
+  #get some models
+  iris_model_coefs = compare_predictors(iris, names(iris)[1], names(iris)[-1])
+  mpg_model_coefs = compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
+
+  #make plots
+  iris_plot = GG_plot_models(iris_model_coefs)
+  mpg_plot = GG_plot_models(mpg_model_coefs)
+
+  #check type
+  expect_s3_class(iris_plot, "ggplot")
+  expect_s3_class(mpg_plot, "ggplot")
+
+})
+

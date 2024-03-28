@@ -1,7 +1,6 @@
 context("MOD_")
 
 
-# summarize_models -------------------------------------------------------------------------
 
 #test calls
 test_that("summarize_models", {
@@ -171,3 +170,78 @@ test_that("summarize_models", {
 
 })
 
+#get_model_coefs
+test_that("get_model_coefs", {
+  options(contrasts=c("contr.treatment", "contr.treatment"))
+  #some data to use with each type of variable type
+  set.seed(1)
+  ex_data_n = 1000
+  ex_data = tibble(
+    y = rnorm(ex_data_n),
+    num = rnorm(ex_data_n),
+    int = rpois(ex_data_n, 1),
+    fac = sample(letters[1:2], replace = T, size = ex_data_n) %>% factor(),
+    ord = sample(letters[1:3], replace = T, size = ex_data_n) %>% ordered(),
+    chr = sample(letters[1:3], replace = T, size = ex_data_n),
+    lgl = rbinom(ex_data_n, 1, 0.5) %>% as.logical()
+  )
+
+  #base R
+  models_lm = list(
+    lm(y ~ num + int, data = ex_data),
+    lm(y ~ num + int + fac + ord + chr + lgl, data = ex_data),
+    lm(y ~ num + int + fac + ord + chr + lgl + num * int + num * fac + fac * ord, data = ex_data)
+  )
+
+  #fit the same models as above but with rms::ols
+  models_ols = list(
+    rms::ols(y ~ num + int, data = ex_data),
+    rms::ols(y ~ num + int + fac + ord + chr + lgl, data = ex_data),
+    rms::ols(y ~ rms::rcs(num) + int + fac + ord + chr + lgl, data = ex_data),
+    rms::ols(y ~ num + int + fac + ord + chr + lgl + num * int + num * fac + fac * ord, data = ex_data)
+  )
+
+  #MASS::rlm()
+  models_rlm = list(
+    MASS::rlm(y ~ num + int, data = ex_data),
+    MASS::rlm(y ~ num + int + fac + ord + chr + lgl, data = ex_data),
+    MASS::rlm(y ~ num + int + fac + ord + chr + lgl + num * int + num * fac + fac * ord, data = ex_data)
+  )
+
+  #these are lists
+  expect_true(class(models_lm) == "list")
+  expect_true(class(models_ols) == "list")
+  expect_true(class(models_rlm) == "list")
+
+  #get coefs
+  coefs_lm = models_lm %>% get_model_coefs()
+  coefs_rlm = models_rlm %>% get_model_coefs()
+  coefs_ols = models_ols %>% get_model_coefs()
+
+  #these are data frames
+  expect_true(is.data.frame(coefs_lm))
+  expect_true(is.data.frame(coefs_rlm))
+  expect_true(is.data.frame(coefs_ols))
+
+  #check if columsn are correct, at least some of them
+  expected_cols = c("term", "estimate", "std.error", "statistic", "p.value")
+  expect_true(all(expected_cols %in% colnames(coefs_lm)))
+  expect_true(all(expected_cols %in% colnames(coefs_rlm)))
+  expect_true(all(expected_cols %in% colnames(coefs_ols)))
+})
+
+#compare_predictors
+test_that("compare_predictors", {
+  #fit models for built in datasets
+  iris_models = compare_predictors(iris, names(iris)[1], names(iris)[-1])
+  mpg_models = compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
+
+  #check that the output is a data frame
+  expect_true(is.data.frame(iris_models))
+  expect_true(is.data.frame(mpg_models))
+
+  #check if columsn are correct, at least some of them
+  expected_cols = c("term", "estimate", "std.error", "statistic", "p.value")
+  expect_true(all(expected_cols %in% colnames(iris_models)))
+  expect_true(all(expected_cols %in% colnames(mpg_models)))
+})

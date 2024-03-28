@@ -36,7 +36,7 @@ GG_scatter(
 
 \item{alpha}{(num) The alpha to use.}
 
-\item{text_pos}{(chr scalar) Where to put the text. Defaults to top right ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
+\item{text_pos}{(chr scalar) Where to put the text. Defaults to top left ("tl") if correlation is positive, or tr if negative. Can be tl, tr, bl, or br.}
 
 \item{case_names}{(lgl scalar) Whether to add case names or not (default true).}
 

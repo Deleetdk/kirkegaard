@@ -863,3 +863,22 @@ overlap_metrics = function(x, y) {
 }
 
 
+#named vector to data frame
+#' Convert a named data to a data frame
+#'
+#' @param x A vector
+#' @param name_col The name of the variable to use for the names
+#' @param value_col The name of the variable to use for the values
+#'
+#' @return A data frame
+#' @export
+#'
+#' @examples
+#' named_vector_to_df(c(a = 1, b = 2))
+#' named_vector_to_df(c(a = 1, b = 2), "x", "y")
+named_vector_to_df = function(x, name_col = "name", value_col = "value") {
+  tibble(
+    name = names(x),
+    value = x
+  ) %>% set_names(c(name_col, value_col))
+}

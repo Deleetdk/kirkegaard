@@ -2,7 +2,6 @@
 
 
 
-# p_to_asterisk -----------------------------------------------------------
 
 #' Add asterisks to p values
 #'
@@ -53,12 +52,11 @@ p_to_asterisk = function(x, asterisks = c(.01, .005, .001), digits = max(count_d
 }
 
 
-# summarize_models -------------------------------------------------------------------------
 
 #internal helper functions
 get_adj_r2 = function(x) {
   map_dbl(x, function(m) {
-    summary.lm(m)$adj.r.squared
+    suppressWarnings(summary.lm(m)$adj.r.squared)
   })
 }
 
@@ -384,26 +382,130 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 }
 
 
-# list(rms::ols(Sepal.Width ~ Petal.Width * Species, data = iris)) %>% summarize_models()
+#get coefficients from list of models
+#' Extract model coefficients from a list of models
+#'
+#' Uses `broom::tidy` to extract coefficients from models. If the model doesn't support this, it will fail. There is a special case for `rlm` models, where the p value is calculated manually. If the model is of class `rms`, then the `summary.lm` function is used to extract coefficients. There is some special handling for factor levels, where the levels are made nicer, but this is not done for `rms` models.
+#'
+#' @param models A list of models
+#' @param conf.level Which confidence level to use. Default is .95.
+#' @param nicer_factor_levels Whether to make factor levels nicer. Default is TRUE.
+#'
+#' @return Data frame
+#' @export
+#'
+#' @examples
+#' list(
+#' a = lm(Sepal.Width ~ Sepal.Length, data = iris),
+#' b = lm(Sepal.Width ~ Sepal.Length + Petal.Width, data = iris)
+#' ) %>% get_model_coefs()
+get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
+  if (is.null(names(models))) {
+    names(models) = 1:length(models)
+  }
 
-# mpg$cylfct = mpg$cyl %>% factor()
-# mpg$yearfct = mpg$year %>% factor()
+  #extract data from models
+  model_coefs = map2(
+    models,
+    names(models),
+    function(m, name) {
+      # browser()
+      #get tidy output
+      if ("rms" %in% class(m)) {
+        y = m %>%
+          {
+            suppressWarnings(summary.lm(.))
+          } %>%
+          broom::tidy(conf.int = T, conf.level = conf.level) %>%
+          mutate(model = name)
+      } else if ("rlm" %in% class(m)) {
+      #need to make the p value manually
+      y = m %>%
+        broom::tidy(conf.int = T, conf.level = conf.level) %>%
+        mutate(
+          p.value = abs(statistic) %>% pt(df = summary(m)$df[2], lower.tail = F),
+          model = name
+        ) %>%
+        #reorder columns into consistent order
+        dplyr::select(term, estimate, std.error, statistic, p.value, conf.low, conf.high, model)
+      } else if ("lm" %in% class(m)) {
+        y = m %>%
+          broom::tidy(conf.int = T, conf.level = conf.level) %>%
+          mutate(model = name)
+      } else { #YOLO
+        y = m %>%
+          broom::tidy(conf.int = T, conf.level = conf.level) %>%
+          mutate(model = name)
+      }
 
-# list(
-#   rms::ols(cty ~ hwy, data = mpg),
-#   rms::ols(cty ~ rcs(hwy), data = mpg),
-#   rms::ols(cty ~ yearfct + cylfct, data = mpg),
-#   rms::ols(cty ~ yearfct * cylfct, data = mpg)
-# ) %>% summarize_models(add_ref_level = T, asterisks_only = F)
-#
-# list(
-#   rms::ols(cty ~ hwy, data = mpg),
-#   rms::ols(cty ~ rcs(hwy), data = mpg),
-#   rms::ols(cty ~ yearfct + cylfct, data = mpg),
-#   rms::ols(cty ~ yearfct * cylfct, data = mpg)
-# ) %>% summarize_models(add_ref_level = T, collapse_factors = T)
+      y
+    }
+    ) %>%
+    bind_rows()
 
-#load models with error
-# ideo_models = read_rds("/science/projects/Mental illness politics/data/models.rds")
-#
-# ideo_models %>% summarize_models()
+  #nicer factor levels
+  if (nicer_factor_levels) {
+    #skip if models are rms
+    if ("rms" %in% class(models[[1]])) {
+      #do nothing
+    } else {
+      # browser()
+      #find factors
+      all_terms = map_df(models, ~.x %>% terms() %>% attributes() %>% .[["dataClasses"]] %>% named_vector_to_df())
+      factor_terms = all_terms %>% filter(value %in% c("factor", "ordered", "character", "logical")) %>% pull(name) %>% unique()
+
+      #loop and make names nicer
+      for (fctr in factor_terms) {
+        model_coefs %<>%
+          mutate(
+            term = term %>% str_replace("^" + fctr, fctr + ": ")
+          )
+      } #end nicer factor levels
+
+    } #end rms check
+
+  } #end nicer factor levels
+
+  model_coefs
+}
+
+
+#' Fit linear models for a set of predictors to compare their effects alone and together
+#'
+#' This function fits a set of linear models to the data, where each model includes only one predictor. It then fits a full model with all predictors. The function returns a data frame with the coefficients for each model, as well as the full model.
+#'
+#' @param data The data frame to use
+#' @param outcome The name of the outcome variable. Must be numeric.
+#' @param predictors A character vector of predictors to use.
+#' @param conf.level The confidence level to use. Default is .95.
+#'
+#' @return A data frame with the coefficients for each model
+#' @export
+#'
+#' @examples
+#' compare_predictors(iris, names(iris)[1], names(iris)[-1])
+#' compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
+compare_predictors = function(data, outcome, predictors, conf.level = .95) {
+  #run singular regression models
+  models = predictors %>% map(~lm(str_glue("{outcome} ~ {.x}"), data = data))
+  names(models) = 1:length(models)
+
+  #full model
+  full_model = lm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data)
+
+  #add to list
+  models[["full"]] = full_model
+
+  #get all coefficients for all models, tag appropriately
+  all_coefs = get_model_coefs(models, conf.level = conf.level)
+
+  #rename the singular models
+  all_coefs$model = mapvalues(
+    all_coefs$model,
+    from = 1:length(models),
+    to = rep("singular", length(models)),
+    warn_missing = F
+  )
+
+  all_coefs
+}
