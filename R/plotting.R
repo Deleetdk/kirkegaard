@@ -1190,7 +1190,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
     theme(axis.text.x = element_text(angle = 45, vjust = 1,
                                      size = 12, hjust = 1),
           legend.justification = c(1, 0),
-          legend.position = legend_position,
+          legend.position.inside = legend_position,
           legend.direction = "horizontal",
           axis.title.x = element_blank(),
           axis.title.y = element_blank(),
@@ -1408,4 +1408,141 @@ GG_plot_models = function(model_coefs, exclude = "(Intercept)") {
       y = "Coefficient",
       color = "Model"
     )
+}
+
+#convert to data frame for plotting
+bma_to_df = function(x, remove_intercept = T) {
+
+  #methods for different classes, corresponding to different packages
+  if (inherits(x, "coef.bas")) {
+    y = tibble(
+      term = x$namesx,
+      term_nice = str_clean(term),
+      PIP = x$probne0,
+      mean = x$postmean,
+      sd = x$postsd
+    )
+  } else if (inherits(x, "bic.glm")) {
+    y = tibble(
+      term = names(x$probne0),
+      term_nice = term %>% str_clean(),
+      PIP = x$probne0/100,
+      mean = x$postmean[-1],
+      sd = x$postsd[-1]
+    )
+  } else if (inherits(x, "bma")) {
+    #get coefs
+    x_coefs = coef(x)
+
+    y = tibble(
+      term = rownames(x_coefs),
+      term_nice = term %>% str_clean(),
+      PIP = x_coefs[, 1],
+      mean = x_coefs[, 2],
+      sd = x_coefs[, 3]
+    )
+  } else if (is.data.frame(x)) {
+    #if data frame, assume it's the coefficients
+    if (!all(c("term", "PIP", "mean", "sd") %in% names(x))) {
+      stop("Data frame must have the columns: term, PIP, mean, sd", call. = F)
+    }
+
+    y = x
+
+    #if no term_nice, make it
+    if (!"term_nice" %in% names(y)) {
+      y$term_nice = y$term %>% str_clean()
+    }
+  }
+  else {
+    #if bas object, remind user they need to use coef()
+    if (inherits(x, "bas")) {
+      stop("Please use `coef()` on the BAS model first", call. = F)
+    }
+
+    stop("Unknown input (not from package BMA, BAS, or BMS)", call. = F)
+  }
+
+  #remove intercept?
+  if (remove_intercept) {
+
+    y = y %>%
+      #intercept removed, but only in case it's the first row
+      filter(!str_detect(term, "[Ii]ntercept"))
+  }
+
+  #change order of term to PIP
+  y %<>% mutate(
+    term = fct_reorder(term, PIP),
+    term_nice = fct_reorder(term_nice, PIP)
+  )
+
+  y
+}
+
+#PIP part
+bma_pip_plot = function(x) {
+  x %>%
+    ggplot(aes(y = term_nice, x = PIP)) +
+    geom_bar(stat = "identity") +
+    scale_y_discrete("Term") +
+    scale_x_continuous("PIP", limits = c(0, 1), breaks = seq(0, 1, by = .50), labels = scales::percent) +
+    theme_bw()
+}
+
+#coefficients part
+bma_coef_plot = function(x, confidence_level = .95) {
+  x %>%
+    ggplot(aes(y = term_nice, x = mean)) +
+    geom_point() +
+    geom_errorbarh(aes(xmin = mean - conf_interval_width(sd, confidence_level = confidence_level), xmax = mean + conf_interval_width(sd, confidence_level = confidence_level))) +
+    theme_set(theme_bw()) +
+    #remove y-axis
+    theme_update(
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank()
+    ) +
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    scale_x_continuous("Coefficient")
+
+}
+
+
+#' Plot BMA results
+#'
+#' A ggplot2 function for plotting the output of BMA models, from the BMA, BAS, or BMS packages.
+#'
+#' @param x BMA model fit from BMA, BAS (call `coef()` first), or BMS
+#' @param confidence_level Confidence level for the error bars. Default is 0.95.
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples
+#' #fit a model
+#' fit = BAS::bas.lm(Sepal.Length ~ ., data = iris)
+#' #get coefs
+#' fit_coefs = coef(fit)
+#' #plot
+#' GG_BMA(fit_coefs)
+#' GG_BMA(fit_coefs, confidence_level = .99)
+GG_BMA = function(x, confidence_level = .95) {
+  #convert to data frame
+  x_dx = x %>%
+    bma_to_df()
+
+  #plot PIP and coefficients
+  pip_plot = x_dx %>%
+    bma_pip_plot()
+
+  coef_plot = x_dx %>%
+    bma_coef_plot(confidence_level = confidence_level)
+
+  #combine them
+  patchwork::wrap_plots(
+    pip_plot,
+    coef_plot,
+    ncol = 2,
+    widths = c(1, 3)
+  )
 }

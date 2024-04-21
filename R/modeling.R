@@ -130,6 +130,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
       y = m %>%
         {
+          #prevent spurious warnings
           suppressWarnings(summary.lm(.))
         } %>%
         broom::tidy() %>%

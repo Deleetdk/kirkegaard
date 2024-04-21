@@ -1,0 +1,161 @@
+---
+title: "TITLE"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+
+# Init
+
+```{r}
+#global options
+options(
+  digits = 2,
+  contrasts = c("contr.treatment", "contr.treatment")
+)
+
+if (F) {
+  devtools::install_github("merliseclyde/BAS")
+}
+
+#packages
+library(kirkegaard)
+load_packages(
+  BAS,
+  BMA,
+  BMS,
+  patchwork,
+  readxl
+)
+
+#ggplot2
+theme_set(theme_bw())
+```
+
+
+# Data
+
+```{r}
+#load SPI dataset
+spi = readxl::read_xlsx("inst/extdata/SPI2019.xlsx", sheet = 2) %>% 
+  df_legalize_names()
+
+#impute it insofar as reasonable, drop the rest
+spi_orig = spi
+spi = spi %>%
+  miss_impute()
+
+#filter whatever is left with missing data
+spi = spi %>% 
+  miss_filter()
+
+#standardize everything for comparison
+spi = spi %>% 
+  df_standardize(exclude_range_01 = F)
+```
+
+# Examples
+
+## General modeling code
+
+```{r}
+#make up some semi-plausible model
+spi_model = str_glue("{names(spi)[34]} ~ {str_c(names(spi)[c(21:33, 37:40)], collapse = ' + ')}")
+```
+
+
+## BAS
+
+```{r}
+#fit a BAS model
+spi_bas_fit = BAS::bas.lm(spi_model, data = spi)
+
+spi_bas_fit
+
+spi_bas_fit %>% summary()
+
+(spi_bas_fit_coefs = spi_bas_fit %>% coef())
+
+#test combined plot
+spi_bas_fit_coefs %>% 
+  GG_BMA()
+```
+
+## BMA
+
+```{r}
+#fit a BMA model
+spi_bma_fit = BMA::bic.glm(as.formula(spi_model), data = spi, glm.family = "gaussian")
+
+spi_bma_fit
+
+spi_bma_fit %>% 
+  GG_BMA()
+```
+
+
+## BMS
+
+```{r}
+#restyle the data since this package is annoying
+spi_bms = spi[, formula.tools::get.vars(as.formula(spi_model))]
+
+#fit a BMS model
+spi_bms_fit = BMS::bms(spi_bms)
+
+#coefs
+spi_bms_fit_coefs = spi_bms_fit %>% coef()
+
+spi_bms_fit %>% 
+  GG_BMA()
+```
+
+
+## Made up results
+Input a data frame with the following columns: term, PIP, mean, sd
+
+```{r}
+set.seed(1)
+made_up = tibble(
+  term = LETTERS[1:10],
+  PIP = runif(10),
+  mean = rnorm(10, sd = .5),
+  sd = runif(10, .1, .5)
+)
+
+made_up %>% 
+  GG_BMA()
+```
+
+
+# Meta
+
+```{r}
+write_sessioninfo()
+
+#upload to OSF
+#avoid uploading the data in case they freak out again
+if (F) {
+  library(osfr)
+  
+  #auth
+  osf_auth(readr::read_lines("~/.config/osf_token"))
+  
+  #the project we will use
+  osf_proj = osf_retrieve_node("https://osf.io/XXX/")
+  
+  #upload files
+  #overwrite existing (versioning)
+  osf_upload(osf_proj, conflicts = "overwrite", 
+             path = c(
+               "figs",
+               "data",
+               "notebook.html",
+               "notebook.Rmd",
+             ))
+}
+```
+

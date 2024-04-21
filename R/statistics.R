@@ -720,6 +720,37 @@ get_t_value = function(conf, df, ...) {
 }
 
 
+#' Compute width of confidence interval
+#'
+#' Calculate the width of a confidence interval given a standard error and sample size. Based on the t distribution.
+#'
+#' @param se (numeric scalar) The standard error.
+#' @param n (numeric scalar) The sample size. Defaults to Inf.
+#' @param confidence_level (numeric scalar) The confidence level. Defaults to .95.
+#' @param single_arm (logical scalar) Whether to calculate the width for a single arm. Defaults to TRUE.
+#'
+#' @return The width of the confidence interval.
+#' @export
+#'
+#' @examples
+#' conf_interval_width(1) #about 1.96
+#' conf_interval_width(1, confidence_level = .99) #about 2.58
+conf_interval_width <- function(se, n = Inf, confidence_level = 0.95, single_arm = T) {
+  #use t distribution, but if no sample size is given, assume infinite degrees of freedom, same as z dist
+  t_value <- qt(1 - (1 - confidence_level) / 2, df = n - 1)
+
+  #single arm width
+  width <- t_value * se
+
+  #double it if desired
+  if (!single_arm) {
+    width <- 2 * width
+  }
+
+  return(width)
+}
+
+
 #' Pooled sd
 #'
 #' Calculate pooled sd.
@@ -1435,8 +1466,10 @@ quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), 
     #same as in example here
     #https://rdrr.io/cran/qgam/man/qgam.html
     assertthat::assert_that(nchar(system.file(package = "qgam")) > 0)
+    sink(tempfile())
     fit = qgam::qgam(list(y~s(x, k = k, bs = "cr"), ~ s(x, k = k, bs = "cr")),
                      data = data.frame(x = x, y = y), qu = quantile)
+    sink()
     return(predict(fit))
 
   } else if (method == "Rq") {
@@ -1809,3 +1842,199 @@ calc_item_gaps = function(x, group, return_data_frame = T) {
     return(res$d_gap)
   }
 }
+
+
+#' Create norms and adjust scores for age effects
+#'
+#' This function adjusts for the effect of age on the mean and standard deviation of a score, and then creates norms for setting the resulting scores to follow the IQ scale of 100/15 for the chosen subgroup.
+#'
+#' @param score A vector of scores
+#' @param age A vector of ages
+#' @param norm_group A logical vector of the same length as the score vector, indicating the norm group. Default is all cases.
+#' @param p_value The p value threshold for model inclusion. Default is .01.
+#'
+#' @return A list of results, including corrected scores, age correction models used, and means and standard deviations for the norm group post-correction.
+#' @export
+#' @rdname Norms_and_age_corrections
+#'
+#' @examples
+#' #simulate some data, mess up the norms, and get them back
+#' set.seed(1)
+#' data = tibble(
+#'  true_IQ = c(rnorm(1000, mean = 100, sd = 15), rnorm(1000, mean = 90, sd = 15)),
+#'  true_z = (true_IQ - 100 ) / 15,
+#'  age = runif(2000, min = 18, max = 80),
+#'  norm_group = c(rep(T, 1000), rep(F, 1000))
+#'  ) %>% mutate(
+#'  #add an effect of age on the mean and dispersion of scores
+#'  age_mean_effect = age * 0.3 - 0.3 * 18,
+#'  age_sd_effect = true_z * 15 * rescale(age, new_min = .80, new_max = 1.20),
+#'  score = 100 + age_sd_effect + age_mean_effect
+#'  )
+#'
+#'  #restore the norms
+#'  norms = make_norms(data$score, data$age, data$norm_group)
+#'  data$IQ = norms$data$IQ
+#'  #manually apply norms
+#'  data$IQ2 = apply_norms(data$score, data$age, prior_norms = norms)
+#'  data$IQ3 = apply_norms(data$score, data$age,
+#'  age_model_slope = norms$age_model$coefficients[2],
+#'  age_model_intercept = norms$age_model$coefficients[1],
+#'  age_model_abs_slope = norms$age_model_abs$coefficients[2],
+#'  age_model_abs_intercept = norms$age_model_abs$coefficients[1],
+#'  mean = norms$norm_desc$mean,
+#'  sd = norms$norm_desc$sd
+#'  )
+#'
+#'  #verify that scores were made correct
+#'  cor(data)
+#'  GG_scatter(data, "age", "score")
+#'  #can we detect the age heteroscedasticity too?
+#'  test_HS(resid = resid(lm(score ~ age, data = data)), x = data$age)
+#'  #plot the results
+#'  GG_scatter(data, "true_IQ", "score") + geom_abline(slope = 1, intercept = 0, linetype = 2)
+#'  GG_scatter(data, "true_IQ", "IQ") + geom_abline(slope = 1, intercept = 0, linetype = 2)
+make_norms = function(score, age, norm_group = NULL, p_value = .01) {
+  #if no norm group, use all rows
+  if (is.null(norm_group)) {
+    norm_group = rep(T, length(score))
+  }
+
+  #make a data frame with variables
+  d_all = tibble(
+    score = score,
+    age = age,
+    norm_group = norm_group
+  )
+
+  #norm subset
+  d_norm = d_all %>%
+    filter(norm_group)
+
+  #correct for the mean effect of age
+  age_model = lm(score ~ age, data = d_norm)
+  age_model_glance = broom::glance(age_model)
+
+  #if the p value is too high, we dont use the model
+  if (age_model_glance$p.value >= p_value) {
+    d_norm$score_ageadj1 = d_norm$score
+  } else {
+    d_norm$score_ageadj1 = resid(age_model)
+  }
+
+  #fit model for for the SD effect of age
+  age_model_abs = lm(abs(score_ageadj1) ~ age, data = d_norm)
+  age_model_abs_glance = broom::glance(age_model_abs)
+
+  #apply corrections to the full data
+  #if model is not significant, we dont use it
+  if (age_model_glance$p.value >= p_value) {
+    message(str_glue("No detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model not used."))
+    d_all$score_ageadj1 = d_all$score
+  } else {
+    message(str_glue("Detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model used."))
+    d_all$score_ageadj1 = d_all$score - predict(age_model, newdata = d_all)
+  }
+
+  #if model is not significant, we dont use it
+  if (age_model_abs_glance$p.value >= p_value) {
+    message(str_glue("No detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model not used."))
+    d_all$score_ageadj2 = d_all$score_ageadj1
+  } else {
+    message(str_glue("Detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model used."))
+    d_all$score_ageadj2 = d_all$score_ageadj1 / predict(age_model_abs, newdata = d_all)
+  }
+
+  #find the norm group mean/SD
+  norm_desc = d_all %>% filter(norm_group) %>% select(score_ageadj2) %>% describe2()
+  d_all$score_ageadj3 = (d_all$score_ageadj2 - norm_desc$mean) / norm_desc$sd
+
+  #output IQ scores
+  d_all$IQ = d_all$score_ageadj3 * 15 + 100
+
+  #list of results
+  list(
+    #adjusted data
+    data = d_all,
+
+    #models fitted
+    age_model = age_model,
+    age_model_abs = age_model_abs,
+
+    #used models?
+    age_model_used = age_model_glance$p.value < p_value,
+    age_model_abs_used = age_model_abs_glance$p.value < p_value,
+
+    #means and SD for norm group post corrections
+    norm_desc = norm_desc
+  )
+}
+
+#make a function that applies norms to a new data set based on prior results
+
+#' Apply norms to a new data set
+#'
+#' @param score A vector of scores to correct
+#' @param age A vector of ages to use
+#' @param prior_norms A list of prior norms to use from `make_norms`
+#' @param age_model_slope A manually supplied slope for the age model
+#' @param age_model_intercept A manually supplied intercept for the age model
+#' @param age_model_abs_slope A manually supplied slope for the age model
+#' @param age_model_abs_intercept A manually supplied intercept for the age model
+#' @param mean A manually supplied mean for the norm group
+#' @param sd A manually supplied standard deviation for the norm group
+#'
+#' @return A vector of IQ scores
+#' @export
+#' @rdname Norms_and_age_corrections
+apply_norms = function(score,
+                       age,
+                       prior_norms = NULL,
+                       age_model_slope = 0,
+                       age_model_intercept = 0,
+                       age_model_abs_slope = 0,
+                       age_model_abs_intercept = 0,
+                       mean = NULL,
+                       sd = NULL) {
+  # browser()
+  #if prior norms, use them
+  if (!is.null(prior_norms)) {
+    #poll values from prior norms
+    #but don't if they are non-significant
+    if (prior_norms$age_model_used) {
+      age_model_slope = prior_norms$age_model$coefficients[2]
+      age_model_intercept = prior_norms$age_model$coefficients[1]
+    }
+    if (prior_norms$age_model_abs_used) {
+      age_model_abs_slope = prior_norms$age_model_abs$coefficients[2]
+      age_model_abs_intercept = prior_norms$age_model_abs$coefficients[1]
+    }
+
+    mean = prior_norms$norm_desc$mean
+    sd = prior_norms$norm_desc$sd
+  }
+
+  #apply the norms
+  #appy linear correction
+  if (age_model_slope == 0) {
+    score_ageadj1 = score
+  } else {
+    score_ageadj1 = score - age_model_slope * age - age_model_intercept
+  }
+
+  #apply variance correction
+  if (age_model_abs_slope == 0) {
+    score_ageadj2 = score_ageadj1
+  } else {
+    score_ageadj2 = score_ageadj1 / (age_model_abs_slope * age + age_model_abs_intercept)
+  }
+
+  #apply norm group correction
+  score_ageadj3 = (score_ageadj2 - mean) / sd
+
+  #IQ scale
+  IQ = score_ageadj3 * 15 + 100
+
+  IQ
+}
+

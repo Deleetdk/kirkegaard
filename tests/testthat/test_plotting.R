@@ -322,3 +322,22 @@ test_that("GG_plot_models", {
 
 })
 
+
+test_that("GG_BMA", {
+  #fit BMA models
+  sink(nullfile())
+  iris_bma = BMA::bic.glm(Sepal.Length ~ ., data = iris[, -5], glm.family = "gaussian")
+  iris_bas = BAS::bas.lm(Sepal.Length ~ ., data = iris[, -5])
+  iris_bms = BMS::bms(iris[, -5])
+  sink()
+
+  #make plots
+  iris_bma_plot = GG_BMA(iris_bma)
+  iris_bas_plot = GG_BMA(coef(iris_bas))
+  iris_bms_plot = GG_BMA(iris_bms)
+
+  #check type
+  expect_s3_class(iris_bma_plot, "ggplot")
+  expect_s3_class(iris_bas_plot, "ggplot")
+  expect_s3_class(iris_bms_plot, "ggplot")
+})
