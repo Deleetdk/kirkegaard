@@ -2038,3 +2038,742 @@ apply_norms = function(score,
   IQ
 }
 
+
+#partially resample a vector without duplicates
+partially_resample = function(x, possible_values, idx = NULL, prob = NULL, prob_exact = T) {
+  #check input are not both NULL
+  assert_that(!(is.null(idx) & is.null(prob)))
+  # browser()
+
+  #if idx is NULL, sample from prob
+  if (is.null(idx)) {
+    #mutate at exactly prob % of indexes
+    if (prob_exact) {
+      idx_T = ceiling(length(x) * prob)
+      idx = c(
+        rep(T, idx_T),
+        rep(F, length(x) - idx_T)
+      ) %>%
+        sample() %>%
+        which()
+    } else {
+      #mutation chance is prob %
+      idx = sample(c(T, F), size = length(x), replace = T, prob = c(prob, 1 - prob)) %>% which()
+    }
+  }
+
+  #induce mutations at those indexes, only new variants possible
+  y = x
+  y[idx] = sample(setdiff(possible_values, x), size = length(idx))
+
+  #ensure no dups
+  if (anyDuplicated(y)) {
+    browser()
+  }
+
+  y
+}
+
+#get factor loadings from mirt fit
+get_loadings = function(x) {
+  x@Fit$`F` %>% as.vector()
+}
+
+#internal function to fit mirt
+fit_mirt = function(items, mirt_args) {
+
+  local_mirt_fit = rlang::exec(
+    .fn = mirt::mirt,
+    data = items,
+    !!!mirt_args
+  )
+
+  #get scores
+  local_scores = mirt::fscores(local_mirt_fit, full.scores.SE = T)
+
+  #return fit and scores
+  list(
+    fit = local_mirt_fit,
+    scores = local_scores,
+    reliability = mirt::empirical_rxx(local_scores)
+  )
+}
+
+#make a list of items indexes with one removed per set
+make_leave_one_out_sets = function(item_idx) {
+  #make a list of items indexes with one removed per set
+  purrr::map(
+    seq(item_idx),
+    function(i) {
+      item_idx[-i]
+    }
+  )
+}
+
+
+#make forwards item selection sets
+make_forward_sets = function(
+    all_items,
+    current_items = NULL,
+    full_fit,
+    min_items = 3,
+    start_method = "highest_loading"
+) {
+  #make a list of items indexes with one removed per set
+  #if we have none, it's easy
+  if (is.null(current_items)) {
+    #if we have no items, we can either try all 3-way combinations, which is often not possible (explosion)
+    #or we can begin with a best guess of the 3 items with highest loadings from full analysis (fast)
+    if (start_method == "highest_loading") {
+      #get highest loading items
+      item_loadings = tibble(
+        item = 1:length(get_loadings(full_fit)),
+        loading = get_loadings(full_fit)
+      )
+      start_items = item_loadings %>% arrange(loading) %>% tail(min_items) %>% pull(item)
+      sets = list(start_items)
+      message(str_glue("Starting with the {min_items} items with highest loadings: {str_c(start_items, collapse = ', ')}"))
+    } else if (start_method == "combination") {
+      #if we have no items, we can either try all 3-way combinations, which is often not possible (explosion)
+      #or we can begin with a best guess of the 3 items with highest loadings from full analysis (fast)
+      sets = combn(1:ncol(all_items), m = min_items, simplify = F)
+    }
+
+  } else {
+    #if we have some, we need to add one different item to each set
+    sets = purrr::map(
+      setdiff(seq(ncol(all_items)), current_items),
+      function(i) {
+        c(current_items, i)
+      }
+    )
+  }
+
+  sets
+}
+
+#compute model stats
+compute_fit_stats = function(fit, item_set, selection_method, criterion_vars, full_reliability, criterion_cors_full, save_fits = T) {
+  #get scores and their full set cors
+  cors = wtd.cors(
+    bind_cols(
+      score = fit$scores[, 1],
+      criterion_vars
+    )
+  )
+
+  #mean fraction of criterion cors
+  item_set = list(item_set)
+  criterion_cors = cors[-1, 1]
+  criterion_cors_frac = criterion_cors / criterion_cors_full[-1, 1]
+  mean_criterion_cors_frac = mean(criterion_cors_frac)
+  reliability_frac = (fit$reliability / full_reliability) %>% unname()
+
+  #determine what to maximize
+  criterion_value = switch(selection_method,
+                           "rc" = mean(c(criterion_cors_frac, reliability_frac)),
+                           "r" = reliability_frac,
+                           "c" = mean(criterion_cors_frac)
+  )
+
+  y = tibble(
+    items_in_scale = length(item_set[[1]]),
+    item_set = item_set,
+    criterion_cors_frac = criterion_cors_frac,
+    mean_criterion_cors_frac = mean_criterion_cors_frac,
+    reliability = fit$reliability,
+    reliability_frac = reliability_frac,
+    criterion_value = criterion_value
+  )
+
+  #add criterion cors
+  for (i in seq_along(criterion_cors)) {
+    y[[str_glue("r_{rownames(cors)[i+1]}")]] = criterion_cors[i]
+  }
+
+  #save fits and scores?
+  if (save_fits) {
+    y$fit = list(fit)
+    y$scores = list(fit$scores)
+  }
+
+  y
+}
+
+#genetic algo item lists function
+genetic_algo_item_sets = function(
+    all_items,
+    item_target,
+    current_population = NULL,
+    population_size = 1000,
+    mutation_rate = 0.1,
+    prob_exact = F,
+    include_parents = T
+) {
+
+  #if no current poulation, then we start with random items
+  if (is.null(current_population)) {
+    new_pop = map(
+      1:population_size,
+      function(i) {
+        sample(ncol(all_items), size = item_target)
+      }
+    )
+  } else {
+
+    #make repeats to match population size
+    new_pop = rep(current_population, length.out = population_size)
+
+    #mutate
+    for (i in seq_along(new_pop)) {
+      #mutate by partial resampling
+      new_pop[[i]] = partially_resample(
+        new_pop[[i]],
+        possible_values = 1:ncol(all_items),
+        prob = mutation_rate,
+        prob_exact = prob_exact
+      )
+    }
+
+    #add parents as well? this makes the population size larger by the selection proportion
+    #it prevents regression, and avoids inability to stop at a local minimum
+    if (include_parents) {
+      new_pop = c(new_pop, current_population)
+    }
+
+  }
+
+  new_pop
+}
+
+#genetic algorithm
+abbreviate_by_genetic_algo = function(
+    all_items,
+    item_target,
+    current_population = NULL,
+    criterion_vars,
+    criterion_cors_full,
+    selection_method,
+    full_fit,
+    full_reliability,
+    mirt_args = NULL,
+    save_fits = T,
+    max_generations,
+    population_size,
+    mutation_rate,
+    selection_ratio,
+    stop_search_after_generations,
+    include_parents
+) {
+
+  #main loop
+  all_fits = tibble()
+  for (iter in 1:max_generations) {
+    #msg current iter
+    message(str_glue("Starting iteration {iter} out of {max_generations}"))
+
+    #get new population
+    new_pop = genetic_algo_item_sets(
+      all_items = all_items,
+      item_target = item_target,
+      current_population = current_population,
+      population_size = population_size,
+      mutation_rate = mutation_rate,
+      include_parents = include_parents
+    )
+
+    #fit models
+    current_fits = furrr::future_map_dfr(
+      new_pop,
+      function(item_set) {
+
+        #fit mirt
+        fit = fit_mirt(all_items[, item_set, drop = F], mirt_args)
+
+        #get stats
+        y = compute_fit_stats(
+          fit = fit,
+          item_set = item_set,
+          selection_method = selection_method,
+          criterion_vars = criterion_vars,
+          full_reliability = full_reliability,
+          criterion_cors_full = criterion_cors_full,
+          save_fits = save_fits
+        )
+
+        y
+      }
+    )
+
+    #add generation number
+    current_fits$generation = iter
+
+    #select top
+    current_fits = current_fits %>%
+      arrange(-criterion_value)
+
+    #mark as selected
+    current_fits$selected = F
+    current_fits$selected[1:ceiling(population_size * selection_ratio)] = T
+
+    #add fits to collection
+    all_fits = bind_rows(
+      all_fits,
+      current_fits %>% filter(selected)
+    )
+
+    #check if we have improvement
+    if (iter > 1) {
+
+      #get best from last iteration
+      best_last = all_fits %>%
+        filter(generation == (iter - 1)) %>%
+        arrange(-criterion_value) %>%
+        pull(criterion_value) %>%
+        max()
+
+      #get improvement
+      improvement = (max(current_fits$criterion_value) - best_last)
+
+      #msg about improvement this generation
+      message(str_glue("Improvement in iteration {iter} out of {max_generations}: {str_round(improvement, 5)}, new best: {str_round(best_last, 5)}"))
+
+      #if no improvement for X generations, stop search
+      if (iter > stop_search_after_generations) {
+        last_k_criterion_values = all_fits %>%
+          group_by(generation) %>%
+          arrange(-criterion_value) %>%
+          slice_head(n = 1) %>%
+          ungroup() %>%
+          pull(criterion_value) %>%
+          tail(stop_search_after_generations)
+
+        if (all_the_same(last_k_criterion_values)) {
+          message(str_glue("No improvement for {stop_search_after_generations} generations, stopping search"))
+          break
+        }
+      }
+    }
+
+    #get new population
+    current_population = current_fits %>% filter(selected) %>% pull(item_set)
+  } #end loop
+
+  #return results
+  all_fits
+}
+
+#backwards drop function (drop 1 item)
+backwards_drop = function(
+    all_items,
+    current_selection = NULL,
+    criterion_vars,
+    criterion_cors_full,
+    selection_method,
+    full_fit,
+    full_reliability,
+    mirt_args = NULL,
+    save_fits = T
+) {
+
+  #if no current selection, select all
+  if (is.null(current_selection)) {
+    current_selection = seq(ncol(all_items))
+  }
+
+  #main loop
+  reductions = furrr::future_map_dfr(
+    make_leave_one_out_sets(current_selection),
+    function(item_set) {
+
+      #fit mirt
+      fit = fit_mirt(all_items[, item_set, drop = F], mirt_args)
+
+      #get stats
+      y = compute_fit_stats(
+        fit = fit,
+        item_set = item_set,
+        selection_method = selection_method,
+        criterion_vars = criterion_vars,
+        full_reliability = full_reliability,
+        criterion_cors_full = criterion_cors_full,
+        save_fits = save_fits
+      )
+
+      y
+    }
+  )
+
+  #return results
+  reductions
+}
+
+#forwards pick function
+forwards_pick = function(
+    items,
+    current_items,
+    criterion_vars,
+    criterion_cors_full,
+    selection_method,
+    full_fit,
+    full_reliability,
+    mirt_args = NULL,
+    save_fits = T
+) {
+
+  #main loop
+  additions = furrr::future_map_dfr(
+    make_forward_sets(items, current_items, full_fit = full_fit),
+    function(item_set) {
+
+      #fit mirt
+      fit = fit_mirt(items[, item_set, drop = F], mirt_args)
+
+      #get stats
+      y = compute_fit_stats(
+        fit = fit,
+        item_set = item_set,
+        selection_method = selection_method,
+        criterion_vars = criterion_vars,
+        full_reliability = full_reliability,
+        criterion_cors_full = criterion_cors_full,
+        save_fits = save_fits
+      )
+
+      y
+    }
+  )
+
+  #return results
+  additions
+}
+
+#make loadings based item list
+make_item_list_for_loadings_method = function(x, max_items) {
+  #return a list with vectors of first 3 items, then first 4, then first 5, until max
+  purrr::map(
+    3:max_items,
+    function(last_item) {
+      x[1:last_item]
+    }
+  )
+}
+
+#use highest loadings
+highest_loadings_method = function(
+    items,
+    max_items,
+    criterion_vars,
+    criterion_cors_full,
+    full_fit,
+    full_reliability,
+    mirt_args = NULL,
+    save_fits = T,
+    selection_method
+) {
+
+  #get loadings
+  item_loadings = tibble(
+    item = 1:length(get_loadings(full_fit)),
+    loading = get_loadings(full_fit)
+  ) %>% arrange(-loading)
+
+  #fit models with items from 3 to max
+  #main loop
+  additions = furrr::future_map(
+    make_item_list_for_loadings_method(item_loadings$item, max_items),
+    function(item_set) {
+
+      #fit mirt
+      fit = fit_mirt(items[, item_set, drop = F], mirt_args)
+
+      #get stats
+      y = compute_fit_stats(
+        fit = fit,
+        item_set = item_set,
+        selection_method = selection_method,
+        criterion_vars = criterion_vars,
+        full_reliability = full_reliability,
+        criterion_cors_full = criterion_cors_full,
+        save_fits = save_fits
+      )
+
+      y
+    }
+  )
+
+  additions
+}
+
+
+
+#' Abbreviate a scale
+#'
+#' This function abbreviates a scale by iteratively adding or removing items that are the least useful for predicting a criterion variable. The function can use a max loading, backwards, forwards, or genetic algorithm method to select items.
+#'
+#' @param items A data frame or matrix of items
+#' @param criterion_vars A data frame of criterion variables
+#' @param item_target The number of items to retain
+#' @param method The method to use for item selection. Options are "backwards", "forwards", "max_loading", or "genetic".
+#' @param selection_method The method to use for selecting items. Options are "rc" (average of correlation with criterion variable(s) and reliability), "r" (reliability), or "c" (correlation with criterion variable(s)).
+#' @param mirt_args A list of arguments to pass to the mirt function
+#' @param save_fits Whether to save the fits and scores for each item set. This might be useful for further analysis, but it also takes up memory.
+#' @param seed A seed to use for reproducibility. Default is 1.
+#' @param max_generations The maximum number of generations to use for the genetic algorithm. Default is 100.
+#' @param population_size The size of the population to use for the genetic algorithm. Default is 100.
+#' @param mutation_rate The mutation rate to use for the genetic algorithm. Default is 0.1.
+#' @param selection_ratio The ratio of the population to select for the next generation. Default is 0.20.
+#' @param stop_search_after_generations The number of generations to wait for no improvement before stopping the search. Default is 10.
+#' @param include_parents Whether to include the parents in the next generation. Default is TRUE.
+#'
+#' @return A list of results. You probably want to call `GG_scale_abbreviation()` on these.
+#' @export
+#'
+#' @examples
+abbreviate_scale = function(
+    items,
+    criterion_vars = NULL,
+    item_target = 10,
+    method = "forwards",
+    selection_method = "rc",
+    mirt_args = NULL,
+    save_fits = T,
+    seed = 1,
+    max_generations = 100,
+    population_size = 100,
+    mutation_rate = 0.1,
+    selection_ratio = 0.20,
+    stop_search_after_generations = 10,
+    include_parents = T
+) {
+
+  #start timer
+  tictoc::tic()
+
+  #use seed
+  set.seed(seed)
+
+  #stop timer on exit
+  on.exit({
+    tictoc::toc()
+  })
+
+  #check methods
+  assert_that(is.data.frame(items) | is.matrix(items))
+  items = as.matrix(items) #make sure its a matrix to avoid some dropping issues
+  assert_that(method %in% c("backwards", "forwards", "max_loading", "genetic"))
+  if (selection_method == "cr") selection_method = "rc"
+  assert_that(selection_method %in% c("rc", "r", "c", "cr"))
+  message(str_glue("Abbreviating scale using {mapvalues(selection_method, from = c('c', 'rc', 'r'), to = c('correlation with criterion variable(s)', 'average of correlation with creiterion variable(s) and reliability', 'reliability'), warn_missing = F)} method"))
+  message(str_glue("Using the {method} method"))
+
+  assert_that(item_target >= 3)
+  assert_that(item_target < ncol(items))
+
+  #use default mirt args if none given
+  if (is.null(mirt_args)) {
+    mirt_args = list(
+      model = 1,
+      itemtype = "2PL",
+      technical = list(NCYCLES = 5000),
+      verbose = F
+    )
+  }
+
+  #fit full scale mirt
+  full_fit = rlang::exec(
+    .fn = mirt::mirt,
+    data = items,
+    !!!mirt_args
+  )
+
+  #get scores and their full set cors
+  full_scores = mirt::fscores(full_fit, full.scores.SE = T)
+
+  #reliability
+  full_reliability = mirt::empirical_rxx(full_scores) %>% unname()
+
+  #make set of criterion vars
+  if (is.null(criterion_vars)) {
+    criterion_vars = tibble(
+      full_score = full_scores[, 1]
+    )
+  }
+
+  #criterion cors with full set
+  full_cors = wtd.cors(
+    bind_cols(
+      score = full_scores[, 1],
+      criterion_vars
+    )
+  )
+
+  #main loop
+  #prep a list
+  item_set_results_all = list()
+
+  if (method == "backwards") {
+    #drop first, then based on results, drop a second etc. until desired size is reached
+    items_to_drop = ncol(items) - item_target
+    items_to_drop_seq = seq(ncol(items) - item_target)
+    for (i in items_to_drop_seq) {
+      message(str_glue("removing item {i} out of {items_to_drop} ({ncol(items) - i} remaining)"))
+
+      #if the first round, just drop one item
+      #dont need to use the prior item set
+      if (i == 1) {
+
+        item_set_results_all[[i]] = backwards_drop(
+          #begin with all items
+          all_items = items,
+          current_selection = seq(ncol(items)),
+          criterion_vars = criterion_vars,
+          criterion_cors_full = full_cors,
+          selection_method = selection_method,
+          mirt_args = mirt_args,
+          save_fits = save_fits,
+          full_fit = full_fit,
+          full_reliability = full_reliability
+        )
+
+        next
+
+      } else {
+
+        #best prior set
+        best_prior_i = which.max(item_set_results_all[[i - 1]]$criterion_value)
+        best_prior_set = item_set_results_all[[i - 1]]$item_set[[best_prior_i]]
+
+        #use prior best set
+        item_set_results_all[[i]] = backwards_drop(
+          all_items = items,
+          current_selection = best_prior_set,
+          criterion_vars = criterion_vars,
+          criterion_cors_full = full_cors,
+          selection_method = selection_method,
+          mirt_args = mirt_args,
+          save_fits = save_fits,
+          full_fit = full_fit,
+          full_reliability = full_reliability
+        )
+
+        next
+      }
+
+    }
+  } else if (method == "forwards") {
+
+    #pick first, then based on results, pick a second etc. until desired size is reached
+    items_to_pick = item_target
+    items_to_pick_seq = seq(item_target - 2) #because we start with 3 items (minimum for IRT)
+    for (i in items_to_pick_seq) {
+
+      if (i != 1) {
+        message(str_glue("adding item {i + 2} out of {items_to_pick}"))
+      }
+
+      #if the first round, try each item, one at a time
+      #dont need to use the prior item set
+      if (i == 1) {
+        item_set_results_all[[i]] = forwards_pick(
+          #begin with all items
+          items = items,
+          current_items = c(),
+          criterion_vars = criterion_vars,
+          criterion_cors_full = full_cors,
+          selection_method = selection_method,
+          mirt_args = mirt_args,
+          save_fits = save_fits,
+          full_fit = full_fit,
+          full_reliability = full_reliability
+        )
+
+        next
+
+      } else {
+
+        #best prior set
+        best_prior_i = which.max(item_set_results_all[[i - 1]]$criterion_value)
+        best_prior_set = item_set_results_all[[i - 1]]$item_set[[best_prior_i]]
+
+        #use prior best set
+        item_set_results_all[[i]] = forwards_pick(
+          items = items,
+          current_items = best_prior_set,
+          criterion_vars = criterion_vars,
+          criterion_cors_full = full_cors,
+          selection_method = selection_method,
+          mirt_args = mirt_args,
+          save_fits = save_fits,
+          full_fit = full_fit,
+          full_reliability = full_reliability
+        )
+
+        next
+      }
+
+    }
+  }
+
+  #loadings method
+  if (method == "max_loading") {
+    item_set_results_all = highest_loadings_method(
+      items = items,
+      max_items = item_target,
+      criterion_vars = criterion_vars,
+      criterion_cors_full = full_cors,
+      mirt_args = mirt_args,
+      save_fits = save_fits,
+      full_fit = full_fit,
+      full_reliability = full_reliability,
+      selection_method = selection_method
+    )
+  }
+
+  #genetic algo
+  if (method == "genetic") {
+    item_set_results_all = abbreviate_by_genetic_algo(
+      all_items = items,
+      item_target = item_target,
+      criterion_vars = criterion_vars,
+      criterion_cors_full = full_cors,
+      selection_method = selection_method,
+      full_fit = full_fit,
+      full_reliability = full_reliability,
+      mirt_args = mirt_args,
+      save_fits = save_fits,
+      max_generations = max_generations,
+      population_size = population_size,
+      mutation_rate = mutation_rate,
+      selection_ratio = selection_ratio,
+      stop_search_after_generations = stop_search_after_generations,
+      include_parents = include_parents
+    )
+
+    #split to a list
+    item_set_results_all = split(item_set_results_all, item_set_results_all$generation)
+  }
+
+  #return results
+  full_results = item_set_results_all %>% ldf_to_df(by_name = "set") %>% as_tibble()
+
+  list(
+    full_results = full_results,
+    best_sets = full_results %>%
+      filter(criterion_value == max(criterion_value), .by = set),
+    method = method,
+    #add results for full fit, for plotting
+    full_fit_stats = compute_fit_stats(
+      fit = list(fit = full_fit, scores = full_scores, reliability = full_reliability),
+      item_set = 1:ncol(items),
+      selection_method = selection_method,
+      criterion_vars = criterion_vars,
+      full_reliability = full_reliability,
+      criterion_cors_full = full_cors,
+      save_fits = save_fits
+    )
+  )
+
+}
+
+

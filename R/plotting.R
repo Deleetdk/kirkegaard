@@ -1546,3 +1546,83 @@ GG_BMA = function(x, confidence_level = .95) {
     widths = c(1, 3)
   )
 }
+
+
+#' Plot results from scale abbreviation
+#'
+#' Plots results from the output of `scale_abbreviation()`.
+#'
+#' @param x Output from `scale_abbreviation()`
+#' @param vars Which variables to plot. Default is c("reliability_frac", "mean_criterion_cors_frac", "r_full_score", "reliability")
+#' @param add_lines_for_full_model Add lines for the full model for comparison. Default is FALSE.
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples
+GG_scale_abbreviation = function(x, vars = c("reliability_frac", "mean_criterion_cors_frac", "r_full_score", "reliability"), add_lines_for_full_model = F) {
+  #determine method used for making the plot
+
+  if (x$method %in% c("forwards", "backwards", "max_loading")) {
+    p = x$best_sets %>%
+      #display both reliability and criterion value
+      pivot_longer(
+        cols = all_of(vars),
+        names_to = "criterion",
+        values_to = "value"
+      ) %>%
+      ggplot(aes(x = items_in_scale, y = value, color = criterion)) +
+      geom_point() +
+      geom_line() +
+      scale_x_continuous(breaks = seq(0, 10000, 5)) +
+      scale_y_continuous(limits = c(NA, 1)) +
+      theme_minimal() +
+      labs(
+        x = "Number of items in scale",
+        y = "Criterion value"
+      )
+  }
+
+  if (x$method %in% c("genetic")) {
+    max_gen = max(x$best_sets$generation)
+
+    p = x$best_sets %>%
+      #display both reliability and criterion value
+      pivot_longer(
+        cols = all_of(vars),
+        names_to = "criterion",
+        values_to = "value"
+      ) %>%
+      ggplot(aes(x = generation, y = value, color = criterion)) +
+      geom_point() +
+      geom_line() +
+      scale_x_continuous() +
+      scale_y_continuous(limits = c(NA, 1)) +
+      theme_minimal() +
+      labs(
+        x = "Generation",
+        y = "Criterion value"
+      )
+  }
+
+  #add lines for full model
+  if (add_lines_for_full_model) {
+    browser()
+    #which lines to add
+    #not fractionalized
+    vars_lines = setdiff(vars, c("reliability_frac", "mean_criterion_cors_frac", "r_full_score"))
+
+    #collect lines
+    d_lines = tibble(
+      criterion = vars_lines,
+      value = map_dbl(vars_lines, ~ x$full_fit_stats[[.x]])
+    )
+
+    p = p +
+      geom_hline(data = d_lines,
+                 mapping = aes(yintercept = value, color = criterion),
+                 linetype = "dashed")
+  }
+
+  p
+}

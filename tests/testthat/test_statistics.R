@@ -1,7 +1,7 @@
 context("statistics")
 
 
-# describe2 ---------------------------------------------------------------
+
 
 test_that("describe2", {
   #classes
@@ -29,7 +29,7 @@ test_that("describe2", {
 })
 
 
-# transform_01 ------------------------------------------------------------
+
 
 test_that("transform_01", {
   expect_equal(transform_01(1:5), ((1:5)-1)/4)
@@ -37,7 +37,7 @@ test_that("transform_01", {
   expect_equivalent(transform_01(c()), c())
 })
 
-# cor_matrix --------------------------------------------------------------
+
 #correlation matrix with nice output
 
 test_that("cor_matrix", {
@@ -76,7 +76,6 @@ test_that("cor_matrix", {
 })
 
 
-# adj_d_reliability ------------------------------------------------------------
 
 test_that("adj_d_reliability", {
   expect_equivalent(adj_d_reliability(1, 1), 1)
@@ -85,7 +84,7 @@ test_that("adj_d_reliability", {
   expect_error(adj_d_reliability(1, rel = -1))
 })
 
-# SMD_matrix  --------------------------------------------------------------
+
 #standardized mean differences
 
 
@@ -116,7 +115,7 @@ test_that("SMD_matrix", {
 })
 
 
-# standardize -------------------------------------------------------------
+
 
 
 
@@ -148,7 +147,7 @@ test_that("standardize", {
 })
 
 
-# winsorise ---------------------------------------------------------------
+
 
 test_that("winsorise", {
   #test normal
@@ -158,7 +157,7 @@ test_that("winsorise", {
 })
 
 
-# weighted functions ------------------------------------------------------
+
 
 
 
@@ -196,7 +195,7 @@ test_that("wtd_sd", {
 # })
 
 
-# calc_row_representativeness ---------------------------------------------
+
 
 test_that("calc_row_representativeness", {
   #compute for mpg dataset
@@ -213,7 +212,7 @@ test_that("calc_row_representativeness", {
 
 
 
-# heteroscedasticity ------------------------------------------------------
+
 
 test_that("test_HS", {
   #fix some data in iris
@@ -247,7 +246,7 @@ test_that("test_HS", {
 
 
 
-# quantile_smooth ---------------------------------------------------------
+
 
 
 test_that("quantile_smooth", {
@@ -278,7 +277,7 @@ test_that("quantile_smooth", {
 
 
 
-# prop_tests --------------------------------------------------------------
+
 
 
 test_that("prop_tests", {
@@ -289,7 +288,7 @@ test_that("prop_tests", {
 })
 
 
-# DIF_test ----------------------------------------------------------------
+
 #https://rpubs.com/EmilOWK/IRT_DIF_examples
 
 
@@ -349,4 +348,82 @@ test_that("DIF_test", {
   expect_true(DIF_fit$DIF_stats$p_adj[1] < .001)
   expect_true(DIF_fit$DIF_stats$p_adj[2] < .001)
   expect_true(all(DIF_fit$DIF_stats$p_adj[3:10] > .001))
+})
+
+
+test_that("abbreviate_scale", {
+  #generate some data using mirt
+  set.seed(1)
+  d_sim = mirt::simdata(
+    a = runif(10, min = .5, max = 2),
+    d = rnorm(10),
+    N = 1000,
+    itemtype = "2PL"
+  )
+
+  #we want a 10 item version
+  max_items = 5
+
+  #suppress all output
+  sink(nullfile())
+
+  #abbreviate it using different methods
+  #forwards
+  d_sim_abbrev_forwards = abbreviate_scale(
+    d_sim,
+    method = "forwards",
+    item_target = max_items,
+    )
+
+  #backwards
+  d_sim_abbrev_backwards = abbreviate_scale(
+    d_sim,
+    method = "backwards",
+    item_target = max_items
+    )
+
+  #max loading
+  d_sim_abbrev_max_loading = abbreviate_scale(
+    d_sim,
+    method = "max_loading",
+    item_target = max_items
+    )
+
+  #genetic
+  d_sim_abbrev_genetic = abbreviate_scale(
+    d_sim,
+    method = "genetic",
+    item_target = max_items,
+    max_generations = 3,
+    population_size = 10
+    )
+
+  #turn off sink
+  sink()
+
+  #verify outputs are correct
+  #are lists
+  expect_is(d_sim_abbrev_forwards, "list")
+  expect_is(d_sim_abbrev_backwards, "list")
+  expect_is(d_sim_abbrev_max_loading, "list")
+  expect_is(d_sim_abbrev_genetic, "list")
+
+  #has some of the right items
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_forwards)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_backwards)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_max_loading)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_genetic)))
+
+  #test the plots
+  p_forwards = d_sim_abbrev_forwards %>% GG_scale_abbreviation()
+  p_backwards = d_sim_abbrev_backwards %>% GG_scale_abbreviation()
+  p_max_loading = d_sim_abbrev_max_loading %>% GG_scale_abbreviation()
+  p_genetic = d_sim_abbrev_genetic %>% GG_scale_abbreviation()
+
+  #check the plots
+  expect_true(p_forwards %>% is.ggplot())
+  expect_true(p_backwards %>% is.ggplot())
+  expect_true(p_max_loading %>% is.ggplot())
+  expect_true(p_genetic %>% is.ggplot())
+
 })
