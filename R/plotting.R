@@ -1496,12 +1496,12 @@ bma_coef_plot = function(x, confidence_level = .95) {
     ggplot(aes(y = term_nice, x = mean)) +
     geom_point() +
     geom_errorbarh(aes(xmin = mean - conf_interval_width(sd, confidence_level = confidence_level), xmax = mean + conf_interval_width(sd, confidence_level = confidence_level))) +
-    theme_set(theme_bw()) +
     #remove y-axis
     theme_update(
       axis.title.y = element_blank(),
       axis.text.y = element_blank()
     ) +
+    theme_update(theme_bw()) +
     geom_vline(xintercept = 0, linetype = "dashed") +
     scale_x_continuous("Coefficient")
 

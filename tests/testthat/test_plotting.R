@@ -328,7 +328,9 @@ test_that("GG_BMA", {
   sink(nullfile())
   iris_bma = BMA::bic.glm(Sepal.Length ~ ., data = iris[, -5], glm.family = "gaussian")
   iris_bas = BAS::bas.lm(Sepal.Length ~ ., data = iris[, -5])
+  pdf(file = NULL) #prevent plotting
   iris_bms = BMS::bms(iris[, -5])
+  dev.off()
   sink()
 
   #make plots
