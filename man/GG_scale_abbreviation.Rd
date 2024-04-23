@@ -23,3 +23,15 @@ A ggplot2 object
 \description{
 Plots results from the output of \code{scale_abbreviation()}.
 }
+\examples{
+library(mirt)
+#simulate some mirt data 2PL
+set.seed(1)
+dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+#fit the model
+fit = mirt::mirt(dat, 1)
+#scale abbreviation
+short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
+#plot
+GG_scale_abbreviation(short_scale)
+}

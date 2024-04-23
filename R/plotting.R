@@ -1560,6 +1560,16 @@ GG_BMA = function(x, confidence_level = .95) {
 #' @export
 #'
 #' @examples
+#' library(mirt)
+#' #simulate some mirt data 2PL
+#' set.seed(1)
+#' dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+#' #fit the model
+#' fit = mirt::mirt(dat, 1)
+#' #scale abbreviation
+#' short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
+#' #plot
+#' GG_scale_abbreviation(short_scale)
 GG_scale_abbreviation = function(x, vars = c("reliability_frac", "mean_criterion_cors_frac", "r_full_score", "reliability"), add_lines_for_full_model = F) {
   #determine method used for making the plot
 

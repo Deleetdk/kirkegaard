@@ -1,0 +1,424 @@
+---
+title: "Scale abbreviation methods"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    df_print: paged
+editor_options: 
+  chunk_output_type: console
+---
+
+# Init
+
+```{r}
+#global options
+options(
+  digits = 2,
+  contrasts = c("contr.treatment", "contr.treatment")
+)
+
+#packages
+library(kirkegaard)
+load_packages(
+  mirt,
+  future, furrr
+)
+
+#ggplot2
+theme_set(theme_bw())
+
+
+```
+
+# Functions
+
+```{r}
+#helper function
+get_best_item_set = function(x) {
+  x$best_sets %>%
+    tail(1) %>% 
+    pull(item_set) %>% 
+    extract2(1) %>%
+    sort()
+}
+
+```
+
+
+# Example
+
+## Simulation 1
+
+- 25 items
+- select 10
+
+The function can optimize for correlation with an arbitrary variable, including the full score (default). Or it can try to optimize the reliability. Here we use the first option.
+
+```{r}
+#no multi-threading
+plan(sequential)
+
+#simulate some data
+set.seed(1)
+
+n <- 1000
+n_items = 25
+
+#simulate items
+d_sim = simdata(
+  N = n,
+  itemtype = "2PL",
+  d = runif(n_items, -2, 2),
+  a = runif(n_items, 0.5, 2)
+)
+
+#run a global fit
+sim_fit = mirt(
+  data = d_sim,
+  model = 1,
+  itemtype = "2PL",
+  verbose = F
+)
+
+#abbreviate scale
+res_c_forwards = abbreviate_scale(
+  items = d_sim,
+  item_target = 10,
+  selection_method = "c",
+  method = "forwards"
+)
+
+res_c_backwards = abbreviate_scale(
+  items = d_sim,
+  item_target = 10,
+  selection_method = "c",
+  method = "backwards"
+)
+
+#plot results
+res_c_forwards %>% 
+  GG_scale_abbreviation()
+
+res_c_backwards %>%
+  GG_scale_abbreviation()
+
+#compare results
+res_c_forwards$best_sets %>%
+  tail(1)
+
+res_c_backwards$best_sets %>%
+  tail(1)
+
+#almost the same, but not entirely, why?
+#compare the items in best sets
+res_c_backwards %>% 
+    get_best_item_set()
+
+res_c_forwards %>%
+    get_best_item_set()
+
+symdiff(
+  res_c_backwards %>% 
+    get_best_item_set(),
+  
+  res_c_forwards %>% 
+    get_best_item_set()
+)
+```
+
+## Simulation 2
+
+- 100 items
+- select 20
+
+We try optimizing for reliability, full score correlation, and just picking the items with highest loadings.
+
+```{r}
+#no multi-threading
+plan(multisession(workers = 7))
+
+#simulate some data
+set.seed(1)
+
+n <- 1000
+n_items = 100
+
+#simulate items
+d_sim = simdata(
+  N = n,
+  itemtype = "2PL",
+  d = runif(n_items, -2, 2),
+  a = runif(n_items, 0.5, 2)
+)
+
+#run a global fit
+sim_fit = mirt(
+  data = d_sim,
+  model = 1,
+  itemtype = "2PL",
+  verbose = F
+)
+
+#abbreviate scale
+res_c_forwards = abbreviate_scale(
+  items = d_sim,
+  item_target = 20,
+  selection_method = "c",
+  method = "forwards"
+)
+
+#plot results
+res_c_forwards %>% 
+  GG_scale_abbreviation()
+
+#compare results
+res_c_forwards$best_sets %>%
+  tail(1)
+
+#alternatively, we can optimize for reliability
+res_r_forwards = abbreviate_scale(
+  items = d_sim,
+  item_target = 20,
+  selection_method = "r",
+  method = "forwards"
+)
+
+#plot results
+res_r_forwards %>% 
+  GG_scale_abbreviation()
+
+#compare results
+res_r_forwards$best_sets %>%
+  tail(1)
+
+#highest loading method
+res_max_loading = abbreviate_scale(
+  items = d_sim,
+  item_target = 20,
+  selection_method = "c",
+  method = "max_loading"
+)
+
+#plot results
+res_max_loading %>% 
+  GG_scale_abbreviation()
+
+#compare results
+res_max_loading$best_sets %>%
+  tail(1)
+
+#a single plot of results at 20 items from each method
+combined_results = bind_rows(
+  res_max_loading$best_sets %>%
+    mutate("method" = "max_loading"),
+  
+  res_r_forwards$best_sets %>%
+    mutate("method" = "reliability"),
+  
+  res_c_forwards$best_sets %>%
+    mutate("method" = "r full score")
+) %>% 
+  select(reliability, r_full_score, method, items_in_scale) %>% 
+  pivot_longer(
+    cols = c("reliability", "r_full_score"),
+    names_to = "criterion",
+    values_to = "value"
+  )
+
+combined_results %>% 
+  ggplot(aes(items_in_scale, value, color = method)) +
+  geom_line() +
+  facet_wrap("criterion", scales = "free_y")
+```
+
+## Simulation 3
+- 100 items
+- select 25
+- -0.5 correlation between item difficulty and loading
+
+### Simulate data
+
+```{r}
+#simulate some data
+set.seed(1)
+
+n <- 1000
+n_items = 100
+max_items = 25
+
+#simulate norms to use for item pars
+item_pars = MASS::mvrnorm(
+  n = n_items,
+  mu = c(0, 0),
+  Sigma = matrix(c(1, -0.5, -0.5, 1), nrow = 2)
+)
+
+#simulate items
+d_sim = simdata(
+  N = n,
+  itemtype = "2PL",
+  d = item_pars[, 1],
+  a = item_pars[, 2] %>% rescale(0.5, 2)
+)
+
+#run a global fit
+sim_fit = mirt(
+  data = d_sim,
+  model = 1,
+  itemtype = "2PL",
+  verbose = F
+)
+
+```
+
+#### Simple step-wise
+
+```{r}
+#abbreviate scale
+#max both r and c
+res_rc_forwards = abbreviate_scale(
+  items = d_sim,
+  item_target = max_items,
+  selection_method = "rc",
+  method = "forwards"
+)
+
+#highest loading method
+#basic
+res_max_loading_basic = abbreviate_scale(
+  items = d_sim,
+  item_target = max_items,
+  selection_method = "rc",
+  method = "max_loading"
+)
+
+#balancing
+res_max_loading_balancing = abbreviate_scale(
+  items = d_sim,
+  item_target = max_items,
+  selection_method = "rc",
+  method = "max_loading",
+  difficulty_balance_groups = 5
+)
+
+#residualization
+res_max_loading_residualization = abbreviate_scale(
+  items = d_sim,
+  item_target = max_items,
+  selection_method = "rc",
+  method = "max_loading",
+  residualize_loadings = T
+)
+```
+
+
+#### Genetic algoithm
+
+```{r}
+#use muilti-threading
+plan(sequential)
+plan(multisession(workers = 7))
+
+#highest loading method
+res_genetic = abbreviate_scale(
+  items = d_sim,
+  item_target = max_items,
+  selection_method = "rc",
+  method = "genetic",
+  max_generations = 1000,
+  population_size = 100,
+  mutation_rate = 0.1,
+  selection_ratio = 0.20,
+  stop_search_after_generations = 10,
+  save_fits = F
+)
+
+#plot results
+res_genetic %>% 
+  GG_scale_abbreviation()
+
+#compare results
+res_genetic$best_sets %>%
+  tail(1)
+```
+
+
+When item parameter correlations are present (common), optimizing for both full scale correlation and reliability is a good idea. It gets almost the same full score correlation and reliability as the pure strategies. The highest loading method is not as good in this case.
+
+These functions will be implemented in Kirkegaard package shortly and easily available for use.
+
+#### Compare results
+
+```{r}
+#single plot comparison of methods at max items
+combined_results = bind_rows(
+  res_max_loading_basic$best_sets %>%
+    mutate("method" = "max loading basic"),
+  
+  res_max_loading_balancing$best_sets %>%
+    mutate("method" = "max loading balancing"),
+  
+  res_max_loading_residualization$best_sets %>%
+    mutate("method" = "max loading resid"),
+  
+  res_rc_forwards$best_sets %>%
+    mutate("method" = "forwards"),
+  
+  res_genetic$best_sets %>%
+    filter(criterion_value == max(criterion_value)) %>%
+    tail(1) %>%
+    mutate("method" = "genetic")
+) %>% 
+  select(reliability, r_full_score, method, items_in_scale, criterion_value) %>% 
+  pivot_longer(
+    cols = c("reliability", "r_full_score", "criterion_value"),
+    names_to = "criterion",
+    values_to = "value"
+  )
+
+combined_results %>%
+  ggplot(aes(items_in_scale, value, color = method)) +
+  geom_line() +
+  # geom_point() +
+  facet_wrap("criterion", scales = "free_y")
+
+GG_save("figs/simn3_comparison.png")
+```
+
+
+## Real data: vocabulary
+
+```{r}
+#load data
+vocab_data = read_rds("data/vocab_data.rds")
+```
+
+
+# Meta
+
+```{r}
+write_sessioninfo()
+
+#upload to OSF
+#avoid uploading the data in case they freak out again
+if (F) {
+  library(osfr)
+  
+  #auth
+  osf_auth(readr::read_lines("~/.config/osf_token"))
+  
+  #the project we will use
+  osf_proj = osf_retrieve_node("https://osf.io/XXX/")
+  
+  #upload files
+  #overwrite existing (versioning)
+  osf_upload(osf_proj, conflicts = "overwrite", 
+             path = c(
+               "figs",
+               "data",
+               "notebook.html",
+               "notebook.Rmd",
+             ))
+}
+```
+

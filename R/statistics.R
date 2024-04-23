@@ -908,7 +908,7 @@ SMD_matrix = function(x,
 
       #adjust for reliability?
       if (reliability != 1) {
-        # browser()
+
         m[row, col] = adj_d_reliability(m[row, col], rel = reliability)
       }
 
@@ -1809,7 +1809,7 @@ loading_to_slope = function(x, logit_scaling = T) {
 #' group = rbinom(1000, 1, .5)
 #' calc_item_gaps(X, group)
 calc_item_gaps = function(x, group, return_data_frame = T) {
-  # browser()
+
   #subset to complete cases for group
   no_na = !is.na(group)
   x = x[no_na, ]
@@ -1996,7 +1996,7 @@ apply_norms = function(score,
                        age_model_abs_intercept = 0,
                        mean = NULL,
                        sd = NULL) {
-  # browser()
+
   #if prior norms, use them
   if (!is.null(prior_norms)) {
     #poll values from prior norms
@@ -2043,7 +2043,7 @@ apply_norms = function(score,
 partially_resample = function(x, possible_values, idx = NULL, prob = NULL, prob_exact = T) {
   #check input are not both NULL
   assert_that(!(is.null(idx) & is.null(prob)))
-  # browser()
+
 
   #if idx is NULL, sample from prob
   if (is.null(idx)) {
@@ -2066,17 +2066,44 @@ partially_resample = function(x, possible_values, idx = NULL, prob = NULL, prob_
   y = x
   y[idx] = sample(setdiff(possible_values, x), size = length(idx))
 
-  #ensure no dups
-  if (anyDuplicated(y)) {
-    browser()
-  }
-
   y
 }
 
 #get factor loadings from mirt fit
 get_loadings = function(x) {
   x@Fit$`F` %>% as.vector()
+}
+
+get_difficulties = function(x) {
+  mirt::coef(x, simplify = T)$items[, 2]
+}
+
+get_discriminations = function(x) {
+  mirt::coef(x, simplify = T)$items[, 1]
+}
+
+
+#' Extract item parameters from `mirt()` fit
+#'
+#' @param x A `mirt` fit object
+#'
+#' @return A data frame of item parameters
+#' @export
+#'
+#' @examples
+#' library(mirt)
+#' data = simdata(seq(0.2, 2, length.out = 5), seq(-2, 2, length.out = 5), 1000, itemtype = "2PL")
+#' fit = mirt(data, 1)
+#' get_mirt_stats(fit)
+get_mirt_stats = function(x) {
+  tibble(
+    item_i = seq_along_rows(mirt::coef(x, simplify = T)$items),
+    item = mirt::coef(x, simplify = T)$items %>% rownames(),
+    loading = get_loadings(x),
+    difficulty = get_difficulties(x),
+    discrimination = get_discriminations(x),
+    pass_rate = pnorm(difficulty, lower.tail = F)
+  )
 }
 
 #internal function to fit mirt
@@ -2451,16 +2478,70 @@ forwards_pick = function(
 #make loadings based item list
 make_item_list_for_loadings_method = function(x, max_items) {
   #return a list with vectors of first 3 items, then first 4, then first 5, until max
-  purrr::map(
+  item_sets = purrr::map(
     3:max_items,
     function(last_item) {
       x[1:last_item]
     }
   )
+
+  item_sets
+}
+
+#a complex function to balance items into groups but assign remainder items to middle positions
+#made with GPT4 after 10 tries
+get_balanced_items <- function(data, num_groups, num_items) {
+  if (num_items > nrow(data)) {
+    stop("Number of items to select is greater than available items.")
+  }
+
+  # Prepare the data by assigning groups based on difficulty
+  data <- data %>%
+    mutate(group = ntile(difficulty, num_groups)) %>%
+    arrange(group, desc(loading))
+
+  # Initial distribution
+  base_items_per_group <- num_items %/% num_groups
+  remainder = num_items %% num_groups
+  group_counts = rep(base_items_per_group, num_groups)
+
+  # Calculate middle positions and distribute remainders
+  # Ensuring that the number of items always matches exactly
+  middle_index = (num_groups + 1) / 2
+  if (num_groups %% 2 == 0) {  # If even number of groups
+    group_counts[ceiling(middle_index)] = group_counts[ceiling(middle_index)] + remainder %/% 2
+    group_counts[floor(middle_index)] = group_counts[floor(middle_index)] + (remainder + 1) %/% 2
+  } else {  # If odd number of groups
+    group_counts[floor(middle_index)] = group_counts[floor(middle_index)] + remainder
+  }
+
+  # Select items based on the calculated distribution
+  selected_items = vector("list", num_groups)
+  for (i in seq_along(group_counts)) {
+    selected_items[[i]] = head(data[data$group == i,], group_counts[i])
+  }
+
+  # Combine all selected items into a single dataframe
+  selected_items = do.call(rbind, selected_items)
+  return(selected_items)
+}
+
+
+#balanced difficulty groups
+make_item_list_for_balanced_loadings_method = function(item_stats, max_items, difficulty_balance_groups) {
+  #return a list with vectors of first 3 items, then first 4, then first 5, until max
+  item_sets = purrr::map(
+    3:max_items,
+    function(item_count) {
+      get_balanced_items(item_stats, num_groups = difficulty_balance_groups, num_items = item_count)$item
+    }
+  )
+
+  item_sets
 }
 
 #use highest loadings
-highest_loadings_method = function(
+max_loading_method = function(
     items,
     max_items,
     criterion_vars,
@@ -2469,19 +2550,42 @@ highest_loadings_method = function(
     full_reliability,
     mirt_args = NULL,
     save_fits = T,
-    selection_method
+    selection_method,
+    difficulty_balance_groups,
+    residualize_loadings
 ) {
+  #not non-NULL to both residualization and balancing
+  if (!is.null(difficulty_balance_groups) & residualize_loadings) {
+    stop("Cannot residualize loadings and balance by difficulty groups at the same time.", call. = F)
+  }
 
   #get loadings
-  item_loadings = tibble(
-    item = 1:length(get_loadings(full_fit)),
-    loading = get_loadings(full_fit)
-  ) %>% arrange(-loading)
+  item_stats = get_mirt_stats(full_fit)
+
+  #residualize loadings?
+  if (!residualize_loadings) {
+    #just sort by loading as is
+    item_stats = item_stats %>% arrange(-loading)
+  } else {
+    #fit linear model to predict loading from difficulty
+    loading_model = lm(loading ~ difficulty, data = item_stats)
+    #save residuals
+    item_stats$loading_resid = residuals(loading_model)
+    #sort by residual
+    item_stats = item_stats %>% arrange(-loading_resid)
+  }
+
+  #determine item sets
+  if (is.null(difficulty_balance_groups)) {
+    item_sets = make_item_list_for_loadings_method(item_stats$item, max_items)
+  } else {
+    item_sets = make_item_list_for_balanced_loadings_method(item_stats, max_items, difficulty_balance_groups)
+  }
 
   #fit models with items from 3 to max
   #main loop
   additions = furrr::future_map(
-    make_item_list_for_loadings_method(item_loadings$item, max_items),
+    item_sets,
     function(item_set) {
 
       #fit mirt
@@ -2525,11 +2629,22 @@ highest_loadings_method = function(
 #' @param selection_ratio The ratio of the population to select for the next generation. Default is 0.20.
 #' @param stop_search_after_generations The number of generations to wait for no improvement before stopping the search. Default is 10.
 #' @param include_parents Whether to include the parents in the next generation. Default is TRUE.
+#' @param difficulty_balance_groups The number of groups to balance difficulty across. Default is NULL.
+#' @param residualize_loadings Whether to residualize loadings based on difficulty for selection purposes. Default is FALSE.
 #'
 #' @return A list of results. You probably want to call `GG_scale_abbreviation()` on these.
 #' @export
-#'
 #' @examples
+#' library(mirt)
+#' #simulate some mirt data 2PL
+#' set.seed(1)
+#' dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+#' #fit the model
+#' fit = mirt::mirt(dat, 1)
+#' #scale abbreviation
+#' short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
+#' #plot
+#' GG_scale_abbreviation(short_scale)
 abbreviate_scale = function(
     items,
     criterion_vars = NULL,
@@ -2544,31 +2659,38 @@ abbreviate_scale = function(
     mutation_rate = 0.1,
     selection_ratio = 0.20,
     stop_search_after_generations = 10,
-    include_parents = T
+    include_parents = T,
+    difficulty_balance_groups = NULL,
+    residualize_loadings = F
 ) {
 
   #start timer
   tictoc::tic()
-
-  #use seed
-  set.seed(seed)
 
   #stop timer on exit
   on.exit({
     tictoc::toc()
   })
 
-  #check methods
+  #use seed
+  set.seed(seed)
+
+  #check arguments
   assert_that(is.data.frame(items) | is.matrix(items))
   items = as.matrix(items) #make sure its a matrix to avoid some dropping issues
   assert_that(method %in% c("backwards", "forwards", "max_loading", "genetic"))
   if (selection_method == "cr") selection_method = "rc"
   assert_that(selection_method %in% c("rc", "r", "c", "cr"))
+  #not non-NULL to both residualization and balancing
+  if (!is.null(difficulty_balance_groups) & residualize_loadings) {
+    stop("Cannot residualize loadings and balance by difficulty groups at the same time.", call. = F)
+  }
+  assert_that(item_target >= 3, msg = "Item target must be at least 3")
+  assert_that(item_target < ncol(items), msg = "Item target count must be less than the number of items")
+
+  #messages
   message(str_glue("Abbreviating scale using {mapvalues(selection_method, from = c('c', 'rc', 'r'), to = c('correlation with criterion variable(s)', 'average of correlation with creiterion variable(s) and reliability', 'reliability'), warn_missing = F)} method"))
   message(str_glue("Using the {method} method"))
-
-  assert_that(item_target >= 3)
-  assert_that(item_target < ncol(items))
 
   #use default mirt args if none given
   if (is.null(mirt_args)) {
@@ -2661,7 +2783,9 @@ abbreviate_scale = function(
       }
 
     }
-  } else if (method == "forwards") {
+  }
+
+  if (method == "forwards") {
 
     #pick first, then based on results, pick a second etc. until desired size is reached
     items_to_pick = item_target
@@ -2717,7 +2841,7 @@ abbreviate_scale = function(
 
   #loadings method
   if (method == "max_loading") {
-    item_set_results_all = highest_loadings_method(
+    item_set_results_all = max_loading_method(
       items = items,
       max_items = item_target,
       criterion_vars = criterion_vars,
@@ -2726,7 +2850,9 @@ abbreviate_scale = function(
       save_fits = save_fits,
       full_fit = full_fit,
       full_reliability = full_reliability,
-      selection_method = selection_method
+      selection_method = selection_method,
+      difficulty_balance_groups = difficulty_balance_groups,
+      residualize_loadings = residualize_loadings
     )
   }
 

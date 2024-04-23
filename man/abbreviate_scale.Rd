@@ -18,7 +18,9 @@ abbreviate_scale(
   mutation_rate = 0.1,
   selection_ratio = 0.2,
   stop_search_after_generations = 10,
-  include_parents = T
+  include_parents = T,
+  difficulty_balance_groups = NULL,
+  residualize_loadings = F
 )
 }
 \arguments{
@@ -49,10 +51,26 @@ abbreviate_scale(
 \item{stop_search_after_generations}{The number of generations to wait for no improvement before stopping the search. Default is 10.}
 
 \item{include_parents}{Whether to include the parents in the next generation. Default is TRUE.}
+
+\item{difficulty_balance_groups}{The number of groups to balance difficulty across. Default is NULL.}
+
+\item{residualize_loadings}{Whether to residualize loadings based on difficulty for selection purposes. Default is FALSE.}
 }
 \value{
 A list of results. You probably want to call \code{GG_scale_abbreviation()} on these.
 }
 \description{
 This function abbreviates a scale by iteratively adding or removing items that are the least useful for predicting a criterion variable. The function can use a max loading, backwards, forwards, or genetic algorithm method to select items.
+}
+\examples{
+library(mirt)
+#simulate some mirt data 2PL
+set.seed(1)
+dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+#fit the model
+fit = mirt::mirt(dat, 1)
+#scale abbreviation
+short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
+#plot
+GG_scale_abbreviation(short_scale)
 }
