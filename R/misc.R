@@ -19,6 +19,21 @@ NA_to_F = function(x) {
 }
 
 
+#' Conert infinite values to `NA`
+#'
+#' @param x A vector
+#'
+#' @return A vector of the same length as x
+#' @export
+#'
+#' @examples
+#' c(1, 2, Inf, 3) %>% inf_to_NA()
+inf_to_NA = function(x) {
+  x[is.infinite(x)] = NA
+  x
+}
+
+
 #' Is x nullish?
 #'
 #' Sometimes useful to have flexible input to disable a feature that accepts NULL, NA, or F as meaning "no".
@@ -659,59 +674,7 @@ rev_uniq_encoding = function(x) {
 }
 
 
-#avoid zoo dependency
 
-#' Last observation carried forward
-#'
-#' @param x A vector
-#' @param reverse Whether to do it in reverse
-#'
-#' @return A vector
-#' @export
-#'
-#' @examples
-#' c(NA, 1, NA, 2, NA) %>% miss_locf()
-#' c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T)
-#' c(NA, 1, NA, 2, NA, NA, NA) %>% miss_locf()
-miss_locf = function(x, reverse = F) {
-  #reverse?
-  if (reverse) x = rev(x)
-
-  #recode NA
-  #these are kept distinct by rle() by default for same reason ???
-  x_class = class(x)
-  x[is.na(x)] = "___tmp"
-
-  #run level encoding
-  x_rle = rle(x)
-
-  #swap values for NAs
-  which_na = which(x_rle$values == "___tmp")
-
-  #skip 1st
-  which_na = setdiff(which_na, 1)
-
-  #replace values
-  x_rle$values[which_na] = x_rle$values[which_na - 1]
-
-  #back to normal
-  y = inverse.rle(x_rle)
-
-  #NA recode
-  y[y == "___tmp"] = NA
-
-  #fix type/class
-  if (x_class[1] == "logical") y = as.logical(y)
-  if (x_class[1] == "integer") y = as.integer(y)
-  if (x_class[1] == "numeric") y = as.double(y)
-  if (x_class[1] == "factor") y = factor(y, levels = levels(x))
-  if (x_class[1] == "ordered") y = ordered(y, levels = levels(x))
-
-  #reverse?
-  if (reverse) y = rev(y)
-
-  y
-}
 
 
 #tired of using plyr's
@@ -881,4 +844,33 @@ named_vector_to_df = function(x, name_col = "name", value_col = "value") {
     name = names(x),
     value = x
   ) %>% set_names(c(name_col, value_col))
+}
+
+
+#' Encode combinations
+#'
+#' Given a data frame of binary values, encode the combinations of TRUE values. Useful for combining multiple yes/no options in different variables into a single column, e.g. self-identified race/ethnicity.
+#'
+#' @param x A data frame of binary values, which will be converted to logicals.
+#'
+#' @return A chracter vector of encoded combinations
+#' @export
+#'
+#' @examples
+#' tibble(A = c(T, F, F, T, F), B = c(F, T, F, F, F), C = c(F, F, T, F, F), D = c(F, F, F, T, F)) %>% encode_combinations()
+encode_combinations = function(x, collapse = ", ") {
+  #rowwise
+  x %>%
+    #ensure they are logicals
+    map_df(as.logical) %>%
+    #then go rowwise
+    plyr::alply(.margins = 1, function(row) {
+      # browser()
+      #if only one option
+      if (sum(row) == 1) return(names(row)[unlist(row)])
+
+      #if multiple, combine with commas
+      return(str_c(names(row)[unlist(row)], collapse = ", "))
+    }) %>%
+    unlist() %>% unname()
 }

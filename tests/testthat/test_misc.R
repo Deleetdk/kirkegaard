@@ -4,14 +4,18 @@ context("misc")
 
 
 
-# NA_to_F -----------------------------------------------------------------
+
 
 test_that("NA_to_F", {
   x = c(T, F, NA, T)
   expect_equivalent(NA_to_F(x), c(T, F, F, T))
 })
 
-# restore_NAs -------------------------------------------------------------
+
+test_that("inf_to_NA", {
+  c(1, 2, Inf, 3) %>% inf_to_NA() %>% expect_equivalent(c(1, 2, NA, 3))
+})
+
 
 test_that("restore_NAs", {
   expect_equivalent(restore_NAs(c(1, 3, 5), c()), c(1, 3, 5))
@@ -22,13 +26,13 @@ test_that("restore_NAs", {
 })
 
 
-# find_duplicates ---------------------------------------------------------
+
 
 test_that("find_duplicates",
           expect_equal(find_duplicates(c(1, 1, 2, 2, 3, 4, 5, 5)), structure(list(`1` = 1:2, `2` = 3:4, `5` = 7:8), .Names = c("1", "2", "5"))))
 
 
-# last_value --------------------------------------------------------------
+
 
 test_that("last_value", {
   expect_equivalent(last_value(1:3), 3)
@@ -39,7 +43,7 @@ test_that("last_value", {
 })
 
 
-# table2 ------------------------------------------------------------------
+
 set.seed(1)
 some_letters = sample(letters[1:10], size = 100, replace = T)
 base_table = table(some_letters)
@@ -59,7 +63,7 @@ test_that("table2", {
 
 
 
-# seq_along_rows ----------------------------------------------------------
+
 
 test_that("seq_along_rows", {
   #normal
@@ -72,7 +76,7 @@ test_that("seq_along_rows", {
 })
 
 
-# get_dims total_cells --------------------------------------------------------------
+
 #a better version of dim() from base-r
 
 test_that("get_dims", {
@@ -85,7 +89,7 @@ test_that("get_dims", {
 })
 
 
-# total cells -------------------------------------------------------------
+
 
 test_that("total_cells", {
   #easy stuff
@@ -99,7 +103,7 @@ test_that("total_cells", {
 
 
 
-# uniq_encoding -----------------------------------------------------------
+
 
 test_that("uniq_encoding", {
   #simple tests
@@ -133,7 +137,7 @@ test_that("uniq_encoding", {
 
 
 
-# count_decimals ----------------------------------------------------------
+
 
 test_that("count_decimals", {
   #basics
@@ -156,7 +160,7 @@ test_that("count_decimals", {
 
 
 
-# inv_table ---------------------------------------------------------------
+
 
 test_that("inv_table", {
   #row counts should match before and after back and forth
@@ -165,6 +169,14 @@ test_that("inv_table", {
 
 
 
-
-
+test_that("encode_combinations", {
+  x = tibble(
+    A = c(T, F, F, T, F),
+    B = c(F, T, F, F, F),
+    C = c(F, F, T, F, F),
+    D = c(F, F, F, T, F),
+    ) %>%
+    encode_combinations()
+  expect_equivalent(x, c("A", "B", "C", "A, D", ""))
+})
 

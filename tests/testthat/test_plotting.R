@@ -15,7 +15,7 @@ test_that("GG_matrix", {
 #convenience function for adding text to ggplots
 #hard to do formally
 
-test_that("text", {
+test_that("GG_text", {
   #base
   base_plot = ggplot(tibble(x = 0, y = 0), aes(x, y)) +
     geom_point()
@@ -65,7 +65,7 @@ test_that("text", {
 
 
 #just run the plots
-test_that("denhist", {
+test_that("GG_denhist", {
   #data prep
   iris$labelled = haven::labelled(iris$Sepal.Length, labels = NULL)
 
@@ -96,7 +96,7 @@ test_that("denhist", {
 
 
 
-test_that("scatter", {
+test_that("GG_scatter", {
   iris$runif = runif(nrow(iris))
 
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width"), "ggplot")
@@ -263,7 +263,7 @@ test_that("GG_save", {
   if (is_inst("ggtern")) {
     #make data
     tern_data = matrix(runif(60), nrow = 20) %>%
-      apply(MARGIN = 1, FUN = function(row) {
+      apply(MARGIN = 1, function(row) {
         row/sum(row)
       }) %>%
       t() %>%

@@ -1,7 +1,7 @@
 context("miss_")
 
 
-# miss_plot ---------------------------------------------------------------
+
 
 test_that("miss_plot", {
   set.seed(1)
@@ -14,7 +14,7 @@ test_that("miss_plot", {
   expect_is(miss_plot(test_data, reverse = T), "ggplot")
 })
 
-# miss_count ---------------------------------------------------
+
 
 test_that("miss_count", {
   expect_true(miss_count(c(1:10, rep(NA, 5), 1:10)) == 5)
@@ -23,7 +23,7 @@ test_that("miss_count", {
 })
 
 
-# miss_filter ------------------------------------------------
+
 #filters data by number of missing values per case
 
 test_that("miss_filter", {
@@ -56,7 +56,7 @@ test_that("miss_filter", {
 
 
 
-# miss_analyze --------------------------------------------------
+
 #large dataset with missing data
 
 
@@ -70,7 +70,7 @@ test_that("miss_analyze", {
 })
 
 
-# miss_impute -------------------------------------------------------------
+
 
 
 test_that("miss_impute", {
@@ -114,7 +114,7 @@ test_that("miss_impute", {
 })
 
 
-# miss_amount -------------------------------------------------------------
+
 
 test_that("miss_amount", {
   set.seed(1)
@@ -123,7 +123,7 @@ test_that("miss_amount", {
 })
 
 
-# miss_by_group -----------------------------------------------------------
+
 
 test_that("miss_amount", {
   set.seed(1)
@@ -136,7 +136,7 @@ test_that("miss_amount", {
 })
 
 
-# miss_fill ---------------------------------------------------------------
+
 
 test_that("miss_fill", {
   #ok input
@@ -161,7 +161,7 @@ test_that("miss_fill", {
 })
 
 
-# miss_locf --------------------------------------------------------------------
+
 
 test_that("miss_locf", {
   expect_identical(c(NA, 1, 1, 2, 2),
@@ -178,7 +178,7 @@ test_that("miss_locf", {
 
 
 
-# miss_add_random ---------------------------------------------------------
+
 
 test_that("miss_add_random", {
   #check that data types don't change
@@ -188,4 +188,53 @@ test_that("miss_add_random", {
   expect_is(iris_with_random, "data.frame")
   expect_is(iris_with_random_tibble, "data.frame")
   expect_is(iris_with_random_tibble, "tbl_df")
+})
+
+
+test_that("miss_combine_duplicate_vars", {
+  d1 = tibble(
+    id = 1:3,
+    y = c(1, 2, 3),
+    x = c(1, NA, NA)
+  )
+
+  d2 = tibble(
+    id = 1:3,
+    x = c(NA, 2, NA),
+    z = c(1, 2, 3)
+  )
+
+  d3 = tibble(
+    id = 1:3,
+    x = c(NA, NA, 3),
+    a = letters[1:3]
+  )
+
+  d_expected = tibble(
+    id = 1:3,
+    x = c(1, 2, 3),
+    y = c(1, 2, 3),
+    z = c(1, 2, 3),
+    a = letters[1:3]
+  )
+
+  d = d1 %>%
+    left_join(d2, by = "id") %>%
+    miss_combine_duplicate_vars() %>%
+    left_join(d3, by = "id") %>%
+    miss_combine_duplicate_vars() %>%
+    select(id, x, y, z, a)
+
+  expect_equivalent(d, d_expected)
+
+  #alternative order, shouldnt affect things
+  d = d3 %>%
+    left_join(d1, by = "id") %>%
+    miss_combine_duplicate_vars() %>%
+    left_join(d2, by = "id") %>%
+    miss_combine_duplicate_vars() %>%
+    select(id, x, y, z, a)
+
+  expect_equivalent(d, d_expected)
+
 })

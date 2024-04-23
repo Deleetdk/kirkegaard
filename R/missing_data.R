@@ -278,7 +278,7 @@ miss_analyze = function(data, robust = F) {
   m_d = miss_matrix(data)
 
   #for each variable, analyze relationship each other variable
-  d_NA_diffs = plyr::ldply(.data = colnames(data), .fun = function(var) {
+  d_NA_diffs = plyr::ldply(.data = colnames(data), function(var) {
     #for each variable
     purrr::map_dbl(colnames(data), function(var2) {
       #if same
@@ -544,7 +544,7 @@ miss_filter = function(data, missing = 0, reverse = F, by_case = T, vars = NULL)
 }
 
 
-# examine data availability -----------------------------------------------
+
 
 #' Calculate proportion missing data by group variables
 #'
@@ -585,7 +585,7 @@ miss_by_group = function(data, grouping_vars, vars = NULL) {
 }
 
 
-# miss_fill ---------------------------------------------------------------
+
 #fill in missing values based on other variables/vectors
 
 #' Fill in missing values based on other variables/vectors
@@ -639,5 +639,135 @@ miss_fill = function(...) {
 }
 
 
+#' Combine duplicate variables from a join back into single variables
+#'
+#' Looks for variable pairs with names ending in ".x" and ".y" and combines them into a single variable. This is done so that no new missing data is introduced. Will not work for second order duplicates from joins, e.g. var.x.x.
+#'
+#' @param x A data frame
+#' @param vars A character vector of variable names to consider. If NULL, all variables are considered.
+#' @param priority Which variable to prioritize when combining. Default is "x".
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' d1 = tibble(
+#' id = 1:3,
+#' y = c(1, 2, 3),
+#' x = c(1, NA, NA)
+#' )
+#'
+#' d2 = tibble(
+#' id = 1:3,
+#' x = c(NA, 2, NA),
+#' z = c(1, 2, 3)
+#' )
+#'
+#' d3 = tibble(
+#' id = 1:3,
+#' x = c(NA, NA, 3),
+#' a = letters[1:3]
+#' )
+#'
+#' d1 %>%
+#'   left_join(d2, by = "id") %>%
+#'   miss_combine_duplicate_vars() %>%
+#'   left_join(d3, by = "id") %>%
+#'   miss_combine_duplicate_vars()
+miss_combine_duplicate_vars = function(x, vars = NULL, priority = "x") {
+  #which are duplicated from a join?
+  if (is.null(vars)) {
+    vars = names(x)
+  }
 
+  #error if there are illegal, duplicate variable names present
+  if (any(duplicated(vars))) {
+    stop("There are duplicate variable names present in the data. This function cannot handle this.", call. = F)
+  }
+
+  #duplicates
+  dups_table = vars %>%
+    str_subset("\\.[xy]$") %>%
+    str_replace_all("\\.[xy]$", "") %>%
+    table2(include_NA = F)
+
+  #loop
+  for (i_dup in dups_table$Group) {
+
+    #check if both are present
+    i_dup_x = str_c(i_dup, ".x")
+    i_dup_y = str_c(i_dup, ".y")
+
+    i_dup_x_exists = i_dup_x %in% vars
+    i_dup_y_exists = i_dup_y %in% vars
+
+    #which to use as the base
+    if (priority == "x") {
+      x[[i_dup]] = miss_fill(x[[i_dup_x]], x[[i_dup_y]])
+    } else {
+      x[[i_dup]] = miss_fill(x[[i_dup_y]], x[[i_dup_x]])
+    }
+
+    #remove the dups
+    x[[str_c(i_dup, ".x")]] = NULL
+    x[[str_c(i_dup, ".y")]] = NULL
+  }
+
+  x
+}
+
+
+#avoid zoo dependency
+
+#' Last observation carried forward
+#'
+#' @param x A vector
+#' @param reverse Whether to do it in reverse
+#'
+#' @return A vector
+#' @export
+#'
+#' @examples
+#' c(NA, 1, NA, 2, NA) %>% miss_locf()
+#' c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T)
+#' c(NA, 1, NA, 2, NA, NA, NA) %>% miss_locf()
+miss_locf = function(x, reverse = F) {
+  #reverse?
+  if (reverse) x = rev(x)
+
+  #recode NA
+  #these are kept distinct by rle() by default for same reason ???
+  x_class = class(x)
+  x[is.na(x)] = "___tmp"
+
+  #run level encoding
+  x_rle = rle(x)
+
+  #swap values for NAs
+  which_na = which(x_rle$values == "___tmp")
+
+  #skip 1st
+  which_na = setdiff(which_na, 1)
+
+  #replace values
+  x_rle$values[which_na] = x_rle$values[which_na - 1]
+
+  #back to normal
+  y = inverse.rle(x_rle)
+
+  #NA recode
+  y[y == "___tmp"] = NA
+
+  #fix type/class
+  if (x_class[1] == "logical") y = as.logical(y)
+  if (x_class[1] == "integer") y = as.integer(y)
+  if (x_class[1] == "numeric") y = as.double(y)
+  if (x_class[1] == "factor") y = factor(y, levels = levels(x))
+  if (x_class[1] == "ordered") y = ordered(y, levels = levels(x))
+
+  #reverse?
+  if (reverse) y = rev(y)
+
+  y
+}
 
