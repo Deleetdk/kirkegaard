@@ -1,5 +1,6 @@
 #https://rpubs.com/EmilOWK/IRT_DIF_examples
 
+context("mirt")
 
 test_that("DIF_test", {
   n = 1000

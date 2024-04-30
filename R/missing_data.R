@@ -647,7 +647,7 @@ miss_fill = function(...) {
 #' @param vars A character vector of variable names to consider. If NULL, all variables are considered.
 #' @param priority Which variable to prioritize when combining. Default is "x".
 #'
-#' @return
+#' @return A data frame
 #' @export
 #'
 #' @examples

@@ -13,6 +13,9 @@ miss_combine_duplicate_vars(x, vars = NULL, priority = "x")
 
 \item{priority}{Which variable to prioritize when combining. Default is "x".}
 }
+\value{
+A data frame
+}
 \description{
 Looks for variable pairs with names ending in ".x" and ".y" and combines them into a single variable. This is done so that no new missing data is introduced. Will not work for second order duplicates from joins, e.g. var.x.x.
 }
