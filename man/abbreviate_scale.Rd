@@ -7,7 +7,7 @@
 abbreviate_scale(
   items,
   criterion_vars = NULL,
-  item_target = 10,
+  item_target,
   method = "forwards",
   selection_method = "rc",
   mirt_args = NULL,
@@ -20,7 +20,8 @@ abbreviate_scale(
   stop_search_after_generations = 10,
   include_parents = T,
   difficulty_balance_groups = NULL,
-  residualize_loadings = F
+  residualize_loadings = F,
+  reliability_at = "total"
 )
 }
 \arguments{

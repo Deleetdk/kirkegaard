@@ -61,7 +61,7 @@ get_reliabilities = function(x) {
 }
 
 #internal function to fit mirt
-fit_mirt = function(items, mirt_args) {
+fit_mirt = function(items, mirt_args, reliability_at) {
 
   local_mirt_fit = rlang::exec(
     .fn = mirt::mirt,
@@ -76,7 +76,7 @@ fit_mirt = function(items, mirt_args) {
   list(
     fit = local_mirt_fit,
     scores = local_scores,
-    reliability = mirt::empirical_rxx(local_scores)
+    reliability = get_reliability_at(local_mirt_fit, reliability_at)
   )
 }
 
@@ -133,8 +133,49 @@ make_forward_sets = function(
   sets
 }
 
+get_reliability_at = function(
+    fit,
+    reliability_at
+) {
+  #if total, use total reliability
+  if (length(reliability_at) == 1 && reliability_at == "total") {
+    scores = mirt::fscores(fit, full.scores.SE = T)
+    return(mirt::empirical_rxx(scores) %>% unname())
+  }
+
+  #if not total, is it a vector of values?
+  assert_that(is.numeric(reliability_at), msg = "`reliability_at` must be either 'total' a numeric vector of target z scores")
+
+  #compute all reliabilities
+  fit_rels = get_reliabilities(fit)
+
+  #get rels closest to target values
+  fit_fels_targets = purrr::map_dfr(
+    reliability_at,
+    function(target) {
+      fit_rels %>%
+        mutate(diff = abs(z - target)) %>%
+        arrange(diff) %>%
+        slice_head(n = 1)
+    }
+  )
+
+  #return average
+  fit_fels_targets$rel %>%
+    set_names(reliability_at)
+}
+
 #compute model stats
-compute_fit_stats = function(fit, item_set, selection_method, criterion_vars, full_reliability, criterion_cors_full, save_fits = T) {
+compute_fit_stats = function(
+    fit,
+    item_set,
+    selection_method,
+    criterion_vars,
+    full_reliability,
+    criterion_cors_full,
+    save_fits = T,
+    reliability_at
+    ) {
   #get scores and their full set cors
   cors = wtd.cors(
     bind_cols(
@@ -148,7 +189,7 @@ compute_fit_stats = function(fit, item_set, selection_method, criterion_vars, fu
   criterion_cors = cors[-1, 1]
   criterion_cors_frac = criterion_cors / criterion_cors_full[-1, 1]
   mean_criterion_cors_frac = mean(criterion_cors_frac)
-  reliability_frac = (fit$reliability / full_reliability) %>% unname()
+  reliability_frac = (fit$reliability / full_reliability) %>% unname() %>% mean()
 
   #determine what to maximize
   criterion_value = switch(selection_method,
@@ -244,7 +285,8 @@ abbreviate_by_genetic_algo = function(
     mutation_rate,
     selection_ratio,
     stop_search_after_generations,
-    include_parents
+    include_parents,
+    reliability_at
 ) {
 
   #main loop
@@ -269,7 +311,7 @@ abbreviate_by_genetic_algo = function(
       function(item_set) {
 
         #fit mirt
-        fit = fit_mirt(all_items[, item_set, drop = F], mirt_args)
+        fit = fit_mirt(all_items[, item_set, drop = F], mirt_args = mirt_args, reliability_at = reliability_at)
 
         #get stats
         y = compute_fit_stats(
@@ -279,7 +321,8 @@ abbreviate_by_genetic_algo = function(
           criterion_vars = criterion_vars,
           full_reliability = full_reliability,
           criterion_cors_full = criterion_cors_full,
-          save_fits = save_fits
+          save_fits = save_fits,
+          reliability_at = reliability_at
         )
 
         y
@@ -354,7 +397,8 @@ backwards_drop = function(
     full_fit,
     full_reliability,
     mirt_args = NULL,
-    save_fits = T
+    save_fits = T,
+    reliability_at = reliability_at
 ) {
 
   #if no current selection, select all
@@ -368,7 +412,7 @@ backwards_drop = function(
     function(item_set) {
 
       #fit mirt
-      fit = fit_mirt(all_items[, item_set, drop = F], mirt_args)
+      fit = fit_mirt(all_items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
 
       #get stats
       y = compute_fit_stats(
@@ -378,7 +422,8 @@ backwards_drop = function(
         criterion_vars = criterion_vars,
         full_reliability = full_reliability,
         criterion_cors_full = criterion_cors_full,
-        save_fits = save_fits
+        save_fits = save_fits,
+        reliability_at = reliability_at
       )
 
       y
@@ -399,7 +444,8 @@ forwards_pick = function(
     full_fit,
     full_reliability,
     mirt_args = NULL,
-    save_fits = T
+    save_fits = T,
+    reliability_at = reliability_at
 ) {
 
   #main loop
@@ -408,7 +454,7 @@ forwards_pick = function(
     function(item_set) {
 
       #fit mirt
-      fit = fit_mirt(items[, item_set, drop = F], mirt_args)
+      fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
 
       #get stats
       y = compute_fit_stats(
@@ -418,7 +464,8 @@ forwards_pick = function(
         criterion_vars = criterion_vars,
         full_reliability = full_reliability,
         criterion_cors_full = criterion_cors_full,
-        save_fits = save_fits
+        save_fits = save_fits,
+        reliability_at = reliability_at
       )
 
       y
@@ -506,7 +553,8 @@ max_loading_method = function(
     save_fits = T,
     selection_method,
     difficulty_balance_groups,
-    residualize_loadings
+    residualize_loadings,
+    reliability_at
 ) {
   #not non-NULL to both residualization and balancing
   if (!is.null(difficulty_balance_groups) & residualize_loadings) {
@@ -543,7 +591,7 @@ max_loading_method = function(
     function(item_set) {
 
       #fit mirt
-      fit = fit_mirt(items[, item_set, drop = F], mirt_args)
+      fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
 
       #get stats
       y = compute_fit_stats(
@@ -553,7 +601,8 @@ max_loading_method = function(
         criterion_vars = criterion_vars,
         full_reliability = full_reliability,
         criterion_cors_full = criterion_cors_full,
-        save_fits = save_fits
+        save_fits = save_fits,
+        reliability_at = reliability_at
       )
 
       y
@@ -602,7 +651,7 @@ max_loading_method = function(
 abbreviate_scale = function(
     items,
     criterion_vars = NULL,
-    item_target = 10,
+    item_target,
     method = "forwards",
     selection_method = "rc",
     mirt_args = NULL,
@@ -615,7 +664,8 @@ abbreviate_scale = function(
     stop_search_after_generations = 10,
     include_parents = T,
     difficulty_balance_groups = NULL,
-    residualize_loadings = F
+    residualize_loadings = F,
+    reliability_at = "total"
 ) {
 
   #start timer
@@ -667,7 +717,7 @@ abbreviate_scale = function(
   full_scores = mirt::fscores(full_fit, full.scores.SE = T)
 
   #reliability
-  full_reliability = mirt::empirical_rxx(full_scores) %>% unname()
+  full_reliability = get_reliability_at(full_fit, reliability_at)
 
   #make set of criterion vars
   if (is.null(criterion_vars)) {
@@ -709,7 +759,8 @@ abbreviate_scale = function(
           mirt_args = mirt_args,
           save_fits = save_fits,
           full_fit = full_fit,
-          full_reliability = full_reliability
+          full_reliability = full_reliability,
+          reliability_at = reliability_at
         )
 
         next
@@ -730,7 +781,8 @@ abbreviate_scale = function(
           mirt_args = mirt_args,
           save_fits = save_fits,
           full_fit = full_fit,
-          full_reliability = full_reliability
+          full_reliability = full_reliability,
+          reliability_at = reliability_at
         )
 
         next
@@ -763,7 +815,8 @@ abbreviate_scale = function(
           mirt_args = mirt_args,
           save_fits = save_fits,
           full_fit = full_fit,
-          full_reliability = full_reliability
+          full_reliability = full_reliability,
+          reliability_at = reliability_at
         )
 
         next
@@ -784,7 +837,8 @@ abbreviate_scale = function(
           mirt_args = mirt_args,
           save_fits = save_fits,
           full_fit = full_fit,
-          full_reliability = full_reliability
+          full_reliability = full_reliability,
+          reliability_at = reliability_at
         )
 
         next
@@ -806,7 +860,8 @@ abbreviate_scale = function(
       full_reliability = full_reliability,
       selection_method = selection_method,
       difficulty_balance_groups = difficulty_balance_groups,
-      residualize_loadings = residualize_loadings
+      residualize_loadings = residualize_loadings,
+      reliability_at = reliability_at
     )
   }
 
@@ -827,7 +882,8 @@ abbreviate_scale = function(
       mutation_rate = mutation_rate,
       selection_ratio = selection_ratio,
       stop_search_after_generations = stop_search_after_generations,
-      include_parents = include_parents
+      include_parents = include_parents,
+      reliability_at = reliability_at
     )
 
     #split to a list
