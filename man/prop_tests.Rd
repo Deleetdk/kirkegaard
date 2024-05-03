@@ -27,7 +27,7 @@ prop_tests(
 A data frame, which may have missing levels if a combination did not exist in the data.
 }
 \description{
-This is a convenient tidy wrapper for \code{stat::prop.test()}
+This is a convenient tidy wrapper for \code{stats::prop.test()}
 }
 \examples{
 prop_tests(mpg$cyl, mpg$manufacturer)

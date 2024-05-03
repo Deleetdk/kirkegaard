@@ -1495,7 +1495,7 @@ quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), 
 
 #' Compute many proportion tests
 #'
-#' This is a convenient tidy wrapper for `stat::prop.test()`
+#' This is a convenient tidy wrapper for `stats::prop.test()`
 #'
 #' @param x A factor variable
 #' @param group A grouping variable
