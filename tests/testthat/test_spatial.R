@@ -23,7 +23,6 @@ test_that("spatial_knn", {
 })
 
 #compute autocors
-
 test_that("spatial_lag_cors", {
   spatial_lags = spatial_lag_cors(us_states_lagged)
   spatial_lags_df = spatial_lag_cors(us_states_lagged, long_output = T)

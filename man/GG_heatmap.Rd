@@ -11,9 +11,12 @@ GG_heatmap(
   digits = 2,
   font_size = 4,
   color_label = "Pearson\\nCorrelation",
-  legend_position = c(0.6, 0.7),
+  legend_position = c(0.4, 0.7),
   short_x_labels = F,
-  axis_labels_clean_func = str_clean
+  axis_labels_clean_func = str_clean,
+  dodge_x_labels = 1,
+  min_n = 0,
+  pairwise_n = NULL
 )
 }
 \arguments{
@@ -34,6 +37,10 @@ GG_heatmap(
 \item{short_x_labels}{Adds integers to the y axis labels, and replaces the x labels with the same integers. Useful when there are many variables.}
 
 \item{axis_labels_clean_func}{A function to clean the labels with, typically to remove underscores. NULL means disable.}
+
+\item{dodge_x_labels}{How much to dodge the x labels. Useful when there are many variables.}
+
+\item{min_n}{Minimum number of observations to include a correlation}
 }
 \value{
 a ggplot2 object

@@ -4,7 +4,15 @@
 \alias{spatial_knn}
 \title{Add spatial k nearest neighbor (sknn) values}
 \usage{
-spatial_knn(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag")
+spatial_knn(
+  x,
+  vars,
+  k = 3,
+  lon = "lon",
+  lat = "lat",
+  suffix = "_lag",
+  dists = NULL
+)
 }
 \arguments{
 \item{x}{A data frame with variables for lon and lat}
@@ -18,6 +26,8 @@ spatial_knn(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag")
 \item{lat}{The lat variable}
 
 \item{suffix}{The suffix to use, default "_lag"}
+
+\item{dists}{A distance matrix, if not provided, will be computed from \code{lon} and \code{lat}}
 }
 \value{
 A data frame with added variables

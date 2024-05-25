@@ -30,9 +30,9 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
   if (text_pos != "manual") {
     #vertical
     switch (str_sub(text_pos, start = 1, end = 1),
-      t = {y = .98; vjust = 1},
-      m = {y = .50; vjust = .5},
-      b = {y = .02; vjust = -.1}
+            t = {y = .98; vjust = 1},
+            m = {y = .50; vjust = .5},
+            b = {y = .02; vjust = -.1}
     )
 
     #horizontal
@@ -68,7 +68,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
   if (! "gpar" %in% names(args)) {
     #use default gpar
     gpar = grid::gpar(fontsize = font_size,
-                    col = font_color)
+                      col = font_color)
   } else {
     #use user's
     gpar = args$gapar
@@ -166,8 +166,8 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
 
     #any miss in grouping variable?
     if (anyNA(df[[group]])) {
-          df = df[!is.na(df[[group]]), ]
-          warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
+      df = df[!is.na(df[[group]]), ]
+      warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
     }
 
     #groups without any data?
@@ -215,7 +215,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
                      center = histogram_pars$center,
                      boundary = histogram_pars$boundary,
                      breaks = histogram_pars$breaks
-                     ) +
+      ) +
       geom_density(alpha = alpha, fill="#FF6666") # Overlay with transparent density plot
   } else {
 
@@ -227,7 +227,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
                      center = histogram_pars$center,
                      boundary = histogram_pars$boundary,
                      breaks = histogram_pars$breaks
-                     ) +
+      ) +
       geom_density(alpha = alpha) # Overlay with transparent density plot
   }
 
@@ -569,7 +569,7 @@ GG_scatter = function(df,
 
   #text object
   text_object = grid::grobTree(grid::textGrob(text, x = x,  y = y, hjust = hjust, vjust = vjust),
-                         gp = grid::gpar(fontsize = 11))
+                               gp = grid::gpar(fontsize = 11))
 
 
   #plot!
@@ -886,22 +886,22 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
       #add CIs
       if (draw_CI) {
-          if (is_prop) {
-            #prop
-            proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
+        if (is_prop) {
+          #prop
+          proptest = prop.test(sum(dd[[var]] == 1), length(dd[[var]]))
 
-            desc %<>% mutate(
-              ci_lower = proptest$conf.int[1],
-              ci_upper = proptest$conf.int[2]
-            )
-          } else {
-            #standard symmetric CI
-            desc %<>% mutate(
-              ci_bar = suppressWarnings(qt(1 - ((1 - CI) / 1.96), df = n - 1)),
-              ci_lower = mean - ci_bar * se,
-              ci_upper = mean + ci_bar * se
-            )
-          }
+          desc %<>% mutate(
+            ci_lower = proptest$conf.int[1],
+            ci_upper = proptest$conf.int[2]
+          )
+        } else {
+          #standard symmetric CI
+          desc %<>% mutate(
+            ci_bar = suppressWarnings(qt(1 - ((1 - CI) / 1.96), df = n - 1)),
+            ci_lower = mean - ci_bar * se,
+            ci_upper = mean + ci_bar * se
+          )
+        }
       }
 
       desc
@@ -1105,6 +1105,8 @@ GG_save_pdf = function(list, filename) {
 #' @param legend_position Position of the legend. Sometimes you may need to move it a bit
 #' @param short_x_labels Adds integers to the y axis labels, and replaces the x labels with the same integers. Useful when there are many variables.
 #' @param axis_labels_clean_func A function to clean the labels with, typically to remove underscores. NULL means disable.
+#' @param dodge_x_labels How much to dodge the x labels. Useful when there are many variables.
+#' @param min_n Minimum number of observations to include a correlation
 #'
 #' @return a ggplot2 object
 #' @export
@@ -1125,28 +1127,53 @@ GG_save_pdf = function(list, filename) {
 #' set_colnames(letters[1:3]) %>%
 #' set_rownames(letters[1:3]) %>%
 #' GG_heatmap()
-GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_size = 4, color_label = "Pearson\nCorrelation", legend_position = c(0.6, 0.7), short_x_labels = F, axis_labels_clean_func = str_clean) {
+GG_heatmap = function(
+    data,
+    add_values = T,
+    reorder_vars = T,
+    digits = 2,
+    font_size = 4,
+    color_label = "Pearson\nCorrelation",
+    legend_position = c(0.4, 0.7),
+    short_x_labels = F,
+    axis_labels_clean_func = str_clean,
+    dodge_x_labels = 1,
+    min_n = 0,
+    pairwise_n = NULL
+) {
 
   #correlations
   #compute if given as data
   #coerce to numeric to deal with ordinals
   if (is.data.frame(data)) {
-    cormat = weights::wtd.cors(map_df(data, as.numeric))
+    cormat = weights::wtd.cors(data)
   }
   if (is.matrix(data)) {
     cormat = data
+
+    #if min_n is given, must also specify pairwise_n
+    if (min_n > 0 & is.null(pairwise_n)) stop("If `min_n` is given with matrix input, `pairwise_n` must also be given", call. = F)
   }
 
-  #reorder
+  #reorder variable?
   if (reorder_vars) {
-    reorder_cormat = function(cormat){
-      # Use correlation between variables as distance
-      dd = as.dist((1-cormat)/2)
-      hc = hclust(dd)
-      cormat = cormat[hc$order, hc$order]
-    }
+    # Use correlation between variables as distance
+    dd = as.dist((1-cormat)/2)
+    hc = hclust(dd)
+    cormat_reordered = cormat[hc$order, hc$order]
+  } else {
+    cormat_reordered = cormat
+  }
 
-    cormat %<>% reorder_cormat()
+  #remove values with too few observations
+  if (min_n > 0) {
+    if (is.null(pairwise_n)) pairwise_n = psych::pairwiseCount(data)
+    cormat[pairwise_n < min_n] = NA_real_
+
+    #reorder again if needed
+    if (reorder_vars) {
+      cormat_reordered = cormat[hc$order, hc$order]
+    }
   }
 
   #remove lower tri values
@@ -1181,7 +1208,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
   #plot
   ggheatmap = ggplot(melted_cormat, aes(Var2, Var1, fill = value)) +
     geom_tile(color = "white") +
-    scale_x_discrete(labels = x_labels) +
+    scale_x_discrete(labels = x_labels, guide = guide_axis(n.dodge = dodge_x_labels)) +
     scale_y_discrete(labels = y_labels) +
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                          midpoint = 0, limit = c(-1,1), space = "Lab",
@@ -1190,6 +1217,7 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
     theme(axis.text.x = element_text(angle = 45, vjust = 1,
                                      size = 12, hjust = 1),
           legend.justification = c(1, 0),
+          legend.position = "inside",
           legend.position.inside = legend_position,
           legend.direction = "horizontal",
           axis.title.x = element_blank(),
@@ -1198,10 +1226,10 @@ GG_heatmap = function(data, add_values = T, reorder_vars = T, digits = 2, font_s
           panel.border = element_blank(),
           panel.background = element_blank(),
           axis.ticks = element_blank()
-          ) +
-            guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
-                                         title.position = "top", title.hjust = 0.5)) +
-            coord_fixed()
+    ) +
+    guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                                 title.position = "top", title.hjust = 0.5)) +
+    coord_fixed()
 
   #add values?
   if (add_values) {
@@ -1636,3 +1664,118 @@ GG_scale_abbreviation = function(x, vars = c("reliability_frac", "mean_criterion
 
   p
 }
+
+
+#' Plot ordinal proportions
+#'
+#' @param data A data frame with ordinal variables
+#' @param clean_factor_levels Whether to clean the factor levels
+#' @param order How to order the variables. Default is "positive".
+#' @param percentages Whether to plot percentages or counts. Default is TRUE.
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples
+#' xx = tibble(
+#' ord_1 = cut(rnorm(200), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+#' ord_2 = cut(rnorm(200, mean = 1), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+#' ord_3 = cut(rnorm(200, mean = -1), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+#' ord_4 = cut(rnorm(200, mean = 0), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D"))
+#' )
+#' GG_ordinal(xx)
+GG_ordinal = function(
+    data,
+    clean_factor_levels = T,
+    order = "positive",
+    percentages = T,
+    add_values = T,
+    font_size = 4,
+    exclude_values_below = 0
+) {
+
+  #ensure data are ordinals
+  #and have the same levels
+  data_levels = map(data, levels)
+  if (!all_the_same(data_levels)) {
+    stop("All variables must have the same levels", call. = F)
+  }
+  data = map_df(data, as.ordered)
+
+  #convert to long form
+  data_long = data %>%
+    mutate(
+      id = 1:n()
+    ) %>%
+    pivot_longer(cols = -id) %>%
+    mutate(
+      value_num = value %>% as.numeric(value)
+    )
+
+  #calculate proportions
+  data_props = data_long %>%
+    group_by(name) %>%
+    reframe(table2(value, include_NA = F))
+
+  #set ordinal levels
+  data_props$Group = factor(data_props$Group, levels = levels(data[[1]]))
+
+  #how to sort the variables
+  if (order == "positive") {
+    data_long %<>% mutate(
+      name_ordered = name %>% fct_reorder(value_num, .fun = mean, .na_rm = T)
+    )
+  } else if (order == "negative") {
+    data_long %<>% mutate(
+      name_ordered = name %>% fct_reorder(-value_num, .fun = mean, .na_rm = T)
+    )
+  }
+
+  #sort proportions the same way
+  data_props$name = ordered(data_props$name, levels = levels(data_long$name_ordered))
+
+  #clean factor levels
+  if (clean_factor_levels) {
+    data_props$name = data_props$name %>% fct_relabel(str_clean)
+  }
+
+
+  #use percentages or counts
+  if (percentages) {
+    data_props$value = data_props$Percent/100
+  } else {
+    data_props$value = data_props$Count
+  }
+
+  #plot
+  p = data_props %>%
+    ggplot(aes(x = name, y = value, fill = Group)) +
+    geom_bar(stat = "identity") +
+    coord_flip() +
+    theme_bw() +
+    scale_fill_brewer(palette = "Paired")  # Optional: Improves color distinction
+
+  #add values
+  if (add_values) {
+    #exclude some values maybe
+    data_props_filtered = data_props %>% filter(value >= exclude_values_below)
+
+    if (percentages) {
+      p = p + geom_text(data = data_props_filtered, aes(label = paste0(round(Percent, 0), "%")), position = position_stack(vjust = 0.5), size = font_size)
+    } else {
+      p = p + geom_text(data = data_props_filtered, aes(label = Count), position = position_stack(vjust = 0.5), size = font_size)
+    }
+  }
+
+  #appropriate label and scales
+  if (percentages) {
+    p = p + scale_y_continuous("Percentage", labels = scales::percent)
+  } else {
+    p = p + scale_y_continuous("Count")
+  }
+
+  p
+}
+
+
+

@@ -2,12 +2,12 @@
 % Please edit documentation in R/is_are.R
 \name{all_the_same}
 \alias{all_the_same}
-\title{Are all elements of a vector the same?}
+\title{Are all elements of a vector or list the same?}
 \usage{
 all_the_same(x)
 }
 \arguments{
-\item{x}{(num vector) A numericor or character vector.}
+\item{x}{A vector or list to test.}
 }
 \description{
 Tests whether all elements of a simple vector are the same.
@@ -17,4 +17,6 @@ all_the_same(rep(1, 100))
 all_the_same(rnorm(100))
 all_the_same(letters[rep(1, 10)])
 all_the_same(letters[sample(1:10, size = 10)])
+all_the_same(list(1:10, 1:10, 1:10))
+all_the_same(list(1:10, 1:10, 1:11))
 }

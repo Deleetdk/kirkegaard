@@ -343,3 +343,53 @@ test_that("GG_BMA", {
   expect_s3_class(iris_bas_plot, "ggplot")
   expect_s3_class(iris_bms_plot, "ggplot")
 })
+
+
+test_that("GG_ordianls", {
+  #make some ordinal data
+  set.seed(1)
+  xx = tibble(
+    ord_1 = cut(rnorm(200), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+    ord_2 = cut(rnorm(200, mean = 1), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+    ord_3 = cut(rnorm(200, mean = -1), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D")),
+    ord_4 = cut(rnorm(200, mean = 0), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D"))
+  )
+
+  #add some missing data to 4th
+  xx$ord_4[sample(1:200, 20)] = NA
+
+  p1 = xx %>%
+    GG_ordinal()
+
+  p2 = xx %>%
+    GG_ordinal(order = "negative")
+
+  p3 = xx %>%
+    GG_ordinal(percentages = F)
+
+  p4 = xx %>%
+    GG_ordinal(clean_factor_levels = F)
+
+  p5 = xx %>%
+    GG_ordinal(add_values = F)
+
+  p6 = xx %>%
+    GG_ordinal(font_size = 3)
+
+  p7 = xx %>%
+    GG_ordinal(clean_factor_levels = F)
+
+  p8 = xx %>%
+    GG_ordinal(exclude_values_below = .05)
+
+  #check that the plots are different
+  plot_list <- list(p1, p2, p3, p4, p5, p6, p7, p8)
+
+  for (i in 1:length(plot_list)) {
+    expect_s3_class(plot_list[[i]], "ggplot")
+  }
+
+  combn(length(plot_list), 2, function(idx) {
+    expect_true(!identical(plot_list[[idx[1]]], plot_list[[idx[2]]]))
+  })
+})

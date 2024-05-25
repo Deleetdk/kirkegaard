@@ -28,23 +28,34 @@ is_unordered_factor = function(x) {
 }
 
 
-#' Are all elements of a vector the same?
+#' Are all elements of a vector or list the same?
 #'
 #' Tests whether all elements of a simple vector are the same.
-#' @param x (num vector) A numericor or character vector.
+#' @param x A vector or list to test.
 #' @export
 #' @examples
 #' all_the_same(rep(1, 100))
 #' all_the_same(rnorm(100))
 #' all_the_same(letters[rep(1, 10)])
 #' all_the_same(letters[sample(1:10, size = 10)])
+#' all_the_same(list(1:10, 1:10, 1:10))
+#' all_the_same(list(1:10, 1:10, 1:11))
 all_the_same = function(x) {
   #for numeric data, a faster method
   if (is.numeric(x)) {
     return(max(x) == min(x))
   }
+
   #for non-numeric data, a slower method
-  return(length(unique(x)) == 1)
+  #is not a list?
+  if (!is.list(x)) {
+    return(length(unique(x)) == 1)
+  }
+
+  #if its a list, compare each element to the first
+  all(purrr::map_lgl(x, function(x_i) {
+    identical(x_i, x[[1]])
+  }))
 }
 
 
