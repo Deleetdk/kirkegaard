@@ -4,7 +4,13 @@
 \alias{compare_predictors}
 \title{Fit linear models for a set of predictors to compare their effects alone and together}
 \usage{
-compare_predictors(data, outcome, predictors, conf.level = 0.95)
+compare_predictors(
+  data,
+  outcome,
+  predictors,
+  conf.level = 0.95,
+  family = gaussian
+)
 }
 \arguments{
 \item{data}{The data frame to use}
@@ -14,12 +20,14 @@ compare_predictors(data, outcome, predictors, conf.level = 0.95)
 \item{predictors}{A character vector of predictors to use.}
 
 \item{conf.level}{The confidence level to use. Default is .95.}
+
+\item{family}{The family to use. Default is "gaussian" (OLS), see \code{?glm} for more information.}
 }
 \value{
 A data frame with the coefficients for each model
 }
 \description{
-This function fits a set of linear models to the data, where each model includes only one predictor. It then fits a full model with all predictors. The function returns a data frame with the coefficients for each model, as well as the full model.
+This function fits a set of models to the data, where each model includes only one predictor. It then fits a full model with all predictors. The function returns a data frame with the coefficients for each model, as well as the full model. Thus, if given p predictors, it will return p+1 model results and 2 betas for each predictor.
 }
 \examples{
 compare_predictors(iris, names(iris)[1], names(iris)[-1])

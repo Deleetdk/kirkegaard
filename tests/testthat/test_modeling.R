@@ -208,40 +208,57 @@ test_that("get_model_coefs", {
     MASS::rlm(y ~ num + int + fac + ord + chr + lgl + num * int + num * fac + fac * ord, data = ex_data)
   )
 
+  #logistic
+  models_glm_logit = list(
+    glm(lgl ~ num + int, data = ex_data, family = binomial),
+    glm(lgl ~ num + int + fac + ord + chr, data = ex_data, family = binomial),
+    glm(lgl ~ num + int + fac + ord + chr + num * int + num * fac + fac * ord, data = ex_data, family = binomial)
+  )
+
   #these are lists
   expect_true(class(models_lm) == "list")
   expect_true(class(models_ols) == "list")
   expect_true(class(models_rlm) == "list")
+  expect_true(class(models_glm_logit) == "list")
 
   #get coefs
   coefs_lm = models_lm %>% get_model_coefs()
   coefs_rlm = models_rlm %>% get_model_coefs()
   coefs_ols = models_ols %>% get_model_coefs()
+  coefs_glm_logit = models_glm_logit %>% get_model_coefs()
 
   #these are data frames
   expect_true(is.data.frame(coefs_lm))
   expect_true(is.data.frame(coefs_rlm))
   expect_true(is.data.frame(coefs_ols))
+  expect_true(is.data.frame(coefs_glm_logit))
 
   #check if columsn are correct, at least some of them
   expected_cols = c("term", "estimate", "std.error", "statistic", "p.value")
   expect_true(all(expected_cols %in% colnames(coefs_lm)))
   expect_true(all(expected_cols %in% colnames(coefs_rlm)))
   expect_true(all(expected_cols %in% colnames(coefs_ols)))
+  expect_true(all(expected_cols %in% colnames(coefs_glm_logit)))
 })
 
 #compare_predictors
 test_that("compare_predictors", {
-  #fit models for built in datasets
+  #fit linear models for built in datasets
   iris_models = compare_predictors(iris, names(iris)[1], names(iris)[-1])
   mpg_models = compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
+
+  #fit logistic models for another dataset
+  mpg$audi = mpg$manufacturer == "audi"
+  mpg_models_logit = compare_predictors(mpg, outcome = "audi", predictors = c("displ", "year", "cty", "hwy"), family = binomial)
 
   #check that the output is a data frame
   expect_true(is.data.frame(iris_models))
   expect_true(is.data.frame(mpg_models))
+  expect_true(is.data.frame(mpg_models_logit))
 
   #check if columsn are correct, at least some of them
   expected_cols = c("term", "estimate", "std.error", "statistic", "p.value")
   expect_true(all(expected_cols %in% colnames(iris_models)))
   expect_true(all(expected_cols %in% colnames(mpg_models)))
+  expect_true(all(expected_cols %in% colnames(mpg_models_logit)))
 })

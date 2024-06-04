@@ -473,12 +473,13 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 
 #' Fit linear models for a set of predictors to compare their effects alone and together
 #'
-#' This function fits a set of linear models to the data, where each model includes only one predictor. It then fits a full model with all predictors. The function returns a data frame with the coefficients for each model, as well as the full model.
+#' This function fits a set of models to the data, where each model includes only one predictor. It then fits a full model with all predictors. The function returns a data frame with the coefficients for each model, as well as the full model. Thus, if given p predictors, it will return p+1 model results and 2 betas for each predictor.
 #'
 #' @param data The data frame to use
 #' @param outcome The name of the outcome variable. Must be numeric.
 #' @param predictors A character vector of predictors to use.
 #' @param conf.level The confidence level to use. Default is .95.
+#' @param family The family to use. Default is "gaussian" (OLS), see `?glm` for more information.
 #'
 #' @return A data frame with the coefficients for each model
 #' @export
@@ -486,13 +487,13 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 #' @examples
 #' compare_predictors(iris, names(iris)[1], names(iris)[-1])
 #' compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
-compare_predictors = function(data, outcome, predictors, conf.level = .95) {
+compare_predictors = function(data, outcome, predictors, conf.level = .95, family = gaussian) {
   #run singular regression models
-  models = predictors %>% map(~lm(str_glue("{outcome} ~ {.x}"), data = data))
+  models = predictors %>% map(~glm(str_glue("{outcome} ~ {.x}"), data = data, family = family))
   names(models) = 1:length(models)
 
   #full model
-  full_model = lm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data)
+  full_model = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data, family = family)
 
   #add to list
   models[["full"]] = full_model
