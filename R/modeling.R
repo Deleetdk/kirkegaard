@@ -511,3 +511,28 @@ compare_predictors = function(data, outcome, predictors, conf.level = .95, famil
 
   all_coefs
 }
+
+
+earth_bootstrap = function(data, y, x, n_boot = 1000, seed = 1, progress = T, ...) {
+  #seed
+  set.seed(seed)
+
+  #bootstrap
+  boot_models = purrr::map(1:n_boot, .progress = progress, .f = \(i) {
+    #sample
+    idx = sample(1:nrow(data), replace = T)
+
+    #fit model
+    model = earth::earth(
+      x = x[idx, ],
+      y = y[idx],
+      ...
+      )
+
+    #return
+    model
+  })
+
+  #return
+  boot_models
+}

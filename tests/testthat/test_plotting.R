@@ -355,6 +355,10 @@ test_that("GG_ordianls", {
     ord_4 = cut(rnorm(200, mean = 0), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D"))
   )
 
+  #xx long form
+  xx_long = xx %>%
+    pivot_longer(everything())
+
   #add some missing data to 4th
   xx$ord_4[sample(1:200, 20)] = NA
 
@@ -382,8 +386,15 @@ test_that("GG_ordianls", {
   p8 = xx %>%
     GG_ordinal(exclude_values_below = .05)
 
+  p9 = xx %>%
+    GG_ordinal(reverse_factor_levels = T)
+
+  #long form
+  p10 = xx_long %>%
+    GG_ordinal(vars = "value", group = "name")
+
   #check that the plots are different
-  plot_list <- list(p1, p2, p3, p4, p5, p6, p7, p8)
+  plot_list <- list(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10)
 
   for (i in 1:length(plot_list)) {
     expect_s3_class(plot_list[[i]], "ggplot")

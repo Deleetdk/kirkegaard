@@ -6,8 +6,11 @@
 \usage{
 GG_ordinal(
   data,
+  vars = NULL,
+  group = NULL,
   clean_factor_levels = T,
   order = "positive",
+  reverse_factor_levels = F,
   percentages = T,
   add_values = T,
   font_size = 4,
@@ -17,11 +20,23 @@ GG_ordinal(
 \arguments{
 \item{data}{A data frame with ordinal variables}
 
+\item{vars}{Which variables to plot. Default is all.}
+
+\item{group}{Grouping variable. Default is NULL.}
+
 \item{clean_factor_levels}{Whether to clean the factor levels}
 
-\item{order}{How to order the variables. Default is "positive".}
+\item{order}{How to order the variables. Default is "positive" which sorts them by largest value. Alternatives are "negative", and "none" which leaves them in place.}
+
+\item{reverse_factor_levels}{Whether to reverse the factor levels. Default is FALSE.}
 
 \item{percentages}{Whether to plot percentages or counts. Default is TRUE.}
+
+\item{add_values}{Whether to add values to the plot. Default is TRUE.}
+
+\item{font_size}{Font size for the values. Default is 4.}
+
+\item{exclude_values_below}{Exclude values below this value. Default is 0.}
 }
 \value{
 A ggplot2 object
@@ -37,4 +52,9 @@ ord_3 = cut(rnorm(200, mean = -1), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("
 ord_4 = cut(rnorm(200, mean = 0), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D"))
 )
 GG_ordinal(xx)
+GG_ordinal(xx, order = "negative")
+GG_ordinal(xx, order = "none")
+
+#long form
+xx \%>\% pivot_longer(everything()) \%>\% GG_ordinal(vars = "value", group = "name")
 }

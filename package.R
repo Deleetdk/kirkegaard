@@ -1,15 +1,13 @@
 #libs
 library(devtools)
 library(roxygen2)
-library(stringr)
-library(testthat)
 
 #options
 options(digits = 2, scipen = 2)
 
 #update package description version automatically
 readr::read_lines("DESCRIPTION") %>%
-  str_replace("Version: .+", str_glue("Version: {Sys.Date()}")) %>%
+  stringr::str_replace("Version: .+", stringr::str_glue("Version: {Sys.Date()}")) %>%
   readr::write_lines("DESCRIPTION")
 
 #make documentation

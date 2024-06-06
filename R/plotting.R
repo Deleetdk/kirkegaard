@@ -1670,8 +1670,14 @@ GG_scale_abbreviation = function(x, vars = c("reliability_frac", "mean_criterion
 #'
 #' @param data A data frame with ordinal variables
 #' @param clean_factor_levels Whether to clean the factor levels
-#' @param order How to order the variables. Default is "positive".
+#' @param order How to order the variables. Default is "positive" which sorts them by largest value. Alternatives are "negative", and "none" which leaves them in place.
+#' @param reverse_factor_levels Whether to reverse the factor levels. Default is FALSE.
 #' @param percentages Whether to plot percentages or counts. Default is TRUE.
+#' @param add_values Whether to add values to the plot. Default is TRUE.
+#' @param font_size Font size for the values. Default is 4.
+#' @param exclude_values_below Exclude values below this value. Default is 0.
+#' @param vars Which variables to plot. Default is all.
+#' @param group Grouping variable. Default is NULL.
 #'
 #' @return A ggplot2 object
 #' @export
@@ -1684,33 +1690,78 @@ GG_scale_abbreviation = function(x, vars = c("reliability_frac", "mean_criterion
 #' ord_4 = cut(rnorm(200, mean = 0), breaks = c(-Inf, -1, 0, 1, Inf), labels = c("A", "B", "C", "D"))
 #' )
 #' GG_ordinal(xx)
+#' GG_ordinal(xx, order = "negative")
+#' GG_ordinal(xx, order = "none")
+#'
+#' #long form
+#' xx %>% pivot_longer(everything()) %>% GG_ordinal(vars = "value", group = "name")
 GG_ordinal = function(
     data,
+    vars = NULL,
+    group = NULL,
     clean_factor_levels = T,
     order = "positive",
+    reverse_factor_levels = F,
     percentages = T,
     add_values = T,
     font_size = 4,
     exclude_values_below = 0
 ) {
 
-  #ensure data are ordinals
-  #and have the same levels
-  data_levels = map(data, levels)
-  if (!all_the_same(data_levels)) {
-    stop("All variables must have the same levels", call. = F)
+  #if data given, and not vars, then use all vars
+  if (is.null(vars)) {
+    vars = names(data)
   }
-  data = map_df(data, as.ordered)
 
-  #convert to long form
-  data_long = data %>%
-    mutate(
-      id = 1:n()
-    ) %>%
-    pivot_longer(cols = -id) %>%
-    mutate(
-      value_num = value %>% as.numeric(value)
-    )
+  #if group is given, then things work differently
+  if (is.null(group)) {
+    #ensure data are ordinals
+    #and have the same levels
+    data_levels = map(data, levels)
+    if (!all_the_same(data_levels)) {
+      stop("All variables must have the same levels", call. = F)
+    }
+    data = map_df(data, as.ordered)
+
+    #convert to long form
+    data_long = data %>%
+      mutate(
+        id = 1:n()
+      ) %>%
+      pivot_longer(cols = -id) %>%
+      mutate(
+        value_num = value %>% as.numeric(value)
+      )
+
+    #save name levels
+    name_levels = vars
+  } else {
+    #convert to the same long format as without groups
+    #only 1 var can be chosen, at least for now
+    assertthat::assert_that(is_character(vars, 1))
+
+    #subset
+    data_long = data %>%
+      mutate(
+        id = row_number(),
+        value = !!sym(vars),
+        value_num = value %>% as.numeric(value),
+        name = !!sym(group) %>% as.factor()
+      ) %>%
+      select(id, name, value, value_num)
+
+    #save data levels
+    data_levels = map(data[vars], levels)
+
+    #save name levels
+    name_levels = levels(data_long$name)
+    # browser()
+  }
+
+  #reverse factor levels
+  if (reverse_factor_levels) {
+    data_levels[[1]] = data_levels[[1]] %>% base::rev()
+  }
 
   #calculate proportions
   data_props = data_long %>%
@@ -1718,8 +1769,8 @@ GG_ordinal = function(
     reframe(table2(value, include_NA = F))
 
   #set ordinal levels
-  data_props$Group = factor(data_props$Group, levels = levels(data[[1]]))
-
+  data_props$Group = factor(data_props$Group, levels = data_levels[[1]])
+# browser()
   #how to sort the variables
   if (order == "positive") {
     data_long %<>% mutate(
@@ -1728,6 +1779,11 @@ GG_ordinal = function(
   } else if (order == "negative") {
     data_long %<>% mutate(
       name_ordered = name %>% fct_reorder(-value_num, .fun = mean, .na_rm = T)
+    )
+  } else if (order == "none") {
+
+    data_long %<>% mutate(
+      name_ordered = name %>% factor(levels = name_levels)
     )
   }
 
@@ -1776,6 +1832,4 @@ GG_ordinal = function(
 
   p
 }
-
-
 
