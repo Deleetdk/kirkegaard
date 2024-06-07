@@ -245,6 +245,7 @@ test_that("get_model_coefs", {
 test_that("compare_predictors", {
   #fit linear models for built in datasets
   iris_models = compare_predictors(iris, names(iris)[1], names(iris)[-1])
+  iris_models2 = compare_predictors(iris, names(iris)[1], names(iris)[-1], additional_models = list(petal = c("Petal.Length", "Petal.Width")))
   mpg_models = compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
 
   #fit logistic models for another dataset
@@ -253,12 +254,14 @@ test_that("compare_predictors", {
 
   #check that the output is a data frame
   expect_true(is.data.frame(iris_models))
+  expect_true(is.data.frame(iris_models2))
   expect_true(is.data.frame(mpg_models))
   expect_true(is.data.frame(mpg_models_logit))
 
   #check if columsn are correct, at least some of them
   expected_cols = c("term", "estimate", "std.error", "statistic", "p.value")
   expect_true(all(expected_cols %in% colnames(iris_models)))
+  expect_true(all(expected_cols %in% colnames(iris_models2)))
   expect_true(all(expected_cols %in% colnames(mpg_models)))
   expect_true(all(expected_cols %in% colnames(mpg_models_logit)))
 })

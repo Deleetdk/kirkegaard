@@ -6,8 +6,8 @@ library(roxygen2)
 options(digits = 2, scipen = 2)
 
 #update package description version automatically
-readr::read_lines("DESCRIPTION") %>%
-  stringr::str_replace("Version: .+", stringr::str_glue("Version: {Sys.Date()}")) %>%
+readr::read_lines("DESCRIPTION") |>
+  stringr::str_replace("Version: .+", stringr::str_glue("Version: {Sys.Date()}")) |>
   readr::write_lines("DESCRIPTION")
 
 #make documentation

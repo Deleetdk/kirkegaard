@@ -8,6 +8,7 @@ compare_predictors(
   data,
   outcome,
   predictors,
+  additional_models = NULL,
   conf.level = 0.95,
   family = gaussian
 )
@@ -32,4 +33,6 @@ This function fits a set of models to the data, where each model includes only o
 \examples{
 compare_predictors(iris, names(iris)[1], names(iris)[-1])
 compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
+#with additional models
+compare_predictors(iris, names(iris)[1], names(iris)[-1], additional_models = list(petal = c("Petal.Length", "Petal.Width")))
 }
