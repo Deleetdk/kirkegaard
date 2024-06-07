@@ -487,16 +487,29 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 #' @examples
 #' compare_predictors(iris, names(iris)[1], names(iris)[-1])
 #' compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
-compare_predictors = function(data, outcome, predictors, conf.level = .95, family = gaussian) {
+#' #with additional models
+#' compare_predictors(iris, names(iris)[1], names(iris)[-1], additional_models = list(petal = c("Petal.Length", "Petal.Width")))
+compare_predictors = function(data, outcome, predictors, additional_models = NULL, conf.level = .95, family = gaussian) {
   #run singular regression models
   models = predictors %>% map(~glm(str_glue("{outcome} ~ {.x}"), data = data, family = family))
   names(models) = 1:length(models)
 
   #full model
-  full_model = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data, family = family)
+  models[["full"]] = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data, family = family)
 
-  #add to list
-  models[["full"]] = full_model
+  #any additional models?
+  if (!is.null(additional_models)) {
+    #do they have names already?
+    if (is.null(names(additional_models))) {
+      names(additional_models) = "Extra model " + seq_along(additional_models)
+    }
+
+    #loop and add them
+    for (i in seq_along(additional_models)) {
+      models[[names(additional_models)[i]]] = glm(str_glue("{outcome} ~ {str_c(additional_models[[i]], collapse = ' + ')}"), data = data, family = family)
+    }
+  }
+
 
   #get all coefficients for all models, tag appropriately
   all_coefs = get_model_coefs(models, conf.level = conf.level)
@@ -513,26 +526,4 @@ compare_predictors = function(data, outcome, predictors, conf.level = .95, famil
 }
 
 
-earth_bootstrap = function(data, y, x, n_boot = 1000, seed = 1, progress = T, ...) {
-  #seed
-  set.seed(seed)
 
-  #bootstrap
-  boot_models = purrr::map(1:n_boot, .progress = progress, .f = \(i) {
-    #sample
-    idx = sample(1:nrow(data), replace = T)
-
-    #fit model
-    model = earth::earth(
-      x = x[idx, ],
-      y = y[idx],
-      ...
-      )
-
-    #return
-    model
-  })
-
-  #return
-  boot_models
-}
