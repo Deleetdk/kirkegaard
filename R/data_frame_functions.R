@@ -705,7 +705,7 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
   if (method == "custom") {
     #combine the groups using gather
     l_combined = mapply(members = l_memberships, name = names(l_memberships), FUN = function(members, name) {
-      # browser()
+
       #gather members of this group
       d_gathered = tidyr::gather_(data, key_col = key_col, value_col = ".value", gather_cols = colnames_data[members]) %>%
         extract_last(margin_2 = 1:2) #extract last two columns
@@ -726,7 +726,6 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
     }, SIMPLIFY = F)
 
     #bind by row
-    # browser()
     d_long = ldf_to_df(l_combined, add_by = F)
 
     #spread

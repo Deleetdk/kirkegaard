@@ -865,7 +865,7 @@ encode_combinations = function(x, collapse = ", ") {
     map_df(as.logical) %>%
     #then go rowwise
     plyr::alply(.margins = 1, function(row) {
-      # browser()
+
       #if only one option
       if (sum(row) == 1) return(names(row)[unlist(row)])
 

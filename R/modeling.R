@@ -22,7 +22,7 @@
 #' c(.123, .009, .004, .0009, .0001) %>% p_to_asterisk(asterisks_only = T)
 #' p_to_asterisk(NA)
 p_to_asterisk = function(x, asterisks = c(.01, .005, .001), digits = max(count_decimals(asterisks)), asterisks_only = F) {
-  # browser()
+
   #do nothing if not desired
   if (is.null(asterisks)) return(x)
   x2 = round(x, digits = digits)
@@ -122,7 +122,7 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #loop and make concise table
   y = map2_df(x, names(x), function(m, name) {
-    # browser()
+
     #get tidy output
     #if its lm or rms
     class_m = class(m)
@@ -161,14 +161,14 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
 
   #add reference levels?
   #add clean version
-  # browser()
+
   y$clean_term = y$term %>%
     clean_term() %>%
     factor(levels = unique(.))
 
 
   y$factor = y$term %>% str_detect("=")
-# browser()
+
   #add ref levels
   y$ref = F #prefill with F
   if (add_ref_level) {
@@ -176,8 +176,6 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
     y = plyr::ddply(y, c("model", "clean_term"), function(dd) {
       #is it a factor? if not, return as is
       if (!dd$factor[1]) return(dd)
-
-      # browser()
 
       #how many factors are there? for each factor, we have to find the ref level
       #we can find factors by splitting variables by *

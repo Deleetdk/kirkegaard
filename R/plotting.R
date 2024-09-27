@@ -1176,6 +1176,9 @@ GG_heatmap = function(
     }
   }
 
+  #if we reordered, use the reordered version
+  if (reorder_vars) cormat = cormat_reordered
+
   #remove lower tri values
   cormat[lower.tri(cormat)] = NA
 

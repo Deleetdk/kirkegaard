@@ -1,7 +1,6 @@
 context("is/are")
 
 
-# lengths_match -----------------------------------------------------------
 
 test_that("lengths_match", {
   expect_true(lengths_match(1:4, 5:8))
@@ -12,7 +11,6 @@ test_that("lengths_match", {
 })
 
 
-# all_the_same ------------------------------------------------------------
 
 test_that("all_the_same", {
   expect_true(all_the_same(rep(1, 100)))
@@ -20,7 +18,21 @@ test_that("all_the_same", {
 })
 
 
-# is_simple_vector --------------------------------------------------------
+test_that("all_different", {
+  #simple
+  expect_true(all_different(1:5))
+
+  expect_false(all_different(rep(1, 100)))
+  expect_false(all_different(c(1:5, 5)))
+  expect_false(all_different(c(NA, NA)))
+
+  #lists
+  expect_true(all_different(list(1:2, 1:3, 1:4)))
+  expect_true(all_different(list(1:2, 1:3, 1:4, NA)))
+
+  expect_false(all_different(list(1:2, 1:3, 1:4, 1:4)))
+})
+
 
 test_that("is_simple_vector", {
   expect_true(is.vector(list(1:3)))
@@ -32,14 +44,13 @@ test_that("is_simple_vector", {
 })
 
 
-# is_whole_number ---------------------------------------------------------
 
 test_that("is_whole_number", {
   expect_equivalent(is_whole_number(seq(0, 2, .5)), c(T, F, T, F, T))
 })
 
 
-# is_negative, is_positive ------------------------------------------------
+
 
 test_that("is_positive", {
   expect_equivalent(is_negative(-2:2), c(T, T, F, F, F))
@@ -48,7 +59,7 @@ test_that("is_positive", {
 
 
 
-# is_ ---------------------------------------------------------------------
+
 #flexible function
 
 test_that("is_", {
@@ -63,7 +74,7 @@ test_that("is_", {
 })
 
 
-# is_between --------------------------------------------------------------
+
 #tests whether values are between two limits.
 
 test_that("is_between", {
@@ -83,7 +94,7 @@ test_that("is_between", {
 })
 
 
-# is_numeric  --------------------------------------------------------------
+
 #recursive function
 
 test_that("is_numeric", {

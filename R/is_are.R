@@ -40,10 +40,12 @@ is_unordered_factor = function(x) {
 #' all_the_same(letters[sample(1:10, size = 10)])
 #' all_the_same(list(1:10, 1:10, 1:10))
 #' all_the_same(list(1:10, 1:10, 1:11))
+#' #careful with NAs
+#' all_the_same(c(1, 1, NA))
 all_the_same = function(x) {
   #for numeric data, a faster method
   if (is.numeric(x)) {
-    return(max(x) == min(x))
+    return(max(x, na.rm = T) == min(x, na.rm = T) && !anyNA(x))
   }
 
   #for non-numeric data, a slower method
@@ -54,8 +56,28 @@ all_the_same = function(x) {
 
   #if its a list, compare each element to the first
   all(purrr::map_lgl(x, function(x_i) {
-    identical(x_i, x[[1]])
+    are_equal(x_i, x[[1]])
   }))
+}
+
+
+#' Are all elements of a vector or list different?
+#'
+#' @param x A vector or list to test.
+#'
+#' @return A boolean scalar.
+#' @export
+#'
+#' @examples
+#' all_different(rep(1, 100))
+#' all_different(c(1:5, 5))
+#' all_different(c(NA, NA))
+#' all_different(1:5)
+#' all_different(list(1:2, 1:3, 1:4))
+#' all_different(list(1:2, 1:3, 1:4, NA))
+#' all_different(list(1:2, 1:3, 1:4, 1:4))
+all_different = function(x) {
+  length(unique(x)) == length(x)
 }
 
 
@@ -133,6 +155,7 @@ are_equal = function(x, y, check.names = T, check.attributes = T, ...) {
     return(FALSE)
   }
 }
+
 
 #' Does object have names?
 #'

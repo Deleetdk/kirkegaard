@@ -19,4 +19,6 @@ all_the_same(letters[rep(1, 10)])
 all_the_same(letters[sample(1:10, size = 10)])
 all_the_same(list(1:10, 1:10, 1:10))
 all_the_same(list(1:10, 1:10, 1:11))
+#careful with NAs
+all_the_same(c(1, 1, NA))
 }
