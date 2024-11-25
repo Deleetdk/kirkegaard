@@ -344,7 +344,7 @@ test_that("GG_BMA", {
 })
 
 
-test_that("GG_ordianls", {
+test_that("GG_ordinals", {
 
   #make some ordinal data
   set.seed(1)

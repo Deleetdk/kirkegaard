@@ -1817,12 +1817,17 @@ GG_ordinal = function(
   #add values
   if (add_values) {
     #exclude some values maybe
-    data_props_filtered = data_props %>% filter(value >= exclude_values_below)
+    data_props_filtered = data_props %>%
+      mutate(
+        alpha = if_else(value < exclude_values_below, 0, 1) %>% as.numeric()
+      )
 
     if (percentages) {
-      p = p + geom_text(data = data_props_filtered, aes(label = paste0(round(Percent, 0), "%")), position = position_stack(vjust = 0.5), size = font_size)
+      p = p + geom_text(data = data_props_filtered, aes(label = paste0(round(Percent, 0), "%"), alpha = alpha), position = position_stack(vjust = 0.5), size = font_size) +
+        scale_alpha_identity(guide = 'none')
     } else {
-      p = p + geom_text(data = data_props_filtered, aes(label = Count), position = position_stack(vjust = 0.5), size = font_size)
+      p = p + geom_text(data = data_props_filtered, aes(label = Count, alpha = alpha), position = position_stack(vjust = 0.5), size = font_size) +
+        scale_alpha_identity(guide = 'none')
     }
   }
 
