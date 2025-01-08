@@ -20,6 +20,8 @@ compare_predictors(
 
 \item{predictors}{A character vector of predictors to use.}
 
+\item{additional_models}{A list of additional models to fit. Each element of the list should be a character vector of predictors to use. The names of the list will be used as the model names in the output.}
+
 \item{conf.level}{The confidence level to use. Default is .95.}
 
 \item{family}{The family to use. Default is "gaussian" (OLS), see \code{?glm} for more information.}

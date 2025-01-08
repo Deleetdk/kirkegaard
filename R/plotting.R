@@ -1415,6 +1415,7 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
 #'
 #' @param model_coefs A data frame with model coefficients
 #' @param exclude A string to exclude from the plot. Default is "(Intercept)"
+#' @param highlight_sig Highlight variables with p values below this threshold. Default is NULL, which means no highlighting.
 #'
 #' @return A ggplot2 object
 #' @export
@@ -1423,22 +1424,39 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
 #' #compare the coefficients of two models
 #' iris_model_coefs = compare_predictors(iris, names(iris)[1], names(iris)[-1])
 #' GG_plot_models(iris_model_coefs)
-GG_plot_models = function(model_coefs, exclude = "(Intercept)") {
+#' GG_plot_models(iris_model_coefs, highlight_sig = .05)
+GG_plot_models = function(model_coefs, exclude = "(Intercept)", highlight_sig = NULL) {
   #filter excluded variables
   model_coefs = model_coefs %>% filter(term != exclude)
 
   #plot model coefficients
-  model_coefs %>%
-    ggplot(aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high, color = model, group = model)) +
-    geom_pointrange(position = position_dodge(width = 0.5), alpha = 0.8) +
-    geom_hline(yintercept = 0, linetype = 2) +
-    coord_flip() +
-    theme_minimal() +
-    labs(
-      x = "Predictor",
-      y = "Coefficient",
-      color = "Model"
-    )
+  if (is.null(highlight_sig)) {
+    p = model_coefs %>%
+      ggplot(aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high, color = model, group = model)) +
+      geom_pointrange(position = position_dodge(width = 0.5), alpha = 0.8) +
+      geom_hline(yintercept = 0, linetype = 2) +
+      coord_flip()
+  } else {
+    #highlight variables with p values below threshold
+    p = model_coefs %>%
+      mutate(
+        highlight = ifelse(p.value < highlight_sig, 1, 0.5)
+      ) %>%
+      ggplot(aes(x = term, y = estimate, ymin = conf.low, ymax = conf.high, color = model, group = model)) +
+      geom_pointrange(aes(alpha = highlight), position = position_dodge(width = 0.5)) +
+      geom_hline(yintercept = 0, linetype = 2) +
+      coord_flip() +
+      scale_alpha_identity()
+  }
+
+  #add labels and theme
+  p + labs(
+    x = "Predictor",
+    y = "Coefficient",
+    color = "Model",
+    alpha = str_glue("p < {highlight_sig}")
+  ) +
+    theme_bw()
 }
 
 #convert to data frame for plotting

@@ -478,6 +478,7 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 #' @param predictors A character vector of predictors to use.
 #' @param conf.level The confidence level to use. Default is .95.
 #' @param family The family to use. Default is "gaussian" (OLS), see `?glm` for more information.
+#' @param additional_models A list of additional models to fit. Each element of the list should be a character vector of predictors to use. The names of the list will be used as the model names in the output.
 #'
 #' @return A data frame with the coefficients for each model
 #' @export
@@ -519,6 +520,9 @@ compare_predictors = function(data, outcome, predictors, additional_models = NUL
     to = rep("singular", length(models)),
     warn_missing = F
   )
+
+  #set factor levels to keep them consistent
+  all_coefs$term = factor(all_coefs$term, levels = all_coefs$term %>% unique() %>% rev())
 
   all_coefs
 }

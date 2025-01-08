@@ -4,12 +4,14 @@
 \alias{GG_plot_models}
 \title{Plot model coefficients for comparison}
 \usage{
-GG_plot_models(model_coefs, exclude = "(Intercept)")
+GG_plot_models(model_coefs, exclude = "(Intercept)", highlight_sig = NULL)
 }
 \arguments{
 \item{model_coefs}{A data frame with model coefficients}
 
 \item{exclude}{A string to exclude from the plot. Default is "(Intercept)"}
+
+\item{highlight_sig}{Highlight variables with p values below this threshold. Default is NULL, which means no highlighting.}
 }
 \value{
 A ggplot2 object
@@ -21,4 +23,5 @@ Expects output from \code{broom::tidy()} on a list of models. Most conveniently 
 #compare the coefficients of two models
 iris_model_coefs = compare_predictors(iris, names(iris)[1], names(iris)[-1])
 GG_plot_models(iris_model_coefs)
+GG_plot_models(iris_model_coefs, highlight_sig = .05)
 }
