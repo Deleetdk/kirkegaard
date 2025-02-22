@@ -672,6 +672,8 @@ GG_scatter = function(df,
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
 #' GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
+#' #sample sizes
+#' GG_group_means(iris, "Sepal.Length", "Species", type = "points", add_sample_sizes_to_labels = T)
 #'
 #' #subgroups too
 #' iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
@@ -686,7 +688,10 @@ GG_scatter = function(df,
 #' iris$onezero = sample(c(0, 1), size = nrow(iris), replace = T)
 #' GG_group_means(iris, "onezero", "Species")
 #' GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
-GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T) {
+#'
+#' #different dataset
+#' GG_group_means(mtcars, "mpg", "cyl", add_sample_sizes_to_labels = T, type = "points")
+GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T, add_sample_sizes_to_labels = F) {
 
   #check input
   if (is.factor(df[[var]]) | is.character(df[[var]])) stop("You probably want to use `GG_proportions()` for these data", call. = F)
@@ -716,9 +721,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   if (is.null(subgroupvar)) {
 
     #checks
-    if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
-    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!var %in% colnames(df)) stop("Numerical isn't in the data frame!")
+    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data frame!")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, boxplot, point, points, violin, violin2")
 
     #subset
     df = df[c(var, groupvar)]
@@ -730,15 +735,25 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         df = miss_filter(df, missing = 0)
         silence(message("Missing values were removed."), messages = msg_NA)
       } else {
-        stop("There must not be missing values in the group variable when na.rm = F!")
+        stop("There must not be missing values present when na.rm = F!")
       }
     }
+
+    #check for no data
+    if (nrow(df) == 0) stop("No overlapping non-missing data.")
 
     #enforce factor, drop empty
     df[[groupvar]] = factor(df[[groupvar]]) %>% fct_drop()
 
-    #check for no data
-    if (nrow(df) == 0) stop("No overlapping non-missing data.")
+    #add sample sizes to labels?
+    if (add_sample_sizes_to_labels) {
+      df_sum = plyr::ddply(df, groupvar, function(dd) {
+        tibble(n = nrow(dd))
+      })
+
+      #replace levels
+      levels(df[[groupvar]]) = levels(df[[groupvar]]) + "\nn=" + df_sum$n
+    }
 
     #summarize
     df_sum = plyr::ddply(df, groupvar, function(dd) {
@@ -777,6 +792,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
 
     #drop raw data rows if their level was dropped
     df %<>% filter(df[[groupvar]] %in% levels(df_sum$group1))
+
     #drop empty levels there too
     df[[groupvar]] %<>% fct_drop()
 
@@ -853,10 +869,10 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df$subgroupvar = df[[subgroupvar]]
 
     #checks
-    if (!var %in% colnames(df)) stop("Variable isn't in the data.frame!")
-    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data.frame!")
-    if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data.frame!")
-    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points")
+    if (!var %in% colnames(df)) stop("Variable isn't in the data frame!")
+    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data frame!")
+    if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data frame!")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points, boxplot, violin, violin2")
 
     #subset
     df = df[c(var, groupvar, subgroupvar)]
@@ -868,13 +884,23 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
         df = miss_filter(df, missing = 0)
         silence(message("Missing values were removed."), messages = msg_NA)
       } else {
-        stop("There must not be missing values in the group variable when na.rm = F!")
+        stop("There must not be missing values in the data when na.rm = F!")
       }
     }
 
     # enforce factors, drop empty levels
     df[[groupvar]] = factor(df[[groupvar]]) %>% fct_drop()
     df[[subgroupvar]] = factor(df[[subgroupvar]]) %>% fct_drop()
+
+    #add sample sizes to labels?
+    if (add_sample_sizes_to_labels) {
+      df_sum = plyr::ddply(df, groupvar, function(dd) {
+        tibble(n = nrow(dd))
+      })
+
+      #replace levels
+      levels(df[[groupvar]]) = levels(df[[groupvar]]) + "\nn=" + df_sum$n
+    }
 
     #check for no data
     if (nrow(df) == 0) stop("No overlapping non-missing data.")

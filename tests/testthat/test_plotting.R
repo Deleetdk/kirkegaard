@@ -159,7 +159,8 @@ test_that("GG_group_means", {
              GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type"),
              GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "point"),
              GG_group_means(df = iris2, var = "Petal.Length", groupvar = "Species", subgroupvar = "type", type = "points"),
-             GG_group_means(mpg, "displ", "manufacturer", subgroupvar = "drv", type = "boxplot")
+             GG_group_means(mpg, "displ", "manufacturer", subgroupvar = "drv", type = "boxplot"),
+             GG_group_means(iris, "Sepal.Length", "Species", type = "points", add_sample_sizes_to_labels = T)
   )
 
   #add more groups to iris

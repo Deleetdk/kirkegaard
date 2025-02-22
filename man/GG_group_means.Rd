@@ -16,7 +16,8 @@ GG_group_means(
   split_group_labels = T,
   line_length = 95,
   min_n = 0,
-  detect_prop = T
+  detect_prop = T,
+  add_sample_sizes_to_labels = F
 )
 }
 \arguments{
@@ -59,6 +60,8 @@ GG_group_means(iris, "Sepal.Length", "Species", type = "points", CI = 0)
 GG_group_means(iris, "Sepal.Length", "Species", type = "boxplot")
 GG_group_means(iris, "Sepal.Length", "Species", type = "violin")
 GG_group_means(iris, "Sepal.Length", "Species", type = "violin2")
+#sample sizes
+GG_group_means(iris, "Sepal.Length", "Species", type = "points", add_sample_sizes_to_labels = T)
 
 #subgroups too
 iris$type = sample(LETTERS[1:3], size = nrow(iris), replace = T)
@@ -73,4 +76,7 @@ GG_group_means(iris, var = "Sepal.Length", groupvar = "Species", subgroupvar = "
 iris$onezero = sample(c(0, 1), size = nrow(iris), replace = T)
 GG_group_means(iris, "onezero", "Species")
 GG_group_means(iris, "onezero", "Species", subgroupvar = "type")
+
+#different dataset
+GG_group_means(mtcars, "mpg", "cyl", add_sample_sizes_to_labels = T, type = "points")
 }
