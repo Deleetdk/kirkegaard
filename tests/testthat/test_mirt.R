@@ -108,6 +108,41 @@ test_that("abbreviate_scale", {
     population_size = 10
   )
 
+  #repeat with CTT
+  #forwards
+  d_sim_abbrev_forwards_CTT = abbreviate_scale(
+    d_sim,
+    method = "forwards",
+    item_target = max_items,
+    IRT = F
+  )
+
+  #backwards
+  d_sim_abbrev_backwards_CTT = abbreviate_scale(
+    d_sim,
+    method = "backwards",
+    item_target = max_items,
+    IRT = F
+  )
+
+  #max loading
+  d_sim_abbrev_max_loading_CTT = abbreviate_scale(
+    d_sim,
+    method = "max_loading",
+    item_target = max_items,
+    IRT = F
+  )
+
+  #genetic
+  d_sim_abbrev_genetic_CTT = abbreviate_scale(
+    d_sim,
+    method = "genetic",
+    item_target = max_items,
+    max_generations = 3,
+    population_size = 10,
+    IRT = F
+  )
+
   #turn off sink
   sink()
 
@@ -118,11 +153,21 @@ test_that("abbreviate_scale", {
   expect_is(d_sim_abbrev_max_loading, "list")
   expect_is(d_sim_abbrev_genetic, "list")
 
+  expect_is(d_sim_abbrev_forwards_CTT, "list")
+  expect_is(d_sim_abbrev_backwards_CTT, "list")
+  expect_is(d_sim_abbrev_max_loading_CTT, "list")
+  expect_is(d_sim_abbrev_genetic_CTT, "list")
+
   #has some of the right items
   expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_forwards)))
   expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_backwards)))
   expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_max_loading)))
   expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_genetic)))
+
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_forwards_CTT)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_backwards_CTT)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_max_loading_CTT)))
+  expect_true(all(c("full_results", "best_sets", "method") %in% names(d_sim_abbrev_genetic_CTT)))
 
   #test the plots
   p_forwards = d_sim_abbrev_forwards %>% GG_scale_abbreviation()
@@ -130,11 +175,21 @@ test_that("abbreviate_scale", {
   p_max_loading = d_sim_abbrev_max_loading %>% GG_scale_abbreviation()
   p_genetic = d_sim_abbrev_genetic %>% GG_scale_abbreviation()
 
+  p_forwards_CTT = d_sim_abbrev_forwards_CTT %>% GG_scale_abbreviation()
+  p_backwards_CTT = d_sim_abbrev_backwards_CTT %>% GG_scale_abbreviation()
+  p_max_loading_CTT = d_sim_abbrev_max_loading_CTT %>% GG_scale_abbreviation()
+  p_genetic_CTT = d_sim_abbrev_genetic_CTT %>% GG_scale_abbreviation()
+
   #check the plots
   expect_true(p_forwards %>% is.ggplot())
   expect_true(p_backwards %>% is.ggplot())
   expect_true(p_max_loading %>% is.ggplot())
   expect_true(p_genetic %>% is.ggplot())
+
+  expect_true(p_forwards_CTT %>% is.ggplot())
+  expect_true(p_backwards_CTT %>% is.ggplot())
+  expect_true(p_max_loading_CTT %>% is.ggplot())
+  expect_true(p_genetic_CTT %>% is.ggplot())
 
 })
 

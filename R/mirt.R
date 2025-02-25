@@ -98,7 +98,8 @@ make_forward_sets = function(
     current_items = NULL,
     full_fit,
     min_items = 3,
-    start_method = "highest_loading"
+    start_method = "highest_loading",
+    IRT = T
 ) {
   #make a list of items indexes with one removed per set
   #if we have none, it's easy
@@ -107,23 +108,27 @@ make_forward_sets = function(
     #or we can begin with a best guess of the 3 items with highest loadings from full analysis (fast)
     if (start_method == "highest_loading") {
       #get highest loading items
-      item_loadings = tibble(
-        item = 1:length(get_loadings(full_fit)),
-        loading = get_loadings(full_fit)
-      )
-      start_items = item_loadings %>% arrange(loading) %>% tail(min_items) %>% pull(item)
+
+      if (IRT) {
+        item_stats = get_mirt_stats(full_fit)
+      } else {
+        item_stats = full_fit$item_stats
+      }
+
+      #pick items
+      start_items = item_stats %>% arrange(loading) %>% tail(min_items) %>% pull(item)
       sets = list(start_items)
       message(str_glue("Starting with the {min_items} items with highest loadings: {str_c(start_items, collapse = ', ')}"))
     } else if (start_method == "combination") {
       #if we have no items, we can either try all 3-way combinations, which is often not possible (explosion)
       #or we can begin with a best guess of the 3 items with highest loadings from full analysis (fast)
-      sets = combn(1:ncol(all_items), m = min_items, simplify = F)
+      sets = combn(colnames(all_items), m = min_items, simplify = F)
     }
 
   } else {
     #if we have some, we need to add one different item to each set
     sets = purrr::map(
-      setdiff(seq(ncol(all_items)), current_items),
+      setdiff(colnames(all_items), current_items),
       function(i) {
         c(current_items, i)
       }
@@ -249,7 +254,7 @@ genetic_algo_item_sets = function(
     #mutate
     for (i in seq_along(new_pop)) {
       #mutate by partial resampling
-      new_pop[[i]] = partially_resample(
+      new_pop[[i]] = kirkegaard:::partially_resample(
         new_pop[[i]],
         possible_values = 1:ncol(all_items),
         prob = mutation_rate,
@@ -286,7 +291,8 @@ abbreviate_by_genetic_algo = function(
     selection_ratio,
     stop_search_after_generations,
     include_parents,
-    reliability_at
+    reliability_at,
+    IRT = T
 ) {
 
   #main loop
@@ -310,8 +316,12 @@ abbreviate_by_genetic_algo = function(
       new_pop,
       function(item_set) {
 
-        #fit mirt
-        fit = fit_mirt(all_items[, item_set, drop = F], mirt_args = mirt_args, reliability_at = reliability_at)
+        if (IRT) {
+          #fit mirt
+          fit = fit_mirt(all_items[, item_set, drop = F], mirt_args = mirt_args, reliability_at = reliability_at)
+        } else {
+          fit = make_CTT_fit(all_items[, item_set, drop = F])
+        }
 
         #get stats
         y = compute_fit_stats(
@@ -398,7 +408,8 @@ backwards_drop = function(
     full_reliability,
     mirt_args = NULL,
     save_fits = T,
-    reliability_at = reliability_at
+    reliability_at = reliability_at,
+    IRT = T
 ) {
 
   #if no current selection, select all
@@ -411,8 +422,13 @@ backwards_drop = function(
     make_leave_one_out_sets(current_selection),
     function(item_set) {
 
-      #fit mirt
-      fit = fit_mirt(all_items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      if (IRT) {
+        #fit mirt
+        fit = fit_mirt(all_items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      } else {
+        fit = make_CTT_fit(all_items[, item_set, drop = F])
+      }
+
 
       #get stats
       y = compute_fit_stats(
@@ -445,16 +461,21 @@ forwards_pick = function(
     full_reliability,
     mirt_args = NULL,
     save_fits = T,
-    reliability_at = reliability_at
+    reliability_at = reliability_at,
+    IRT = T
 ) {
 
   #main loop
   additions = furrr::future_map_dfr(
-    make_forward_sets(items, current_items, full_fit = full_fit),
+    make_forward_sets(items, current_items, full_fit = full_fit, IRT = IRT),
     function(item_set) {
 
-      #fit mirt
-      fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      if (IRT) {
+        #fit mirt
+        fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      } else {
+        fit = make_CTT_fit(items[, item_set, drop = F])
+      }
 
       #get stats
       y = compute_fit_stats(
@@ -554,7 +575,8 @@ max_loading_method = function(
     selection_method,
     difficulty_balance_groups,
     residualize_loadings,
-    reliability_at
+    reliability_at,
+    IRT = T
 ) {
   #not non-NULL to both residualization and balancing
   if (!is.null(difficulty_balance_groups) & residualize_loadings) {
@@ -562,7 +584,11 @@ max_loading_method = function(
   }
 
   #get loadings
-  item_stats = get_mirt_stats(full_fit)
+  if (IRT) {
+    item_stats = get_mirt_stats(full_fit)
+  } else {
+    item_stats = make_CTT_fit(items)$item_stats
+  }
 
   #residualize loadings?
   if (!residualize_loadings) {
@@ -590,8 +616,12 @@ max_loading_method = function(
     item_sets,
     function(item_set) {
 
-      #fit mirt
-      fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      if (IRT) {
+        #fit mirt
+        fit = fit_mirt(items[, item_set, drop = F], mirt_args, reliability_at = reliability_at)
+      } else {
+        fit = make_CTT_fit(items[, item_set, drop = F])
+      }
 
       #get stats
       y = compute_fit_stats(
@@ -612,6 +642,63 @@ max_loading_method = function(
   additions
 }
 
+simple_cronbach_alpha <- function(data) {
+  #replace NA with 0
+  data[is.na(data)] <- 0
+
+  # Number of items
+  N <- ncol(data)
+
+  # Compute variance-covariance matrix
+  cov_matrix <- cov(data)
+
+  # Average item variance (diagonal of covariance matrix)
+  v_bar <- mean(diag(cov_matrix))
+
+  # Average inter-item covariance (off-diagonal elements)
+  off_diag <- cov_matrix[lower.tri(cov_matrix)]
+  c_bar <- mean(off_diag)
+
+  # Cronbach's alpha formula
+  alpha <- (N * c_bar) / (v_bar + (N - 1) * c_bar)
+
+  return(alpha)
+}
+
+#classical test theory "fit"
+make_CTT_fit = function(items) {
+  # browser()
+  y = list(
+    fit = NULL,
+    scores = rowSums(items, na.rm = T) %>% as.matrix(),
+    reliability = simple_cronbach_alpha(items) %>% as.vector()
+  )
+
+  #add biserials as loadings
+  y$loadings = purrr::map_dbl(
+    1:ncol(items),
+    function(i) {
+      sink(tempfile())
+      y = psych::biserial(y$scores[, 1], items[, i]) %>% as.vector()
+      sink()
+      y
+    }
+  )
+
+  #item stats mimic mirt
+  y$item_stats = tibble(
+    item = items %>% colnames(),
+    loading = y$loadings,
+    difficulty = NA,
+    discrimination = NA,
+    pass_rate = colMeans(items, na.rm = T)
+  ) %>% mutate(
+    difficulty = pnorm(pass_rate, lower.tail = F),
+    discrimination = loading_to_slope(loading)
+  )
+
+  y
+}
 
 
 #' Abbreviate a scale
@@ -634,6 +721,8 @@ max_loading_method = function(
 #' @param include_parents Whether to include the parents in the next generation. Default is TRUE.
 #' @param difficulty_balance_groups The number of groups to balance difficulty across. Default is NULL.
 #' @param residualize_loadings Whether to residualize loadings based on difficulty for selection purposes. Default is FALSE.
+#' @param reliability_at The reliability to use for selection. Default is "total".
+#' @param IRT Whether to use IRT or classical test theory. Default is TRUE. If false, reliability will be calculated as Cronbach's alpha, loadings will be calculated as biserial correlations, and the score will be calculated as the sum of the correct items. This makes it much faster to run but less accurate.
 #'
 #' @return A list of results. You probably want to call `GG_scale_abbreviation()` on these.
 #' @export
@@ -648,6 +737,8 @@ max_loading_method = function(
 #' short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
 #' #plot
 #' GG_scale_abbreviation(short_scale)
+#' #using CTT statistics instead
+#' short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10, IRT = F)
 abbreviate_scale = function(
     items,
     criterion_vars = NULL,
@@ -665,7 +756,8 @@ abbreviate_scale = function(
     include_parents = T,
     difficulty_balance_groups = NULL,
     residualize_loadings = F,
-    reliability_at = "total"
+    reliability_at = "total",
+    IRT = T
 ) {
 
   #start timer
@@ -707,17 +799,36 @@ abbreviate_scale = function(
   }
 
   #fit full scale mirt
-  full_fit = rlang::exec(
-    .fn = mirt::mirt,
-    data = items,
-    !!!mirt_args
-  )
+  if (IRT) {
+    full_fit = rlang::exec(
+      .fn = mirt::mirt,
+      data = items,
+      !!!mirt_args
+    )
+  } else {
+    full_fit = list(
+      fit = NULL,
+      scores = rowSums(items, na.rm = T) %>% as.matrix(),
+      reliability = simple_cronbach_alpha(items) %>% as.vector(),
+      item_stats = make_CTT_fit(items)$item_stats
+    )
+  }
 
   #get scores and their full set cors
-  full_scores = mirt::fscores(full_fit, full.scores.SE = T)
+  if (IRT) {
+    full_scores = mirt::fscores(full_fit, full.scores.SE = T)
+  } else {
+    full_scores = rowSums(items, na.rm = T) %>% as.matrix()
+  }
+
 
   #reliability
-  full_reliability = get_reliability_at(full_fit, reliability_at)
+  if (IRT) {
+    full_reliability = get_reliability_at(full_fit, reliability_at)
+  } else {
+    full_reliability = simple_cronbach_alpha(items) %>% as.vector()
+  }
+
 
   #make set of criterion vars
   if (is.null(criterion_vars)) {
@@ -760,7 +871,8 @@ abbreviate_scale = function(
           save_fits = save_fits,
           full_fit = full_fit,
           full_reliability = full_reliability,
-          reliability_at = reliability_at
+          reliability_at = reliability_at,
+          IRT = IRT
         )
 
         next
@@ -782,7 +894,8 @@ abbreviate_scale = function(
           save_fits = save_fits,
           full_fit = full_fit,
           full_reliability = full_reliability,
-          reliability_at = reliability_at
+          reliability_at = reliability_at,
+          IRT = IRT
         )
 
         next
@@ -816,7 +929,8 @@ abbreviate_scale = function(
           save_fits = save_fits,
           full_fit = full_fit,
           full_reliability = full_reliability,
-          reliability_at = reliability_at
+          reliability_at = reliability_at,
+          IRT = IRT
         )
 
         next
@@ -838,7 +952,8 @@ abbreviate_scale = function(
           save_fits = save_fits,
           full_fit = full_fit,
           full_reliability = full_reliability,
-          reliability_at = reliability_at
+          reliability_at = reliability_at,
+          IRT = IRT
         )
 
         next
@@ -861,7 +976,8 @@ abbreviate_scale = function(
       selection_method = selection_method,
       difficulty_balance_groups = difficulty_balance_groups,
       residualize_loadings = residualize_loadings,
-      reliability_at = reliability_at
+      reliability_at = reliability_at,
+      IRT = IRT
     )
   }
 
@@ -883,7 +999,8 @@ abbreviate_scale = function(
       selection_ratio = selection_ratio,
       stop_search_after_generations = stop_search_after_generations,
       include_parents = include_parents,
-      reliability_at = reliability_at
+      reliability_at = reliability_at,
+      IRT = IRT
     )
 
     #split to a list

@@ -21,7 +21,8 @@ abbreviate_scale(
   include_parents = T,
   difficulty_balance_groups = NULL,
   residualize_loadings = F,
-  reliability_at = "total"
+  reliability_at = "total",
+  IRT = T
 )
 }
 \arguments{
@@ -56,6 +57,10 @@ abbreviate_scale(
 \item{difficulty_balance_groups}{The number of groups to balance difficulty across. Default is NULL.}
 
 \item{residualize_loadings}{Whether to residualize loadings based on difficulty for selection purposes. Default is FALSE.}
+
+\item{reliability_at}{The reliability to use for selection. Default is "total".}
+
+\item{IRT}{Whether to use IRT or classical test theory. Default is TRUE. If false, reliability will be calculated as Cronbach's alpha, loadings will be calculated as biserial correlations, and the score will be calculated as the sum of the correct items. This makes it much faster to run but less accurate.}
 }
 \value{
 A list of results. You probably want to call \code{GG_scale_abbreviation()} on these.
@@ -74,4 +79,6 @@ fit = mirt::mirt(dat, 1)
 short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10)
 #plot
 GG_scale_abbreviation(short_scale)
+#using CTT statistics instead
+short_scale = abbreviate_scale(as.data.frame(dat), method = "max_loading", item_target = 10, IRT = F)
 }
