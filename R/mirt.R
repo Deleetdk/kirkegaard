@@ -243,7 +243,7 @@ genetic_algo_item_sets = function(
     new_pop = map(
       1:population_size,
       function(i) {
-        sample(ncol(all_items), size = item_target)
+        sample(colnames(all_items), size = item_target)
       }
     )
   } else {
@@ -256,7 +256,7 @@ genetic_algo_item_sets = function(
       #mutate by partial resampling
       new_pop[[i]] = kirkegaard:::partially_resample(
         new_pop[[i]],
-        possible_values = 1:ncol(all_items),
+        possible_values = colnames(all_items),
         prob = mutation_rate,
         prob_exact = prob_exact
       )
@@ -299,7 +299,7 @@ abbreviate_by_genetic_algo = function(
   all_fits = tibble()
   for (iter in 1:max_generations) {
     #msg current iter
-    message(str_glue("Starting iteration {iter} out of {max_generations}"))
+    message(str_glue("Starting iteration {iter} out of a maximum of {max_generations}"))
 
     #get new population
     new_pop = genetic_algo_item_sets(
@@ -370,7 +370,7 @@ abbreviate_by_genetic_algo = function(
       improvement = (max(current_fits$criterion_value) - best_last)
 
       #msg about improvement this generation
-      message(str_glue("Improvement in iteration {iter} out of {max_generations}: {str_round(improvement, 5)}, new best: {str_round(best_last, 5)}"))
+      message(str_glue("Improvement in iteration {iter} out of {max_generations}: {str_round(improvement, 5)}, current best: {str_round(max(current_fits$criterion_value), 5)}"))
 
       #if no improvement for X generations, stop search
       if (iter > stop_search_after_generations) {
@@ -414,7 +414,7 @@ backwards_drop = function(
 
   #if no current selection, select all
   if (is.null(current_selection)) {
-    current_selection = seq(ncol(all_items))
+    current_selection = colnames(all_items)
   }
 
   #main loop
@@ -667,7 +667,7 @@ simple_cronbach_alpha <- function(data) {
 
 #classical test theory "fit"
 make_CTT_fit = function(items) {
-  # browser()
+
   y = list(
     fit = NULL,
     scores = rowSums(items, na.rm = T) %>% as.matrix(),
@@ -730,7 +730,7 @@ make_CTT_fit = function(items) {
 #' library(mirt)
 #' #simulate some mirt data 2PL
 #' set.seed(1)
-#' dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+#' dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(20, 0.5, 2), d = rnorm(20, sd = 0.5))
 #' #fit the model
 #' fit = mirt::mirt(dat, 1)
 #' #scale abbreviation
@@ -854,7 +854,7 @@ abbreviate_scale = function(
     items_to_drop = ncol(items) - item_target
     items_to_drop_seq = seq(ncol(items) - item_target)
     for (i in items_to_drop_seq) {
-      message(str_glue("removing item {i} out of {items_to_drop} ({ncol(items) - i} remaining)"))
+      message(str_glue("removing item {i} out of {items_to_drop} ({items_to_drop - i} remaining)"))
 
       #if the first round, just drop one item
       #dont need to use the prior item set
@@ -863,7 +863,7 @@ abbreviate_scale = function(
         item_set_results_all[[i]] = backwards_drop(
           #begin with all items
           all_items = items,
-          current_selection = seq(ncol(items)),
+          current_selection = colnames(items),
           criterion_vars = criterion_vars,
           criterion_cors_full = full_cors,
           selection_method = selection_method,

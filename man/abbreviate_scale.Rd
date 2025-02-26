@@ -72,7 +72,7 @@ This function abbreviates a scale by iteratively adding or removing items that a
 library(mirt)
 #simulate some mirt data 2PL
 set.seed(1)
-dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(100, 0.5, 2), d = rnorm(100, sd = 0.5))
+dat = mirt::simdata(N = 1e3, itemtype = "2PL", a = runif(20, 0.5, 2), d = rnorm(20, sd = 0.5))
 #fit the model
 fit = mirt::mirt(dat, 1)
 #scale abbreviation
