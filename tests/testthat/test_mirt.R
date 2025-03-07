@@ -275,27 +275,37 @@ test_that("add_item_associations_with_criterion_var", {
     winsorize_r2_adj = F
   )
 
-  #check that structure is correct
-  expect_true(all(c("criterion_r", "criterion_r_inc", "reversed") %in% colnames(item_stats_default)))
+  item_stats_no_rename = add_item_associations_with_criterion_var(
+    .item_data = item_stats,
+    criterion_var = "outcome",
+    control_vars = "confounder",
+    .data = d_cases,
+    use_criterion_name = F
+  )
 
-  expect_true(all(c("criterion_r", "criterion_r_inc") %in% colnames(item_stats_no_reverse)))
+  #check that structure is correct
+  expect_true(all(c("outcome_r", "outcome_r_inc", "reversed") %in% colnames(item_stats_default)))
+
+  expect_true(all(c("outcome_r", "outcome_r_inc") %in% colnames(item_stats_no_reverse)))
   expect_true(!all(c("reversed") %in% colnames(item_stats_no_reverse)))
 
-  expect_true(all(c("criterion_r") %in% colnames(item_stats_no_control)))
-  expect_true(!all(c("criterion_r_inc") %in% colnames(item_stats_no_control)))
+  expect_true(all(c("outcome_r") %in% colnames(item_stats_no_control)))
+  expect_true(!all(c("outcome_r_inc") %in% colnames(item_stats_no_control)))
 
-  expect_true(all(c("criterion_r", "criterion_r_inc") %in% colnames(item_stats_no_winsorize)))
+  expect_true(all(c("outcome_r", "outcome_r_inc") %in% colnames(item_stats_no_winsorize)))
+
+  expect_true(all(c("criterion_r", "criterion_r_inc") %in% colnames(item_stats_no_rename)))
 
   #check reversing is absent
   expect_true(any(item_stats_no_reverse$loading > 0) && any(item_stats_no_reverse$loading < 0))
 
   #check correlations
-  expect_true(cor(item_stats_default$loading, item_stats_default$criterion_r) > 0.9)
-  expect_true(cor(item_stats_default$loading, item_stats_default$criterion_r_inc) > 0.8)
+  expect_true(cor(item_stats_default$loading, item_stats_default$outcome_r) > 0.9)
+  expect_true(cor(item_stats_default$loading, item_stats_default$outcome_r_inc) > 0.8)
 
-  expect_true(cor(item_stats_no_reverse$loading, item_stats_no_reverse$criterion_r) > 0.99)
+  expect_true(cor(item_stats_no_reverse$loading, item_stats_no_reverse$outcome_r) > 0.99)
 
-  expect_true(cor(item_stats_no_control$loading, item_stats_no_control$criterion_r) > 0.9)
+  expect_true(cor(item_stats_no_control$loading, item_stats_no_control$outcome_r) > 0.9)
 
-  expect_true(cor(item_stats_no_winsorize$loading, item_stats_no_winsorize$criterion_r) > 0.9)
+  expect_true(cor(item_stats_no_winsorize$loading, item_stats_no_winsorize$outcome_r) > 0.9)
 })

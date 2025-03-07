@@ -1364,7 +1364,7 @@ apply_reversing = function(x, vars) {
 #'
 #' @returns The input data frame with added columns for the correlation with the criterion variable and the incremental R if control variables are given.
 #' @export
-add_item_associations_with_criterion_var = function(.item_data, .data, criterion_var, control_vars = NULL, reverse_negative_loadings = T, winsorize_r2_adj = T) {
+add_item_associations_with_criterion_var = function(.item_data, .data, criterion_var, control_vars = NULL, reverse_negative_loadings = T, winsorize_r2_adj = T, use_criterion_name = T) {
 
   #correlations are relatively simple
   item_cors = map_dbl(.item_data$item, function(v) {
@@ -1422,6 +1422,17 @@ add_item_associations_with_criterion_var = function(.item_data, .data, criterion
   #reverse negative loadings to avoid inflation
   if (reverse_negative_loadings) {
     y = apply_reversing(y, vars = intersect(c("criterion_r", "criterion_r_inc"), names(y)))
+  }
+
+  #use the criterion name as predix instead of just criterion
+  if (use_criterion_name) {
+    y[[str_glue("{criterion_var}_r")]] = y$criterion_r
+    y$criterion_r = NULL
+
+    if (!is.null(control_vars)) {
+      y[[str_glue("{criterion_var}_r_inc")]] = y$criterion_r_inc
+      y$criterion_r_inc = NULL
+    }
   }
 
   y

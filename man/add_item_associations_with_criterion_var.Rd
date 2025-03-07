@@ -10,7 +10,8 @@ add_item_associations_with_criterion_var(
   criterion_var,
   control_vars = NULL,
   reverse_negative_loadings = T,
-  winsorize_r2_adj = T
+  winsorize_r2_adj = T,
+  use_criterion_name = T
 )
 }
 \arguments{
