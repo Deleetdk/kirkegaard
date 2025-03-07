@@ -11,6 +11,14 @@ test_that("NA_to_F", {
   expect_equivalent(NA_to_F(x), c(T, F, F, T))
 })
 
+test_that("NA_to_X", {
+  x = c(T, F, NA, T)
+  expect_equivalent(NA_to_X(x, T), c(T, F, T, T))
+
+  x = c(1, 2, NA, 4)
+  expect_equivalent(NA_to_X(x, 3), c(1, 2, 3, 4))
+})
+
 
 test_that("inf_to_NA", {
   c(1, 2, Inf, 3) %>% inf_to_NA() %>% expect_equivalent(c(1, 2, NA, 3))

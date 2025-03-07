@@ -1734,6 +1734,9 @@ apply_norms = function(score,
   #IQ scale
   IQ = score_ageadj3 * 15 + 100
 
+  #add values from score vector
+  names(IQ) = score
+
   IQ
 }
 

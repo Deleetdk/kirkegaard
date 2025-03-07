@@ -18,6 +18,23 @@ NA_to_F = function(x) {
   x
 }
 
+#' `NA` to specified value
+#'
+#' Replace `NA` values in a vector with a specified value.
+#'
+#' @param x A vector
+#' @param replacement The value to replace `NA` with
+#'
+#' @returns A vector of the same length as x
+#' @export
+#'
+#' @examples
+#' c(1, 2, 3, 4) %>% NA_to_X(3)
+NA_to_X = function(x, replacement) {
+  x[is.na(x)] = replacement
+  x
+}
+
 
 #' Conert infinite values to `NA`
 #'

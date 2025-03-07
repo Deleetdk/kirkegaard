@@ -193,9 +193,15 @@ test_that("abbreviate_scale", {
 
 })
 
-test_that("mirt helper function", {
+test_that("mirt helper functions", {
   set.seed(1)
-  data = mirt::simdata(seq(0.2, 2, length.out = 5), seq(-2, 2, length.out = 5), 1000, itemtype = "2PL")
+
+  data = mirt::simdata(
+    seq(0.2, 2, length.out = 5),
+    seq(-2, 2, length.out = 5),
+    1000,
+    itemtype = "2PL")
+
   fit = mirt::mirt(data, 1, verbose = F)
   rel = get_reliabilities(fit)
   item_stats = get_mirt_stats(fit)
@@ -204,4 +210,92 @@ test_that("mirt helper function", {
 
   expect_true(is.data.frame(item_stats))
   expect_true(all(c("item", "loading", "discrimination", "difficulty", "pass_rate") %in% colnames(item_stats)))
+})
+
+
+test_that("add_item_associations_with_criterion_var", {
+  #first we need to generate some correlated data
+  set.seed(1)
+  n = 1000
+  n_items = 10
+  d_cases = MASS::mvrnorm(n, mu = rep(0, 2), Sigma = matrix(c(1, 0.5, 0.5, 1), nrow = 2))
+  colnames(d_cases) = c("trait", "confounder")
+  d_cases = as.data.frame(d_cases)
+
+  #make the outcome
+  d_cases$outcome = (d_cases$trait + d_cases$confounder + rnorm(n)) %>% standardize()
+
+  #generate some item data
+  d_items = mirt::simdata(
+    a = runif(n_items, min = -1, max = 2),
+    d = rnorm(n_items),
+    Theta = matrix(d_cases$trait, ncol = 1),
+    itemtype = "2PL"
+  )
+
+  #fit the model
+  fit = mirt::mirt(d_items, 1, verbose = F, itemtype = "2PL")
+
+  #get item stats
+  item_stats = get_mirt_stats(fit)
+
+  #combine data
+  d_cases = bind_cols(
+    d_cases,
+    d_items
+  )
+
+  #add associations
+  item_stats_default = add_item_associations_with_criterion_var(
+    .item_data = item_stats,
+    criterion_var = "outcome",
+    .data = d_cases,
+    control_vars = "confounder"
+  )
+
+  item_stats_no_reverse = add_item_associations_with_criterion_var(
+    .item_data = item_stats,
+    criterion_var = "outcome",
+    .data = d_cases,
+    control_vars = "confounder",
+    reverse_negative_loadings = F
+  )
+
+  item_stats_no_control = add_item_associations_with_criterion_var(
+    .item_data = item_stats,
+    criterion_var = "outcome",
+    .data = d_cases
+  )
+
+  item_stats_no_winsorize = add_item_associations_with_criterion_var(
+    .item_data = item_stats,
+    criterion_var = "outcome",
+    control_vars = "confounder",
+    .data = d_cases,
+    winsorize_r2_adj = F
+  )
+
+  #check that structure is correct
+  expect_true(all(c("criterion_r", "criterion_r_inc", "reversed") %in% colnames(item_stats_default)))
+
+  expect_true(all(c("criterion_r", "criterion_r_inc") %in% colnames(item_stats_no_reverse)))
+  expect_true(!all(c("reversed") %in% colnames(item_stats_no_reverse)))
+
+  expect_true(all(c("criterion_r") %in% colnames(item_stats_no_control)))
+  expect_true(!all(c("criterion_r_inc") %in% colnames(item_stats_no_control)))
+
+  expect_true(all(c("criterion_r", "criterion_r_inc") %in% colnames(item_stats_no_winsorize)))
+
+  #check reversing is absent
+  expect_true(any(item_stats_no_reverse$loading > 0) && any(item_stats_no_reverse$loading < 0))
+
+  #check correlations
+  expect_true(cor(item_stats_default$loading, item_stats_default$criterion_r) > 0.9)
+  expect_true(cor(item_stats_default$loading, item_stats_default$criterion_r_inc) > 0.8)
+
+  expect_true(cor(item_stats_no_reverse$loading, item_stats_no_reverse$criterion_r) > 0.99)
+
+  expect_true(cor(item_stats_no_control$loading, item_stats_no_control$criterion_r) > 0.9)
+
+  expect_true(cor(item_stats_no_winsorize$loading, item_stats_no_winsorize$criterion_r) > 0.9)
 })

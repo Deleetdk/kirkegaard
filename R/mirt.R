@@ -1332,3 +1332,97 @@ calc_item_gaps = function(x, group, return_data_frame = T) {
     return(res$d_gap)
   }
 }
+
+#apply reversing
+#internal function for below
+apply_reversing = function(x, vars) {
+  #to reverse
+  x$reversed = x$loading < 0
+
+  #copy values for non-reversed
+  x$loading = if_else(x$reversed, -x$loading, x$loading)
+
+  #loop over other vars and do the same
+  for (v in vars) {
+    x[[v]] = if_else(x$reversed, -x[[v]], x[[v]])
+  }
+
+  x
+}
+
+
+#' Calculate item associations with a criterion variable
+#'
+#' For using Jensen's method, one needs to calculate the correlation between each item and the criterion variable. This function does that, and also calculates the incremental R for each item if control variables are given.
+#'
+#' @param .item_data A data frame with item data from `get_mirt_stats()`
+#' @param .data A data frame with the case-level data. Must have the items, the criterion variable, and any control variables.
+#' @param criterion_var The name of the criterion variable
+#' @param control_vars A vector of names of control variables to use in linear regression.
+#' @param reverse_negative_loadings Whether to reverse the sign of the loadings, correlations, and model incremental R if the loading is negative. Default is TRUE.
+#' @param winsorize_r2_adj Whether to winsorize the incremental R2 values to avoid negative values (probelmatic with square root transformation). Default is TRUE.
+#'
+#' @returns The input data frame with added columns for the correlation with the criterion variable and the incremental R if control variables are given.
+#' @export
+add_item_associations_with_criterion_var = function(.item_data, .data, criterion_var, control_vars = NULL, reverse_negative_loadings = T, winsorize_r2_adj = T) {
+
+  #correlations are relatively simple
+  item_cors = map_dbl(.item_data$item, function(v) {
+    sink(tempfile())
+    cor = psych::mixedCor(
+      bind_cols(
+        item = .data[[v]],
+        criterion = .data[[criterion_var]]
+      )
+    )
+    sink()
+
+    cor[["rho"]][1, 2]
+  })
+
+  #if controls are given, then also do incremental regression models
+  if (!is.null(control_vars)) {
+    #loop items
+    item_r_incs = map_dbl(.item_data$item, function(item) {
+
+      form1 = str_glue("{criterion_var} ~ {str_c(control_vars, collapse = ' + ')}")
+      form2 = str_glue("{criterion_var} ~ {item} + {str_c(control_vars, collapse = ' + ')}")
+
+      #fit 2 models
+      fit1 = lm(form1, data = .data)
+      fit2 = lm(form2, data = .data)
+
+      #incremental R2
+      r2_inc = (summary(fit2)$r.squared - summary(fit1)$r.squared)
+
+      #winsorize negative values?
+      if (winsorize_r2_adj) {
+        r2_inc = r2_inc %>% winsorise(lower = 0)
+      }
+
+      #sqrt to get r-like metric
+      r_inc = r2_inc %>% {quietly(sqrt)(.)} %>% pluck("result")
+
+      #reverse if beta is negative, so that we preserve directionality
+      if (coef(fit2)[[item]] < 0) {
+        r_inc = -r_inc
+      }
+
+      r_inc
+    })
+  }
+
+  #return data with added variables
+  y = bind_cols(.item_data, criterion_r = item_cors)
+
+  if (!is.null(control_vars)) {
+    y$criterion_r_inc = item_r_incs
+  }
+
+  #reverse negative loadings to avoid inflation
+  if (reverse_negative_loadings) {
+    y = apply_reversing(y, vars = intersect(c("criterion_r", "criterion_r_inc"), names(y)))
+  }
+
+  y
+}

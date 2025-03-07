@@ -117,6 +117,11 @@ summarize_models = function(x, asterisks = c(.01, .005, .001), asterisks_only = 
   #names?
   if (is.null(names(x))) names(x) = 1:length(x) %>% factor()
 
+  #ensure no duplicates
+  if (any(duplicated(names(x)))) {
+    names(x) = str_uniquify(names(x), suffix = "%d")
+  }
+
   #ensure model names are factor
   if (is.character(names(x))) names(x) = factor(names(x), levels = names(x))
 
