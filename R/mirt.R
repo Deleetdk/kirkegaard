@@ -2,8 +2,20 @@
 #### And the helper functions and other item level analysis functions
 
 #get factor loadings from mirt fit
-get_loadings = function(x) {
-  x@Fit$`F` %>% as.vector()
+get_loadings = function(x, clean_names = F) {
+
+  #mirt
+  if (any(class(x) %in% c("SingleGroupClass", "MultiGroupClass", "MixedGroupClass"))) {
+    loads = mirt::summary(x, verbose = F)$rotF
+  } else if (inherits(x, "fa")) {
+    loads = x$loadings
+  }
+
+  if (clean_names) {
+    loads = loads |> unname()
+  }
+
+  loads
 }
 
 get_difficulties = function(x) {
@@ -31,7 +43,7 @@ get_mirt_stats = function(x) {
   tibble(
     item_i = seq_along_rows(mirt::coef(x, simplify = T)$items),
     item = mirt::coef(x, simplify = T)$items %>% rownames(),
-    loading = get_loadings(x),
+    loading = get_loadings(x) %>% as.vector(),
     difficulty = get_difficulties(x),
     discrimination = get_discriminations(x),
     pass_rate = pnorm(difficulty, lower.tail = F)
@@ -1155,7 +1167,7 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
   #extract loadings matrix
   #convert to Q matrix
 
-  mirt_fit_loadings = mirt_fit@Fit$`F`
+  mirt_fit_loadings = get_loadings(mirt_fit)
   model_noDIF_liberal_Q = mirt_fit_loadings %>% apply(MARGIN = 2, as.logical) %>% magrittr::set_rownames(rownames(mirt_fit_loadings))
   model_noDIF_conservative_Q = model_noDIF_liberal_Q
 
