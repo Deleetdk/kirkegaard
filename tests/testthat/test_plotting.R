@@ -226,7 +226,9 @@ test_that("GG_heatmap", {
     small_text = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(font_size = 2),
     move_legend = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(legend_position = c(.5, .75)),
     short_x_labels = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T),
-    axis_labels_clean_func = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(axis_labels_clean_func = NULL)
+    axis_labels_clean_func = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(axis_labels_clean_func = NULL),
+    nonsig_p = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(cross_out_nonsig = T),
+    rm_diag = mtcars[, c(1,3,4,5,6,7)] %>% GG_heatmap(remove_diag = T)
   )
 
   #check that plots work
@@ -243,6 +245,8 @@ test_that("GG_heatmap", {
   expect_true(!are_equal(heatmaps$no_reorder, heatmaps$no_values))
   expect_true(!are_equal(heatmaps$no_reorder, heatmaps$many_digits))
   expect_true(!are_equal(heatmaps$no_values, heatmaps$many_digits))
+  expect_true(!are_equal(heatmaps$default, heatmaps$nonsig_p))
+  # expect_true(!are_equal(heatmaps$default, heatmaps$rm_diag)) #gives warnings
 })
 
 test_that("GG_save", {
@@ -402,4 +406,21 @@ test_that("GG_ordinals", {
   # combn(length(plot_list), 2, function(idx) {
   #   expect_true(!are_equal(plot_list[[idx[1]]], plot_list[[idx[2]]]))
   # })
+})
+
+
+test_that("GG_lines", {
+  #test it with time series data
+  p1 = tidyr::population %>%
+    filter(country %in% (.env$population$country %>% unique() %>% str_subset(pattern = "^A") %>% head(10))) %>%
+    GG_lines("year", "population", "country") +
+    scale_y_log10()
+
+  p2 = tidyr::population %>%
+    filter(country %in% (.env$population$country %>% unique() %>% str_subset(pattern = "^A") %>% head(10))) %>%
+    GG_lines("year", "population", "country", right_margin = 200) +
+    scale_y_log10()
+
+  expect_s3_class(p1, "ggplot")
+  expect_s3_class(p2, "ggplot")
 })

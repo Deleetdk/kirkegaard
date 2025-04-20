@@ -10,13 +10,17 @@ GG_heatmap(
   reorder_vars = T,
   digits = 2,
   font_size = 4,
-  color_label = "Pearson\\nCorrelation",
+  color_label = "Correlation",
   legend_position = c(0.4, 0.7),
   short_x_labels = F,
   axis_labels_clean_func = str_clean,
   dodge_x_labels = 1,
   min_n = 0,
-  pairwise_n = NULL
+  pairwise_n = NULL,
+  pairwise_p = NULL,
+  cross_out_nonsig = F,
+  p_sig = 0.01,
+  remove_diag = F
 )
 }
 \arguments{
@@ -41,6 +45,16 @@ GG_heatmap(
 \item{dodge_x_labels}{How much to dodge the x labels. Useful when there are many variables.}
 
 \item{min_n}{Minimum number of observations to include a correlation}
+
+\item{pairwise_n}{Pairwise number of observations. If not given, it is computed from the data.}
+
+\item{pairwise_p}{Pairwise p-values. If not given, it is computed from the data unless data is a matrix.}
+
+\item{cross_out_nonsig}{Cross out non-significant correlations}
+
+\item{p_sig}{Significance level for cross out}
+
+\item{remove_diag}{Remove diagonal values}
 }
 \value{
 a ggplot2 object

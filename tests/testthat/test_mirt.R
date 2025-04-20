@@ -181,15 +181,15 @@ test_that("abbreviate_scale", {
   p_genetic_CTT = d_sim_abbrev_genetic_CTT %>% GG_scale_abbreviation()
 
   #check the plots
-  expect_true(p_forwards %>% is.ggplot())
-  expect_true(p_backwards %>% is.ggplot())
-  expect_true(p_max_loading %>% is.ggplot())
-  expect_true(p_genetic %>% is.ggplot())
+  expect_true(p_forwards %>% is_ggplot())
+  expect_true(p_backwards %>% is_ggplot())
+  expect_true(p_max_loading %>% is_ggplot())
+  expect_true(p_genetic %>% is_ggplot())
 
-  expect_true(p_forwards_CTT %>% is.ggplot())
-  expect_true(p_backwards_CTT %>% is.ggplot())
-  expect_true(p_max_loading_CTT %>% is.ggplot())
-  expect_true(p_genetic_CTT %>% is.ggplot())
+  expect_true(p_forwards_CTT %>% is_ggplot())
+  expect_true(p_backwards_CTT %>% is_ggplot())
+  expect_true(p_max_loading_CTT %>% is_ggplot())
+  expect_true(p_genetic_CTT %>% is_ggplot())
 
 })
 

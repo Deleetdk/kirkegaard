@@ -1133,6 +1133,11 @@ GG_save_pdf = function(list, filename) {
 #' @param axis_labels_clean_func A function to clean the labels with, typically to remove underscores. NULL means disable.
 #' @param dodge_x_labels How much to dodge the x labels. Useful when there are many variables.
 #' @param min_n Minimum number of observations to include a correlation
+#' @param pairwise_n Pairwise number of observations. If not given, it is computed from the data.
+#' @param pairwise_p Pairwise p-values. If not given, it is computed from the data unless data is a matrix.
+#' @param cross_out_nonsig Cross out non-significant correlations
+#' @param p_sig Significance level for cross out
+#' @param remove_diag Remove diagonal values
 #'
 #' @return a ggplot2 object
 #' @export
@@ -1143,11 +1148,18 @@ GG_save_pdf = function(list, filename) {
 #' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
 #' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
 #' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(cross_out_nonsig = T)
+#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(remove_diag = T)
+#'
 #' #Automatic cleaning of the axis labels, can be turned off
 #' iris[-5] %>% GG_heatmap()
 #' iris[-5] %>% GG_heatmap(axis_labels_clean_func = NULL)
+#'
 #' #cor matrix input
-#' mtcars[c(1,3,4,5,6,7)] %>% wtd.cors() %>% GG_heatmap()
+#' mt_cars_cors = psych::corr.test(mtcars[c(1,3,4,5,6,7)], adjust = "none")
+#' mt_cars_cors$r %>% GG_heatmap()
+#' GG_heatmap(mt_cars_cors$r, pairwise_p = mt_cars_cors$p, cross_out_nonsig = T)
+#'
 #' #custom values input
 #' MAT_vector2full(c(.5, .3, .2), diag_value = 1) %>%
 #' set_colnames(letters[1:3]) %>%
@@ -1159,26 +1171,43 @@ GG_heatmap = function(
     reorder_vars = T,
     digits = 2,
     font_size = 4,
-    color_label = "Pearson\nCorrelation",
+    color_label = "Correlation",
     legend_position = c(0.4, 0.7),
     short_x_labels = F,
     axis_labels_clean_func = str_clean,
     dodge_x_labels = 1,
     min_n = 0,
-    pairwise_n = NULL
+    pairwise_n = NULL,
+    pairwise_p = NULL,
+    cross_out_nonsig = F,
+    p_sig = 0.01,
+    remove_diag = F
 ) {
+
+  #bad arguments
+  if (remove_diag & short_x_labels) stop("Cannot remove diagonal and use short x labels", call. = F)
 
   #correlations
   #compute if given as data
   #coerce to numeric to deal with ordinals
   if (is.data.frame(data)) {
-    cormat = weights::wtd.cors(data)
-  }
-  if (is.matrix(data)) {
+    # browser()
+    cormat_full = psych::corr.test(data, adjust = "none")
+    cormat = cormat_full$r
+    pairwise_p = cormat_full$p
+  } else if (is.matrix(data)) {
     cormat = data
 
     #if min_n is given, must also specify pairwise_n
     if (min_n > 0 & is.null(pairwise_n)) stop("If `min_n` is given with matrix input, `pairwise_n` must also be given", call. = F)
+  } else {
+    stop("Data must be a data frame or a matrix")
+  }
+
+  #can we reorder data? not if there's missing values in cor matrix
+  if (any(is.na(cormat)) & reorder_vars) {
+    message("Cannot reorder variables due to missing values in correlation matrix.")
+    reorder_vars = F
   }
 
   #reorder variable?
@@ -1203,10 +1232,15 @@ GG_heatmap = function(
   }
 
   #if we reordered, use the reordered version
-  if (reorder_vars) cormat = cormat_reordered
+  if (reorder_vars) {
+    cormat = cormat_reordered
+  }
 
   #remove lower tri values
   cormat[lower.tri(cormat)] = NA
+# browser()
+  #remove diag
+  if (remove_diag) diag(cormat) = NA
 
   #'melt' to long form
   #https://stackoverflow.com/questions/47475897/correlation-matrix-tidyr-gather-v-reshape2-melt
@@ -1219,8 +1253,14 @@ GG_heatmap = function(
   melted_cormat$value %<>% winsorise(upper = 1, lower = -1)
 
   #make axis labels
-  y_labels = melted_cormat$Var1 %>% levels()
-  x_labels = melted_cormat$Var1 %>% levels()
+  #depends on diagonals being removed
+  if (!remove_diag) {
+    x_labels = melted_cormat$Var1 %>% levels()
+    y_labels = melted_cormat$Var1 %>% levels()
+  } else {
+    x_labels = melted_cormat$Var1 %>% levels() %>% .[-1]
+    y_labels = melted_cormat$Var1 %>% levels() %>% {.[1:(length(.) - 1)]}
+  }
 
   #clean labels?
   if (is.function(axis_labels_clean_func)) {
@@ -1262,12 +1302,44 @@ GG_heatmap = function(
 
   #add values?
   if (add_values) {
-    # browser()
     #round values
-    if (!is.null(digits)) melted_cormat$value2 = melted_cormat$value %>% str_round(digits = digits)
+    if (!is.null(digits)) {
+      melted_cormat$value2 = melted_cormat$value %>% str_round(digits = digits)
+    } else {
+      melted_cormat$value2 = melted_cormat$value
+    }
 
     ggheatmap = ggheatmap +
       geom_text(data = melted_cormat, mapping = aes(Var2, Var1, label = value2), color = "black", size = font_size)
+
+    #nonsig p value marking
+    if (cross_out_nonsig) {
+      #we need p values if this is to be done
+      #which we have if correlations are automatically calculated
+      #but not if we were given a cor mat alone
+      assertthat::assert_that(!is.null(pairwise_p), msg = "Need pairwise p values to cross out non-significant correlations (these are calculated automatically if using data input with Pearson correlations).")
+
+      #reorder p values too if need be
+      if (reorder_vars) {
+        pairwise_p = pairwise_p[hc$order, hc$order]
+      }
+
+      #remove lower tri values
+      pairwise_p[lower.tri(pairwise_p)] = NA
+
+      #remove diag
+      diag(pairwise_p) = NA
+
+      #melt
+      melted_p = as.data.frame(pairwise_p) %>%
+        mutate(Var1 = factor(row.names(.), levels=row.names(.))) %>%
+        gather(key = Var2, value = value, -Var1, na.rm = TRUE, factor_key = TRUE) %>%
+        filter(value >= p_sig)
+
+      #add marking for non-significant values
+      ggheatmap = ggheatmap +
+        geom_point(data = melted_p, mapping = aes(Var2, Var1), color = "black", size = font_size, shape = 4, alpha = 0.8)
+    }
   }
 
   ggheatmap
@@ -1884,4 +1956,54 @@ GG_ordinal = function(
 
   p
 }
+
+#based on https://r-graph-gallery.com/web-line-chart-with-labels-at-end-of-line.html
+
+#' Plot lines with labels
+#'
+#' @param data A data frame with x, y, and color variables
+#' @param x A string with the x variable name
+#' @param y A string with the y variable name
+#' @param color A string with the color variable name
+#' @param right_margin Right margin for the plot. Default is 100.
+#'
+#' @returns A ggplot2 object
+#' @export
+#'
+#' @examples
+#' tidyr::population %>%
+#' filter(country %in% (.env$population$country %>% unique() %>% str_subset(pattern = "^A") %>% head(10))) %>%
+#' GG_lines("year", "population", "country") +
+#' scale_y_log10()
+GG_lines = function(data, x, y, color, right_margin = 100) {
+  # browser()
+
+  #use strings as symbols
+  x_sym = rlang::ensym(x)
+  y_sym = rlang::ensym(y)
+  color_sym = rlang::ensym(color)
+
+  #subset to last value for each color group
+  data_last = data %>%
+    group_by({{ color_sym }}) %>%
+    slice_tail(n = 1) %>%
+    ungroup()
+
+  #plot
+  p = data %>%
+    ggplot(aes(x = {{ x_sym }}, y = {{ y_sym }}, color = {{ color_sym }})) +
+    geom_line() +
+    geom_point() +
+    theme_bw() +
+    theme(plot.margin = margin(t = 5.5, r = right_margin, b = 5.5, l = 5.5, unit = "pt")) +
+    ggrepel::geom_text_repel(data = data_last, aes(label = {{ color_sym }}), size = 3, show.legend = F, xlim = c(data_last[[y]] %>% max(na.rm = T), NA), segment.linetype = "dotted") +
+    #remove color guide
+    guides(color = "none") +
+    coord_cartesian(clip = "off")
+
+  p
+}
+
+
+
 
