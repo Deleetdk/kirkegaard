@@ -104,6 +104,7 @@ test_that("GG_scatter", {
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T), "ggplot")
+  expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T, text_size = 5), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br"), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99), "ggplot")
   expect_s3_class(GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F), "ggplot")

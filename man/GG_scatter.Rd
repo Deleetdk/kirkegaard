@@ -20,6 +20,7 @@ GG_scatter(
   check_overlap = T,
   repel_names = F,
   weight_as_size = T,
+  text_size = 3,
   ...
 )
 }
@@ -52,6 +53,8 @@ GG_scatter(
 
 \item{weight_as_size}{(lgl scalar) Whether to resize points by the weights.}
 
+\item{text_size}{(num) The size of the text. Defaults to 3.}
+
 \item{...}{}
 }
 \description{
@@ -67,6 +70,7 @@ GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = rep("A", 150)) #cas
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #case names from variable
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #case names in purple
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #case names from variable, repelled
+GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_size = 5, case_names = "Species") #case names from variable, larger text
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names

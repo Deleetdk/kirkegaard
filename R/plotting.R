@@ -361,6 +361,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' @param check_overlap (lgl scalar) Whether to avoid overplotting names.
 #' @param weight_as_size (lgl scalar) Whether to resize points by the weights.
 #' @param repel_names (lgl) If using case names, should they be repelled?
+#' @param text_size (num) The size of the text. Defaults to 3.
 #' @param ...
 #'
 #' @export
@@ -371,6 +372,7 @@ GG_kmeans = function (df, clusters, runs = 100, standardize = T) {
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species") #case names from variable
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", case_names_color = "purple") #case names in purple
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", case_names = "Species", repel_names = T) #case names from variable, repelled
+#' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_size = 5, case_names = "Species") #case names from variable, larger text
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", text_pos = "br") #other text location
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", CI = .99) #other CI
 #' GG_scatter(iris, "Sepal.Length", "Sepal.Width", clean_names = F) #don't clean names
@@ -395,6 +397,7 @@ GG_scatter = function(df,
                       check_overlap = T,
                       repel_names = F,
                       weight_as_size = T,
+                      text_size = 3,
                       ...) {
 
   arg_list = list(...)
@@ -621,9 +624,9 @@ GG_scatter = function(df,
     #note, remove color aes
     if (!repel_names) {
       #show.legend fix due to http://stackoverflow.com/questions/18337653/remove-a-from-legend-when-using-aesthetics-and-geom-text
-      g = g + geom_text(aes(label = .label), color = case_names_color, size = 3, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
+      g = g + geom_text(aes(label = .label), color = case_names_color, size = text_size, vjust = y_nudge, check_overlap = check_overlap, show.legend = FALSE)
     } else {
-      g = g + ggrepel::geom_text_repel(aes(label = .label), color = case_names_color, size = 3, show.legend = FALSE)
+      g = g + ggrepel::geom_text_repel(aes(label = .label), color = case_names_color, size = text_size, show.legend = FALSE)
     }
   }
 
