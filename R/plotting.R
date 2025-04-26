@@ -1560,8 +1560,58 @@ GG_plot_models = function(model_coefs, exclude = "(Intercept)", highlight_sig = 
     theme_bw()
 }
 
+#create a term mapping table between raw variables and their expanded dummy coded subvariables
+#Grok solved this issue
+create_term_mapping <- function(data, formula) {
+  # Convert the formula to a terms object to handle '.' expansion
+  formula <- as.formula(formula)
+  terms_obj <- terms(formula, data = data)
+
+  # Get the response variable (if any) and predictor variables
+  response <- attr(terms_obj, "response")  # Index of response variable (0 if none)
+  predictor_vars <- attr(terms_obj, "term.labels")  # Names of predictor variables
+
+  # If there's a response, exclude it from the terms to process
+  all_vars <- all.vars(formula)
+  if (response > 0) {
+    response_var <- all_vars[response]
+    vars_to_process <- predictor_vars
+  } else {
+    vars_to_process <- predictor_vars
+  }
+
+  # Initialize vectors for term_raw and term
+  term_raw <- c()
+  term_expanded <- c()
+
+  # Loop through each predictor term
+  for (term in vars_to_process) {
+    if (term %in% names(data)) {  # Ensure the term exists in the data frame
+      # Check if the term is a factor
+      if (is.factor(data[[term]])) {
+        # Get levels of the factor (excluding the first level for dummy coding)
+        levels <- levels(data[[term]])[-1]  # Drop the first level (reference category)
+        # For each level, create a dummy variable name
+        for (level in levels) {
+          term_raw <- c(term_raw, term)
+          term_expanded <- c(term_expanded, paste0(term, level))
+        }
+      } else {
+        # For non-factors (numeric), keep the term as is
+        term_raw <- c(term_raw, term)
+        term_expanded <- c(term_expanded, term)
+      }
+    }
+  }
+
+  # Create the resulting data frame
+  result <- data.frame(term_raw = term_raw, term = term_expanded, stringsAsFactors = FALSE)
+  return(result)
+}
+
 #convert to data frame for plotting
-bma_to_df = function(x, remove_intercept = T) {
+bma_to_df = function(x) {
+
 
   #methods for different classes, corresponding to different packages
   if (inherits(x, "coef.bas")) {
@@ -1571,15 +1621,43 @@ bma_to_df = function(x, remove_intercept = T) {
       PIP = x$probne0,
       mean = x$postmean,
       sd = x$postsd
-    )
+    ) %>%
+      #remove intercept
+      slice(2:n())
+
   } else if (inherits(x, "bic.glm")) {
-    y = tibble(
-      term = names(x$probne0),
-      term_nice = term %>% str_clean(),
-      PIP = x$probne0/100,
+
+    #term map
+    term_map = create_term_mapping(x$x, x$formula)
+
+    y_terms = tibble(
+      term_raw = names(x$probne0),
+      PIP = x$probne0/100
+    )
+
+    #expand factors
+    y_terms2 = full_join(
+      y_terms,
+      term_map,
+      by = c("term_raw")
+    )
+
+    y_coefs = tibble(
+      term = names(x$postmean)[-1],
       mean = x$postmean[-1],
       sd = x$postsd[-1]
     )
+
+    #join coefs
+    y = full_join(
+      y_terms2,
+      y_coefs,
+      by = c("term" = "term")
+    ) %>%
+      mutate(
+        term_nice = str_clean(term)
+      )
+
   } else if (inherits(x, "bma")) {
     #get coefs
     x_coefs = coef(x)
@@ -1613,15 +1691,7 @@ bma_to_df = function(x, remove_intercept = T) {
     stop("Unknown input (not from package BMA, BAS, or BMS)", call. = F)
   }
 
-  #remove intercept?
-  if (remove_intercept) {
-
-    y = y %>%
-      #intercept removed, but only in case it's the first row
-      filter(!str_detect(term, "[Ii]ntercept"))
-  }
-
-  #change order of term to PIP
+  #change factor level order of term to PIP
   y %<>% mutate(
     term = fct_reorder(term, PIP),
     term_nice = fct_reorder(term_nice, PIP)
@@ -1629,6 +1699,8 @@ bma_to_df = function(x, remove_intercept = T) {
 
   y
 }
+
+# BMA::bic.glm(Sepal.Length ~ ., data = iris, glm.family = "gaussian") %>% GG_BMA()
 
 #PIP part
 bma_pip_plot = function(x) {
