@@ -4,7 +4,12 @@
 \alias{GG_plot_models}
 \title{Plot model coefficients for comparison}
 \usage{
-GG_plot_models(model_coefs, exclude = "(Intercept)", highlight_sig = NULL)
+GG_plot_models(
+  model_coefs,
+  exclude = "(Intercept)",
+  highlight_sig = NULL,
+  exclude_controls = T
+)
 }
 \arguments{
 \item{model_coefs}{A data frame with model coefficients}

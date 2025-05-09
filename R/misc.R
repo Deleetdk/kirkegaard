@@ -891,3 +891,48 @@ encode_combinations = function(x, collapse = ", ") {
     }) %>%
     unlist() %>% unname()
 }
+
+
+#' Convert date to decimal year
+#'
+#' @param x A date vector
+#'
+#' @returns A decimal year vector
+#' @export
+#'
+#' @examples
+#' as_decimal_year(as.Date("2020-01-01"))
+#' today() |> as_decimal_year() |>  decimal_year_to_date()
+as_decimal_year = function(x) {
+  tibble(
+    date = x
+  ) %>%
+    mutate(
+      year = year(date),
+      day_of_year = yday(date),
+      year_length = if_else(leap_year(date), 366, 365),
+      decimal_year = year + (day_of_year - 1) / year_length
+    ) %>% pull(decimal_year)
+}
+
+
+#' Convert decimal year to date
+#'
+#' @param decimal_year A decimal year vector
+#'
+#' @returns A date vector
+#' @export
+#'
+#' @examples
+#' decimal_year_to_date(2020.5)
+#' today() |> as_decimal_year() |>  decimal_year_to_date()
+decimal_year_to_date <- function(decimal_year) {
+  tibble(decimal_year = decimal_year) %>%
+    mutate(
+      year = floor(decimal_year),
+      fractional_year = decimal_year - year,
+      year_length = if_else(leap_year(as.Date(paste0(year, "-01-01"))), 366, 365),
+      day_of_year = round(fractional_year * year_length) + 1,
+      date = as.Date(paste0(year, "-01-01")) + (day_of_year - 1)
+    ) %>% pull(date)
+}

@@ -10,7 +10,9 @@ compare_predictors(
   predictors,
   additional_models = NULL,
   conf.level = 0.95,
-  family = gaussian
+  family = gaussian,
+  controls = NULL,
+  keep_controls = T
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ compare_predictors(
 \item{conf.level}{The confidence level to use. Default is .95.}
 
 \item{family}{The family to use. Default is "gaussian" (OLS), see \code{?glm} for more information.}
+
+\item{controls}{A character vector of control variables to use. These will be added to all models.}
+
+\item{keep_controls}{Whether to keep the values for control variables in the output. Default is TRUE.}
 }
 \value{
 A data frame with the coefficients for each model
@@ -37,4 +43,6 @@ compare_predictors(iris, names(iris)[1], names(iris)[-1])
 compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
 #with additional models
 compare_predictors(iris, names(iris)[1], names(iris)[-1], additional_models = list(petal = c("Petal.Length", "Petal.Width")))
+#with controls
+compare_predictors(iris, names(iris)[1], names(iris)[-c(1, 5)], controls = c("Species"))
 }

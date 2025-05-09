@@ -329,24 +329,33 @@ test_that("GG_plot_models", {
 
 
 test_that("GG_BMA", {
+  #make up some data
+  set.seed(1)
+  ex_data = tibble(
+    y = rnorm(100),
+    num = rnorm(100),
+    factor = sample(letters[1:3], size = 100, replace = T),
+    logical = sample(c(T, F), size = 100, replace = T),
+  )
+
   #fit BMA models
   sink(nullfile())
   on.exit(sink())
-  iris_bma = BMA::bic.glm(Sepal.Length ~ ., data = iris, glm.family = "gaussian")
-  iris_bas = BAS::bas.lm(Sepal.Length ~ ., data = iris)
+  bma_fit = BMA::bic.glm(y ~ ., data = ex_data, glm.family = "gaussian")
+  bas_fit = BAS::bas.lm(y ~ ., data = ex_data)
   pdf(file = NULL) #prevent plotting
-  iris_bms = BMS::bms(iris[-5])
+  bms_fit = BMS::bms(iris[-5])
   dev.off()
 
   #make plots
-  iris_bma_plot = GG_BMA(iris_bma)
-  iris_bas_plot = GG_BMA(coef(iris_bas))
-  iris_bms_plot = GG_BMA(iris_bms)
+  bma_plot = GG_BMA(bma_fit)
+  bas_plot = GG_BMA(coef(bas_fit))
+  bms_plot = GG_BMA(bms_fit)
 
   #check type
-  expect_s3_class(iris_bma_plot, "ggplot")
-  expect_s3_class(iris_bas_plot, "ggplot")
-  expect_s3_class(iris_bms_plot, "ggplot")
+  expect_s3_class(bma_plot, "ggplot")
+  expect_s3_class(bas_plot, "ggplot")
+  expect_s3_class(bms_plot, "ggplot")
 })
 
 

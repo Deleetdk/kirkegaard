@@ -1526,9 +1526,14 @@ save_plot_to_file <- function(code, filename, width = 1000, height = 750) {
 #' iris_model_coefs = compare_predictors(iris, names(iris)[1], names(iris)[-1])
 #' GG_plot_models(iris_model_coefs)
 #' GG_plot_models(iris_model_coefs, highlight_sig = .05)
-GG_plot_models = function(model_coefs, exclude = "(Intercept)", highlight_sig = NULL) {
+GG_plot_models = function(model_coefs, exclude = "(Intercept)", highlight_sig = NULL, exclude_controls = T) {
   #filter excluded variables
   model_coefs = model_coefs %>% filter(term != exclude)
+
+  #if exclude_controls is true, remove control variables
+  if (exclude_controls && "control" %in% names(model_coefs)) {
+    model_coefs = model_coefs %>% filter(!control)
+  }
 
   #plot model coefficients
   if (is.null(highlight_sig)) {
@@ -1563,6 +1568,12 @@ GG_plot_models = function(model_coefs, exclude = "(Intercept)", highlight_sig = 
 #create a term mapping table between raw variables and their expanded dummy coded subvariables
 #Grok solved this issue
 create_term_mapping <- function(data, formula) {
+
+  #manually deal with TRUE/FALSE variables
+  #the function apparently secretly adds TRUE to the end and converts to numeric
+  #so we need to remove it
+  names(data) = names(data) %>% str_replace("TRUE$", "")
+
   # Convert the formula to a terms object to handle '.' expansion
   formula <- as.formula(formula)
   terms_obj <- terms(formula, data = data)
@@ -1587,17 +1598,22 @@ create_term_mapping <- function(data, formula) {
   # Loop through each predictor term
   for (term in vars_to_process) {
     if (term %in% names(data)) {  # Ensure the term exists in the data frame
-      # Check if the term is a factor
+      # Check if the term is a factor OR a logical (boolean) column
       if (is.factor(data[[term]])) {
-        # Get levels of the factor (excluding the first level for dummy coding)
+        # For factors, get levels (excluding the first level for dummy coding)
         levels <- levels(data[[term]])[-1]  # Drop the first level (reference category)
         # For each level, create a dummy variable name
         for (level in levels) {
           term_raw <- c(term_raw, term)
           term_expanded <- c(term_expanded, paste0(term, level))
         }
+      } else if (is.logical(data[[term]])) {
+        # For logical columns, treat TRUE/FALSE as levels, with FALSE as the reference
+        # Only add the TRUE level as a dummy variable
+        term_raw <- c(term_raw, term)
+        term_expanded <- c(term_expanded, paste0(term, "TRUE"))
       } else {
-        # For non-factors (numeric), keep the term as is
+        # For non-factors and non-logical (numeric), keep the term as is
         term_raw <- c(term_raw, term)
         term_expanded <- c(term_expanded, term)
       }
@@ -1626,12 +1642,11 @@ bma_to_df = function(x) {
       slice(2:n())
 
   } else if (inherits(x, "bic.glm")) {
-
     #term map
     term_map = create_term_mapping(x$x, x$formula)
 
     y_terms = tibble(
-      term_raw = names(x$probne0),
+      term_raw = names(x$probne0) %>% str_replace("TRUE$", ""),
       PIP = x$probne0/100
     )
 
@@ -1643,7 +1658,7 @@ bma_to_df = function(x) {
     )
 
     y_coefs = tibble(
-      term = names(x$postmean)[-1],
+      term = names(x$postmean)[-1] %>% str_replace("TRUE$", ""),
       mean = x$postmean[-1],
       sd = x$postsd[-1]
     )
@@ -1699,8 +1714,6 @@ bma_to_df = function(x) {
 
   y
 }
-
-# BMA::bic.glm(Sepal.Length ~ ., data = iris, glm.family = "gaussian") %>% GG_BMA()
 
 #PIP part
 bma_pip_plot = function(x) {
@@ -2041,6 +2054,7 @@ GG_ordinal = function(
 #' @param y A string with the y variable name
 #' @param color A string with the color variable name
 #' @param right_margin Right margin for the plot. Default is 100.
+#' @param points Whether to add points to the plot. Default is TRUE.
 #'
 #' @returns A ggplot2 object
 #' @export
@@ -2050,7 +2064,7 @@ GG_ordinal = function(
 #' filter(country %in% (.env$population$country %>% unique() %>% str_subset(pattern = "^A") %>% head(10))) %>%
 #' GG_lines("year", "population", "country") +
 #' scale_y_log10()
-GG_lines = function(data, x, y, color, right_margin = 100) {
+GG_lines = function(data, x, y, color, right_margin = 100, points = T) {
   # browser()
 
   #use strings as symbols
@@ -2068,13 +2082,17 @@ GG_lines = function(data, x, y, color, right_margin = 100) {
   p = data %>%
     ggplot(aes(x = {{ x_sym }}, y = {{ y_sym }}, color = {{ color_sym }})) +
     geom_line() +
-    geom_point() +
     theme_bw() +
     theme(plot.margin = margin(t = 5.5, r = right_margin, b = 5.5, l = 5.5, unit = "pt")) +
-    ggrepel::geom_text_repel(data = data_last, aes(label = {{ color_sym }}), size = 3, show.legend = F, xlim = c(data_last[[y]] %>% max(na.rm = T), NA), segment.linetype = "dotted") +
+    ggrepel::geom_text_repel(data = data_last, aes(label = {{ color_sym }}), size = 3, show.legend = F, xlim = c(data_last[[x]] %>% max(na.rm = T) %>% multiply_by(2), NA), segment.linetype = "dotted") +
     #remove color guide
     guides(color = "none") +
     coord_cartesian(clip = "off")
+
+  #points too?
+  if (points) {
+    p = p + geom_point()
+  }
 
   p
 }

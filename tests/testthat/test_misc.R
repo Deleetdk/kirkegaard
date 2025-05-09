@@ -188,3 +188,16 @@ test_that("encode_combinations", {
   expect_equivalent(x, c("A", "B", "C", "A, D", ""))
 })
 
+#date conversions
+test_that("date_conversions", {
+  tibble(
+    date_start = seq(from = as.Date("2020-01-01"), to = today(), by = "1 day"),
+    decimal_year = date_start %>% as_decimal_year(),
+    date_end = decimal_year %>% decimal_year_to_date(),
+    identical = date_start == date_end
+  ) %>%
+    pull(identical) %>%
+    all() %>%
+    expect_true() # all dates should be identical after conversion
+})
+

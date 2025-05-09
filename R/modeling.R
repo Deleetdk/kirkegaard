@@ -484,6 +484,8 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 #' @param conf.level The confidence level to use. Default is .95.
 #' @param family The family to use. Default is "gaussian" (OLS), see `?glm` for more information.
 #' @param additional_models A list of additional models to fit. Each element of the list should be a character vector of predictors to use. The names of the list will be used as the model names in the output.
+#' @param controls A character vector of control variables to use. These will be added to all models.
+#' @param keep_controls Whether to keep the values for control variables in the output. Default is TRUE.
 #'
 #' @return A data frame with the coefficients for each model
 #' @export
@@ -493,13 +495,31 @@ get_model_coefs = function(models, conf.level = .95, nicer_factor_levels = T) {
 #' compare_predictors(mpg, names(mpg)[3], names(mpg)[-3])
 #' #with additional models
 #' compare_predictors(iris, names(iris)[1], names(iris)[-1], additional_models = list(petal = c("Petal.Length", "Petal.Width")))
-compare_predictors = function(data, outcome, predictors, additional_models = NULL, conf.level = .95, family = gaussian) {
+#' #with controls
+#' compare_predictors(iris, names(iris)[1], names(iris)[-c(1, 5)], controls = c("Species"))
+compare_predictors = function(data, outcome, predictors, additional_models = NULL, conf.level = .95, family = gaussian, controls = NULL, keep_controls = T) {
+  # browser()
   #run singular regression models
-  models = predictors %>% map(~glm(str_glue("{outcome} ~ {.x}"), data = data, family = family))
+  models = predictors %>% map(function(.x) {
+    #if controls are given, add them to the model
+    if (!is.null(controls)) {
+      fit = glm(str_glue("{outcome} ~ {.x} + {controls %>% str_c(collapse = ' + ')}"), data = data, family = family)
+    } else {
+      fit = glm(str_glue("{outcome} ~ {.x}"), data = data, family = family)
+    }
+
+  })
   names(models) = 1:length(models)
 
   #full model
-  models[["full"]] = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data, family = family)
+  #if controls are given, add them to the model
+  if (!is.null(controls)) {
+    #fit full model
+    models[["full"]] = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')} + {controls %>% str_c(collapse = ' + ')}"), data = data, family = family)
+  } else {
+    #fit full model
+    models[["full"]] = glm(str_glue("{outcome} ~ {predictors %>% str_c(collapse = ' + ')}"), data = data, family = family)
+  }
 
   #any additional models?
   if (!is.null(additional_models)) {
@@ -528,6 +548,17 @@ compare_predictors = function(data, outcome, predictors, additional_models = NUL
 
   #set factor levels to keep them consistent
   all_coefs$term = factor(all_coefs$term, levels = all_coefs$term %>% unique() %>% rev())
+
+  #mark control variables if we have any
+  if (!is.null(controls)) {
+    all_coefs$control = F
+    all_coefs$control[all_coefs$term %>% str_detect(str_c(controls, collapse = "|"))] = T
+  }
+
+  #remove control variables
+  if (!keep_controls && !is.null(controls)) {
+    all_coefs = all_coefs %>% filter(!control)
+  }
 
   all_coefs
 }

@@ -4,7 +4,7 @@
 \alias{GG_lines}
 \title{Plot lines with labels}
 \usage{
-GG_lines(data, x, y, color, right_margin = 100)
+GG_lines(data, x, y, color, right_margin = 100, points = T)
 }
 \arguments{
 \item{data}{A data frame with x, y, and color variables}
@@ -16,6 +16,8 @@ GG_lines(data, x, y, color, right_margin = 100)
 \item{color}{A string with the color variable name}
 
 \item{right_margin}{Right margin for the plot. Default is 100.}
+
+\item{points}{Whether to add points to the plot. Default is TRUE.}
 }
 \value{
 A ggplot2 object
