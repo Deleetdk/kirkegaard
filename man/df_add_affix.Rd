@@ -4,7 +4,7 @@
 \alias{df_add_affix}
 \title{Add affix to column names.}
 \usage{
-df_add_affix(data, prefix = "", suffix = "")
+df_add_affix(data, prefix = "", suffix = "", exclude = c())
 }
 \arguments{
 \item{data}{(an object) An object whose colnames should be changed}
@@ -18,6 +18,7 @@ Add a prefix to column names on data.frame or matrix or similar.
 }
 \examples{
 test_iris = iris[1:10, ] #small test dataset
-df_add_affix(test_iris, prefix = "P_") #ad P_ prefix
-df_add_affix(test_iris, suffix = "_S") #ad _S suffix
+df_add_affix(iris, prefix = "P_") |> head() #add P_ prefix
+df_add_affix(iris, suffix = "_S") |> head() #add _S suffix
+df_add_affix(iris, suffix = "_X", exclude = "Species") |> head() #ad _X suffix but not for Species
 }

@@ -269,3 +269,25 @@ test_that("df_winsorrise", {
 
 })
 
+# df_add_affix ------------------------------------------------------------
+
+test_that("df_add_affix", {
+  expect_equivalent(
+    df_add_affix(iris, prefix = "P_") |> names(),
+    c("P_Sepal.Length", "P_Sepal.Width", "P_Petal.Length", "P_Petal.Width",
+      "P_Species")
+  )
+
+  expect_equivalent(
+    df_add_affix(iris, suffix = "_S") |> names(),
+    df_add_affix(iris, suffix = "_S") |> names()
+  )
+
+
+  expect_equivalent(
+    df_add_affix(iris, suffix = "_X", exclude = "Species") |> names(),
+    c("Sepal.Length_X", "Sepal.Width_X", "Petal.Length_X", "Petal.Width_X",
+      "Species")
+  )
+
+})

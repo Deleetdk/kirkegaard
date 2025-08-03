@@ -645,16 +645,17 @@ df_reorder_columns = function(data, vars){
 #'
 #' Add a prefix to column names on data.frame or matrix or similar.
 #' @param data (an object) An object whose colnames should be changed
-#' @param prefix (str) A prefix to add.
-#' @param suffix (str) A suffix to add.
+#' @param prefix (chr) A prefix to add.
+#' @param suffix (chr) A suffix to add.
+#' @param exclude (chr) Variables to exclude.
 #' @export
 #' @examples
-#' test_iris = iris[1:10, ] #small test dataset
-#' df_add_affix(test_iris, prefix = "P_") #ad P_ prefix
-#' df_add_affix(test_iris, suffix = "_S") #ad _S suffix
-df_add_affix = function(data, prefix = "", suffix = "") {
-  #rename
-  colnames(data) = paste0(prefix, colnames(data), suffix)
+#' df_add_affix(iris, prefix = "P_") |> head() #add P_ prefix
+#' df_add_affix(iris, suffix = "_S") |> head() #add _S suffix
+#' df_add_affix(iris, suffix = "_X", exclude = "Species") |> head() #add _X suffix but not for Species
+df_add_affix = function(data, prefix = "", suffix = "", exclude = c()) {
+  #rename columns not in exclude
+  colnames(data)[!colnames(data) %in% exclude] = paste0(prefix, colnames(data)[!colnames(data) %in% exclude], suffix)
   #return
   data
 }
