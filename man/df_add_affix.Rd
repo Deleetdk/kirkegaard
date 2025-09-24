@@ -9,16 +9,17 @@ df_add_affix(data, prefix = "", suffix = "", exclude = c())
 \arguments{
 \item{data}{(an object) An object whose colnames should be changed}
 
-\item{prefix}{(str) A prefix to add.}
+\item{prefix}{(chr) A prefix to add.}
 
-\item{suffix}{(str) A suffix to add.}
+\item{suffix}{(chr) A suffix to add.}
+
+\item{exclude}{(chr) Variables to exclude.}
 }
 \description{
 Add a prefix to column names on data.frame or matrix or similar.
 }
 \examples{
-test_iris = iris[1:10, ] #small test dataset
 df_add_affix(iris, prefix = "P_") |> head() #add P_ prefix
 df_add_affix(iris, suffix = "_S") |> head() #add _S suffix
-df_add_affix(iris, suffix = "_X", exclude = "Species") |> head() #ad _X suffix but not for Species
+df_add_affix(iris, suffix = "_X", exclude = "Species") |> head() #add _X suffix but not for Species
 }

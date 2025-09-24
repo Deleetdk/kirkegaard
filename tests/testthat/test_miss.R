@@ -238,3 +238,24 @@ test_that("miss_combine_duplicate_vars", {
   expect_equivalent(d, d_expected)
 
 })
+
+test_that("miss_patterns", {
+  #row count
+  set.seed(1)
+  df1 = iris %>% miss_add_random()
+  df1_res = df1 %>% miss_patterns()
+
+  #row count is correct
+  expect_equal(nrow(df1_res), 2^ncol(df1))
+
+  #percent is correct
+  expect_true((sum(df1_res$percent) - 100) < 0.1)
+
+  #col count is correct
+  expect_true(all(df1_res[1, 1:ncol(df1)] == FALSE))
+
+  #correct order of missingness
+  expect_equal(df1_res[2, 1], TRUE)
+  expect_equal(df1_res[2, 2], FALSE)
+})
+

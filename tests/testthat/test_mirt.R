@@ -209,7 +209,7 @@ test_that("mirt helper functions", {
   expect_true(is.data.frame(rel))
 
   expect_true(is.data.frame(item_stats))
-  expect_true(all(c("item", "loading", "discrimination", "difficulty", "pass_rate") %in% colnames(item_stats)))
+  expect_true(all(c("item", "loading", "discrimination", "difficulty", "mean") %in% colnames(item_stats)))
 })
 
 

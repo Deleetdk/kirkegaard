@@ -85,6 +85,31 @@ miss_by_var = function(x, reverse = F, prop = F){
 }
 
 
+#' Drop variables with high missingness
+#'
+#' @param data A data frame.
+#' @param na_threshold Threshold for allowed missingness. Default = 1 (drop variables with completely missing data)
+#' @param inclusive Whether to use inclusive comparison (<=) or exclusive (<).
+#'
+#' @returns A data frame
+#' @export
+#'
+#' @examples
+#' iris %>% miss_add_random(0.5) %>% miss_drop_vars(0.5) #will drop variables with more than 50% missing, which is approximately half at random
+miss_drop_vars = function(data, na_threshold = 1, inclusive = F) {
+  # Calculate NA fraction for each column
+  na_frac <- colMeans(is.na(data))
+
+  # Keep columns with NA fraction below threshold
+  if (inclusive) {
+    keep_cols <- names(data)[na_frac <= na_threshold]
+  } else {
+    keep_cols <- names(data)[na_frac < na_threshold]
+  }
+
+  # Return data frame with selected columns
+  data[, keep_cols, drop = FALSE]
+}
 
 
 #' Missing data barplot with ggplot2.
@@ -223,21 +248,50 @@ miss_amount = function(data) {
 
 
 #' Calculates the patterns of missing data
-#'
-#' Calculates the patterns of missing data. This is the missing data matrix multiplied row-wise by a vector of the 2 to the 1 to n power, where n is the number of variables. This results in a unique id for each way the data can be missing.
 #' @param data (data.frame/matrix) The data.
-#' @return A vector of patterns the same length as the number of rows in data.
+#' @return A data frame showing the pattern of missing data in variables
 #' @export
 #' @examples
-#' miss_pattern(miss_add_random(iris))
-miss_pattern = function(data) {
-  #create missing matrix
-  m_d = miss_matrix(data)
+#' miss_patterns(miss_add_random(iris))
+miss_patterns <- function(df, digits = 3) {
+  df <- as.data.frame(df)
+  vars <- names(df)
+  n <- length(vars)
+  n_obs <- nrow(df)
 
-  #multiply by 2^i, row wise
-  (t(m_d) * (purrr::map_dbl(1:ncol(m_d), function(i) 2^i))) %>% #transpose, then multiply by 2^i
-    t() %>% #transpose back
-    apply(MARGIN = 1, FUN = sum) #get sum by rows
+  if (n == 0) {
+    return(data.frame(n_cases = n_obs, percent = if (n_obs == 0) 0 else 100))
+  }
+  if (n > 25) warning("This will create 2^n rows; for n > 25 this may be very large / slow.")
+
+  # build 2^n patterns by binary counting (bit i -> variable i; var1 is LSB)
+  m <- 2L^n
+  idx <- 0L:(m - 1L)
+  mat <- vapply(
+    seq_len(n),
+    function(i) as.logical(bitwAnd(bitwShiftR(idx, i - 1L), 1L)),
+    logical(length(idx))
+  )
+  grid <- as.data.frame(mat, stringsAsFactors = FALSE)
+  names(grid) <- vars
+
+  # pattern strings for matching
+  grid$.__pattern__ <- do.call(paste, c(grid[vars], sep = "_"))
+  obs <- as.data.frame(is.na(df))
+  obs$.__pattern__ <- do.call(paste, c(obs, sep = "_"))
+
+  # counts in the same grid order
+  counts <- as.integer(table(factor(obs$.__pattern__, levels = grid$.__pattern__)))
+  grid$n_cases <- counts
+
+  denom <- if (n_obs == 0) 1 else n_obs
+  grid$percent <- round(grid$n_cases / denom * 100, digits)
+
+  # tidy
+  grid$.__pattern__ <- NULL
+  grid[vars] <- lapply(grid[vars], as.logical)
+  rownames(grid) <- NULL
+  return(grid)
 }
 
 

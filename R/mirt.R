@@ -36,7 +36,9 @@ get_discriminations = function(x) {
 #'
 #' @examples
 #' library(mirt)
-#' data = simdata(seq(0.2, 2, length.out = 5), seq(-2, 2, length.out = 5), 1000, itemtype = "2PL")
+#' set.seed(1)
+#' item_stats = tibble(slope = seq(0.2, 2, length.out = 5), diff = seq(-2, 2, length.out = 5))
+#' data = simdata(item_stats$slope, item_stats$diff, 1000, itemtype = "2PL")
 #' fit = mirt(data, 1)
 #' get_mirt_stats(fit)
 get_mirt_stats = function(x) {
@@ -46,7 +48,7 @@ get_mirt_stats = function(x) {
     loading = get_loadings(x) %>% as.vector(),
     difficulty = get_difficulties(x),
     discrimination = get_discriminations(x),
-    pass_rate = pnorm(difficulty, lower.tail = F)
+    mean = x@Data$data %>% colMeans(na.rm = T)
   )
 }
 
