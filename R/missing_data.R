@@ -480,8 +480,10 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
     data = do.call(missForest::missForest, args = method_args)$ximp
   } else if (method == "irmi") {
     method_args = c(list(x = data, imp_var = F, noise = F), method_args)
-    data = do.call(VIM::irmi, args = method_args)
-    # VIM::irmi(data, noise = noise, imp_var = F)
+    # SUPPRESS OUTPUT FROM VIM::irmi
+    capture.output(
+      data <- do.call(VIM::irmi, args = method_args)
+    )
   } else {
     stop(str_glue("`method` not recognized {method}, must be either 'rf' or 'irmi'"), call. = F)
   }
@@ -517,6 +519,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
   #return
   data
 }
+
 
 
 #' Filter data by missing values per row.

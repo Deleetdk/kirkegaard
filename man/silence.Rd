@@ -4,7 +4,13 @@
 \alias{silence}
 \title{Silence warnings or messages from expression via parameter.}
 \usage{
-silence(expr, warnings = F, messages = F, startupmessages = F)
+silence(
+  expr,
+  warnings = FALSE,
+  messages = FALSE,
+  startupmessages = FALSE,
+  output = FALSE
+)
 }
 \arguments{
 \item{expr}{(expression) Some expression to run.}

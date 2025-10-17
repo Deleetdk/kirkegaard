@@ -320,7 +320,34 @@ fill_in = function(x, length, value = NA) {
 #' silence(warning("test"), warnings = T)
 #' silence(message("test"))
 #' silence(message("test"), messages = T)
-silence = function(expr, warnings = F, messages = F, startupmessages = F) {
+silence = function(expr, warnings = FALSE, messages = FALSE,
+                   startupmessages = FALSE, output = FALSE) {
+
+  if (!output) {
+    # Suppress output - wrap the whole thing in capture.output
+    capture.output({
+      result <- if (!warnings & !messages & !startupmessages) {
+        suppressPackageStartupMessages(suppressWarnings(suppressMessages(expr)))
+      } else if (warnings & !messages & !startupmessages) {
+        suppressPackageStartupMessages(suppressMessages(expr))
+      } else if (!warnings & messages & !startupmessages) {
+        suppressPackageStartupMessages(suppressWarnings(expr))
+      } else if (!warnings & !messages & startupmessages) {
+        suppressWarnings(suppressMessages(expr))
+      } else if (warnings & messages & !startupmessages) {
+        suppressPackageStartupMessages(expr)
+      } else if (warnings & !messages & startupmessages) {
+        suppressMessages(expr)
+      } else if (!warnings & messages & startupmessages) {
+        suppressWarnings(expr)
+      } else if (warnings & messages & startupmessages) {
+        expr
+      }
+    })
+    return(result)
+  }
+
+  # Don't suppress output - original logic
   if (!warnings & !messages & !startupmessages) {
     suppressPackageStartupMessages(suppressWarnings(suppressMessages(expr)))
   } else if (warnings & !messages & !startupmessages) {
@@ -338,8 +365,11 @@ silence = function(expr, warnings = F, messages = F, startupmessages = F) {
   } else if (warnings & messages & startupmessages) {
     expr
   }
-
 }
+
+
+
+
 
 
 #' Merge vectors by alternating elements.

@@ -30,7 +30,6 @@ test_that("miss_filter", {
   set.seed(1)
   df = tibble(ints = 1:10, letters = letters[1:10], unif = runif(10), norm = rnorm(10))
   df = miss_add_random(df, prop = .25) %>% mutate(nomiss = T, allmiss = NA)
-  df
 
   #no missing allow
   expect_equivalent(miss_filter(df) %>% nrow(), 0)
@@ -114,8 +113,6 @@ test_that("miss_impute", {
 })
 
 
-
-
 test_that("miss_amount", {
   set.seed(1)
 
@@ -175,8 +172,6 @@ test_that("miss_locf", {
   expect_identical(c(1, 1, 2, 2, NA),
                    c(NA, 1, NA, 2, NA) %>% miss_locf(reverse = T))
 })
-
-
 
 
 

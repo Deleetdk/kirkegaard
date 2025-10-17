@@ -46,7 +46,7 @@ data = tibble(
  )
 
 #add some missing data too
-data = data %>% miss_add_random(prop = .05)
+# data = data %>% miss_add_random(prop = .05)
 
 #restore the norms
 norms = make_norms(data$score, data$age, data$norm_group)
@@ -74,11 +74,15 @@ data %>% select(score, age) %>% miss_filter() %>% nrow()
 
 #can we detect the age heteroscedasticity too?
 #yes, and it's linear as we expect
-test_HS(resid = resid(lm(score ~ age, data = data)), x = data$age)
+test_HS(resid = resid(lm(score ~ age, data = data, na.action = na.exclude)), x = data$age)
 
 #plot the results
 GG_scatter(data, "true_IQ", "score") + geom_abline(slope = 1, intercept = 0, linetype = 2)
 GG_scatter(data, "true_IQ", "IQ") + geom_abline(slope = 1, intercept = 0, linetype = 2)
+
+#visual confirmation by plotting centiles
+GG_quantiles(data, "age", "score", quantiles = c(.05, .25, .5, .75, .95))
+GG_quantiles(data, "age", "IQ", quantiles = c(.05, .25, .5, .75, .95))
 
 ```
 

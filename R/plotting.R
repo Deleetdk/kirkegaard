@@ -1146,28 +1146,33 @@ GG_save_pdf = function(list, filename) {
 #' @export
 #'
 #' @examples
-#' #data input
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap()
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(reorder_vars = F)
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(color_label = "some other text")
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(short_x_labels = T)
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(cross_out_nonsig = T)
-#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(remove_diag = T)
+#' # Define subset for reuse
+#' mt_sub <- mtcars[c(1, 3, 4, 5, 6, 7)]
 #'
-#' #Automatic cleaning of the axis labels, can be turned off
-#' iris[-5] |> GG_heatmap()
-#' iris[-5] |> GG_heatmap(axis_labels_clean_func = NULL)
+#' # Data input - basic usage
+#' mt_sub |> GG_heatmap()
+#' mt_sub |> GG_heatmap(reorder_vars = FALSE)
+#' mt_sub |> GG_heatmap(color_label = "some other text")
+#' mt_sub |> GG_heatmap(short_x_labels = TRUE)
+#' mt_sub |> GG_heatmap(cross_out_nonsig = TRUE)
+#' mt_sub |> GG_heatmap(remove_diag = TRUE)
 #'
-#' #cor matrix input
-#' mt_cars_cors = psych::corr.test(mtcars[c(1,3,4,5,6,7)], adjust = "none")
+#' # Automatic cleaning of axis labels, can be turned off
+#' iris_num <- iris[-5]
+#' iris_num |> GG_heatmap()
+#' iris_num |> GG_heatmap(axis_labels_clean_func = NULL)
+#'
+#' # Correlation matrix input
+#' mt_cars_cors <- psych::corr.test(mt_sub, adjust = "none")
 #' mt_cars_cors$r |> GG_heatmap()
-#' GG_heatmap(mt_cars_cors$r, pairwise_p = mt_cars_cors$p, cross_out_nonsig = T)
+#' GG_heatmap(mt_cars_cors$r, pairwise_p = mt_cars_cors$p, cross_out_nonsig = TRUE)
 #'
-#' #custom values input
-#' MAT_vector2full(c(.5, .3, .2), diag_value = 1) |>
-#' set_colnames(letters[1:3]) |>
-#' set_rownames(letters[1:3]) |>
-#' GG_heatmap()
+#' # Custom values input
+#' custom_mat <- MAT_vector2full(c(.5, .3, .2), diag_value = 1) |>
+#'   set_colnames(letters[1:3]) |>
+#'   set_rownames(letters[1:3])
+#' custom_mat |> GG_heatmap()
+
 GG_heatmap = function(
     data,
     add_values = T,
@@ -2097,6 +2102,61 @@ GG_lines = function(data, x, y, color, right_margin = 100, points = T) {
   p
 }
 
+
+#' Plot quantiles of y on x
+#'
+#' @param data Data frame
+#' @param x_var X variable name
+#' @param y_var Y variable name
+#' @param quantiles Which quantiles to plot
+#' @param method Method to use with [kirkegaard::quantile_smooth()]
+#'
+#' @returns A ggplot2 object
+#' @export
+#'
+#' @examples
+#' GG_quantiles(diamonds %>% slice_sample(n=2000), "carat", "price")
+GG_quantiles <- function(data, x_var, y_var, quantiles = c(0.1, 0.25, 0.5, 0.75, 0.9),
+                         method = "qgam") {
+  # Extract variables from data frame
+  x <- data[[x_var]]
+  y <- data[[y_var]]
+
+  # Remove rows with missing data in either variable
+  complete_cases <- complete.cases(x, y)
+  x_clean <- x[complete_cases]
+  y_clean <- y[complete_cases]
+  data_clean <- data[complete_cases, ]
+
+  # Check if there's enough data left
+  if (sum(complete_cases) < 10) {
+    stop("Not enough complete cases after removing missing data (need at least 10)")
+  }
+
+  # Calculate quantile smooths for each quantile
+  smooth_data <- lapply(quantiles, function(q) {
+    smoothed <- quantile_smooth(x_clean, y_clean, quantile = q, method = method)
+    data.frame(
+      x = x_clean,
+      y = smoothed,
+      quantile = as.factor(q)
+    )
+  })
+
+  # Combine all quantile data
+  smooth_df <- do.call(rbind, smooth_data)
+
+  # Create the plot
+  ggplot(data_clean, aes(x = .data[[x_var]], y = .data[[y_var]])) +
+    geom_point(alpha = 0.3) +
+    geom_line(data = smooth_df, aes(x = x, y = y, color = quantile), linewidth = 1) +
+    labs(
+      x = x_var,
+      y = y_var,
+      color = "Quantile"
+    ) +
+    theme_bw()
+}
 
 
 

@@ -418,3 +418,7 @@ test_that("GG_lines", {
   expect_s3_class(p1, "ggplot")
   expect_s3_class(p2, "ggplot")
 })
+
+test_that("GG_quantiles", {
+  GG_quantiles(diamonds %>% slice_sample(n=2000), "carat", "price") %>% expect_s3_class("ggplot")
+})
