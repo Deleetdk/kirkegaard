@@ -7,14 +7,14 @@
 GG_funnel(.analysis, .CI = 0.95, .study_CI = F)
 }
 \arguments{
-\item{.analysis}{(rma object) The rma analysis from \link{metafor}.}
+\item{.analysis}{(rma object) The rma analysis from \link[metafor:metafor-package]{metafor::metafor}.}
 
 \item{.CI}{(chr vector) Confidence interval to use.}
 
 \item{.study_CI}{(lgl vector) Whether to plot confidence intervals for individual studies.}
 }
 \description{
-Makes a pretty funnel plot using \link{ggplot2}.
+Makes a pretty funnel plot using \link[ggplot2:ggplot2-package]{ggplot2::ggplot2}.
 }
 \examples{
 library(metafor); data(european_ancestry)

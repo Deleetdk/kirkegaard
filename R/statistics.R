@@ -1400,6 +1400,7 @@ get_p = function(x) {
 #'
 #' @param resid Model residuals
 #' @param x Model predictor of interest
+#' @param spline_knots Number of knots in the spline
 #'
 #' @return Data frame of results
 #' @export
@@ -1409,21 +1410,23 @@ get_p = function(x) {
 #' test_HS(resid = resid(lm(Sepal.Length ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
 #' #a lot of HS here
 #' test_HS(resid = resid(lm(Petal.Width ~ Petal.Length, data = iris2)), x = iris2$Petal.Length)
-test_HS = function(resid, x) {
+test_HS = function(resid, x, spline_knots = 3) {
   #data
   d = tibble(
     resid = standardize(abs(resid)),
     x = standardize(x),
     resid_rank = rank(resid),
     x_rank = rank(x)
-  )
+  ) %>%
+    #no missing data
+    miss_filter()
 
   #fits
   mods = list(
     fit_linear = rms::ols(resid ~ x, data = d),
-    fit_spline = rms::ols(resid ~ rms::rcs(x), data = d),
+    fit_spline = rms::ols(resid ~ rms::rcs(x, spline_knots), data = d),
     fit_linear_rank = rms::ols(resid_rank ~ x_rank, data = d),
-    fit_spline_rank = rms::ols(resid_rank ~ rms::rcs(x_rank), data = d)
+    fit_spline_rank = rms::ols(resid_rank ~ rms::rcs(x_rank, spline_knots), data = d)
   )
 
   #summarize
@@ -1594,6 +1597,7 @@ prop_tests = function(x, group, correct = T, conf_level = .95, alternative = c("
 #'  GG_scatter(data, "true_IQ", "score") + geom_abline(slope = 1, intercept = 0, linetype = 2)
 #'  GG_scatter(data, "true_IQ", "IQ") + geom_abline(slope = 1, intercept = 0, linetype = 2)
 make_norms = function(score, age, norm_group = NULL, p_value = .01) {
+  # browser()
   #if no norm group, use all rows
   if (is.null(norm_group)) {
     norm_group = rep(T, length(score))
@@ -1604,11 +1608,18 @@ make_norms = function(score, age, norm_group = NULL, p_value = .01) {
     score = score,
     age = age,
     norm_group = norm_group
+  ) %>% mutate(
+    row = row_number()
   )
+
+  #note missing data rows
+  d_miss = d_all %>%
+    miss_by_case()
 
   #norm subset
   d_norm = d_all %>%
-    filter(norm_group)
+    filter(norm_group) %>%
+    miss_filter()
 
   #correct for the mean effect of age
   age_model = lm(score ~ age, data = d_norm)
@@ -1645,7 +1656,7 @@ make_norms = function(score, age, norm_group = NULL, p_value = .01) {
   }
 
   #find the norm group mean/SD
-  norm_desc = d_all %>% filter(norm_group) %>% select(score_ageadj2) %>% describe2()
+  norm_desc = d_all %>% dplyr::filter(norm_group) %>% dplyr::select(score_ageadj2) %>% describe2()
   d_all$score_ageadj3 = (d_all$score_ageadj2 - norm_desc$mean) / norm_desc$sd
 
   #output IQ scores

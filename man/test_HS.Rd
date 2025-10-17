@@ -4,12 +4,14 @@
 \alias{test_HS}
 \title{Test for heteroscedasticity}
 \usage{
-test_HS(resid, x)
+test_HS(resid, x, spline_knots = 3)
 }
 \arguments{
 \item{resid}{Model residuals}
 
 \item{x}{Model predictor of interest}
+
+\item{spline_knots}{Number of knots in the spline}
 }
 \value{
 Data frame of results

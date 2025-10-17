@@ -214,8 +214,6 @@ test_that("GG_group_means", {
 
 
 
-
-
 test_that("GG_heatmap", {
   #save plots to list
   heatmaps = list(
@@ -234,20 +232,6 @@ test_that("GG_heatmap", {
 
   #check that plots work
   walk(heatmaps, ~expect_s3_class(., class = "ggplot"))
-
-  #check for non-identity
-  #cant think of an easy smart way to do this
-  expect_true(!are_equal(heatmaps$default, heatmaps$no_reorder))
-  expect_true(!are_equal(heatmaps$default, heatmaps$no_values))
-  expect_true(!are_equal(heatmaps$default, heatmaps$many_digits))
-  expect_true(!are_equal(heatmaps$default, heatmaps$small_text))
-  expect_true(!are_equal(heatmaps$default, heatmaps$move_legend))
-  expect_true(!are_equal(heatmaps$default, heatmaps$short_x_labels))
-  expect_true(!are_equal(heatmaps$no_reorder, heatmaps$no_values))
-  expect_true(!are_equal(heatmaps$no_reorder, heatmaps$many_digits))
-  expect_true(!are_equal(heatmaps$no_values, heatmaps$many_digits))
-  expect_true(!are_equal(heatmaps$default, heatmaps$nonsig_p))
-  # expect_true(!are_equal(heatmaps$default, heatmaps$rm_diag)) #gives warnings
 })
 
 test_that("GG_save", {

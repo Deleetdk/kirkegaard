@@ -7,11 +7,8 @@
 fa_robust_cormatrix(x, method = "lmrob")
 }
 \arguments{
-\item{x}{method Which robust method to use. Options are "lmrob" \link{robustbase} or "rlm" \link{MASS}. Defaults to the first.}
+\item{x}{method Which robust method to use. Options are "lmrob" and "rlm". Defaults to the first.}
 }
 \description{
-Returns a correlation matrix with robust correlations. These are derived from either rlm() \link{MASS} or lmrob() \link{robustbase}.
-}
-\examples{
-fa_robust_cormatrix()
+Returns a correlation matrix with robust correlations. These are derived from either \code{\link[MASS:rlm]{MASS::rlm()}} or \code{\link[robustbase:lmrob]{robustbase::lmrob()}}.
 }

@@ -298,8 +298,6 @@ miss_patterns <- function(df, digits = 3) {
 #' Calculate the complexity of missing data
 #'
 #' Calculates the complexity of the patterns of missing data in the dataset.
-#'
-#' This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
 #' @param data (data.frame/matrix) The data.
 #' @return A length 3 vector with the proportions.
 #' @export
@@ -316,8 +314,6 @@ miss_complexity = function(data) {
 #' Missing data dependencies
 #'
 #' Calculates Cohen's d or equivalent for every variable pair. Larger values mean that cases with missing data in one variable differ from other cases in the other variable, thus that the data are not missing at random (MCAR).
-#'
-#' This method was proposed by McKnight et al (2007) [Missing Data: A Gentle Introduction].
 #' @param data (df/mat) Data.
 #' @param robust (lgl scalar) Whether to use robust measures (default false). If true, will use median/mad instead of mean/sd to calculate the standardized mean differences.
 #' @return A data frame of size n x n where n is the number of variables in data. The rows are the gropuing variable (missing vs. not-missing) and the columns are the outcome variables.

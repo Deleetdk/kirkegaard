@@ -85,7 +85,7 @@ GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
   #plot
   ggplot2::ggplot(d, aes(es, name, color = meta)) +
     geom_point() +
-    geom_errorbarh(aes(xmin = es - se * 1.96,
+    geom_errorbar(aes(xmin = es - se * 1.96,
                        xmax = es + se * 1.96)) +
     geom_hline(yintercept = 2, linetype = "dashed") +
     theme_bw() +
@@ -149,7 +149,7 @@ GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
   #study CIs
   if (.study_CI) {
     gg = gg +
-      geom_errorbarh(data = d, aes(xmin = es - se_z * se,
+      geom_errorbar(data = d, aes(xmin = es - se_z * se,
                                    xmax = es + se_z * se,
                                    y = se))
   }

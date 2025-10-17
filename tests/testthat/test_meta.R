@@ -1,14 +1,11 @@
 context("meta_")
 
-# a meta-analysis object to use -------------------------------------------
-
-data(european_ancestry)
-meta = metafor::rma(european_ancestry$r, sei = european_ancestry$SE_r)
-
-
 # GG_funnel ---------------------------------------------------------------
 
 test_that("funnel", {
+  data(european_ancestry)
+  meta = metafor::rma(european_ancestry$r, sei = european_ancestry$SE_r)
+
   expect_s3_class(GG_funnel(meta), "ggplot")
   expect_s3_class(GG_funnel(meta, .study_CI = T), "ggplot")
 })
@@ -17,6 +14,8 @@ test_that("funnel", {
 # GG_forest ---------------------------------------------------------------
 
 test_that("forest", {
+  data(european_ancestry)
+  meta = metafor::rma(european_ancestry$r, sei = european_ancestry$SE_r)
   #bare
   expect_s3_class(GG_forest(meta), "ggplot")
 
@@ -29,6 +28,8 @@ test_that("forest", {
 # meta_TIVA ---------------------------------------------------------------
 
 test_that("TIVA", {
+  data(european_ancestry)
+  meta = metafor::rma(european_ancestry$r, sei = european_ancestry$SE_r)
   #bare
   expect_length(meta_TIVA(meta), 4)
 
@@ -39,5 +40,7 @@ test_that("TIVA", {
 # meta_pcurve -------------------------------------------------------------
 
 test_that("pcurve", {
+  data(european_ancestry)
+  meta = metafor::rma(european_ancestry$r, sei = european_ancestry$SE_r)
   expect_type(meta_pcurve(meta), "list")
 })

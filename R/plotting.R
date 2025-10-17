@@ -1147,26 +1147,26 @@ GG_save_pdf = function(list, filename) {
 #'
 #' @examples
 #' #data input
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap()
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(reorder_vars = F)
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(color_label = "some other text")
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(short_x_labels = T)
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(cross_out_nonsig = T)
-#' mtcars[c(1,3,4,5,6,7)] %>% GG_heatmap(remove_diag = T)
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap()
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(reorder_vars = F)
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(color_label = "some other text")
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(short_x_labels = T)
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(cross_out_nonsig = T)
+#' mtcars[c(1,3,4,5,6,7)] |> GG_heatmap(remove_diag = T)
 #'
 #' #Automatic cleaning of the axis labels, can be turned off
-#' iris[-5] %>% GG_heatmap()
-#' iris[-5] %>% GG_heatmap(axis_labels_clean_func = NULL)
+#' iris[-5] |> GG_heatmap()
+#' iris[-5] |> GG_heatmap(axis_labels_clean_func = NULL)
 #'
 #' #cor matrix input
 #' mt_cars_cors = psych::corr.test(mtcars[c(1,3,4,5,6,7)], adjust = "none")
-#' mt_cars_cors$r %>% GG_heatmap()
+#' mt_cars_cors$r |> GG_heatmap()
 #' GG_heatmap(mt_cars_cors$r, pairwise_p = mt_cars_cors$p, cross_out_nonsig = T)
 #'
 #' #custom values input
-#' MAT_vector2full(c(.5, .3, .2), diag_value = 1) %>%
-#' set_colnames(letters[1:3]) %>%
-#' set_rownames(letters[1:3]) %>%
+#' MAT_vector2full(c(.5, .3, .2), diag_value = 1) |>
+#' set_colnames(letters[1:3]) |>
+#' set_rownames(letters[1:3]) |>
 #' GG_heatmap()
 GG_heatmap = function(
     data,
@@ -1730,7 +1730,7 @@ bma_coef_plot = function(x, confidence_level = .95) {
   x %>%
     ggplot(aes(y = term_nice, x = mean)) +
     geom_point() +
-    geom_errorbarh(aes(xmin = mean - conf_interval_width(sd, confidence_level = confidence_level), xmax = mean + conf_interval_width(sd, confidence_level = confidence_level))) +
+    geom_errorbar(aes(xmin = mean - conf_interval_width(sd, confidence_level = confidence_level), xmax = mean + conf_interval_width(sd, confidence_level = confidence_level))) +
     #remove y-axis
     theme_update(
       axis.title.y = element_blank(),

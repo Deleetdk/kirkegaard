@@ -1,19 +1,21 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2025-09-24
+Version: 2025-10-17
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emilowk@proton.me", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
     use my own functions across projects. Loads a lot of other packages for ease of use for me.
 Depends:
     tidyverse,
+    ggplot2,
     magrittr,
     weights,
     assertthat,
-    psych
+    psych,
+    robustbase
 License: GPL
 LazyData: true
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Imports:
     plyr,
     glmnet,
@@ -34,6 +36,7 @@ Suggests:
     psychTools,
     terra,
     qgam,
-    caTools
+    caTools,
+    MASS
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8

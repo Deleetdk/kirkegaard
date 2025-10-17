@@ -286,13 +286,10 @@ fa_rank_fa = function(x, ...) {
 
 #' Robust correlation matrix
 #'
-#'
-#' Returns a correlation matrix with robust correlations. These are derived from either rlm() [MASS] or lmrob() [robustbase].
+#' Returns a correlation matrix with robust correlations. These are derived from either [MASS::rlm()] or [robustbase::lmrob()].
 #' @param x A data.frame to correlate.
-#' @param x method Which robust method to use. Options are "lmrob" [robustbase] or "rlm" [MASS]. Defaults to the first.
+#' @param x method Which robust method to use. Options are "lmrob" and "rlm". Defaults to the first.
 #' @export
-#' @examples
-#' fa_robust_cormatrix()
 fa_robust_cormatrix = function(x, method = "lmrob") {
   #std dataset
   x.std = as.data.frame(scale(x))

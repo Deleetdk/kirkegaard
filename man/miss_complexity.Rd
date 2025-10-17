@@ -15,9 +15,6 @@ A length 3 vector with the proportions.
 \description{
 Calculates the complexity of the patterns of missing data in the dataset.
 }
-\details{
-This method was proposed by McKnight et al (2007) \link{Missing Data: A Gentle Introduction}.
-}
 \examples{
 miss_complexity(miss_add_random(iris))
 }
