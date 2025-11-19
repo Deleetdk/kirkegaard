@@ -999,3 +999,216 @@ df_winsorise = function(x, variables = NULL, z = NULL, rz = NULL, centile = NULL
 }
 
 
+#' Smart join for data frames
+#'
+#' @param data1 Main data frame
+#' @param data2 Another data frame to update with
+#' @param id_col Column to use for ID, must be unique.
+#' @param update Updating method. "missing" = replace NA values in data1 with non-NA values from data2. "values" = replace NA and non-NA values in data1 with non-NA values from data2. "all" replace NA and non-NA values in data1 with values (including NA) from data2.
+#'
+#' @returns A data frame
+#' @export
+#'
+#' @examples
+#' data1 <- data.frame(
+#'   id = 1:4,
+#'   value = c(1, NA, 3, 4)
+#' )
+#'
+#' data2 <- data.frame(
+#'   id = 2:4,
+#'   value = c(20, 30, NA)
+#' )
+#'
+#' # Fill only missing values in data1
+#' smart_join(data1, data2, id_col = "id", update = "missing")
+#'
+#' # Overwrite non-missing values where data2 has non-NA
+#' smart_join(data1, data2, id_col = "id", update = "values")
+#'
+#' # Fully replace values in data1 with those from data2 (including NA)
+#' smart_join(data1, data2, id_col = "id", update = "all")
+smart_join <- function(data1, data2, id_col, update = c("missing", "values", "all")) {
+  update <- match.arg(update)
+
+  # Capture id_col as symbol; supports bare name or string
+  id_sym  <- rlang::ensym(id_col)
+  id_name <- rlang::as_name(id_sym)
+
+  # Special case: rownames as key
+  if (identical(id_name, ".rownames")) {
+    if (is.null(rownames(data1)) || any(rownames(data1) == "")) {
+      stop("data1 does not have valid rownames for id_col = '.rownames'.")
+    }
+    if (is.null(rownames(data2)) || any(rownames(data2) == "")) {
+      stop("data2 does not have valid rownames for id_col = '.rownames'.")
+    }
+
+    data1 <- tibble::rownames_to_column(as.data.frame(data1), var = ".rownames")
+    data2 <- tibble::rownames_to_column(as.data.frame(data2), var = ".rownames")
+    id_name <- ".rownames"
+  } else {
+    if (!id_name %in% colnames(data1)) {
+      stop(sprintf("id_col '%s' not found in data1.", id_name))
+    }
+    if (!id_name %in% colnames(data2)) {
+      stop(sprintf("id_col '%s' not found in data2.", id_name))
+    }
+  }
+
+  # Enforce uniqueness of IDs in both data sets
+  if (anyDuplicated(data1[[id_name]]) > 0) {
+    stop(sprintf(
+      "id_col '%s' has duplicate values in data1; smart_join() requires unique IDs in both data1 and data2.",
+      id_name
+    ))
+  }
+  if (anyDuplicated(data2[[id_name]]) > 0) {
+    stop(sprintf(
+      "id_col '%s' has duplicate values in data2; smart_join() requires unique IDs in both data1 and data2.",
+      id_name
+    ))
+  }
+
+  # Keep data2 IDs around so we know which joined rows actually came from data2
+  data2_ids <- data2[[id_name]]
+
+  # --- sf handling: geometry should always come from data1 (left) ----
+  if (inherits(data1, "sf") && inherits(data2, "sf")) {
+    # sf::full_join.sf() forbids y being sf; drop geometry from data2
+    data2 <- sf::st_drop_geometry(data2)
+  } else if (!inherits(data1, "sf") && inherits(data2, "sf")) {
+    # If only right side is sf, also drop its geometry
+    warning("Dropping geometry from data2; geometry must come from data1.")
+    data2 <- sf::st_drop_geometry(data2)
+  }
+
+  # Shared non-ID columns (after possible geometry drop from data2)
+  common_cols <- intersect(
+    setdiff(names(data1), id_name),
+    setdiff(names(data2), id_name)
+  )
+
+  # If data1 is sf, don't try to merge its geometry column
+  geom_col <- attr(data1, "sf_column", exact = TRUE)
+  sf_geom_cols <- intersect(common_cols, geom_col)
+  common_to_merge <- setdiff(common_cols, sf_geom_cols)
+
+  # Full join: keep all rows and columns
+  joined <- dplyr::full_join(
+    data1,
+    data2,
+    by = setNames(id_name, id_name),
+    suffix = c(".data1", ".data2")
+  )
+
+  # For each joined row, did this ID exist in data2?
+  has_data2_row <- joined[[id_name]] %in% data2_ids
+
+  fillings <- list()
+
+  # For shared, non-geometry columns: update according to 'update' mode
+  for (col in common_to_merge) {
+    col1 <- paste0(col, ".data1")
+    col2 <- paste0(col, ".data2")
+
+    has1 <- col1 %in% names(joined)
+    has2 <- col2 %in% names(joined)
+
+    if (has1 && has2) {
+      x_vals <- joined[[col1]]  # from data1
+      y_vals <- joined[[col2]]  # from data2
+
+      # Decide where we will actually take values from data2
+      mask <- switch(
+        update,
+        "missing" = is.na(x_vals) & !is.na(y_vals) & has_data2_row,
+        "values"  = !is.na(y_vals) & has_data2_row,
+        "all"     = has_data2_row
+      )
+
+      will_use_data2 <- any(mask, na.rm = TRUE)
+
+      if (will_use_data2) {
+        # --- type compatibility check ----------------------------
+        is_factor_both  <- is.factor(x_vals) && is.factor(y_vals)
+        is_numeric_both <- is.numeric(x_vals) && is.numeric(y_vals)
+        is_char_both    <- is.character(x_vals) && is.character(y_vals)
+        is_logical_both <- is.logical(x_vals) && is.logical(y_vals)
+        is_date_both    <- inherits(x_vals, "Date")   && inherits(y_vals, "Date")
+        is_posix_both   <- inherits(x_vals, "POSIXt") && inherits(y_vals, "POSIXt")
+
+        if (! (is_factor_both || is_numeric_both || is_char_both ||
+               is_logical_both || is_date_both || is_posix_both)) {
+          stop(sprintf(
+            "Column '%s' has incompatible types between data1 (%s) and data2 (%s); cannot safely update values.",
+            col,
+            paste(class(x_vals), collapse = "/"),
+            paste(class(y_vals), collapse = "/")
+          ), call. = FALSE)
+        }
+
+        common_type <- vctrs::vec_ptype_common(x_vals, y_vals)
+        x_cast <- vctrs::vec_cast(x_vals, common_type)
+        y_cast <- vctrs::vec_cast(y_vals, common_type)
+
+        res_col <- x_cast
+        res_col[mask] <- y_cast[mask]
+
+        joined[[col]] <- res_col
+        fillings[[col]] <- sum(mask, na.rm = TRUE)
+      } else {
+        # No actual use of data2 values → keep data1 as-is
+        joined[[col]] <- x_vals
+      }
+
+      joined[[col1]] <- NULL
+      joined[[col2]] <- NULL
+
+    } else if (has1 && !has2) {
+      # Only data1 version present -> rename
+      joined[[col]] <- joined[[col1]]
+      joined[[col1]] <- NULL
+
+    } else if (!has1 && has2) {
+      # Only data2 version present -> rename
+      joined[[col]] <- joined[[col2]]
+      joined[[col2]] <- NULL
+    }
+  }
+
+  # Only message if something was actually updated
+  if (length(fillings) > 0) {
+    mode_text <- switch(
+      update,
+      "missing" = "Filled missing values",
+      "values"  = "Updated non-missing values",
+      "all"     = "Replaced values"
+    )
+
+    msg <- paste0(
+      mode_text, " in ", length(fillings),
+      " shared variable(s) from data2 into data1 (update = '", update, "'):\n",
+      paste(
+        sprintf(" - %s: %d value(s)", names(fillings), unlist(fillings)),
+        collapse = "\n"
+      )
+    )
+    message(msg)
+  }
+
+  # --- NEW: restore rownames when id_col = ".rownames" -----------------
+  if (identical(id_name, ".rownames") && ".rownames" %in% names(joined)) {
+    rn <- joined$.rownames
+
+    # Only restore if they are unique and non-empty
+    if (!anyDuplicated(rn) && all(!is.na(rn)) && all(rn != "")) {
+      joined_df <- as.data.frame(joined)
+      rownames(joined_df) <- as.character(rn)
+      joined_df$.rownames <- NULL
+      return(joined_df)
+    }
+  }
+
+  joined
+}

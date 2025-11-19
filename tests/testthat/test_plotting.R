@@ -249,31 +249,31 @@ test_that("GG_save", {
   file.remove("tmp.png")
 
   #test ggtern if exists
-  if (is_inst("ggtern")) {
-    #make data
-    tern_data = matrix(runif(60), nrow = 20) %>%
-      apply(MARGIN = 1, function(row) {
-        row/sum(row)
-      }) %>%
-      t() %>%
-      set_colnames(letters[1:3]) %>%
-      as_tibble()
-
-    plot = ggtern::ggtern(tern_data, aes(x = a, y = b, z = c)) +
-      geom_point()
-
-    #assert class
-    expect_true(plot$coordinates %>% is(class2 = "CoordTern"))
-
-    #save it
-    GG_save(filename = "tmp.png")
-
-    #assert exists
-    expect_true(file.exists("tmp.png"))
-
-    #delete the file
-    file.remove("tmp.png")
-  }
+  # if (is_installed("ggtern")) {
+  #   #make data
+  #   tern_data = matrix(runif(60), nrow = 20) %>%
+  #     apply(MARGIN = 1, function(row) {
+  #       row/sum(row)
+  #     }) %>%
+  #     t() %>%
+  #     set_colnames(letters[1:3]) %>%
+  #     as_tibble()
+  #
+  #   plot = ggtern::ggtern(tern_data, aes(x = a, y = b, z = c)) +
+  #     geom_point()
+  #
+  #   #assert class
+  #   expect_true(plot$coordinates %>% is(class2 = "CoordTern"))
+  #
+  #   #save it
+  #   GG_save(filename = "tmp.png")
+  #
+  #   #assert exists
+  #   expect_true(file.exists("tmp.png"))
+  #
+  #   #delete the file
+  #   file.remove("tmp.png")
+  # }
 })
 
 

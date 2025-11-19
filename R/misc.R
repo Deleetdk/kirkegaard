@@ -805,7 +805,7 @@ count_decimals = function(x) {
 
 
 
-is_inst <- function(pkg) {
+is_installed <- function(pkg) {
   nzchar(system.file(package = pkg))
 }
 

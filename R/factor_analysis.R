@@ -674,7 +674,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
       colnames(loads) = fa_names[fa_idx]
       #merge data
       silence({
-        d = merge_datasets(d, loads)
+        d = smart_join(d, loads, id_col = ".rownames")
       })
     }
 
