@@ -58,8 +58,8 @@ throws_error = function(expr, silent_try = T) {
 #' fail_if(1, extended = T)
 fail_if = function(x, msg = "There was an error", extended = F) {
   #fail if true
-  if (isTRUE(x)) stop(msg, call. = F)
-  if (extended && x) stop(msg, call. = F)
+  if (isTRUE(x)) cli::cli_abort(msg)
+  if (extended && x) cli::cli_abort(msg)
 
   #return input
   invisible(x)
@@ -82,7 +82,7 @@ stop_if = fail_if
 #' fail_if_NA(c(1:3, NA, 1:3)) #NAs
 fail_if_NA = function(x, msg = "Input contained NA.") {
   #fail if any NA
-  if (any(is.na(x))) stop(msg, call. = F)
+  if (any(is.na(x))) cli::cli_abort(msg)
 
   #return input
   invisible(x)
@@ -232,7 +232,7 @@ retry_while_error = function(expr, retry_interval = 60, silent = F, max_tries = 
       )
 
       #output if desired
-      if (!silent) message(sprintf("%s -- %s", lubridate::now() %>% as.character(), trial[1]))
+      if (!silent) cli::cli_inform("{lubridate::now() %>% as.character()} -- {trial[1]}")
 
       #log error
       error_log = rbind(
@@ -242,13 +242,13 @@ retry_while_error = function(expr, retry_interval = 60, silent = F, max_tries = 
 
       #max tries reached?
       if (tries == max_tries) {
-        stop(sprintf("Stopped trying after %d tries", tries), call. = F)
+        cli::cli_abort("Stopped trying after {tries} tries")
       }
 
       #max time reached?
       time_tried = lubridate::now() - time_start
       if (time_tried > max_time) {
-        stop(sprintf("Stopped trying after %d seconds", as.integer(time_tried)), call. = F)
+        cli::cli_abort("Stopped trying after {as.integer(time_tried)} seconds")
       }
 
       #sleep

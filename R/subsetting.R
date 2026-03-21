@@ -18,12 +18,12 @@ conditional_change = function(x, func = NULL, func_str = NULL, new_value, handle
   #checks
   x
   new_value
-  if (is.null(func) && is.null(func_str)) stop("Both `func`` and `func_str` are missing. You must supply a function!")
+  if (is.null(func) && is.null(func_str)) cli::cli_abort("Both `func`` and `func_str` are missing. You must supply a function!")
   if (!any(sapply(list(is.vector, is.data.frame, is.matrix, is.list), function(y) {
     y(x)
-  }))) stop("x was not a vector, data frame, matrix or list. Other objects are not supported!")
+  }))) cli::cli_abort("x was not a vector, data frame, matrix or list. Other objects are not supported!")
   if (!handle_NA) {
-    if (any(is.na(x))) stop("Missing values present and not handled!")
+    if (any(is.na(x))) cli::cli_abort("Missing values present and not handled!")
   }
 
   #shorthands for functions
@@ -102,7 +102,7 @@ extract_nonnum_vars = function(data) {
 #' extract_last(iris, 5:1, 2:1) #last 5 elements rows and last 2 columns
 extract_last = function(x, margin_1 = NULL, margin_2 = NULL, drop = FALSE) {
   #check types
-  if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) stop("x was an unsupported type (not a vector, matrix or data.frame)!")
+  if (!(is.vector(x) || is.matrix(x) || is.data.frame(x))) cli::cli_abort("x was an unsupported type (not a vector, matrix or data.frame)!")
 
   #vector
   if (is.vector(x)) return(rev(x)[margin_1])

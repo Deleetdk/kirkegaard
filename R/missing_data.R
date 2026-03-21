@@ -262,7 +262,7 @@ miss_patterns <- function(df, digits = 3) {
   if (n == 0) {
     return(data.frame(n_cases = n_obs, percent = if (n_obs == 0) 0 else 100))
   }
-  if (n > 25) warning("This will create 2^n rows; for n > 25 this may be very large / slow.")
+  if (n > 25) cli::cli_warn("This will create 2^n rows; for n > 25 this may be very large / slow.")
 
   # build 2^n patterns by binary counting (bit i -> variable i; var1 is LSB)
   m <- 2L^n
@@ -437,7 +437,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
   #convert ordered with <3 levels to factors
   needs_conversion = purrr::map_lgl(data, ~is.ordered(.) && nlevels(.) < 3)
   if (any(needs_conversion)) {
-    message("Some ordered variables had fewer than 3 levels and must be converted to ordinary factors for imputation to work: " + stringr::str_c(names(data)[needs_conversion], collapse = ", "))
+    cli::cli_inform("Some ordered variables had fewer than 3 levels and must be converted to ordinary factors for imputation to work: {stringr::str_c(names(data)[needs_conversion], collapse = ', ')}")
 
     #convert
     data[] = lapply(data, function(v) {
@@ -452,7 +452,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
   #characters are not good, throw a warning
   chr_vars = purrr::map_lgl(data, is.character)
   if (any(chr_vars)) {
-    warning(str_glue("There are character type variables. You probably want to convert these to factors or exclude"), call. = F)
+    cli::cli_warn("There are character type variables. You probably want to convert these to factors or exclude")
   }
 
   #exclude cases?
@@ -485,7 +485,7 @@ miss_impute = function(data, max_na = floor(ncol(data)/2), method = "irmi", meth
       data <- do.call(VIM::irmi, args = method_args)
     )
   } else {
-    stop(str_glue("`method` not recognized {method}, must be either 'rf' or 'irmi'"), call. = F)
+    cli::cli_abort("`method` not recognized {method}, must be either 'rf' or 'irmi'")
   }
 
 
@@ -554,7 +554,7 @@ miss_filter = function(data, missing = 0, reverse = F, by_case = T, vars = NULL)
     vars = names(data)
   } else {
     if (!by_case) {
-      warning("`vars` argument will not affect results when `by_case` = FALSE", call. = F)
+      cli::cli_warn("`vars` argument will not affect results when `by_case` = FALSE")
     }
   }
   assert_that(all(vars %in% names(data)), msg = str_glue("Some `vars` were not in `data`: {str_c(setdiff(vars, names(data), collapse = ', ')}"))
@@ -671,12 +671,12 @@ miss_fill = function(...) {
     if (all_the_same(purrr::map_int(lst, length))) {
       x = data.frame(lst, stringsAsFactors = F)
     } else {
-      stop("When inputting vectors, all the vectors must be the same length, but they were not", call. = F)
+      cli::cli_abort("When inputting vectors, all the vectors must be the same length, but they were not")
     }
   }
 
   #something else entirely?
-  if (is.null(x)) stop("Bad input, check your input", call. = F)
+  if (is.null(x)) cli::cli_abort("Bad input, check your input")
 
   #insert by loop
   for (v in seq_along(x)) {
@@ -735,7 +735,7 @@ miss_combine_duplicate_vars = function(x, vars = NULL, priority = "x") {
 
   #error if there are illegal, duplicate variable names present
   if (any(duplicated(vars))) {
-    stop("There are duplicate variable names present in the data. This function cannot handle this.", call. = F)
+    cli::cli_abort("There are duplicate variable names present in the data. This function cannot handle this.")
   }
 
   #duplicates

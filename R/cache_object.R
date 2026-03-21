@@ -17,7 +17,7 @@
 cache_object = function(expr, filename, renew = F, ...) {
   #force renewal?
   if (renew) {
-    base::message("Forcing renewal of cached object")
+    cli::cli_inform("Forcing renewal of cached object")
 
     #delete cache if exists
     if (base::file.exists(filename)) {
@@ -28,13 +28,13 @@ cache_object = function(expr, filename, renew = F, ...) {
   #try to read from disk
   #if not, eval expr
   if (base::file.exists(filename)) {
-    base::message("Cache found, reading object from disk")
+    cli::cli_inform("Cache found, reading object from disk")
     x = readr::read_rds(filename)
   } else {
     if (!renew) {
-      base::message("Cache not found, evaluating expression")
+      cli::cli_inform("Cache not found, evaluating expression")
     } else {
-      base::message("Evaluating expression")
+      cli::cli_inform("Evaluating expression")
     }
 
     #eval expr

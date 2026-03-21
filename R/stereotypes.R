@@ -15,7 +15,7 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_error
   #other params given
   other_params = list(...)
   #is old param there? throw useful error
-  if ("criteria" %in% names(other_params)) stop("`criteria` renamed to `criterion`, please adjust function call.")
+  if ("criteria" %in% names(other_params)) cli::cli_abort("`criteria` renamed to `criterion`, please adjust function call.")
 
   #save rownames
   v_rownames = rownames(x)
@@ -23,7 +23,7 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_error
   #check
   x
   criterion
-  if (!is.function(aggregate_function)) stop("`aggregate_function` isn't a function!")
+  if (!is.function(aggregate_function)) cli::cli_abort("`aggregate_function` isn't a function!")
 
 
   #aggregate?
@@ -40,7 +40,7 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_error
   }
 
   #NAs
-  if (any(is.na(x))) message("Note: some data were missing. This function uses pairwise complete cases.")
+  if (any(is.na(x))) cli::cli_inform("Note: some data were missing. This function uses pairwise complete cases.")
 
   #make df for results
   df = as.data.frame(x)
@@ -87,7 +87,7 @@ score_accuracy = function(x, criterion, methods = c("pearson_r", "mean_abs_error
   if ("all" %in% methods) return(d_res)
 
   #check methods
-  if (any(!methods %in% colnames(d_res))) stop(str_c("Some methods were not recognized!: "), setdiff(methods, colnames(d_res)))
+  if (any(!methods %in% colnames(d_res))) cli::cli_abort("Some methods were not recognized!: {str_c(setdiff(methods, colnames(d_res)), collapse = ', ')}")
 
 
   return(d_res[methods])

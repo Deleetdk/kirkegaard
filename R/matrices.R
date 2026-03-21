@@ -20,7 +20,7 @@ MAT_find_size = function(x, diag = F) {
     s = 1/2 + sqrt(1/4 + 2*x)
   }
   #verify
-  if (s != floor(s)) stop("Could not determine matrix size. Incorrect input.")
+  if (s != floor(s)) cli::cli_abort("Could not determine matrix size. Incorrect input.")
 
   return(s)
 }
@@ -143,7 +143,7 @@ MAT_half2full = function(mat, lower = T, diag = F) {
   mat
 
   #check symmetry
-  if (!ncol(mat) == nrow(mat)) stop("Matrix must be square.")
+  if (!ncol(mat) == nrow(mat)) cli::cli_abort("Matrix must be square.")
 
   #get half, then transform to full symmetric
   new_mat = mat %>% MAT_half(lower = lower, diag = diag) %>% MAT_vector2full(byrow = !lower, diag = diag)

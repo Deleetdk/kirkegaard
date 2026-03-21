@@ -138,12 +138,12 @@ fa_all_methods = function(DF, ..., skip_methods = "", messages = T) {
     extract_meth_num = perms[row, 2]
     extract_meth_name = extraction.methods[extract_meth_num]
     name = str_c(score_meth_name, "_", extract_meth_name)
-    silence({message(stringr::str_c(row, " out of ", nrow(perms), " - ", name))}, messages = messages)
+    silence({cli::cli_inform("{row} out of {nrow(perms)} - {name}")}, messages = messages)
 
     #skip methods
     if (!skip_methods == "") {
       if (any(str_detect(name, skip_methods))) {
-        silence({message(str_c("Skipping method: ", name))}, messages = messages)
+        silence({cli::cli_inform("Skipping method: {name}")}, messages = messages)
         next
       }
     }
@@ -160,19 +160,19 @@ fa_all_methods = function(DF, ..., skip_methods = "", messages = T) {
     )
     #skip on error
     if (is.character(err)) {
-      silence({message(str_c("Skipping ", name, " due to extraction error"))}, messages = messages)
+      silence({cli::cli_inform("Skipping {name} due to extraction error")}, messages = messages)
 
       next
     }
 
     #skip on Heywood case
     if (any(as.vector(.fa$loadings) > 1 | as.vector(.fa$loadings) < -1)) {
-      silence({message(stringr::str_c("Heywood case found for ", name))}, messages = messages)
+      silence({cli::cli_inform("Heywood case found for {name}")}, messages = messages)
       next
     }
 
     #save
-    silence({message(stringr::str_c("Saving results from ", name))}, messages = messages)
+    silence({cli::cli_inform("Saving results from {name}")}, messages = messages)
     scores[, name] = as.vector(.fa$scores)
     loadings[, extract_meth_name] = as.vector(.fa$loadings)
   }
@@ -204,8 +204,8 @@ fa_all_methods = function(DF, ..., skip_methods = "", messages = T) {
 fa_mixedness = function(df, ...){
 
   #check if colnames contain illegal characters
-  if (any(stringr::str_detect(colnames(df), " "))) stop("Colnames contain spaces. Remove and try again.")
-  if (any(stringr::str_detect(colnames(df), "&"))) stop("Colnames contain ambersands. Remove and try again.")
+  if (any(stringr::str_detect(colnames(df), " "))) cli::cli_abort("Colnames contain spaces. Remove and try again.")
+  if (any(stringr::str_detect(colnames(df), "&"))) cli::cli_abort("Colnames contain ambersands. Remove and try again.")
 
   #for results
   return_df = data.frame(matrix(nrow=nrow(df), ncol=0))
@@ -456,11 +456,11 @@ fa_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T
   set.seed(seed)
 
   #input test
-  if (!inherits(df, c("data.frame", "matrix"))) stop("data was not a data.frame or matrix", call. = F)
+  if (!inherits(df, c("data.frame", "matrix"))) cli::cli_abort("data was not a data.frame or matrix")
   df = as.data.frame(df)
 
   #missing values?
-  if (any(is.na(df))) if (messages) message("Cases with missing values were removed.")
+  if (any(is.na(df))) if (messages) cli::cli_inform("Cases with missing values were removed.")
   df = na.omit(df)
 
   #results
@@ -513,7 +513,7 @@ fa_splitsample_repeat = function(data, runs = 100, save_scores = F, messages = T
 fa_congruence_matrix = function(x) {
 
   #right input type?
-  if (!class(x) %in% c("list", "data.frame", "matrix")) stop("Input was not a list, data.frame or matrix!")
+  if (!class(x) %in% c("list", "data.frame", "matrix")) cli::cli_abort("Input was not a list, data.frame or matrix!")
 
   #if input is a list of fa's
   if (class(x) == "list") {
@@ -525,7 +525,7 @@ fa_congruence_matrix = function(x) {
       return(psych::factor.congruence(all_loadings)) #return congruence matrix
 
     } else {
-      stop("Input was a list of something other than factor analysis objects!")
+      cli::cli_abort("Input was a list of something other than factor analysis objects!")
     }
   }
 
@@ -583,7 +583,7 @@ fa_nfactors = function(.fa) {
   #single
   if (inherits(.fa, what = "fa")) return (.fa$loadings %>% ncol)
   #multiple
-  if (!all(purrr::map_lgl(.fa, inherits, what = "fa"))) stop("Input was not a single fa object or list or fa objects.")
+  if (!all(purrr::map_lgl(.fa, inherits, what = "fa"))) cli::cli_abort("Input was not a single fa object or list or fa objects.")
   purrr::map_int(.fa, function(x) x$loadings %>% ncol)
 }
 
@@ -626,7 +626,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
   #multiple unifactor analyses - m1
   #multiple multifactor analyses - mm
   if (inherits(fa_objects, "fa")) fa_objects = list(fa_objects) #put it in a list for consistency
-  if (!all(purrr::map_lgl(fa_objects, inherits, what = "fa"))) stop("Could not recognize input. Input must be a single fa object, or a list of fa objects.")
+  if (!all(purrr::map_lgl(fa_objects, inherits, what = "fa"))) cli::cli_abort("Could not recognize input. Input must be a single fa object, or a list of fa objects.")
   fa_num = length(fa_objects)
   factor_num = purrr::map_int(fa_objects, fa_nfactors)
 
@@ -646,7 +646,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     #names on list?
     if (!is.null(names(fa_objects))) fa_labels = names(fa_objects) else fa_labels = 1:fa_num
   } else {
-    if (length(fa_labels) != fa_num) stop("Factor analysis labels length is not identical to number of analyses.")
+    if (length(fa_labels) != fa_num) cli::cli_abort("Factor analysis labels length is not identical to number of analyses.")
     fa_labels = fa_names
   }
 
@@ -657,7 +657,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     if (anyNA(reverse_vector)) {
       reverse_vector = rep(1, fa_num)
     } else if (length(reverse_vector) != fa_num) {
-      stop("Length of reversing vector does not match number of factor analyses.")
+      cli::cli_abort("Length of reversing vector does not match number of factor analyses.")
     }
 
     #extract data
@@ -738,7 +738,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
     if (anyNA(reverse_vector)) {
       reverse_vector = rep(1, fa_num)
     } else if (length(reverse_vector) != fa_num) {
-      stop("Length of reversing vector does not match number of factor analyses.")
+      cli::cli_abort("Length of reversing vector does not match number of factor analyses.")
     }
 
     #extract data
@@ -780,7 +780,7 @@ fa_plot_loadings = function (fa_objects, fa_labels = NA, factor_names = NA, reve
   }
 
   if (plot_type == "mm") {
-    stop("Multiple multifactor plotting is not implemented yet.")
+    cli::cli_abort("Multiple multifactor plotting is not implemented yet.")
     }
 
 
@@ -852,10 +852,10 @@ hetcor_partial = function(primary, secondaries) {
 fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reversing = T, check_overlap = TRUE, n_factor = 1, indicator_criterion_method = "auto", .weights = NA, ...) {
   args = list(...)
 
-  if ("criteria" %in% args) stop("'criteria' changed name to 'criterion'")
+  if ("criteria" %in% args) cli::cli_abort("'criteria' changed name to 'criterion'")
 
   #get loadings
-  if (ncol(fa$loadings) < n_factor) stop(sprintf("You tried to extract a factor that doesn't exist. n_factor was %d but fa only has %d factors.", n_factor, ncol(fa$loadings)))
+  if (ncol(fa$loadings) < n_factor) cli::cli_abort("You tried to extract a factor that doesn't exist. n_factor was {n_factor} but fa only has {ncol(fa$loadings)} factors.")
   fa_loadings = fa$loadings %>% unclass() %>% .[, n_factor]
 
   #weights
@@ -871,7 +871,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
   #criterion
   if (is.numeric(criterion)) {
     #fitting length?
-    if (!indicator_num == length(criterion)) stop("The criterion values supplies did not have the right length. They must match the number of indicators. Criterion %d vs. indicators %d", length(criterion), indicator_num)
+    if (!indicator_num == length(criterion)) cli::cli_abort("The criterion values supplies did not have the right length. They must match the number of indicators. Criterion {length(criterion)} vs. indicators {indicator_num}")
 
     #put into the value vector
     criterion_vals = criterion
@@ -879,7 +879,7 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
 
   if (is.character(criterion)) {
     #is it there?
-    if (!criterion %in% names(df)) stop("Criterion variable not found in the data")
+    if (!criterion %in% names(df)) cli::cli_abort("Criterion variable not found in the data")
 
     #setsub df
     df2 = df[c(indicator_names, criterion)]
@@ -888,24 +888,24 @@ fa_Jensens_method = function(fa, df, criterion, reverse_factor = F, loading_reve
     if (indicator_criterion_method == "auto") {
       #can we use Pearson correlations for all of these?
       if (!suited_for_pearson_all(df2)) {
-        message("Using latent correlations for the criterion-indicators relationships.")
+        cli::cli_inform("Using latent correlations for the criterion-indicators relationships.")
         criterion_vals = silence(hetcor_partial(df2[criterion], df2[-which(names(df2) == criterion)]))
       } else {
-        message("Using Pearson correlations for the criterion-indicators relationships.")
+        cli::cli_inform("Using Pearson correlations for the criterion-indicators relationships.")
         #convert all to numeric
         df2 = purrr::map_df(df2, as.numeric)
         df2_cors = weights::wtd.cors(df2, weight = .weights)
         criterion_vals = df2_cors[ncol(df2_cors), -ncol(df2_cors)]
       }
     } else if (indicator_criterion_method == "pearson") {
-      message("Using Pearson correlations for the criterion-indicators relationships.")
+      cli::cli_inform("Using Pearson correlations for the criterion-indicators relationships.")
       df2 = df_colFunc(df2, func = as.numeric)
       df2_cors = weights::wtd.cors(df2, weight = .weights)
       criterion_vals = df2_cors[ncol(df2_cors), -ncol(df2_cors)]
     } else if (indicator_criterion_method == "latent") {
-      message("Using latent correlations for the criterion-indicators relationships.")
+      cli::cli_inform("Using latent correlations for the criterion-indicators relationships.")
       criterion_vals = silence(hetcor_partial(df2[criterion], df[-which(names(df) == criterion)]))
-    } else stop(sprintf("Could not recognize indicator_criterion_method: %s", indicator_criterion_method))
+    } else cli::cli_abort("Could not recognize indicator_criterion_method: {indicator_criterion_method}")
 
   }
 

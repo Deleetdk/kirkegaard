@@ -72,7 +72,7 @@ inf_to_NA = function(x) {
 #' is_nullish(NA, na = F)
 is_nullish = function(x, false = T, na = T, zero = T, null = T) {
   #too long
-  if (length(x) > 1) stop("Length > 1. Wrong input.", call. = F)
+  if (length(x) > 1) cli::cli_abort("Length > 1. Wrong input.")
 
   #first try for NULL
   if (null && is.null(x)) return(T)
@@ -153,10 +153,10 @@ restore_NAs = function(x, na_pos, len=NULL) {
 combine_upperlower = function(.upper.tri, .lower.tri, .diag = NA) {
   #detect wrong input
   if (!is.matrix(.upper.tri) & !is.data.frame(.upper.tri)) {
-    stop("First parameter was not a matrix or data.frame.")
+    cli::cli_abort("First parameter was not a matrix or data.frame.")
   }
   if (!is.matrix(.lower.tri) & !is.data.frame(.lower.tri)) {
-    stop("Second parameter was not a matrix or data.frame.")
+    cli::cli_abort("Second parameter was not a matrix or data.frame.")
   }
 
   #inpute types
@@ -268,7 +268,7 @@ copy_names = function(x, y, partialmatching = T) {
     if (all(x_dims == y_dims)) {
       attr(y, "dimnames") = attr(x, "dimnames")
     } else {
-      stop(stringr::str_c("Dimensions did not match! ", x_dims, " vs. ", y_dims))
+      cli::cli_abort("Dimensions did not match! {x_dims} vs. {y_dims}")
     }
   }
 
@@ -381,9 +381,9 @@ silence = function(expr, warnings = FALSE, messages = FALSE,
 #' alternate(list(1:3, letters[1:3]))
 alternate = function(x) {
   #checks
-  if (!is.list(x)) stop("x must be a list!")
+  if (!is.list(x)) cli::cli_abort("x must be a list!")
   v_lengths = purrr::map_int(x, length)
-  if (!all_the_same(v_lengths)) stop("lengths of all vectors are not the same!")
+  if (!all_the_same(v_lengths)) cli::cli_abort("lengths of all vectors are not the same!")
 
   #merge alternatingly
   x_length = length(x)
@@ -612,7 +612,7 @@ update_package = function(...) {
 #' seq_along_rows(iris[-c(1:150), ])
 seq_along_rows = function(df) {
   #input check
-  if (is.null(df)) stop("`df` cannot be NULL", call. = F)
+  if (is.null(df)) cli::cli_abort("`df` cannot be NULL")
   stop_if(ndims(df) != 2, msg = sprintf("`df` must have exactly 2 dimensions, but it had %d", ndims(df)))
 
   #no rows
@@ -667,7 +667,7 @@ unduplicate = function(x) {
 uniq_encoding = function(x) {
   #convert to chr
   if (is.factor(x)) {
-    warning("Factor automatically converted to character", call. = F)
+    cli::cli_warn("Factor automatically converted to character")
     x = as.character(x)
   }
 
@@ -748,13 +748,13 @@ mapvalues = function (x, from, to, warn_missing = T) {
     if (length(to) == 1) {
       to = rep(to, length(from))
     } else {
-      stop("`from` and `to` vectors are not the same length, nor is `to` length 1.")
+      cli::cli_abort("`from` and `to` vectors are not the same length, nor is `to` length 1.")
     }
   }
 
   #atomic check
   if (!is.atomic(x)) {
-    stop("`x` must be an atomic vector.")
+    cli::cli_abort("`x` must be an atomic vector.")
   }
 
   #just change factor levels if factor
@@ -768,8 +768,7 @@ mapvalues = function (x, from, to, warn_missing = T) {
   mapidxNA <- is.na(mapidx)
   from_found <- sort(unique(mapidx))
   if (warn_missing && length(from_found) != length(from)) {
-    message("The following `from` values were not present in `x`: ",
-            paste(from[!(1:length(from) %in% from_found)], collapse = ", "))
+    cli::cli_inform("The following `from` values were not present in `x`: {paste(from[!(1:length(from) %in% from_found)], collapse = ', ')}")
   }
 
   x[!mapidxNA] <- to[mapidx[!mapidxNA]]

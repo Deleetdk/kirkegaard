@@ -76,7 +76,7 @@ write_clipboard.data.frame = function(x,
 
   #remove list columns
   list_cols = map_lgl(x, is.list)
-  if (any(list_cols)) message(glue::glue("List columns were removed because they cannot be easily transformed to rectangular format. Colnames: {stringr::str_c(names(x[list_cols]), collapse = ', ')}"))
+  if (any(list_cols)) cli::cli_inform("List columns were removed because they cannot be easily transformed to rectangular format. Colnames: {stringr::str_c(names(x[list_cols]), collapse = ', ')}")
   x = x[!list_cols]
 
   #round
@@ -130,7 +130,7 @@ write_clipboard.data.frame = function(x,
       write.xclip = function(x) {
         #if xclip not installed
         if (!isTRUE(file.exists(Sys.which("xclip")[1L]))) {
-          stop("Cannot find xclip")
+          cli::cli_abort("Cannot find xclip")
         }
         con <- pipe("xclip -selection c", "w")
         on.exit(close(con))
@@ -140,7 +140,7 @@ write_clipboard.data.frame = function(x,
       tryCatch({
         write.xclip(x_modded)
       }, error = function(e) {
-        message("Could not write using xclip")
+        cli::cli_inform("Could not write using xclip")
       })
     }
   }
@@ -195,7 +195,7 @@ read_clipboard = function(header = T,
     read.xclip = function(x) {
       #if xclip not installed
       if (!isTRUE(file.exists(Sys.which("xclip")[1L]))) {
-        stop("Cannot find xclip")
+        cli::cli_abort("Cannot find xclip")
       }
       con <- pipe("xclip -o -selection c", "r")
       on.exit(close(con))
@@ -205,7 +205,7 @@ read_clipboard = function(header = T,
     tryCatch({
       read.xclip(x)
     }, error = function(e) {
-      message(sprintf("error: %s", e$message))
+      cli::cli_inform("error: {e$message}")
     })
   }
 }
@@ -331,14 +331,14 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
 
   #already the case?
   if (ncol(data) == columns) {
-    message("data already was in the desired number of columns")
+    cli::cli_inform("data already was in the desired number of columns")
     return(data)
   }
 
   #column number
   if (pad_columns) {
     if (ncol(data) %% columns != 0) {
-      message(str_c("data isn't integer divisible into ", columns, " columns.", ncol(data), "/", columns, "=", ncol(data) %% columns), ". Padding empty columns.")
+      cli::cli_inform("data isn't integer divisible into {columns} columns.{ncol(data)}/{columns}={ncol(data) %% columns}. Padding empty columns.")
 
       #pad cols
       v_n_to_pad = columns - (ncol(data) %% columns)
@@ -346,7 +346,7 @@ stack_into_n_columns = function(data, columns, pad_columns = TRUE, include_colna
     }
   } else {
     if (ncol(data) %% columns != 0) {
-      stop(stringr::str_c("data isn't integer divisible into ", columns, " columns!", ncol(data), "/", columns, "=", ncol(data) %% columns))
+      cli::cli_abort("data isn't integer divisible into {columns} columns!{ncol(data)}/{columns}={ncol(data) %% columns}")
     }
   }
 
@@ -418,7 +418,7 @@ split_into_n_columns = function(data, split_times, pad_rows = T, include_rowname
   #check length
   v_remainder = nrow(data) %% split_times
   if (!pad_rows & (v_remainder != 0)) {
-    stop("It is not possible to reform the data without padding rows because the number of rows is not integer disible by the desired number of columns! " + nrow(data) + "/" + split_times + "=" + v_remainder)
+    cli::cli_abort("It is not possible to reform the data without padding rows because the number of rows is not integer disible by the desired number of columns! {nrow(data)}/{split_times}={v_remainder}")
   }
 
   #include rownames?
@@ -548,7 +548,7 @@ read_vcf = function(x, var_id = "ID", n_max = Inf) {
   #ensure ids are unique
   #warn if not unique
   if (any(duplicated(x2[[var_id]]))) {
-    warning("There were duplicated IDs among the variants. These were made unique with `str_uniquify()` --  check your data!")
+    cli::cli_warn("There were duplicated IDs among the variants. These were made unique with `str_uniquify()` --  check your data!")
     x2[[var_id]] %<>% str_uniquify()
   }
 

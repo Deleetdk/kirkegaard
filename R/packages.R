@@ -30,8 +30,7 @@ load_packages = function(...) {
   #any fails?
   if (any(!tries)) {
     failed = chrs[!tries]
-    stop(glue::glue("Some packages could not load: {stringr::str_c(failed, collapse = ', ')}"),
-         call. = F)
+    cli::cli_abort("Some packages could not load: {stringr::str_c(failed, collapse = ', ')}")
   }
 
   return(invisible(T))
@@ -65,7 +64,7 @@ assert_installed = function(...) {
   #any?
   if (length(not_installed) > 0) {
     #fail with the list
-    stop(glue::glue("Some packages not installed: {stringr::str_c(not_installed, collapse = ', ')}"), call. = F)
+    cli::cli_abort("Some packages not installed: {stringr::str_c(not_installed, collapse = ', ')}")
   }
 
   return(T)

@@ -48,12 +48,12 @@ math_to_function = function(str, convert_equal = T, silent_try = T, test_functio
       eval(parse(text=str2))
     }
   })
-  if ("try-error" %in% class(trial)) stop("Could not create a function from the string!")
+  if ("try-error" %in% class(trial)) cli::cli_abort("Could not create a function from the string!")
 
   #check function
   if (test_function) {
     trial = try(func(0), silent = silent_try)
-    if ("try-error" %in% class(trial)) stop("Function returns an error!")
+    if ("try-error" %in% class(trial)) cli::cli_abort("Function returns an error!")
   }
 
   return(func)

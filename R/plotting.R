@@ -22,7 +22,7 @@
 #'   GG_text("blue test", text_pos = "manual", font_color = "blue", font_size = 20, x = .25, y = .75)
 GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", ...) {
   text
-  if (!(str_detect(text_pos, "[tmb][lmr]") | text_pos == "manual")) stop("`text_pos` incorrect. See details.")
+  if (!(str_detect(text_pos, "[tmb][lmr]") | text_pos == "manual")) cli::cli_abort("`text_pos` incorrect. See details.")
   args = list(...)
 
   #text object location
@@ -44,7 +44,7 @@ GG_text = function(text, text_pos = "tl", font_size = 11, font_color = "black", 
 
   } else {
     #x and y must be present
-    if (!all(c("x", "y") %in% names(args))) stop('When using `text_pos = "manual"`, you must supply both x and y values.')
+    if (!all(c("x", "y") %in% names(args))) cli::cli_abort('When using `text_pos = "manual"`, you must supply both x and y values.')
     #set from ...
     x = args$x
     y = args$y
@@ -130,7 +130,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
       if (!vline) {
         vline = NULL
       } else {
-        stop("vline cannot be TRUE! Use NULL or FALSE for not drawing a line.")
+        cli::cli_abort("vline cannot be TRUE! Use NULL or FALSE for not drawing a line.")
       }
     }
   }
@@ -150,14 +150,14 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
   #1 column df
   if (is.data.frame(data) && ncol(data) == 1 && is.null(var)) {
     var = names(data)
-    warning("received a data frame but no var: used the only available column")
+    cli::cli_warn("received a data frame but no var: used the only available column")
   }
 
   #rename and drop unused
   df = data[c(var, group)]
 
   #check if var is in df
-  if (!var %in% colnames(df)) stop("Variable " + var + " not found in the data frame!")
+  if (!var %in% colnames(df)) cli::cli_abort("Variable {var} not found in the data frame!")
 
   #remove NA group
   if (!is.null(group)) {
@@ -167,12 +167,12 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
     #any miss in grouping variable?
     if (anyNA(df[[group]])) {
       df = df[!is.na(df[[group]]), ]
-      warning("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
+      cli::cli_warn("Grouping variable contained missing values. These were removed. If you want an NA group, convert to explicit value.")
     }
 
     #groups without any data?
     if (df[c(var, group)] %>% anyNA) {
-      warning("There were groups without any data. These were removed")
+      cli::cli_warn("There were groups without any data. These were removed")
       #also drop the other variables
       df = df[!is.na(df[[var]]) & !is.na(df[[group]]), ]
 
@@ -192,7 +192,7 @@ GG_denhist = function(data, var = NULL, group = NULL, vline = mean, histogram_pa
   if (auto_fraction_bounary) {
     #values are fractions?
     if (all(is_between(df[[var]], 0, 1), na.rm = T)) {
-      message("Input seems like a fraction, set `boundary=0` and `binwidth=1/30` to avoid issues near the limits. Disable this with `auto_fraction_bounary=F`")
+      cli::cli_inform("Input seems like a fraction, set `boundary=0` and `binwidth=1/30` to avoid issues near the limits. Disable this with `auto_fraction_bounary=F`")
       histogram_pars$boundary = 0
       histogram_pars$binwidth = 1/30
     }
@@ -401,20 +401,20 @@ GG_scatter = function(df,
                       ...) {
 
   arg_list = list(...)
-  if ("case_names_vector" %in% names(arg_list)) stop("The argument `case_names_vector` is no longer used. Use `case_names`.")
+  if ("case_names_vector" %in% names(arg_list)) cli::cli_abort("The argument `case_names_vector` is no longer used. Use `case_names`.")
 
   #check if vars exist
-  if (!x_var %in% colnames(df)) stop("X variable not found in data frame!")
-  if (!y_var %in% colnames(df)) stop("Y variable not found in data frame!")
+  if (!x_var %in% colnames(df)) cli::cli_abort("X variable not found in data frame!")
+  if (!y_var %in% colnames(df)) cli::cli_abort("Y variable not found in data frame!")
 
   #fail on 0 cases
-  if (nrow(df) == 0) stop("There were no cases", call. = F)
+  if (nrow(df) == 0) cli::cli_abort("There were no cases")
 
   #case names?
   if (!is.null(case_names) && !are_equal(case_names, NA) && !are_equal(case_names, F)) {
 
     #chr?
-    if (!is.character(case_names)) stop("`case_names` must be a character, NULL, NA or F, but it was %s", class(case_names))
+    if (!is.character(case_names)) cli::cli_abort("`case_names` must be a character, NULL, NA or F, but it was {class(case_names)}")
 
     #is scalar chr, then assume it is name of variable
     if (is.character(case_names) && is_scalar(case_names)) {
@@ -423,14 +423,14 @@ GG_scatter = function(df,
         df$.label = rownames(df)
       } else {
         #does it exist in data?
-        if (!case_names %in% names(df)) stop(sprintf("Case names variable `%s` wasn't in the data.frame!", case_names))
+        if (!case_names %in% names(df)) cli::cli_abort("Case names variable `{case_names}` wasn't in the data.frame!")
         df$.label = df[[case_names]]
       }
     }
 
     #is non-scalar chr?
     if (is.character(case_names) && !is_scalar(case_names)) {
-      if (length(case_names) != nrow(df)) stop("`case_names` wasn't the right length!")
+      if (length(case_names) != nrow(df)) cli::cli_abort("`case_names` wasn't the right length!")
       df$.label = case_names
     }
 
@@ -451,7 +451,7 @@ GG_scatter = function(df,
     #chr scalar
     if (is_scalar(weights) & is.character(weights)) {
       #does it exist in data?
-      if (!weights %in% names(df)) stop(sprintf("`weights` variable `%s` wasn't in the data frame!", weights))
+      if (!weights %in% names(df)) cli::cli_abort("`weights` variable `{weights}` wasn't in the data frame!")
       df$.weights = df[[weights]]
     } else {
       #vector
@@ -464,7 +464,7 @@ GG_scatter = function(df,
     #chr scalar?
     if (is_scalar(color) & is.character(color)) {
       #does it exist in data?
-      if (!color %in% names(df)) stop(sprintf("`color` variable `%s` wasn't in the data frame!", color))
+      if (!color %in% names(df)) cli::cli_abort("`color` variable `{color}` wasn't in the data frame!")
       df$.color = df[[color]]
 
       color_axis_title = color
@@ -498,7 +498,7 @@ GG_scatter = function(df,
   df = na.omit(df[c(x_var, y_var, ".weights", ".label", ".color")])
 
   #fail on 0 cases
-  if (nrow(df) == 0) stop("There were no complete cases", call. = F)
+  if (nrow(df) == 0) cli::cli_abort("There were no complete cases")
 
   ## text
   #correlation + CI
@@ -522,7 +522,7 @@ GG_scatter = function(df,
 
 
   #fail on NA correlation
-  if (is.na(cor)) stop("Correlation could not be computed because of no variation in complete cases or at all", call. = F)
+  if (is.na(cor)) cli::cli_abort("Correlation could not be computed because of no variation in complete cases or at all")
 
 
 
@@ -697,7 +697,7 @@ GG_scatter = function(df,
 GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95, type = "bar", na.rm = T, msg_NA = T, split_group_labels = T, line_length = 95, min_n = 0, detect_prop = T, add_sample_sizes_to_labels = F) {
 
   #check input
-  if (is.factor(df[[var]]) | is.character(df[[var]])) stop("You probably want to use `GG_proportions()` for these data", call. = F)
+  if (is.factor(df[[var]]) | is.character(df[[var]])) cli::cli_abort("You probably want to use `GG_proportions()` for these data")
 
   #convert
   df = as.data.frame(df)
@@ -713,7 +713,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   if (detect_prop) {
     if (setequal(unique(na.omit(df[[var]])), c(0, 1))) {
       is_prop = T
-      message("Proportion variable detected, using `prop.test()`")
+      cli::cli_inform("Proportion variable detected, using `prop.test()`")
     }
   }
 
@@ -724,9 +724,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
   if (is.null(subgroupvar)) {
 
     #checks
-    if (!var %in% colnames(df)) stop("Numerical isn't in the data frame!")
-    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data frame!")
-    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, boxplot, point, points, violin, violin2")
+    if (!var %in% colnames(df)) cli::cli_abort("Numerical isn't in the data frame!")
+    if (!groupvar %in% colnames(df)) cli::cli_abort("Group variable isn't in the data frame!")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) cli::cli_abort("Type not recognized! Supported values: bar, boxplot, point, points, violin, violin2")
 
     #subset
     df = df[c(var, groupvar)]
@@ -736,14 +736,14 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       #remove missing?
       if (na.rm) {
         df = miss_filter(df, missing = 0)
-        silence(message("Missing values were removed."), messages = msg_NA)
+        silence(cli::cli_inform("Missing values were removed."), messages = msg_NA)
       } else {
-        stop("There must not be missing values present when na.rm = F!")
+        cli::cli_abort("There must not be missing values present when na.rm = F!")
       }
     }
 
     #check for no data
-    if (nrow(df) == 0) stop("No overlapping non-missing data.")
+    if (nrow(df) == 0) cli::cli_abort("No overlapping non-missing data.")
 
     #enforce factor, drop empty
     df[[groupvar]] = factor(df[[groupvar]]) %>% fct_drop()
@@ -800,7 +800,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df[[groupvar]] %<>% fct_drop()
 
     #check for data
-    if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
+    if (nrow(df_sum) == 0) cli::cli_abort("No groups left after filtering to sample size requirement")
 
     #error bar
     g_eb1 = geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = .2, color = "red")
@@ -872,10 +872,10 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df$subgroupvar = df[[subgroupvar]]
 
     #checks
-    if (!var %in% colnames(df)) stop("Variable isn't in the data frame!")
-    if (!groupvar %in% colnames(df)) stop("Group variable isn't in the data frame!")
-    if (!subgroupvar %in% colnames(df)) stop("Color variable isn't in the data frame!")
-    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) stop("Type not recognized! Supported values: bar, point, points, boxplot, violin, violin2")
+    if (!var %in% colnames(df)) cli::cli_abort("Variable isn't in the data frame!")
+    if (!groupvar %in% colnames(df)) cli::cli_abort("Group variable isn't in the data frame!")
+    if (!subgroupvar %in% colnames(df)) cli::cli_abort("Color variable isn't in the data frame!")
+    if (!type %in% c("bar", "point", "points", "boxplot", "violin", "violin2")) cli::cli_abort("Type not recognized! Supported values: bar, point, points, boxplot, violin, violin2")
 
     #subset
     df = df[c(var, groupvar, subgroupvar)]
@@ -885,9 +885,9 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
       #remove missing?
       if (na.rm) {
         df = miss_filter(df, missing = 0)
-        silence(message("Missing values were removed."), messages = msg_NA)
+        silence(cli::cli_inform("Missing values were removed."), messages = msg_NA)
       } else {
-        stop("There must not be missing values in the data when na.rm = F!")
+        cli::cli_abort("There must not be missing values in the data when na.rm = F!")
       }
     }
 
@@ -906,7 +906,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     }
 
     #check for no data
-    if (nrow(df) == 0) stop("No overlapping non-missing data.")
+    if (nrow(df) == 0) cli::cli_abort("No overlapping non-missing data.")
 
     #summarize
     df_sum = plyr::ddply(df, .variables = c(groupvar, subgroupvar), .fun = function(dd) {
@@ -959,7 +959,7 @@ GG_group_means = function(df, var, groupvar = NULL, subgroupvar = NULL, CI = .95
     df[[subgroupvar]] %<>% fct_drop()
 
     #check for data
-    if (nrow(df_sum) == 0) stop("No groups left after filtering to sample size requirement", call. = F)
+    if (nrow(df_sum) == 0) cli::cli_abort("No groups left after filtering to sample size requirement")
 
     #plot
     if (type == "bar") {
@@ -1070,7 +1070,7 @@ GG_contingency_table = function(data, var1, var2, margin = NULL) {
 GG_save = function(filename, plot = last_plot(), path = NULL, width = 10, height = 6.5, ...) {
   #make dir if needed
   if (!dir.exists(dirname(filename))) {
-    message("Directory did not exist, creating...")
+    cli::cli_inform("Directory did not exist, creating...")
     dir.create(dirname(filename), showWarnings = F, recursive = T)
   }
 
@@ -1193,7 +1193,7 @@ GG_heatmap = function(
 ) {
 
   #bad arguments
-  if (remove_diag & short_x_labels) stop("Cannot remove diagonal and use short x labels", call. = F)
+  if (remove_diag & short_x_labels) cli::cli_abort("Cannot remove diagonal and use short x labels")
 
   #correlations
   #compute if given as data
@@ -1207,14 +1207,14 @@ GG_heatmap = function(
     cormat = data
 
     #if min_n is given, must also specify pairwise_n
-    if (min_n > 0 & is.null(pairwise_n)) stop("If `min_n` is given with matrix input, `pairwise_n` must also be given", call. = F)
+    if (min_n > 0 & is.null(pairwise_n)) cli::cli_abort("If `min_n` is given with matrix input, `pairwise_n` must also be given")
   } else {
-    stop("Data must be a data frame or a matrix")
+    cli::cli_abort("Data must be a data frame or a matrix")
   }
 
   #can we reorder data? not if there's missing values in cor matrix
   if (any(is.na(cormat)) & reorder_vars) {
-    message("Cannot reorder variables due to missing values in correlation matrix.")
+    cli::cli_inform("Cannot reorder variables due to missing values in correlation matrix.")
     reorder_vars = F
   }
 
@@ -1416,7 +1416,7 @@ GG_proportions = function(x, group, drop_empty = F, stacked = F, add_values = F,
   group = as.factor(group)
 
   #not both add_values and non-stacked
-  if (add_values & !stacked) stop("Cannot have both `add_values = T` and `stacked = F`")
+  if (add_values & !stacked) cli::cli_abort("Cannot have both `add_values = T` and `stacked = F`")
 
   #get the proportion tests
   prop_tests(x, group) ->
@@ -1692,7 +1692,7 @@ bma_to_df = function(x) {
   } else if (is.data.frame(x)) {
     #if data frame, assume it's the coefficients
     if (!all(c("term", "PIP", "mean", "sd") %in% names(x))) {
-      stop("Data frame must have the columns: term, PIP, mean, sd", call. = F)
+      cli::cli_abort("Data frame must have the columns: term, PIP, mean, sd")
     }
 
     y = x
@@ -1705,10 +1705,10 @@ bma_to_df = function(x) {
   else {
     #if bas object, remind user they need to use coef()
     if (inherits(x, "bas")) {
-      stop("Please use `coef()` on the BAS model first", call. = F)
+      cli::cli_abort("Please use `coef()` on the BAS model first")
     }
 
-    stop("Unknown input (not from package BMA, BAS, or BMS)", call. = F)
+    cli::cli_abort("Unknown input (not from package BMA, BAS, or BMS)")
   }
 
   #change factor level order of term to PIP
@@ -1931,7 +1931,7 @@ GG_ordinal = function(
     #and have the same levels
     data_levels = map(data, levels)
     if (!all_the_same(data_levels)) {
-      stop("All variables must have the same levels", call. = F)
+      cli::cli_abort("All variables must have the same levels")
     }
     data = map_df(data, as.ordered)
 
@@ -2130,7 +2130,7 @@ GG_quantiles <- function(data, x_var, y_var, quantiles = c(0.1, 0.25, 0.5, 0.75,
 
   # Check if there's enough data left
   if (sum(complete_cases) < 10) {
-    stop("Not enough complete cases after removing missing data (need at least 10)")
+    cli::cli_abort("Not enough complete cases after removing missing data (need at least 10)")
   }
 
   # Calculate quantile smooths for each quantile

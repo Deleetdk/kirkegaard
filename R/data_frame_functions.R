@@ -23,14 +23,14 @@ df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T
 
     #skip if in exclusion vector
     if (colname %in% exclude) {
-      if (messages) message(str_glue("Skipped {colname} because it is in the exclude list"))
+      if (messages) cli::cli_inform("Skipped {colname} because it is in the exclude list")
       next
     }
 
     #logical
     if (is.logical(df[[colname]])) {
       if (exclude_logicals) {
-        if (messages) message(str_glue("Skipped {colname} because it is a logical (boolean)"))
+        if (messages) cli::cli_inform("Skipped {colname} because it is a logical (boolean)")
         next
       }
 
@@ -42,7 +42,7 @@ df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T
     #0-1 range numeric
     if (is.numeric(df[[colname]]) && all(is_between(df[[colname]], a = 0, b = 1, include_lower = T, include_upper = T), na.rm = T)) {
       if (exclude_range_01) {
-        if (messages) message(str_glue("Skipped {colname} because it is ranged from 0 to 1 (a proportion, maybe)"))
+        if (messages) cli::cli_inform("Skipped {colname} because it is ranged from 0 to 1 (a proportion, maybe)")
         next
       }
 
@@ -54,7 +54,7 @@ df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T
     #character
     if (class(unlist(df[colname])) == "character") {
       if (messages) {
-        if (messages) message(str_glue("Skipped {colname} because it is a character (string)"))
+        if (messages) cli::cli_inform("Skipped {colname} because it is a character (string)")
       }
       next
     }
@@ -66,7 +66,7 @@ df_standardize = function(df, exclude = NULL, messages = T, exclude_logicals = T
     }
 
     #skip if it's something else
-    if (messages) message(str_glue("Skipped {colname} because it is class {str_c(class(df[[colname]]), collapse = ', ')}"))
+    if (messages) cli::cli_inform("Skipped {colname} because it is class {str_c(class(df[[colname]]), collapse = ', ')}")
   }
 
   return(df)
@@ -188,7 +188,7 @@ get_each_subset_minus_1 = function(df){
 #' all(iris == df_as_num(iris_chr)) #confirm identity
 df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, always_skip_factors = F, remove_commas = T, skip_factors = NULL) {
   if (!is.null(skip_factors)) {
-    stop("This parameter is depreciated. Use one of the two new ones.")
+    cli::cli_abort("This parameter is depreciated. Use one of the two new ones.")
   }
 
   #convert to df from whatever
@@ -196,7 +196,7 @@ df_as_num = function (df, stringsAsFactors = F, smart_factor_conversion = T, alw
 
   #check type
   if (!is.data.frame(df))
-    stop("df isn't a data.frame!")
+    cli::cli_abort("df isn't a data.frame!")
 
   #names
   rnames = rownames(df)
@@ -280,7 +280,7 @@ df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta"
   #checks
   df = as.data.frame(df)
   primary_var
-  if (class(df[[primary_var]]) != "numeric") stop("Primary var must be numeric!")
+  if (class(df[[primary_var]]) != "numeric") cli::cli_abort("Primary var must be numeric!")
 
   #non-numeric
   non_num_vars = purrr::map_lgl(df, is.numeric) %>% `!` %>% names(.)[.]
@@ -291,7 +291,7 @@ df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta"
 
   #primary
   if (is.integer(primary_var)) {
-    if (primary_var < 1) stop("Primary var indice must be a positive, whole number!")
+    if (primary_var < 1) cli::cli_abort("Primary var indice must be a positive, whole number!")
 
     primary_var = colnames(df)[primary_var]
   }
@@ -300,7 +300,7 @@ df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta"
   #if secondaries not given, use all other vars
   if(is.null(secondary_vars)) {
     secondary_vars = setdiff(colnames(df), primary_var) %>% setdiff(non_num_vars)
-    message("secondary_vars was not given. It was assumed that all other numerical variables were to be used.")
+    cli::cli_inform("secondary_vars was not given. It was assumed that all other numerical variables were to be used.")
   }
 
   #convert
@@ -311,20 +311,20 @@ df_add_delta = function(df, primary_var, secondary_vars = NULL, prefix = "delta"
     #checks
 
     #neither all positive or all negative
-    if (!(all(secondary_vars < 0) | all(secondary_vars > 0))) stop("When using indices for secondary vars, they must all be positive or all negative!")
+    if (!(all(secondary_vars < 0) | all(secondary_vars > 0))) cli::cli_abort("When using indices for secondary vars, they must all be positive or all negative!")
 
     #outside of range
-    if (any(secondary_vars > ncol(df))) stop("Secondary var indice outside range!")
+    if (any(secondary_vars > ncol(df))) cli::cli_abort("Secondary var indice outside range!")
 
     #all positive
     if (all(secondary_vars > 0)) {
       secondary_vars = colnames(df)[secondary_vars] #select vars using the indices
 
       #check if primary is among them
-      if (primary_var %in% secondary_vars) stop("Primary var is among the secondary vars!")
+      if (primary_var %in% secondary_vars) cli::cli_abort("Primary var is among the secondary vars!")
 
       #check if any are non-numeric
-      if (intersect(secondary_vars, non_num_vars) %>% length != 0) stop("Some secondary vars were non-numeric!")
+      if (intersect(secondary_vars, non_num_vars) %>% length != 0) cli::cli_abort("Some secondary vars were non-numeric!")
     }
 
     #all negative
@@ -400,12 +400,12 @@ df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func =
   df = as.data.frame(data); rm(data)
   assertthat::assert_that(is.function(func))
 
-  if (is.null(names) & is.null(key)) stop("At least key or names parameters must be given!")
-  if (!is.null(names) & !is.null(key)) stop("Both key and names were given. Only one of these can be given!")
+  if (is.null(names) & is.null(key)) cli::cli_abort("At least key or names parameters must be given!")
+  if (!is.null(names) & !is.null(key)) cli::cli_abort("Both key and names were given. Only one of these can be given!")
   if (!is.null(names)) {
     if (is.null(new_name)) {
       new_name = names[1]
-      message(sprintf("A new preferred rowname wasn't given. The first rowname was chosen for this purpose: `%s`", new_name))
+      cli::cli_inform("A new preferred rowname wasn't given. The first rowname was chosen for this purpose: `{new_name}`")
     }
   }
 
@@ -453,7 +453,7 @@ df_merge_rows = function(data, key = NULL, names = NULL, new_name = NULL, func =
     return(df2)
   }
 
-  stop("Something went amiss! Debug this function!")
+  cli::cli_abort("Something went amiss! Debug this function!")
 }
 
 
@@ -562,7 +562,7 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
     l_colnames = lapply(l_colnames, FUN = sort) #sort
 
     if (!all_elements_the_same(l_colnames)) {
-      message("Not all columns were found in each data.frame. This may indicate an error.")
+      cli::cli_inform("Not all columns were found in each data.frame. This may indicate an error.")
     }
   }
 
@@ -607,10 +607,10 @@ ldf_to_df = function(list, add_by = T, by_name = "group", rownames_to_var = F, r
 #' throws_error('df_reorder_columns(iris, c("Species" = 1, "Species" = 2))')
 df_reorder_columns = function(data, vars){
   #checks
-  if (!is.data.frame(data)) stop("data must be a data.frame!")
-  if (!is_simple_vector(vars)) stop("vars must be a named vector!")
-  if (is.null(names(vars))) stop("vars must be a named vector!")
-  if (!all(names(vars) %in% names(data))) stop("Not all names were names of columns in the data.frame!")
+  if (!is.data.frame(data)) cli::cli_abort("data must be a data.frame!")
+  if (!is_simple_vector(vars)) cli::cli_abort("vars must be a named vector!")
+  if (is.null(names(vars))) cli::cli_abort("vars must be a named vector!")
+  if (!all(names(vars) %in% names(data))) cli::cli_abort("Not all names were names of columns in the data.frame!")
 
   ##sort out inputs
   data.nms <- names(data)
@@ -619,7 +619,7 @@ df_reorder_columns = function(data, vars){
   var.pos <- vars
 
   #more checks
-  if (any(duplicated(var.nms)) | any(duplicated(var.pos))) stop("Some names/positions were identical! You cannot move the same column to multiple places!")
+  if (any(duplicated(var.nms)) | any(duplicated(var.pos))) cli::cli_abort("Some names/positions were identical! You cannot move the same column to multiple places!")
 
   ##sanity checks
   stopifnot( is.character(var.nms),
@@ -694,7 +694,7 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
   data = as.data.frame(data)
   is_(key_col, class = "character", size = 1, error_on_false = T)
   is_(method, class = "character", size = 1, error_on_false = T)
-  if (!method %in% c("pure_tidyr", "custom")) stop("The selected method does not exist!")
+  if (!method %in% c("pure_tidyr", "custom")) cli::cli_abort("The selected method does not exist!")
   #the pattern input will be checked by the sub-function
 
   #determine the groups of variables
@@ -751,7 +751,7 @@ df_gather_by_pattern = function(data, pattern, key_col = ".varying", id_col = ".
     return(d_tmp_c)
   }
 
-  stop("You somehow managed to break this function!")
+  cli::cli_abort("You somehow managed to break this function!")
 }
 
 
@@ -770,7 +770,7 @@ group_by_pattern = function(x, pattern) {
   #check if pattern input is right size and type
   is_(pattern, class = "character", size = 1, error_on_false = T)
   #check if pattern input has a capturing group as required
-  if (!(stringr::str_detect(pattern, pattern = "\\(") & stringr::str_detect(pattern, pattern = "\\)"))) stop("The given pattern did not have a capturing group!")
+  if (!(stringr::str_detect(pattern, pattern = "\\(") & stringr::str_detect(pattern, pattern = "\\)"))) cli::cli_abort("The given pattern did not have a capturing group!")
 
   ### determine the groups of variables
   #remove the varying part
@@ -854,7 +854,7 @@ df_merge_cols = function(df, cols) {
   if (length(cols) == 1) return(df[[cols]])
 
   #0 col error
-  if (length(cols) == 0) stop('cols must be a length >=1 chr vector')
+  if (length(cols) == 0) cli::cli_abort('cols must be a length >=1 chr vector')
 
   #make vector, begin with last col
   y = df[[cols[1]]]
@@ -952,7 +952,7 @@ df_winsorise = function(x, variables = NULL, z = NULL, rz = NULL, centile = NULL
   if (is.null(variables)) variables = names(x)[purrr::map_lgl(x, is.numeric)]
 
   #exactly 1 method
-  if (sum(c(!is.null(z), !is.null(rz), !is.null(centile))) != 1) stop(str_glue("You must supply exactly one of `z`, `rz`, `centile`"))
+  if (sum(c(!is.null(z), !is.null(rz), !is.null(centile))) != 1) cli::cli_abort("You must supply exactly one of `z`, `rz`, `centile`")
 
   #loop
   furrr::future_map(variables, function(v) {
@@ -1038,10 +1038,10 @@ smart_join <- function(data1, data2, id_col, update = c("missing", "values", "al
   # Special case: rownames as key
   if (identical(id_name, ".rownames")) {
     if (is.null(rownames(data1)) || any(rownames(data1) == "")) {
-      stop("data1 does not have valid rownames for id_col = '.rownames'.")
+      cli::cli_abort("data1 does not have valid rownames for id_col = '.rownames'.")
     }
     if (is.null(rownames(data2)) || any(rownames(data2) == "")) {
-      stop("data2 does not have valid rownames for id_col = '.rownames'.")
+      cli::cli_abort("data2 does not have valid rownames for id_col = '.rownames'.")
     }
 
     data1 <- tibble::rownames_to_column(as.data.frame(data1), var = ".rownames")
@@ -1049,25 +1049,19 @@ smart_join <- function(data1, data2, id_col, update = c("missing", "values", "al
     id_name <- ".rownames"
   } else {
     if (!id_name %in% colnames(data1)) {
-      stop(sprintf("id_col '%s' not found in data1.", id_name))
+      cli::cli_abort("id_col '{id_name}' not found in data1.")
     }
     if (!id_name %in% colnames(data2)) {
-      stop(sprintf("id_col '%s' not found in data2.", id_name))
+      cli::cli_abort("id_col '{id_name}' not found in data2.")
     }
   }
 
   # Enforce uniqueness of IDs in both data sets
   if (anyDuplicated(data1[[id_name]]) > 0) {
-    stop(sprintf(
-      "id_col '%s' has duplicate values in data1; smart_join() requires unique IDs in both data1 and data2.",
-      id_name
-    ))
+    cli::cli_abort("id_col '{id_name}' has duplicate values in data1; smart_join() requires unique IDs in both data1 and data2.")
   }
   if (anyDuplicated(data2[[id_name]]) > 0) {
-    stop(sprintf(
-      "id_col '%s' has duplicate values in data2; smart_join() requires unique IDs in both data1 and data2.",
-      id_name
-    ))
+    cli::cli_abort("id_col '{id_name}' has duplicate values in data2; smart_join() requires unique IDs in both data1 and data2.")
   }
 
   # Keep data2 IDs around so we know which joined rows actually came from data2
@@ -1079,7 +1073,7 @@ smart_join <- function(data1, data2, id_col, update = c("missing", "values", "al
     data2 <- sf::st_drop_geometry(data2)
   } else if (!inherits(data1, "sf") && inherits(data2, "sf")) {
     # If only right side is sf, also drop its geometry
-    warning("Dropping geometry from data2; geometry must come from data1.")
+    cli::cli_warn("Dropping geometry from data2; geometry must come from data1.")
     data2 <- sf::st_drop_geometry(data2)
   }
 
@@ -1140,12 +1134,7 @@ smart_join <- function(data1, data2, id_col, update = c("missing", "values", "al
 
         if (! (is_factor_both || is_numeric_both || is_char_both ||
                is_logical_both || is_date_both || is_posix_both)) {
-          stop(sprintf(
-            "Column '%s' has incompatible types between data1 (%s) and data2 (%s); cannot safely update values.",
-            col,
-            paste(class(x_vals), collapse = "/"),
-            paste(class(y_vals), collapse = "/")
-          ), call. = FALSE)
+          cli::cli_abort("Column '{col}' has incompatible types between data1 ({paste(class(x_vals), collapse = '/')}) and data2 ({paste(class(y_vals), collapse = '/')}); cannot safely update values.")
         }
 
         common_type <- vctrs::vec_ptype_common(x_vals, y_vals)
@@ -1186,15 +1175,11 @@ smart_join <- function(data1, data2, id_col, update = c("missing", "values", "al
       "all"     = "Replaced values"
     )
 
-    msg <- paste0(
-      mode_text, " in ", length(fillings),
-      " shared variable(s) from data2 into data1 (update = '", update, "'):\n",
-      paste(
-        sprintf(" - %s: %d value(s)", names(fillings), unlist(fillings)),
-        collapse = "\n"
-      )
+    detail_lines <- paste(
+      sprintf(" - %s: %d value(s)", names(fillings), unlist(fillings)),
+      collapse = "\n"
     )
-    message(msg)
+    cli::cli_inform("{mode_text} in {length(fillings)} shared variable(s) from data2 into data1 (update = '{update}'):\n{detail_lines}")
   }
 
   # --- NEW: restore rownames when id_col = ".rownames" -----------------

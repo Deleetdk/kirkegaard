@@ -18,7 +18,7 @@
 score_items = function(df, key) {
 
   #checks
-  if (ncol(df) != length(key)) stop("Key length does not match data.frame! There must be the same number of columns as keys.")
+  if (ncol(df) != length(key)) cli::cli_abort("Key length does not match data.frame! There must be the same number of columns as keys.")
 
   #score
   df2 = lapply(seq_along(df), function(x) {

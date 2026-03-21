@@ -75,7 +75,7 @@ adj_d_reliability = function(x, rel) {
   #nothing to do
   if (rel == 1) return(x)
   if (rel == 0) return(Inf * sign(x))
-  if (!is_between(rel, a = 0, b = 1)) stop("Reliability must be within [0:1]", call. = F)
+  if (!is_between(rel, a = 0, b = 1)) cli::cli_abort("Reliability must be within [0:1]")
 
   #convert to r and adjust
   r = (x/(x^2+4)^0.5)
@@ -189,11 +189,11 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
   #checks
   data = as.data.frame(data)
   if (skip_nonnumeric) data = extract_num_vars(data)
-  if (!is_numeric(data)) stop("data contains non-numeric columns!")
+  if (!is_numeric(data)) cli::cli_abort("data contains non-numeric columns!")
   is_(rank_order, class = c("character", "logical"), size = 1, error_on_false = T)
 
   #CI and p vals
-  if (!is.null(CI) && p_val) stop("Cannot both calculate CIs and p values!")
+  if (!is.null(CI) && p_val) cli::cli_abort("Cannot both calculate CIs and p values!")
   v_noextras = is.null(CI) && !p_val
 
   #grouping
@@ -202,11 +202,11 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
 
     #drop rows where group is NA but throw warning as this might be an error
     if (anyNA(by)) {
-      warning(call. = F, "Grouping variable contains `NA` values, check your data")
+      cli::cli_warn("Grouping variable contains `NA` values, check your data")
       data = data[!is.na(by), ]
 
       #error if no data remaining
-      if (nrow(data) == 0) stop("Grouping variable contains only `NA` values!", call. = F)
+      if (nrow(data) == 0) cli::cli_abort("Grouping variable contains only `NA` values!")
     }
 
     #groups and their order
@@ -218,7 +218,7 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
     reliabilities = rep(1, ncol(data))
   } else {
     #check length
-    if (length(reliabilities) != ncol(data)) stop("reliabilities length incorrect")
+    if (length(reliabilities) != ncol(data)) cli::cli_abort("reliabilities length incorrect")
   }
 
   #weights not given or as character
@@ -232,7 +232,7 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
   simpleweights = !(is.matrix(weights) || is.data.frame(weights))
   if (simpleweights) {
     weights = as.numeric(weights) #this prevents some weird data type errors!
-    if (length(weights) != nrow(data)) stop("weights not the same length as the data!")
+    if (length(weights) != nrow(data)) cli::cli_abort("weights not the same length as the data!")
   }
 
   #rank order data?
@@ -252,7 +252,7 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
         weights = weights[NA_to_F(by == group)]
 
         #error if no data for group
-        if (nrow(data) == 0) stop(stringr::str_glue("No data for group {group}!"))
+        if (nrow(data) == 0) cli::cli_abort("No data for group {group}!")
       }
 
       #these just indicate near-1 correlations
@@ -291,7 +291,7 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
     #do weights fit the correlation matrix?
     #weights_cor_matrix = get_dims(weights) == rep(ncol(data), 2)
 
-    if (!weights_data) stop(str_c("weights did not fit the data!"))
+    if (!weights_data) cli::cli_abort("weights did not fit the data!")
   }
 
 
@@ -304,7 +304,7 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
       weights = weights[NA_to_F(by == group), ]
 
       #error if no data for group
-      if (nrow(data) == 0) stop(stringr::str_glue("No data for group {group}!"))
+      if (nrow(data) == 0) cli::cli_abort("No data for group {group}!")
     }
 
     #make matrix
@@ -485,13 +485,13 @@ cor_matrix = function(data, weights = NULL, by = NULL, reliabilities = NULL, CI 
 remove_redundant_vars = function(df, threshold = .9, cor_method = "pearson", messages = T) {
   #Check input
   if (!is.data.frame(df)) {
-    stop(paste0("First parameter is not a data frame. Instead it is ", class(df)))
+    cli::cli_abort("First parameter is not a data frame. Instead it is {class(df)}")
   }
   if (!is.numeric(threshold)) {
-    stop(paste0("Second parameter is not numeric. Instead is ", class(num.to.remove)))
+    cli::cli_abort("Second parameter is not numeric. Instead is {class(num.to.remove)}")
   }
-  if (!(threshold > 0 && threshold <= 1)) stop("threshold must be 0>x>=1 !")
-  if (!is.logical(messages)) stop("messages paramter was not a logical!")
+  if (!(threshold > 0 && threshold <= 1)) cli::cli_abort("threshold must be 0>x>=1 !")
+  if (!is.logical(messages)) cli::cli_abort("messages paramter was not a logical!")
 
   #Old variable names
   old_names = colnames(df) #save old variable names
@@ -517,11 +517,11 @@ remove_redundant_vars = function(df, threshold = .9, cor_method = "pearson", mes
   #over threshold message
   m_long_threshold = m_long[m_long$r >= threshold | m_long$r <= -threshold, ]
   if(nrow(m_long_threshold) != 0) {
-    silence({message("The following variable pairs had stronger intercorrelations than |", threshold, "|:")}, messages = messages)
+    silence({cli::cli_inform("The following variable pairs had stronger intercorrelations than |{threshold}|:")}, messages = messages)
     if (messages) df_round(m_long_threshold) %>% print #round and print
 
   } else {
-    silence({message("No variables needed to be excluded.")}, messages = messages)
+    silence({cli::cli_inform("No variables needed to be excluded.")}, messages = messages)
 
     return(df)
   }
@@ -543,8 +543,8 @@ remove_redundant_vars = function(df, threshold = .9, cor_method = "pearson", mes
   }
 
   #exclude variables
-  silence({message(str_c("The following variables were excluded:"))}, messages = messages)
-  silence({message(str_c(vars_to_exclude, collapse = ", "))}, messages = messages)
+  silence({cli::cli_inform("The following variables were excluded:")}, messages = messages)
+  silence({cli::cli_inform("{str_c(vars_to_exclude, collapse = ', ')}")}, messages = messages)
   df = df[!colnames(df) %in% vars_to_exclude]
 
   #return reduced df
@@ -765,9 +765,9 @@ conf_interval_width <- function(se, n = Inf, confidence_level = 0.95, single_arm
 pool_sd = function(x, group) {
 
   #validate input
-  if (!is_simple_vector(x)) stop("x must be a vector!")
+  if (!is_simple_vector(x)) cli::cli_abort("x must be a vector!")
   group = as.factor(group)
-  if (!is.factor(group)) stop("x must be a factor or convertible to that!")
+  if (!is.factor(group)) cli::cli_abort("x must be a factor or convertible to that!")
 
   #to df
   d = data.frame("x" = x, "group" = group)
@@ -1021,7 +1021,7 @@ homogeneity = function(x, reverse = F, summary = F) {
     return(x %>% divide_by(100) %>% raise_to_power(2) %>% sum %>% subtract(1, .))
 
   } else {
-      stop("Tried to use summary statistics, but they did not sum to either around 1 or 100 ( 1%)")
+      cli::cli_abort("Tried to use summary statistics, but they did not sum to either around 1 or 100 ( 1%)")
     }
 
 }
@@ -1058,7 +1058,7 @@ wtd_sd = function(x, w = NULL, sample = T, error = F) {
   d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0 & error) cli::cli_abort("There were no complete cases!")
   if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #weighted mean
@@ -1106,13 +1106,13 @@ wtd_mean = function(x, w = NULL, error = F) {
   }
 
   #lengths
-  if (!lengths_match(x, w)) stop("Lengths of x and w do not match!")
+  if (!lengths_match(x, w)) cli::cli_abort("Lengths of x and w do not match!")
 
   #make temp df
   d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0 & error) cli::cli_abort("There were no complete cases!")
   if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #else
@@ -1156,7 +1156,7 @@ wtd_sum = function(x, w = NULL, error=F) {
   d = data.frame(x = x, w = w) %>% na.omit
 
   #check sample
-  if (nrow(d) == 0 & error) stop("There were no complete cases!")
+  if (nrow(d) == 0 & error) cli::cli_abort("There were no complete cases!")
   if (nrow(d) == 0) return(NA) #return NA on no cases
 
   #calculate
@@ -1199,7 +1199,7 @@ standardize = function(x, w = NULL, robust = F, sample = T, focal_group = NULL) 
   assertthat::assert_that(length(focal_group) == length(x))
   assertthat::assert_that(is.logical(focal_group))
   if (anyNA(focal_group)) {
-    warning("`focal_group` contains `NA` values. These were converted to `FALSE` following tidyverse convention.")
+    cli::cli_warn("`focal_group` contains `NA` values. These were converted to `FALSE` following tidyverse convention.")
     focal_group = focal_group %>% kirkegaard::NA_to_F()
   }
 
@@ -1288,7 +1288,7 @@ transform_01 = function(x) {
 #' find_cutoff(95)
 find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precision = .1, below = F) {
   #chechk
-  if (mean_above < mean_pop) stop("This model is inapplicable if the mean trait level is lower than the population mean!")
+  if (mean_above < mean_pop) cli::cli_abort("This model is inapplicable if the mean trait level is lower than the population mean!")
 
   #dangerous loop!
   cutoff = mean_pop #begin with unselected group
@@ -1320,7 +1320,7 @@ find_cutoff = function(mean_above, mean_pop = 100, sd_pop = 15, n = 1e4, precisi
     iter = iter + 1
 
     #check if infinite
-    if (iter >= 1e5) stop("Loop reached 100k iterations without finding a solution! Use a lower level of precision!")
+    if (iter >= 1e5) cli::cli_abort("Loop reached 100k iterations without finding a solution! Use a lower level of precision!")
   }
 }
 
@@ -1342,7 +1342,7 @@ calc_row_representativeness = function(x, central_tendency_fun = median, central
 
   #skip non-numeric variables
   is_num = map_lgl(x, is.numeric)
-  if (any(!is_num)) message("Skipped non-numeric variables")
+  if (any(!is_num)) cli::cli_inform("Skipped non-numeric variables")
   x = x[is_num]
 
   #standardize if desired
@@ -1490,7 +1490,7 @@ quantile_smooth = function(x, y, quantile, method = c("qgam", "Rq", "running"), 
     return(caTools::runquantile(y[x_order], k = k, probs = quantile)[x_order])
 
   } else {
-    stop(str_glue("method not recognized: {method}"), call. = F)
+    cli::cli_abort("method not recognized: {method}")
   }
 
 }
@@ -1639,19 +1639,19 @@ make_norms = function(score, age, norm_group = NULL, p_value = .01) {
   #apply corrections to the full data
   #if model is not significant, we dont use it
   if (age_model_glance$p.value >= p_value) {
-    message(str_glue("No detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model not used."))
+    cli::cli_inform("No detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model not used.")
     d_all$score_ageadj1 = d_all$score
   } else {
-    message(str_glue("Detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model used."))
+    cli::cli_inform("Detected linear effect of age on the score (p = {p_to_asterisk(age_model_glance$p.value)}). Model used.")
     d_all$score_ageadj1 = d_all$score - predict(age_model, newdata = d_all)
   }
 
   #if model is not significant, we dont use it
   if (age_model_abs_glance$p.value >= p_value) {
-    message(str_glue("No detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model not used."))
+    cli::cli_inform("No detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model not used.")
     d_all$score_ageadj2 = d_all$score_ageadj1
   } else {
-    message(str_glue("Detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model used."))
+    cli::cli_inform("Detected variance effect of age on the score (p = {p_to_asterisk(age_model_abs_glance$p.value)}). Model used.")
     d_all$score_ageadj2 = d_all$score_ageadj1 / predict(age_model_abs, newdata = d_all)
   }
 

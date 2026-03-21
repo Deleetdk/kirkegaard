@@ -132,7 +132,7 @@ make_forward_sets = function(
       #pick items
       start_items = item_stats %>% arrange(loading) %>% tail(min_items) %>% pull(item)
       sets = list(start_items)
-      message(str_glue("Starting with the {min_items} items with highest loadings: {str_c(start_items, collapse = ', ')}"))
+      cli::cli_inform("Starting with the {min_items} items with highest loadings: {str_c(start_items, collapse = ', ')}")
     } else if (start_method == "combination") {
       #if we have no items, we can either try all 3-way combinations, which is often not possible (explosion)
       #or we can begin with a best guess of the 3 items with highest loadings from full analysis (fast)
@@ -313,7 +313,7 @@ abbreviate_by_genetic_algo = function(
   all_fits = tibble()
   for (iter in 1:max_generations) {
     #msg current iter
-    message(str_glue("Starting iteration {iter} out of a maximum of {max_generations}"))
+    cli::cli_inform("Starting iteration {iter} out of a maximum of {max_generations}")
 
     #get new population
     new_pop = genetic_algo_item_sets(
@@ -384,7 +384,7 @@ abbreviate_by_genetic_algo = function(
       improvement = (max(current_fits$criterion_value) - best_last)
 
       #msg about improvement this generation
-      message(str_glue("Improvement in iteration {iter} out of {max_generations}: {str_round(improvement, 5)}, current best: {str_round(max(current_fits$criterion_value), 5)}"))
+      cli::cli_inform("Improvement in iteration {iter} out of {max_generations}: {str_round(improvement, 5)}, current best: {str_round(max(current_fits$criterion_value), 5)}")
 
       #if no improvement for X generations, stop search
       if (iter > stop_search_after_generations) {
@@ -397,7 +397,7 @@ abbreviate_by_genetic_algo = function(
           tail(stop_search_after_generations)
 
         if (all_the_same(last_k_criterion_values)) {
-          message(str_glue("No improvement for {stop_search_after_generations} generations, stopping search"))
+          cli::cli_inform("No improvement for {stop_search_after_generations} generations, stopping search")
           break
         }
       }
@@ -528,7 +528,7 @@ make_item_list_for_loadings_method = function(x, max_items) {
 #made with GPT4 after 10 tries
 get_balanced_items <- function(data, num_groups, num_items) {
   if (num_items > nrow(data)) {
-    stop("Number of items to select is greater than available items.")
+    cli::cli_abort("Number of items to select is greater than available items.")
   }
 
   # Prepare the data by assigning groups based on difficulty
@@ -594,7 +594,7 @@ max_loading_method = function(
 ) {
   #not non-NULL to both residualization and balancing
   if (!is.null(difficulty_balance_groups) & residualize_loadings) {
-    stop("Cannot residualize loadings and balance by difficulty groups at the same time.", call. = F)
+    cli::cli_abort("Cannot residualize loadings and balance by difficulty groups at the same time.")
   }
 
   #get loadings
@@ -793,14 +793,14 @@ abbreviate_scale = function(
   assert_that(selection_method %in% c("rc", "r", "c", "cr"))
   #not non-NULL to both residualization and balancing
   if (!is.null(difficulty_balance_groups) & residualize_loadings) {
-    stop("Cannot residualize loadings and balance by difficulty groups at the same time.", call. = F)
+    cli::cli_abort("Cannot residualize loadings and balance by difficulty groups at the same time.")
   }
   assert_that(item_target >= 3, msg = "Item target must be at least 3")
   assert_that(item_target < ncol(items), msg = "Item target count must be less than the number of items")
 
   #messages
-  message(str_glue("Abbreviating scale using {mapvalues(selection_method, from = c('c', 'rc', 'r'), to = c('correlation with criterion variable(s)', 'average of correlation with creiterion variable(s) and reliability', 'reliability'), warn_missing = F)} method"))
-  message(str_glue("Using the {method} method"))
+  cli::cli_inform("Abbreviating scale using {mapvalues(selection_method, from = c('c', 'rc', 'r'), to = c('correlation with criterion variable(s)', 'average of correlation with creiterion variable(s) and reliability', 'reliability'), warn_missing = F)} method")
+  cli::cli_inform("Using the {method} method")
 
   #use default mirt args if none given
   if (is.null(mirt_args)) {
@@ -868,7 +868,7 @@ abbreviate_scale = function(
     items_to_drop = ncol(items) - item_target
     items_to_drop_seq = seq(ncol(items) - item_target)
     for (i in items_to_drop_seq) {
-      message(str_glue("removing item {i} out of {items_to_drop} ({items_to_drop - i} remaining)"))
+      cli::cli_inform("removing item {i} out of {items_to_drop} ({items_to_drop - i} remaining)")
 
       #if the first round, just drop one item
       #dont need to use the prior item set
@@ -926,7 +926,7 @@ abbreviate_scale = function(
     for (i in items_to_pick_seq) {
 
       if (i != 1) {
-        message(str_glue("adding item {i + 2} out of {items_to_pick}"))
+        cli::cli_inform("adding item {i + 2} out of {items_to_pick}")
       }
 
       #if the first round, try each item, one at a time
@@ -1120,17 +1120,17 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
   mirt_args_set2 = mirt_args[!names(mirt_args) %in% c("model", "itemtype")]
 
   #regular fit joint group
-  if (messages) message("There are 8 steps")
-  if (messages) message("Step 1: Initial joint fit\n")
+  if (messages) cli::cli_inform("There are 8 steps")
+  if (messages) cli::cli_inform("Step 1: Initial joint fit\n")
   mirt_fit = rlang::exec(mirt::mirt, !!!mirt_args)
 
   #step 3
   if (!is.character(group) && !is.factor(group)) group = factor(group)
-  if (messages) message("\nStep 2: Initial MI fit")
+  if (messages) cli::cli_inform("\nStep 2: Initial MI fit")
   mirt_fit_MI = rlang::exec(mirt::multipleGroup, !!!mirt_args, group = group, invariance = c('intercepts','slopes', 'free_means', 'free_var'))
 
   #DIFs
-  if (messages) message("\nStep 3: Leave one out MI testing")
+  if (messages) cli::cli_inform("\nStep 3: Leave one out MI testing")
 
   if (is.null(DIF_args)) {
     DIF_args = list(
@@ -1178,23 +1178,23 @@ DIF_test = function(items, model, group, fscores_pars = list(full.scores = T, fu
   model_noDIF_conservative_Q[DIFs_detected_conservative$item, ] = F
 
   #fit together without DIF
-  if (messages) message("\nStep 4: Fit without DIF items, liberal threshold")
+  if (messages) cli::cli_inform("\nStep 4: Fit without DIF items, liberal threshold")
   mirt_fit_noDIF_liberal = rlang::exec(mirt::mirt, model = mirt::mirt.model(model_noDIF_liberal_Q), !!!mirt_args_set2)
 
-  if (messages) message("\nStep 5: Fit without DIF items, conservative threshold")
+  if (messages) cli::cli_inform("\nStep 5: Fit without DIF items, conservative threshold")
   mirt_fit_noDIF_conservative = rlang::exec(mirt::mirt, model = mirt::mirt.model(model_noDIF_conservative_Q), !!!mirt_args_set2)
 
 
   #with anchors
-  if (messages) message("\nStep 6: Fit with anchor items, liberal threshold")
+  if (messages) cli::cli_inform("\nStep 6: Fit with anchor items, liberal threshold")
   mirt_fit_anchors_liberal = rlang::exec(mirt::multipleGroup, !!!mirt_args, group = group, invariance = c(items_noDIF_liberal %>% names(), 'free_means', 'free_var'))
 
-  if (messages) message("\nStep 7: Fit with anchor items, conservative threshold")
+  if (messages) cli::cli_inform("\nStep 7: Fit with anchor items, conservative threshold")
   mirt_fit_anchors_conservative = rlang::exec(mirt::multipleGroup, !!!mirt_args, group = group, invariance = c(items_noDIF_conservative %>% names(), 'free_means', 'free_var'))
 
 
   #get scores
-  if (messages) message("\nStep 8: Get scores")
+  if (messages) cli::cli_inform("\nStep 8: Get scores")
 
   orig_scores = do.call(what = mirt::fscores, args = c(list(object = mirt_fit), fscores_pars))
   noDIF_scores_liberal = do.call(what = mirt::fscores, args = c(list(object = mirt_fit_noDIF_liberal), fscores_pars))
@@ -1328,7 +1328,7 @@ calc_item_gaps = function(x, group, return_data_frame = T) {
   #decide focal group
   focal_group = levels(group)[1]
   alt_group = levels(group)[2]
-  message(str_glue("Focal group is {focal_group}. Positive values mean that {focal_group} > {alt_group}"))
+  cli::cli_inform("Focal group is {focal_group}. Positive values mean that {focal_group} > {alt_group}")
 
   #prep data frame
   res = tibble(

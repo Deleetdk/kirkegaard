@@ -86,7 +86,7 @@ pu_translate_inner = function(x,
   is_(fuzzy, class = "logical", error_on_false = T, size = 1)
   is_(reverse, class = "logical", error_on_false = T, size = 1)
   is_(messages, class = c("numeric", "logical"), error_on_false = T, size = 1)
-  if (!is_between(messages, 0, 2)) stop(sprintf("messages was %f but must be 0>=x<=2. You probably made a mistake.", messages), call. = F)
+  if (!is_between(messages, 0, 2)) cli::cli_abort("messages was {messages} but must be 0>=x<=2. You probably made a mistake.")
   is_(standardize_name, class = "logical", error_on_false = T, size = 1)
   if (!is.null(stringdist_params)) is_(stringdist_params, class = "list", error_on_false = T)
 
@@ -97,7 +97,7 @@ pu_translate_inner = function(x,
   if (length(x) == 0) return(restore_NAs(x, na_pos))
 
   #impossible settings
-  if (standardize_name & reverse) stop("Cannot both standardize names and reverse the translations!")
+  if (standardize_name & reverse) cli::cli_abort("Cannot both standardize names and reverse the translations!")
 
   #read polunits
   data_file_location = system.file("extdata", "political_units.xlsx", package = "kirkegaard")
@@ -131,11 +131,11 @@ pu_translate_inner = function(x,
     #get names of superunits
     name_superunit = pu_translate(x = superunit, reverse = T, messages = 0)
 
-    if (messages > 1) message(sprintf("Subsetting to subunits of: %s [%s].", stringr::str_c(name_superunit, collapse = " | "), stringr::str_c(superunit, collapse = " | ")))
+    if (messages > 1) cli::cli_inform("Subsetting to subunits of: {stringr::str_c(name_superunit, collapse = ' | ')} [{stringr::str_c(superunit, collapse = ' | ')}].")
     units = dplyr::filter(units, Superunit %in% superunit)
 
     #no members? give useful feedback
-    if (nrow(units) == 0) stop(sprintf("There were no subunits of this superunit! %s", superunit))
+    if (nrow(units) == 0) cli::cli_abort("There were no subunits of this superunit! {superunit}")
   }
 
   #add duplicates with country ISO in parens
@@ -179,7 +179,7 @@ pu_translate_inner = function(x,
       #check if there is exactly one match
       if (sum(s == units$Name) == 1) {
         s_match = units$Abbreviation[which(s == units$Name)]
-        if (messages > 1) message(sprintf("Exact match: %s -> %s", s, s_match))
+        if (messages > 1) cli::cli_inform("Exact match: {s} -> {s_match}")
 
         return(s_match)
       }
@@ -187,13 +187,11 @@ pu_translate_inner = function(x,
       #check if multiple matches
       if (sum(s == units$Name) > 1) {
         s_match = units$Abbreviation[which(s == units$Name)]
-        str = sprintf("More than one exact match for %s. Perhaps you want to use a superunit to limit the options? Matches were: ", s)
-        str = str + stringr::str_c(s_match, collapse = " | ")
-        stop(str, call. = F)
+        cli::cli_abort("More than one exact match for {s}. Perhaps you want to use a superunit to limit the options? Matches were: {stringr::str_c(s_match, collapse = ' | ')}")
       }
 
       #if zero
-      if (messages>0) message(sprintf("No exact match: %s", s))
+      if (messages>0) cli::cli_inform("No exact match: {s}")
       return(NA_character_)
     })
   }
@@ -207,7 +205,7 @@ pu_translate_inner = function(x,
       #include legacy abbreviations for reverse translations
 
       #check length
-      if (nrow(units_sub_by_lang) == 0) stop(sprintf("There are no translations for this language: %s", lang), call. = F)
+      if (nrow(units_sub_by_lang) == 0) cli::cli_abort("There are no translations for this language: {lang}")
     }
 
     #loop over abbreviations
@@ -217,7 +215,7 @@ pu_translate_inner = function(x,
         #any matches?
         abbrev_matches = dplyr::filter(units_sub_by_lang, Abbreviation == s)
         if (nrow(abbrev_matches) == 0) {
-          if (messages > 0) message(sprintf("There was no match in language %s for country %s", lang, s))
+          if (messages > 0) cli::cli_inform("There was no match in language {lang} for country {s}")
         }
 
         #use the first match if any
@@ -231,7 +229,7 @@ pu_translate_inner = function(x,
       }
 
       #if zero
-      message(sprintf("No match: %s", s))
+      cli::cli_inform("No match: {s}")
       return(NA)
     })
   }
@@ -266,10 +264,7 @@ pu_translate_inner = function(x,
 
       #are there disagreements?
       if (!all_the_same(d_dst_min$abbrev)) {
-        str = sprintf("There were multiple equally good matches for %s: ", s)
-        str = str + str_c(d_dst_min$name, collapse = " | ")
-        str = str + sprintf(". All with distance %.2f", min_dst)
-        warning(str, call. = F)
+        cli::cli_warn("There were multiple equally good matches for {s}: {str_c(d_dst_min$name, collapse = ' | ')}. All with distance {round(min_dst, 2)}")
 
         #return NA
         return(NA_character_)
@@ -279,7 +274,7 @@ pu_translate_inner = function(x,
     #return best
     x_best = d_dst[1, "name"]
     if (messages > 0) {
-      message(sprintf("Best fuzzy match found: %s -> %s with distance %.2f", s, x_best, d_dst[1, "dst"]))
+      cli::cli_inform("Best fuzzy match found: {s} -> {x_best} with distance {sprintf('%.2f', d_dst[1, 'dst'])}")
     }
 
     return(d_dst[1, "abbrev"])

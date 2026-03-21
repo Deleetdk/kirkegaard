@@ -164,7 +164,7 @@ str_detect2 = function(string, pattern, value = F) {
 #' str_detect_replace(str, pattern = c("\\.", ",", ":"), replacement = c("dot", "comma", "colon")) #replace by pattern
 str_detect_replace = function(string, pattern, replacement) {
   #check input
-  if (!lengths_match(pattern, replacement)) stop("Lengths of pattern and replacement must match!")
+  if (!lengths_match(pattern, replacement)) cli::cli_abort("Lengths of pattern and replacement must match!")
 
   #loop over pattern-replacements
   for (i in seq_along(pattern)) {

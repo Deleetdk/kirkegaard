@@ -195,7 +195,7 @@ lengths_match = function(..., dimension = 1) {
   }, silent = T)
 
   if (is_error(trial)) {
-    warning("At least one object does not have that many dimensions. Check input.")
+    cli::cli_warn("At least one object does not have that many dimensions. Check input.")
     return(F)
   }
 
@@ -262,9 +262,9 @@ is_ = function(x, class = NULL, size = NULL, type = NULL, error_on_false = F) {
 
   #error?
   if (error_on_false) {
-    if (!v_size_check) stop(sprintf("Object %s was not of the right size!", x_name), call. = F)
-    if (!v_type_check) stop(sprintf("Object %s was not of the right type!", x_name), call. = F)
-    if (!v_class_check) stop(sprintf("Object %s was not of the right class!", x_name), call. = F)
+    if (!v_size_check) cli::cli_abort("Object {x_name} was not of the right size!")
+    if (!v_type_check) cli::cli_abort("Object {x_name} was not of the right type!")
+    if (!v_class_check) cli::cli_abort("Object {x_name} was not of the right class!")
   }
 
   v_size_check & v_type_check & v_class_check
@@ -284,7 +284,7 @@ is_ = function(x, class = NULL, size = NULL, type = NULL, error_on_false = F) {
 check_if_in = function(x, list) {
   #check
   if (! x %in% list) {
-    stop(deparse(substitute(x)) + " was not among the accepted values!", call. = F)
+    cli::cli_abort("{deparse(substitute(x))} was not among the accepted values!")
   }
 
   #all fine
@@ -333,7 +333,7 @@ all_elements_the_same = function(list) {
 is_scalar = function(x, error_on_null = T) {
   #deal with NULL
   if (is.null(x)) {
-    if (error_on_null) stop("x was NULL") else x = NA
+    if (error_on_null) cli::cli_abort("x was NULL") else x = NA
   }
   #main
   is.atomic(x) && length(x) == 1
@@ -354,7 +354,7 @@ is_scalar = function(x, error_on_null = T) {
 is_scalar_NA = function(x, error_on_null = T) {
   #deal with NULL
   if (is.null(x)) {
-    if (error_on_null) stop("x was NULL") else x = NA
+    if (error_on_null) cli::cli_abort("x was NULL") else x = NA
   }
   #main
   is.atomic(x) && length(x) == 1 && is.na(x)

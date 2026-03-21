@@ -41,7 +41,7 @@ meta_extract_data = function(.rma) {
 #' meta = rma(european_ancestry$r, sei = european_ancestry$SE_r)
 #' GG_forest(meta, .names = european_ancestry$Author_sample)
 GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
-  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
+  if (!inherits(.analysis, "rma")) cli::cli_abort("This function only works for rma objects from the metafor package.")
 
   #extract effect sizes, SEs and names
   d = meta_extract_data(.analysis)[c("es", "se", "name")]
@@ -108,7 +108,7 @@ GG_forest = function(.analysis, .names = NULL, .alphabetic_sort_names = T) {
 #' GG_funnel(meta)
 #' GG_funnel(meta, .study_CI = T)
 GG_funnel = function(.analysis, .CI = .95, .study_CI = F) {
-  if (!inherits(.analysis, "rma")) stop("This function only works for rma objects from the metafor package.")
+  if (!inherits(.analysis, "rma")) cli::cli_abort("This function only works for rma objects from the metafor package.")
 
   #convert CI to se z
   se_z = qnorm(1 - (1-.CI)/2)

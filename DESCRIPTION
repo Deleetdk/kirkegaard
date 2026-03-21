@@ -12,7 +12,8 @@ Depends:
     weights,
     assertthat,
     psych,
-    robustbase
+    robustbase,
+    cli
 License: GPL
 LazyData: true
 RoxygenNote: 7.3.3
@@ -37,6 +38,11 @@ Suggests:
     terra,
     qgam,
     caTools,
-    MASS
+    MASS,
+    tictoc,
+    VIM,
+    BMA,
+    stringdist,
+    polycor
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8

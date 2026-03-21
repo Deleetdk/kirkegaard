@@ -13,18 +13,18 @@
 #' @export
 spatial_knn = function(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag", dists = NULL) {
   #fail on bad input data
-  if (!is.data.frame(x)) stop("`x` must be a data frame")
+  if (!is.data.frame(x)) cli::cli_abort("`x` must be a data frame")
 
   #if we dont have dists
   if (is.null(dists)) {
-    if (!lon %in% names(x)) stop("`lon` ({lon}) not in data frame", call. = F)
-    if (!lat %in% names(x)) stop("`lat` ({lat}) not in data frame", call. = F)
+    if (!lon %in% names(x)) cli::cli_abort("`lon` ({lon}) not in data frame")
+    if (!lat %in% names(x)) cli::cli_abort("`lat` ({lat}) not in data frame")
   }
 
   #loop across vars and fail if not in data frame
   for (v in vars) {
     if (!v %in% names(x)) {
-      stop(str_glue("`{v}` not in data frame"), call. = F)
+      cli::cli_abort("`{v}` not in data frame")
     }
   }
 
@@ -49,7 +49,7 @@ spatial_knn = function(x, vars, k = 3, lon = "lon", lat = "lat", suffix = "_lag"
     spatial_dists = dists
 
     #make sure the dimensions fit
-    if (nrow(x) != nrow(spatial_dists)) stop("dists must have the same number of rows as x")
+    if (nrow(x) != nrow(spatial_dists)) cli::cli_abort("dists must have the same number of rows as x")
   }
 
   #loop variables

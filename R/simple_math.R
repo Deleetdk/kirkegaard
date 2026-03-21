@@ -71,7 +71,7 @@ percent_cutoff = function(x, cutoffs = c(.30, .50), digits = 2, below = F, inclu
 which_max2 = function(x) {
   #check class
   if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
-    stop(paste0("x was not numeric, data frame or matrix, but instead ", class(x)))
+    cli::cli_abort("x was not numeric, data frame or matrix, but instead {class(x)}")
   }
   if (is.matrix(x)) {
     wm = which.max(x) #index of max
@@ -99,7 +99,7 @@ which_max2 = function(x) {
 which_min2 = function(x) {
   #check class
   if (!(is.numeric(x) | is.data.frame(x) | is.matrix(x) )) {
-    stop(paste0("x was not numeric, data frame or matrix, but instead ",class(x)))
+    cli::cli_abort("x was not numeric, data frame or matrix, but instead {class(x)}")
   }
   if (is.matrix(x)) {
     wm = which.min(x) #index of max
@@ -244,7 +244,7 @@ reverse_scale = function(x, .min = min(x, na.rm=T), .max = max(x, na.rm=T)) {
 #' data.frame() %>% proportion_true() #data.frame
 #' list() %>% proportion_true()
 proportion_true = function(x) {
-  if (is_(x, class = c("character", "list", "data.frame"))) stop("Cannot coerce data.frames, lists or characters into logical!")
+  if (is_(x, class = c("character", "list", "data.frame"))) cli::cli_abort("Cannot coerce data.frames, lists or characters into logical!")
   x = as.logical(x)
   #remoev NA
   x = na.omit(x)
@@ -283,8 +283,8 @@ rescale = function(x, new_min, new_max, old_min = min(x, na.rm=T), old_max = max
   is_(old_min, class = "numeric", size = 1, error_on_false = T)
 
   #check if impossible old_min or old_max given
-  if (min(x, na.rm=T) < old_min) stop(sprintf("The min value in x is smaller than the minimum possible value given!: old_min = %f vs. min(x) = %f", old_min, min(x)))
-  if (max(x, na.rm=T) > old_max) stop(sprintf("The max value in x is larger than the maximum possible value given!: old_max = %f vs. max(x) = %f", old_max, max(x)))
+  if (min(x, na.rm=T) < old_min) cli::cli_abort("The min value in x is smaller than the minimum possible value given!: old_min = {old_min} vs. min(x) = {min(x)}")
+  if (max(x, na.rm=T) > old_max) cli::cli_abort("The max value in x is larger than the maximum possible value given!: old_max = {old_max} vs. max(x) = {max(x)}")
 
   #calculate ranges
   old_range = old_max - old_min
@@ -332,7 +332,7 @@ averages = function(x,
   #check input
   is_(x, class = "numeric", error_on_false = T)
   is_(trim, class = "numeric", size = 1, error_on_false = T)
-  if (!is_between(trim, 0, .5)) stop("trim must be between 0.0 and 0.5!")
+  if (!is_between(trim, 0, .5)) cli::cli_abort("trim must be between 0.0 and 0.5!")
   is_(types, class = "character", error_on_false = T)
 
   #Mode func

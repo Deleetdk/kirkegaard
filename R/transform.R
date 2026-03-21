@@ -90,7 +90,7 @@ split_every_k = function(x, k, uneven = T) {
   #check length
   if (!uneven) {
     if (length(x) %% k != 0) {
-      stop(stringr::str_c("The length of n was not integer disible by n! ", length(x), "%%", k, "=", length(x) %% k))
+      cli::cli_abort("The length of n was not integer disible by n! {length(x)}%%{k}={length(x) %% k}")
     }
   }
 
@@ -123,8 +123,8 @@ split_every_k = function(x, k, uneven = T) {
 #' merge_vectors(t1_n, t3_n, byname = T)
 merge_vectors = function(v1, v2, byname = FALSE, overwrite_NA = FALSE) {
   #checks
-  if (!is.vector(v1)) stop("v1 was not a vector!")
-  if (!is.vector(v2)) stop("v2 was not a vector!")
+  if (!is.vector(v1)) cli::cli_abort("v1 was not a vector!")
+  if (!is.vector(v2)) cli::cli_abort("v2 was not a vector!")
 
   #vectors of NA
   v1_NA = is.na(v1)
@@ -136,7 +136,7 @@ merge_vectors = function(v1, v2, byname = FALSE, overwrite_NA = FALSE) {
   #byname
   if (byname) {
     #check names
-    if (!(has_names(v1) && has_names(v2))) stop("when using byname, vectors must have names!")
+    if (!(has_names(v1) && has_names(v2))) cli::cli_abort("when using byname, vectors must have names!")
 
     #overwrite?
     if (overwrite_NA) {
@@ -151,7 +151,7 @@ merge_vectors = function(v1, v2, byname = FALSE, overwrite_NA = FALSE) {
   }
 
   #not byname
-  if (!(length(v1) == length(v2))) stop("when not using byrow, lengths must be identical!")
+  if (!(length(v1) == length(v2))) cli::cli_abort("when not using byrow, lengths must be identical!")
 
   #not overwrite
   #because overwriting serves no purpose when not using names, it's just replacing the entire vector
