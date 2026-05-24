@@ -1,6 +1,6 @@
 Package: kirkegaard
 Title: kirkegaard
-Version: 2025-11-19
+Version: 2026-05-24
 Authors@R: person("Emil O. W.", "Kirkegaard", email = "emilowk@proton.me", role = c("aut", "cre"))
 Description: This is a personal package containing various useful functions that
     I have written or found elsewhere. It serves primarily as an easy way for me to
@@ -16,7 +16,6 @@ Depends:
     cli
 License: GPL
 LazyData: true
-RoxygenNote: 7.3.3
 Imports:
     plyr,
     glmnet,
@@ -46,3 +45,4 @@ Suggests:
     polycor
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
+Config/roxygen2/version: 8.0.0

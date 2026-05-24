@@ -54,8 +54,6 @@ GG_scatter(
 \item{weight_as_size}{(lgl scalar) Whether to resize points by the weights.}
 
 \item{text_size}{(num) The size of the text. Defaults to 3.}
-
-\item{...}{}
 }
 \description{
 Plots a scatterplot with a regression line and correlation information. Returns a \code{ggplot2} object.
